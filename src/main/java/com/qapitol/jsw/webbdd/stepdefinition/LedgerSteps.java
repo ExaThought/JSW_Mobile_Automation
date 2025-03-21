@@ -134,7 +134,7 @@ public class LedgerSteps extends BaseSteps {
     public void validateLedgerStatementDocumentTypeAsCashbackPayout() {
         log.entering();
         navigateToLedgerStatementNewTab();
-//        clearSearch();
+        clearSearch();
         searchStringContains(DOCUMENT_TYPE, CASHBACK_PAYOUT);
         String buyerOrderNumber = (String) ContextData.getDataFromKey("orderNumber");
         searchStringContains(ORDER_ID, buyerOrderNumber);

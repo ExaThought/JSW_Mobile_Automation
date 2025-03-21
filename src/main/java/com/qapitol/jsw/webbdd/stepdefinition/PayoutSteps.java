@@ -280,7 +280,7 @@ public class PayoutSteps extends BaseSteps {
 
     public void selectEntryAndClickOnExportButton() {
         clickOnPayoutCheckbox();
-        tap("exportBtn");
+        waitAndClickOn("exportBtn");
         log.info("Selected the entry and clicked on export button");
     }
 
