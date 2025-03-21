@@ -1,0 +1,21 @@
+- name: "zoho"
+  local: true
+  platform: "chrome"
+  browserRunHeadless: false
+  capabilities:
+    "goog:chromeOptions":
+      "args": ["--remote-allow-origins=*"]
+- name: "zoho_books"
+  local: true
+  platform: "chrome"
+  browserRunHeadless: false
+  capabilities:
+    "goog:chromeOptions":
+      "args": ["--remote-allow-origins=*"]
+- name: "erp"
+  local: true
+  platform: "chrome"
+  browserRunHeadless: false
+  capabilities:
+    "goog:chromeOptions":
+      "args": [ "--remote-allow-origins=*" ]

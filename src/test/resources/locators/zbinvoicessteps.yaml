@@ -1,0 +1,34 @@
+elements:
+  actionBtn:
+    en_US:
+      web: //button[text()=''{0}'']|//ul[contains(@class,''details-menu-bar actions-menu'')]//button[span[text()=''{1}'']]
+  invoiceDate:
+    en_US:
+      web: //label[contains(text(), 'Invoice Date')]/following-sibling::div[contains(@class, 'col-lg-4')]//input[contains(@placeholder, 'dd/MM/yyyy')]
+  dueDate:
+    en_US:
+      web: //div[contains(@class, 'col-lg-2 badge-editable')]//input[@placeholder='dd/MM/yyyy']
+  clickBtn:
+    en_US:
+      web: //button[text()=''{0}'']
+  popoutArea:
+    en_US:
+      web: //label[text()=''{0}'']/following-sibling::textarea
+  clickIndexBtn:
+    en_US:
+      web: xpath=(//button[text()=''{0}''])['{1}']
+  firstBtn:
+    en_US:
+      web: //button//li[contains(text(), ''{0}'')]
+  secondBtn:
+    en_US:
+      web: //button[contains(@aria-label, ''{0}'')]
+  deletePaymentBtn:
+    en_US:
+      web: //div[normalize-space(text())='Delete Payment']
+  submitBtn:
+    en_US:
+      web: //button[@type='submit']
+  ribbon:
+    en_US:
+      web: css=.ribbon .ribbon-inner

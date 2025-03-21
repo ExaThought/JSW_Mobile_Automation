@@ -1,0 +1,7 @@
+username: test
+password: pass
+CREATE_ORDER_PAYLOAD: "create_order_payload"
+CONFIRM_ORDER_PAYLOAD: "confirm_order"
+CREATE_DO_PAYLOAD: "create_do"
+CREATE_SHIPMENT: "create_shipment"
+UPDATE_SHIPMENT: "update_shipment"

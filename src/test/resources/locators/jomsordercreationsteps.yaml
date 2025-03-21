@@ -1,0 +1,16 @@
+elements:
+  loader:
+    en_US:
+      web: //div[@class='loader']
+  loginApp:
+    en_US:
+      web: //a[@class='zlogin-apps']
+  loginId:
+    en_US:
+      web: //input[@id='login_id']
+  nextButton:
+    en_US:
+      web: //button[@id='nextbtn']
+  password:
+    en_US:
+      web: //input[@id='password']

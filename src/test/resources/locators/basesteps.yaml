@@ -1,0 +1,41 @@
+elements:
+  loader:
+    en_US:
+      web: //div[@class='loader']
+  clearSearch:
+    en_US:
+      web: css=i#cancelCriteria
+  preLoader:
+    en_US:
+      web: //*[@id='preloader']
+  rightPanel:
+    en_US:
+      web: >
+        //*[@class='zc-right-panel zc-report-adv-search'][@style='display: block;']
+  searchIcon:
+    en_US:
+      web: //*[@elname='zc-showSearchDivEl']
+  searchList:
+    en_US:
+      web: css=#searchlist
+  searchCheckbox:
+    en_US:
+      web: //div[@class=''zc-cb-checkbox''][label[contains(text(),''{0}'')]]//input
+  searchInput:
+    en_US:
+      web: //li[contains(@class,''zc-cb-checkbox-selected zc-active-search-block'')][*//label[contains(text(),''{0}'')]]//*[@class=''adv-search-textfield'']//input[@class]
+  searchIndexFirst:
+    en_US:
+      web: //ul[@class='select2-results']/li
+  searchButton:
+    en_US:
+      web: //*[@class='zc-cb-footer']//a[text()='Search']
+  selectRow:
+    en_US:
+      web: //tr[td[contains(text(),''{0}'')]]
+  dataWindow:
+    en_US:
+      web: //div[@class='record-summary']/div
+  popupClose:
+    en_US:
+      web: //span[@class='popupClose']

@@ -1,0 +1,7 @@
+elements:
+  showMoreActionBtn:
+    en_US:
+      web: //a[@elname='zc-showMoreActionEl']
+  creditLimitFreezeBtn:
+    en_US:
+      web: xpath=(//a[text()='Credit Limit freeze check'])[1]
