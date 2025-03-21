@@ -4,6 +4,7 @@ import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 
@@ -64,17 +65,18 @@ public abstract class BaseSteps extends AbstractWebPage {
         } else {
             log.info("Did not find loader so going ahead.");
         }
-//        WebDriverWait webDriverWait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(2));
-//        webDriverWait.until(ExpectedConditions.invisibilityOfElementLocated(getByFromLocator(getLocator(loader))));
         log.exiting();
     }
 
     public void waitUntilLoaderInvisible() {
         log.entering();
-        boolean preLoaderNotDisplayed = waitUntilElementAttributeContains(getLocator(PRE_LOADER), "style", "display: none;", NotFoundException.class, 20);
-        log.info("waited until Pre loader is gone or until timeout. preLoaderNotDisplayed:" + preLoaderNotDisplayed);
-//        WebDriverWait webDriverWait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(maxTimeout), Duration.ofMillis(minPolling));
-//        webDriverWait.until(ExpectedConditions.invisibilityOfElementLocated(getByFromLocator(getLocator(PRE_LOADER))));
+        String displayValue = waitAndGetAttributeV3("style", PRE_LOADER);
+        if (StringUtils.isNotEmpty(displayValue) && displayValue.contains("display: none;")) {
+            log.info("No need to wait for pre loader as attribute has value:" + displayValue);
+        } else {
+            boolean preLoaderNotDisplayed = waitUntilElementAttributeContains(getLocator(PRE_LOADER), "style", "display: none;", NotFoundException.class, 20);
+            log.info("waited until Pre loader is gone or until timeout. preLoaderNotDisplayed:" + preLoaderNotDisplayed);
+        }
         log.exiting();
     }
 
@@ -91,21 +93,31 @@ public abstract class BaseSteps extends AbstractWebPage {
      * This function is used to clear the pre-filled  search fields or already filtered inputs in any Page of Zoho creator
      */
     protected void clearSearch() {
+        log.entering();
+        String msg = "search is blank : no preselected field is available to clear";
         try {
-            List<WebElement> clearSearch = this.locateElements(CLEAR_SEARCH);
-            if (isNull(clearSearch)) {
-                return;
-            }
-            if (clearSearch.isEmpty()) {
-                return;
-            }
-            for (int i = 0; i < clearSearch.size(); i++) {
+            WebElement elementCheck = this.locateElement(CLEAR_SEARCH);
+            if (nonNull(elementCheck)) {
+                List<WebElement> clearSearchElements = this.locateElements(CLEAR_SEARCH);
+                if (isNull(clearSearchElements)) {
+                    log.info(msg);
+                    return;
+                }
+                if (clearSearchElements.isEmpty()) {
+                    log.info(msg);
+                    return;
+                }
+                for (int i = 0; i < clearSearchElements.size(); i++) {
 //                refreshAndClick(CLEAR_SEARCH);
-                tap(CLEAR_SEARCH);
+                    tap(CLEAR_SEARCH);
+                }
+            } else {
+                log.info(msg);
             }
         } catch (Exception e) {
-            log.info("search is blank : no preselected field is available to clear");
+            log.info(msg);
         }
+        log.exiting();
     }
 
     protected void refreshAndClick(String locater) {
@@ -143,18 +155,25 @@ public abstract class BaseSteps extends AbstractWebPage {
      * @param searchValue It represents the search value we need to use to search.
      */
     public void searchStringContains(String searchLabel, String searchValue) {
+        log.entering();
         waitUntilLoaderInvisible();
         if (waitAndCheckIsElementVisible("searchIcon")) {
+            log.info("searchIcon is visible");
             if (waitAndCheckIsElementClickable("searchIcon")) {
+                log.info("searchIcon is clickable");
                 tap("searchIcon");
+                log.info("searchIcon is tapped");
+                log.info("Waiting for right panel to open...");
                 boolean isRightPanelShown = waitUntilElementAttributeContains(getLocator("rightPanel"), "style", "display: block;", NotFoundException.class, 5);
                 if (isRightPanelShown) {
+                    log.info("Right panel has opened.");
                     //Wait and verify if search List is visible
-                    if (waitAndCheckIsElementVisible(20, "searchList")) {
-                        sleep(300);
+                    if (waitAndCheckIsElementPresent(2, "searchList")) {
+                        log.info("The search list in the right panel is present.");
+//                        sleep(300);
                         jsClick("searchCheckbox", searchLabel);
                         //          clickUsingJS(locateElement("searchCheckbox", searchLabel));
-                        if (waitAndCheckIsElementVisible("searchInput", searchLabel)) {
+                        if (waitAndCheckIsElementPresent("searchInput", searchLabel)) {
 //                            waitAndSetText("searchInput", searchLabel, searchValue + Keys.TAB + Keys.ENTER);
                             waitAndSetText("searchInput", searchLabel, searchValue);
                             waitAndClickOn(2, "searchIndexFirst");
@@ -171,6 +190,8 @@ public abstract class BaseSteps extends AbstractWebPage {
                     } else {
                         throw new RuntimeException("Search list is not visible");
                     }
+                } else {
+                    log.info("Right panel has not opened.");
                 }
             } else {
                 throw new RuntimeException("Search icon not clickable");
@@ -178,6 +199,7 @@ public abstract class BaseSteps extends AbstractWebPage {
         } else {
             throw new RuntimeException("Unable to find Search Icon");
         }
+        log.exiting();
     }
 
 

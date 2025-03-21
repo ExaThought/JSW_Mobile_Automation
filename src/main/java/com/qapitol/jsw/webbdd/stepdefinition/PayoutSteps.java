@@ -247,7 +247,7 @@ public class PayoutSteps extends BaseSteps {
     }
 
     public void navigateToApprovedPayoutsTab() {
-        sleep(2000);
+//        sleep(2000);
         zohoCreatorNavigation(APPROVED_PAYOUTS_PATH);
         log.info("Navigated to Approve Payout Tab");
     }
