@@ -213,7 +213,7 @@ public abstract class BaseSteps extends AbstractWebPage {
     };
 
     public void selectRowUsingObject(Function<String, Void> callSearchStringContains, String searchText, int maxTry) {
-        sleep(2000);
+        sleep(999);
         String selectRowLocKey = "selectRow";
 
         for (int i = 0; i < maxTry; i++) {
@@ -233,7 +233,7 @@ public abstract class BaseSteps extends AbstractWebPage {
     }
 
     public Map<String, String> getDataFromWindow(String locaterKey) {
-        sleep(2000);
+        sleep(999);
         Map<String, String> windowMap = new HashMap<>();
         waitAndCheckIsElementPresent(locaterKey);
         List<WebElement> windowElements = locateElements("dataWindow");
@@ -248,7 +248,7 @@ public abstract class BaseSteps extends AbstractWebPage {
     }
 
     public void popUpClose() {
-        sleep(1000);
+       // sleep(1000);
         waitAndClickOn("popupClose");
     }
 

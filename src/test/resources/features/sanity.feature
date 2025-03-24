@@ -4,7 +4,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Given Setup the environment for zoho login
 
   @testCaseId=id-001 @dataFile="ledger.yaml" @smoke
-  Scenario:Cashback  Ledger Entry Validation on ZC [Cashback, Cashback TDS, Cashback Payout]
+  Scenario:Cashback Ledger Entry Validation on ZC [Cashback Issued, Cashback TDS, Cashback Payout]
     When Create a "QP_DISTRIBUTED_CASH_AND_CARRY_CASHBACK" type order with SLO API
     Then validate the order details for "DISTRIBUTED" and "Cash & Carry - Advance"
     Then Confirm the order using JOMS API

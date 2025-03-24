@@ -56,7 +56,8 @@ public class LedgerSteps extends BaseSteps {
         double cashbackAmount = orderCreation.fetchCashbackAmount();
         double totalCashbackAmount = cashbackAmount * Double.parseDouble((String) ContextData.getDataFromKey("orderQuantity"));
         totalCashbackAmount = Math.round(totalCashbackAmount * 100.0) / 100.0;
-        String orderIdSubstring = getOrderSubstring((String) ContextData.getDataFromKey("orderNumber"));
+        ContextData.addData("totalCashbackAmount", totalCashbackAmount);
+//        String orderIdSubstring = getOrderSubstring((String) ContextData.getDataFromKey("orderNumber"));
 //        Context.buyerOrderNumber = "CBK-" + orderIdSubstring + "-0";
 //        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount Per Unit: " + cashbackAmount);
 //        ExtentCucumberAdapter.addTestStepLog("Customer Order Total Cashback Amount: " + totalCashbackAmount);
@@ -140,11 +141,11 @@ public class LedgerSteps extends BaseSteps {
         searchStringContains(ORDER_ID, buyerOrderNumber);
         selectRowUsingObject(buyerOrderNumber, 20);
         Map<String, String> ledgerData = getDataFromWindow("dataWindowElement");
-        double cashbackAmount = (double) ContextData.getDataFromKey("cashbackAmount");
-        String orderQuantity = (String) ContextData.getDataFromKey("orderQuantity");
-
-        double totalCashbackAmount = cashbackAmount * Double.parseDouble(orderQuantity);
-//        String CashBackPayoutDebitAmount = ZohoUtils.formatDecimalWithComma(String.valueOf(totalCashbackAmount - ZohoUtils.getTDSAmount(totalCashbackAmount, 10)));
+//        double cashbackAmount = (double) ContextData.getDataFromKey("cashbackAmount");
+//        String orderQuantity = (String) ContextData.getDataFromKey("orderQuantity");
+//
+//        double totalCashbackAmount = cashbackAmount * Double.parseDouble(orderQuantity);
+        String cashBackPayoutDebitAmount = (String) ContextData.getDataFromKey("cashBackPayoutAmount");
 //        assertEquals("Document type verification failed", CASHBACK_PAYOUT, ledgerData.get(DOCUMENT_TYPE));
 //        assertTrue("Order id verification failed", ledgerData.get(ORDER_ID).contains(Context.buyerOrderNumber));
 //        assertEquals("Credit (Cashback) amount verification failed", ZERO, ledgerData.get(CREDIT_AMOUNT));
