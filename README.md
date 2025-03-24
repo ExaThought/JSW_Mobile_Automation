@@ -31,6 +31,28 @@ Ex: The values in the yaml file under the `testdata` folder could be as follows,
 
 If you want to specify the payload file i.e the json file from the `src/test/resources/api/request` folder then specify as below
 
+3. To store or retrieve generated data from the application use ContextData.add
+
+Store data:
+String
+```java
+ContextData.addData("gstin","Hello world");
+```
+Store Complex POJO:
+```java
+setPojoToContextData("shipmentInvoice", shipmentInvoiceResp);
+```
+Retrieve data:
+```java
+ContextData.getDataFromKey(key);
+```
+Retrieve Complex POJO:
+```java
+setPojoToContextData("updateShipmentResp", updateShipmentResp);
+```
+
+Note: Above functions are thread safe and can be used when running tests in parallel.
+
 ```yaml
 CREATE_ORDER_PAYLOAD: "create_order_payload"
 CONFIRM_ORDER_PAYLOAD: "confirm_order"
@@ -100,6 +122,8 @@ public interface OrderApi {
 
 3. The credentials i.e. the tokens can be specified in the `LoginApiImpl` class. 
 
+Other functionalities:
+- If you want to read raw API response set the return value of the API in the interface class to the `Response` class from JAX-RS and use the function `getResponseAsString(response)` to read the response body as string.
 
 ### Migration methods
 
