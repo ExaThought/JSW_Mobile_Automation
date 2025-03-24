@@ -12,33 +12,34 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.testng.Assert.assertEquals;
 
 public abstract class BaseSteps extends AbstractWebPage {
-    int maxTimeout = 20;
     int maxAttempts = 5;
-    int minPolling = 2;
 
-    // Locaters
+    // static Locaters
     private static String loader = "loader";
     public static String CLEAR_SEARCH = "clearSearch";
     public static String PRE_LOADER = "preLoader";
-    public static String WINDOW_KEYS = ".//div[@class=' record-label-name']";
-    public static String WINDOW_VALUES = ".//div[contains(@class,'record-summary-data')]";
+    public static String WINDOW_KEYS = "windowKeys";
+    public static String WINDOW_VALUES = "windowValues";
 
 
     public static final String ORDER_ID = "Order id";
     public static final String DOCUMENT_TYPE = "Document type";
     public static final String DOCUMENT_ID = "Document id";
     public static final String DOCUMENT_NUMBER = "Document number";
+
+    //Validation values
+    public static final String CREATOR_ID_DOC = "Creator ID - Documents";
 
     public <T> T getPojoFromContextData(String key, Class<T> t) {
         OrderImpl orderCreation = new OrderImpl();
@@ -48,6 +49,28 @@ public abstract class BaseSteps extends AbstractWebPage {
     public <T> void setPojoToContextData(String key, T t) {
         OrderImpl orderCreation = new OrderImpl();
         orderCreation.setPojoToContextData(key, t);
+    }
+
+    /**
+     * This a migration function which converts JUnit assertion to the TestNg function.
+     * <p>
+     * The expected and actual data types which are supported are same as the TestNg assert.
+     *
+     * @param message
+     * @param expected
+     * @param actual
+     * @param <T>
+     */
+    public <T> void migrateToTestNgAssertEquals(String message, T expected, T actual) {
+        assertEquals(actual, expected, message);
+    }
+
+    public void migrateToTestNgAssertEquals(String message, double expected, double actual, double delta) {
+        assertEquals(actual, expected, delta, message);
+    }
+
+    public void migrateToTestNgAssertEquals(String message, float expected, float actual, float delta) {
+        assertEquals(actual, expected, delta, message);
     }
 
     public void waitForLoaderToDisappear() {
@@ -239,8 +262,10 @@ public abstract class BaseSteps extends AbstractWebPage {
         List<WebElement> windowElements = locateElements("dataWindow");
         log.info("Window Element Size = " + windowElements.size() + " window elements --> " + windowElements);
         for (WebElement windowElement : windowElements) {
-            String key = windowElement.findElement(By.xpath(WINDOW_KEYS)).getText();
-            String value = windowElement.findElement(By.xpath(WINDOW_VALUES)).getText();
+            By windowKeyBy = getByFromLocator(getLocator(WINDOW_KEYS));
+            By windowValueBy = getByFromLocator(getLocator(WINDOW_VALUES));
+            String key = windowElement.findElement(windowKeyBy).getText();
+            String value = windowElement.findElement(windowValueBy).getText();
             windowMap.put(key, value);
         }
         log.info("Window map--> " + windowMap);
@@ -263,6 +288,16 @@ public abstract class BaseSteps extends AbstractWebPage {
         }
     }
 
+    public static String formatDecimal(double number) {
+        try {
+            DecimalFormat decimalFormat = new DecimalFormat("#.00");
+            return decimalFormat.format(number);
+        } catch (NumberFormatException e) {
+            log.info("Invalid number format or the number is already in the expected format");
+            return String.valueOf(number);
+        }
+    }
+
     public String formatDecimalWithComma(String number) {
         try {
             double value = Double.parseDouble(number);
@@ -274,28 +309,52 @@ public abstract class BaseSteps extends AbstractWebPage {
         }
     }
 
+    public static String convertDateFormat(String originalDate) {
+        // Create a SimpleDateFormat for parsing the original date
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        // Parse the original date string into a Date object
+        Date date = null;
+        try {
+            date = inputFormat.parse(originalDate);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Create a SimpleDateFormat for the desired output format
+        SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MMM-yyyy");
+
+        // Format the date into the desired format and return it
+        return outputFormat.format(date);
+    }
+
     public String getOrderSubstring(String input) {
         String[] parts = input.split("-");
         return parts[1];
     }
 
-    public String convertPaisaToRupees(int paisa) {
-
-        double rupees = paisa / 100.0;
-        DecimalFormat df = new DecimalFormat("0.00");
-        return df.format(rupees);
-    }
-
-    public Double getTDSAmount(Double baseAmount, int rate) {
-        Double tdsAmount = baseAmount * rate / 100;
-        tdsAmount = Math.ceil(tdsAmount);
-        log.info("TDS Amount --> " + tdsAmount);
-//        ExtentCucumberAdapter.addTestStepLog("TDS Amount --> " + tdsAmount);
-        return tdsAmount;
-    }
-
     public String getCurrentTimeStamp() {
         return String.valueOf(new java.sql.Timestamp(System.currentTimeMillis()).getTime());
+    }
+
+    public double toDouble(String input, double defaultValue) {
+        if (input == null || input.isEmpty()) {
+            return defaultValue;
+        }
+
+        // Remove any non-numeric characters except '.'
+        String sanitizedInput = input.replaceAll("[^0-9.]", "");
+
+        // Handle cases where sanitized input becomes empty
+        if (sanitizedInput.isEmpty() || sanitizedInput.equals(".")) {
+            return defaultValue;
+        }
+
+        try {
+            return Math.round(Double.parseDouble(sanitizedInput) * 100.0) / 100.0;
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     protected List<String> getAllDownloadedFiles() {
@@ -312,7 +371,7 @@ public abstract class BaseSteps extends AbstractWebPage {
                 log.info(String.format("Downloaded %s of size %s", downloadedAbsFilePath.toFile().getAbsolutePath(), fileSize));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.FINE, "Get all downloaded files", e);
         }
         sleep(5000);
         log.exiting(downloadedFiles);
@@ -349,5 +408,17 @@ public abstract class BaseSteps extends AbstractWebPage {
                 log.info(e.getMessage());
             }
         }
+    }
+
+    public String getLedgerStatementKey(Map<String, String> tableData) {
+        String ledgerStatementKey;
+        if (tableData != null) {
+            ledgerStatementKey = tableData.get(DOCUMENT_ID).concat("|").concat(tableData.get(CREATOR_ID_DOC)).concat("|").concat(tableData.get(DOCUMENT_TYPE));
+        } else {
+            log.info("Ledger Statement Key Value is Null");
+            return null;
+        }
+        log.info("Ledger Statement Key Value --> " + ledgerStatementKey);
+        return ledgerStatementKey;
     }
 }

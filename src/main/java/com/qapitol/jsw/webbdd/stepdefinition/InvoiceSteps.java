@@ -8,8 +8,7 @@ import io.cucumber.java.en.Then;
 
 import java.util.Map;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.*;
 
 public class InvoiceSteps extends BaseSteps {
     private final SimpleLogger log = SauronLogger.getLogger();
@@ -29,22 +28,22 @@ public class InvoiceSteps extends BaseSteps {
         selectRecordFromTable(invoiceNumber);
         Map<String, String> invoiceDataMap = getDataFromWindow("dataWindowElement");
         String invoiceAmount = invoiceDataMap.get("Invoice amount");
+        assertEquals(formatDecimal(invoiceAmount), invoiceAmount);
         log.info("Invoice Amount is: " + invoiceAmount);
         popUpClose();
-        assertEquals(formatDecimal(Double.toString(updateShipmentResp.getShipmentInvoiceDetails().getTotalInvoicedAmount())),invoiceAmount);
+        assertEquals(formatDecimal(Double.toString(updateShipmentResp.getShipmentInvoiceDetails().getTotalInvoicedAmount())), invoiceAmount);
 
-//        ExtentCucumberAdapter.addTestStepLog("Order Invoice Amount validation is done. Invoice Number: " + Context.invoiceNumber + "\n And Invoice Amount: " + invoiceAmount);
-//
-//        assertTrue(invoiceDataMap.get("Customer Name").contains(Context.customerName));
-//        assertEquals("Invoice Number validation failed", Context.invoiceNumber,invoiceDataMap.get("Invoice Number"));
-//        assertEquals("Buyer Order Number validation failed", Context.buyerOrderNumber,invoiceDataMap.get("Order Number"));
-//        assertEquals("Invoice Date validation failed", ZohoUtils.convertDateFormat(Context.invoiceDate),invoiceDataMap.get("Invoice Date"));
-//        asserts.assertEquals("INVOICE CREATION TYPE validation failed", INVOICE_CREATION_TYPE,invoiceDataMap.get("Invoice Creation Type"));
-//        asserts.assertEquals("Invoice Status validation failed", STATUS, invoiceDataMap.get("Status"));
-//        assertEquals("INVOICE STATUS validation failed", INVOICE_STATUS,invoiceDataMap.get("Invoice Status"));
-//        asserts.assertNotNull("ID validation failed", invoiceDataMap.get("ID"));
+        String buyerOrderNumber = (String) ContextData.getDataFromKey("orderNumber");
+
+//        ExtentCucumberAdapter.addTestStepLog("Order Invoice Amount validation is done. Invoice Number: " + invoiceNumber + "\n And Invoice Amount: " + invoiceAmount);
+
+        assertTrue(invoiceDataMap.get("Customer Name").contains((String) ContextData.getDataFromKey("customerName")));
+        assertEquals(invoiceDataMap.get("Invoice Number"), invoiceNumber, "Invoice Number validation failed");
+        assertEquals(invoiceDataMap.get("Order Number"), buyerOrderNumber, "Buyer Order Number validation failed");
+        assertEquals(invoiceDataMap.get("Invoice Date"), convertDateFormat((String) ContextData.getDataFromKey("invoiceDate")), "Invoice Date validation failed");
+
 //        ExtentCucumberAdapter.addTestStepLog("Invoice Details Entry In Zoho Creator:--> " +invoiceDataMap);
-//        log.info("Zoho Invoice Validation successful");
+        log.info("Zoho Invoice Validation successful");
         log.exiting();
     }
 
@@ -54,20 +53,6 @@ public class InvoiceSteps extends BaseSteps {
         pageRefresh();
         sleep(3000);
     }
-
-//    public Map<String, String> validateInvoiceData(String cellValue) {
-//        Map<String, String> invoiceData = new TableUtils(driver).getRowDataAsMap(cellValue);
-//        log.info("==========Validating Invoice Data in Zoho Creator=========");
-//        return invoiceData;
-//    }
-
-//    public void selectRecordFromTable(String invoiceNumber) {
-//        ZohoUtils.selectRowUsingObject(driver,invoiceNumber, 20);
-//    }
-//
-//    public String getInvoiceAmountFromOverviewWindow() {
-//        return invoiceAmount.getText();
-//    }
 
     public void selectRecordFromTable(String invoiceNumber) {
         selectRowUsingObject(invoiceNumber, 20);
@@ -81,7 +66,7 @@ public class InvoiceSteps extends BaseSteps {
         String invoiceNumber = updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceNumber();
         searchStringContains(INVOICE_NUMBER, invoiceNumber);
         selectRecordFromTable(invoiceNumber);
-        Map<String,String> invoiceWindowData = getDataFromWindow("dataWindowElement");
+        Map<String, String> invoiceWindowData = getDataFromWindow("dataWindowElement");
         ContextData.addData("BookInvoiceID", invoiceWindowData.get("Book Invoice ID"));
         log.info("Book Invoice ID:" + ContextData.getDataFromKey("BookInvoiceID"));
         assertNotNull(ContextData.getDataFromKey("BookInvoiceID"), "Book Invoice Id:");
