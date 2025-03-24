@@ -1,0 +1,12 @@
+{
+  "CreditUtilisation": 1.0E9,
+  "creditAmount": 14160.0,
+  "creditAvailable": 1.0E9,
+  "creditDays": "",
+  "creditExpirationDate": "",
+  "creditInstrument": "",
+  "creditLimitReferenceId": "",
+  "creditType": "",
+  "isCreditRequired": "",
+  "penalInterest": 0.0
+}
