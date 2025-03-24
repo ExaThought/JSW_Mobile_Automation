@@ -68,3 +68,39 @@ searchCheckbox:
 ### To create new Step defs
 
 After creating a new class extend it with `BaseSteps` class
+
+### API
+
+1. To create a new API request POJO place a sample in a JSON file naming it using the eventual POJO name in `src/test/resources/api_responses` folder. The generated POJO classes would be available in the `src/target/generated-sources` folder.
+
+Command to generate is `mvn clean compile`.
+
+Note: If it fails in creating try to simplify it by removing the key and their value/values and put them in a seperate file where the name of the file is the same as the key name.
+
+2. Once the POJOS are generated specify [OrderApi.java](src/main/java/com/qapitol/jsw/apitest/apis/OrderApi.java)the API path and other relevant things like content type etc in an interface class.
+
+Ex: Here it tells that all the API's requests are of JSON. The `getJOMSOrder` provides a response in the `x-ndjson` format.
+The API `createOrderViaSLOAPI` takes the `CreateOrder` objext as JSON body and provides response as `CreateOrderResp` POJO. 
+If path param needs to be provided then add the wildcard as shown in the path and specify the annotation `@PathParam("orderNumber")` whose value is the wildcard entry.
+
+```java
+@Consumes(APPLICATION_JSON)
+public interface OrderApi {
+    @POST
+    @Path("/data-sync/import/sales-opp")
+    @Produces(APPLICATION_JSON)
+    CreateOrderResp createOrderViaSLOAPI(CreateOrder createOrder);
+
+    @GET
+    @Path("oms/order/v2/number/{orderNumber}")
+    @Produces("application/x-ndjson")
+    GetOMSOrderResp getJOMSOrder(@PathParam("orderNumber") String orderNumber);
+}
+```
+
+3. The credentials i.e. the tokens can be specified in the `LoginApiImpl` class. 
+
+
+### Migration methods
+
+1. Use `migrateToTestNgAssertEquals` to move away from Junit assertEquals to TestNg.
