@@ -2,6 +2,7 @@ package com.qapitol.jsw.webbdd.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.ExcelUtils;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.data.ContextData;
@@ -10,13 +11,9 @@ import com.qapitol.sauron.logging.SimpleLogger;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import org.apache.commons.lang3.StringUtils;
-import org.openqa.selenium.HasDownloads;
 import org.openqa.selenium.Keys;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +21,7 @@ import java.util.Map;
 
 import static com.qapitol.jsw.utils.RandomStringGenerator.generateRandomString;
 import static org.testng.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
 public class PayoutSteps extends BaseSteps {
     private final SimpleLogger log = SauronLogger.getLogger();
@@ -38,6 +36,13 @@ public class PayoutSteps extends BaseSteps {
     public static final String DOCUMENT_ID1 = "Document Id";
     public static final String SUCCESS = "Success";
     public static final String PAYOUT_NUMBER = "Payout number";
+    public static final String PAYOUT_STATUS = "Payout status";
+    public static final String DOCUMENT_AMOUNT = "Document amount";
+    public static final String BASE_AMOUNT = "Base amount";
+    public static final String TDS = "TDS";
+    public static final String ZERO = "0.00";
+    public static final String GST_AMOUNT = "GST amount";
+    public static final String PAYOUT_TYPE = "Payout type";
 
     public static final String PENDING_PAYOUTS_PATH = "#Page:Payouts_Pending";
     public static final String APPROVED_PAYOUTS_PATH = "#Page:Payouts_Approved";
@@ -55,15 +60,12 @@ public class PayoutSteps extends BaseSteps {
         UpdateShipmentResp updateShipmentResp = getPojoFromContextData("updateShipmentResp", UpdateShipmentResp.class);
         String invoiceAmount = String.valueOf(updateShipmentResp.getShipmentInvoiceDetails().getTotalInvoicedAmount());
 
-        String orderIdSubstring = getOrderSubstring((String) ContextData.getDataFromKey("orderNumber"));
         switch (arg0) {
             case CASHBACK:
                 if (StringUtils.isNotEmpty((String) ContextData.getDataFromKey("totalCashbackAmount"))) {
                     payoutAmount = Double.parseDouble((String) ContextData.getDataFromKey("totalCashbackAmount"));
                 } else {
                     payoutAmount = orderCreation.fetchCashbackAmount();
-//                    ContextData.addData("", "CBK-" + orderIdSubstring + "-0");
-//                    Context.buyerOrderNumber = ;
                 }
                 break;
             case SELLER:
@@ -72,11 +74,10 @@ public class PayoutSteps extends BaseSteps {
             case REFUND:
                 int orderAmount = (Integer) ContextData.getDataFromKey("orderAmount");
                 if ("Cancelled".equalsIgnoreCase((String) ContextData.getDataFromKey("orderStatus"))) {
-                    payoutAmount = Double.parseDouble(convertPaisaToRupees(orderAmount));
+                    payoutAmount = Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(orderAmount));
                 } else {
-                    payoutAmount = Double.parseDouble(convertPaisaToRupees(orderAmount)) - Double.parseDouble(invoiceAmount);
+                    payoutAmount = Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(orderAmount)) - Double.parseDouble(invoiceAmount);
                 }
-                //  Context.buyerOrderNumber = "REF-" + orderIdSubstring + "-0";
                 break;
         }
         log.info(arg0 + " Payout amount --> " + payoutAmount);
@@ -112,7 +113,6 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToApprovedPayoutTabAndDoBankExportInDeutscheBankFormat(String arg0) {
         log.entering();
         navigateToApprovedPayoutsTab();
-      //  clearSearch();
         searchStringContains(PAYOUT_NUMBER, (String) ContextData.getDataFromKey("payoutNumber"));
         double payoutAmount = (double) ContextData.getDataFromKey("payoutAmount");
         validatePayoutDetails(arg0, APPROVED, payoutAmount);
@@ -162,20 +162,17 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToHistoricalPayoutTabAndValidateTheEntry(String arg0) {
         log.entering();
         navigateToHistoricalPayoutsTab();
-//        clearSearch();
-//        pageRefresh();
-        sleep(999);
-        searchStringContains(PAYOUT_NUMBER, (String) ContextData.getDataFromKey("payoutNumber"));
+        sleep(3000);
+        searchStringContains(ORDER_NUMBER, (String) ContextData.getDataFromKey("orderNumber"));
         double payoutAmount = (double) ContextData.getDataFromKey("payoutAmount");
         Map<String, String> payoutData = validatePayoutDetails(arg0, SUCCESS, payoutAmount);
         clickOnTriggerLedgerEntry();
-//        validateCustomerBankDetails(payoutData);
         log.exiting();
     }
 
     // Pending Payout tab action methods
     public void navigateToPendingPayoutsTab() {
-        sleep(999);
+        sleep(2000);
         zohoCreatorNavigation(PENDING_PAYOUTS_PATH);
         log.info("Navigated to Pending Payout Tab");
     }
@@ -191,19 +188,22 @@ public class PayoutSteps extends BaseSteps {
 //        assertEquals("Payout status verification failed", payoutStatus, payoutData.get(PAYOUT_STATUS));
 //        assertEquals("GSTIN verification failed", Context.gstin, payoutData.get(GSTIN));
 //        assertEquals("Payee name", Context.customerName, payoutData.get(PAYEE_NAME));
+        log.info("Payout entry details for " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
+//        ExtentCucumberAdapter.addTestStepLog("Payout details map => " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
+        String payoutNumber = payoutData.get(PAYOUT_NUMBER);
+        ContextData.addData("payoutNumber", payoutNumber);
 
+        assertEquals(payoutData.get(PAYOUT_STATUS), payoutStatus, "Payout status verification failed");
         if (payoutType.equalsIgnoreCase(CASHBACK)) {
             validateCashbackPayoutDetails(payoutData, amount);
         } else if (payoutType.equalsIgnoreCase(REFUND)) {
             validateRefundPayoutDetails(payoutData, amount);
         } else if (payoutType.equalsIgnoreCase(SELLER)) {
-            log.info("Seller payout validation");
+            validateSellerPayoutDetails(payoutData, amount);
+            log.info("Seller payout validation passed");
         }
-        log.info("Payout entry details for " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
-//        ExtentCucumberAdapter.addTestStepLog("Payout Validation successful for "+payoutType+ " with status as "+payoutStatus + " are --> "+payoutData);
-
         log.info("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
-//        ExtentCucumberAdapter.addTestStepLog("Payout Validation successful for "+payoutType+ " with status as "+payoutStatus);
+//        ExtentCucumberAdapter.addTestStepLog("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
         return payoutData;
     }
 
@@ -212,65 +212,66 @@ public class PayoutSteps extends BaseSteps {
         double totalCashbackAmount = Double.parseDouble((String) ContextData.getDataFromKey("totalCashbackAmount"));
 //        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         log.info("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
-        double tDSAmount = getTDSAmount(totalCashbackAmount, 10);
+        double tDSAmount = CurrencyUtils.getNewInstance().getTDSAmount(totalCashbackAmount, 10);
         String cashBackPayoutAmount = formatDecimalWithComma(String.valueOf(totalCashbackAmount - tDSAmount));
         ContextData.addData("cashBackPayoutAmount", cashBackPayoutAmount);
-//        assertEquals("Document amount verification failed", ZohoUtils.formatDecimal(totalCashbackAmount), payoutData.get(DOCUMENT_AMOUNT));
-//        assertEquals("Base amount verification failed", ZohoUtils.formatDecimal(totalCashbackAmount), payoutData.get(BASE_AMOUNT));
-//        assertEquals("TDS amount verification failed", ZohoUtils.formatDecimal(tDSAmount), payoutData.get(TDS));
-//        assertEquals("GST amount verification failed", ZERO, payoutData.get(GST_AMOUNT));
-//        assertEquals("Payout amount verification failed", cashBackPayoutAmount, payoutData.get(PAYOUT_AMOUNT));
+        assertEquals(payoutData.get(DOCUMENT_AMOUNT), formatDecimal(totalCashbackAmount), "Document amount verification failed");
+        assertEquals(payoutData.get(BASE_AMOUNT), formatDecimal(totalCashbackAmount), "Base amount verification failed");
+        migrateToTestNgAssertEquals("TDS amount verification failed", formatDecimal(tDSAmount), payoutData.get(TDS));
+        migrateToTestNgAssertEquals("GST amount verification failed", ZERO, payoutData.get(GST_AMOUNT));
+        migrateToTestNgAssertEquals("Payout amount verification failed", cashBackPayoutAmount, payoutData.get(PAYOUT_AMOUNT));
 //        ExtentCucumberAdapter.addTestStepLog("TDS Amount: " + tDSAmount);
         log.info("TDS Amount: " + tDSAmount);
     }
 
     public void validateRefundPayoutDetails(Map<String, String> payoutData, double refundAmount) {
 
-        assertEquals("Payout amount verification failed", formatDecimal(String.valueOf(refundAmount)), payoutData.get(PAYOUT_AMOUNT));
+        migrateToTestNgAssertEquals("Payout amount verification failed", formatDecimal(String.valueOf(refundAmount)), payoutData.get(PAYOUT_AMOUNT));
 //        ExtentCucumberAdapter.addTestStepLog("Customer Order Refund Amount: " + refundAmount);
         log.info("Customer Order Refund Amount: " + refundAmount);
     }
 
+    public void validateSellerPayoutDetails(Map<String, String> payoutData, double amount) {
+        double invoiceAmount = (double) ContextData.getDataFromKey("invoiceAmount");
+        double baseAmount = CurrencyUtils.getNewInstance().calculateBaseAmount(invoiceAmount, 0.18);
+        double tDSAmount = CurrencyUtils.getNewInstance().getTDSAmount(baseAmount, 0.1);
+        double tCSAmount = CurrencyUtils.getNewInstance().getTDSAmount(baseAmount, 0.5);
+        migrateToTestNgAssertEquals("payout type validation", SELLER, payoutData.get(PAYOUT_TYPE));
+        migrateToTestNgAssertEquals("Document amount verification failed", toDouble(String.valueOf(invoiceAmount), 0), toDouble(payoutData.get(DOCUMENT_AMOUNT), 0), 0.01);
+        migrateToTestNgAssertEquals("Base amount verification failed", baseAmount, toDouble(payoutData.get(BASE_AMOUNT), 0), 0.01);
+        migrateToTestNgAssertEquals("TDS amount verification failed", tDSAmount, toDouble(payoutData.get(TDS), 0), 0.01);
+        migrateToTestNgAssertEquals("TCS amount verification failed", tCSAmount, toDouble(payoutData.get("TCS (amount has been deducted for the document)"), 0), 0.01);
+        migrateToTestNgAssertEquals("GST amount verification failed", baseAmount * 0.18, toDouble(payoutData.get(GST_AMOUNT), 0), 0.01);
+        migrateToTestNgAssertEquals("Payout amount verification failed", toDouble(String.valueOf(invoiceAmount), 0), toDouble(payoutData.get(PAYOUT_AMOUNT), 0), 0.01);
+        assertTrue("Document number verification failed", payoutData.get(DOCUMENT_NUMBER).contains((String) ContextData.getDataFromKey("invoiceNumber")));
+    }
+
     public void clickOnPayoutCheckbox() {
-  //      sleep(2000);
-//        hover("payoutCheckbox");
+        sleep(2000);
         tap("payoutCheckbox");
-//        helper.findElement(By.xpath(PAYOUT_CHECKBOX)).click();
         log.info("Selected the Payout entry");
     }
 
     public void clickOnAction() {
-//        SeleniumHelper.staticWait(2000);
         waitAndClickOn("actionBtn");
-//        helper.findElement(By.xpath(ACTION_BTN)).click();
         log.info("Clicked on Action button after selecting payout entry");
     }
 
     public void clickOnApprove() {
-//        SeleniumHelper.staticWait(2000);
-//        WebElement approveBtn = helper.findElement(By.xpath(APPROVE_BTN));
-//        waitAndClickOn("approveBtn");
         tap("approveBtn");
-//        helper.click(approveBtn, "Approve button");
         pageRefresh();
         log.info("Clicked on payout approve button");
     }
 
     public void navigateToApprovedPayoutsTab() {
-//        sleep(2000);
         zohoCreatorNavigation(APPROVED_PAYOUTS_PATH);
         log.info("Navigated to Approve Payout Tab");
     }
 
     public void clickOnBankExportAndConfirm() {
         clickOnPayoutCheckbox();
-//        SeleniumHelper.staticWait(2000);
-//        waitAndClickOn("bankExportBtn");
         tap("bankExportBtn");
         tap("exportYesBtn");
-//        waitAndClickOn("exportYesBtn");
-//        helper.findElement(By.xpath(BANK_EXPORT_BTN)).click();
-//        helper.findElement(By.xpath(EXPORT_YES_BTN)).click();
         log.info("Clicked on Bank export and confirmed");
     }
 
@@ -284,7 +285,7 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToExportPayoutsDBBankTab() {
         zohoCreatorNavigation(EXPORT_PAYOUTS_DEUTSCHE_BANK_PATH);
         clearSearch();
-     //   sleep(2000);
+        sleep(2000);
         log.info("Navigated to export payout DB bank");
     }
 
@@ -308,13 +309,12 @@ public class PayoutSteps extends BaseSteps {
 //        ExtentCucumberAdapter.addTestStepLog("Export payout Filename -->"+ fileName);
         waitAndSetText("finalExportBtn", fileName + Keys.ENTER);
         tap("finalExport");
-//        jsClick("finalExport");
         log.info("Clicked on final export button");
         sleep(5000);
         List<String> downloadedFiles = getAllDownloadedFiles();
-        if(!downloadedFiles.isEmpty()){
-            for (String filePath: downloadedFiles){
-                if(filePath.contains(fileName)) {
+        if (!downloadedFiles.isEmpty()) {
+            for (String filePath : downloadedFiles) {
+                if (filePath.contains(fileName)) {
                     fileName = filePath;
                     break;
                 }
@@ -336,7 +336,7 @@ public class PayoutSteps extends BaseSteps {
         List<Map<String, String>> rows = new ArrayList<>();
         rows.add(row);
 
-        System.out.println("updatePayoutExcel inputFilePath:"+inputFilePath);
+        System.out.println("updatePayoutExcel inputFilePath:" + inputFilePath);
         ExcelUtils excelUtils = ExcelUtils.getNewInstance();
         excelUtils.addColumnAndValues(inputFilePath, headers, rows);
         excelUtils.copyColumnValueToAnotherCol(inputFilePath, "System Ref No.", "Instrument Refrence No");
@@ -347,19 +347,18 @@ public class PayoutSteps extends BaseSteps {
     }
 
     public void navigateToImportPayoutsStatusDeutscheBankTab() {
-        sleep(999);
+        sleep(2000);
         zohoCreatorNavigation(IMPORT_PAYOUTS_DEUTSCHE_BANK_PATH);
         log.info("Navigated to import payout DB bank");
     }
 
     public void importPayoutUpdatedFile(String fileName) {
-        sleep(999);
+        sleep(2000);
         waitAndClickOn("moreActionBtn");
         waitAndClickOn("importBtn");
 
         sleep(2000);
         Grid.driver().switchTo().frame(locateElement("sheet2Frame"));
-//        String valueText = System.getProperty("user.home") + "\\Downloads\\" + fileName + ".xlsx";
         waitAndSetText("localStorageBtn", fileName);
         waitAndClickOn("sideCloseBtn");
         waitAndClickOn("importReportBtn");
@@ -378,21 +377,17 @@ public class PayoutSteps extends BaseSteps {
     }
 
     public void navigateToHistoricalPayoutsTab() {
-        sleep(999);
+        sleep(2000);
         zohoCreatorNavigation(HISTORICAL_PAYOUTS_PATH);
         log.info("Navigated to Historical Payout Tab");
     }
 
-    public void clickOnTriggerLedgerEntry(){
+    public void clickOnTriggerLedgerEntry() {
         popUpClose();
         clickOnPayoutCheckbox();
-//        waitAndClickOn("");
-        sleep(999);
         waitAndClickOn("triggerLedgerEntry");
-//        helper.click(triggerLedgerEntryBtn, "Trigger ledger entry");
-        sleep(999);
+        sleep(1000);
         waitAndClickOn("confirmBtn");
-//        helper.click(confirmFreezeButton, "submit button");
         sleep(2000);
         log.info("Clicked on trigger ledger entry and confirm button in historical payout entry");
         pageRefresh();

@@ -17,6 +17,7 @@ import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoice;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoiceResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipment;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.RandomStringGenerator;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.data.Data;
@@ -30,7 +31,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Thread.sleep;
 import static java.util.Objects.nonNull;
 import static org.testng.Assert.*;
 
@@ -83,10 +83,17 @@ public class OrderImpl extends BaseApiImpl {
         ContextData.addData("orderAmount", getOrderResp.getOrderAmount().getCentAmount());
         ContextData.addData("advanceAmountInPaisa", getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount());
 
+        log.info("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
+//        ExtentCucumberAdapter.addTestStepLog("Buyer name --> " + jsonPath.get("buyerDetails.name") + " And Seller name --> " + jsonPath.get("childOrders[0].sellerName"));
+        log.info("Order status --> " + getOrderResp.getOrderStatus() + " And Payment status --> " + getOrderResp.getPaymentStatus() + " And Advance percentage --> " + getOrderResp.getAdvancePercentage());
+//        ExtentCucumberAdapter.addTestStepLog("Order status --> " + jsonPath.get("orderStatus") + " And Payment status --> " + jsonPath.get("paymentStatus") + " And Advance percentage --> " + jsonPath.get("advancePercentage"));
+        log.info("Total Order Amount --> " + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getOrderAmount().getCentAmount()) + "And Advance payment of order amount -->" + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount()));
+//        ExtentCucumberAdapter.addTestStepLog("Total Order Amount --> " + CurrencyUtils.getNewInstance().convertPaisaToRupees(Context.orderAmount) + " And Advance payment of order amount -->" + CurrencyUtils.getNewInstance().convertPaisaToRupees(Context.advanceAmountInPaisa));
+//
         return getOrderResp;
     }
 
-    public GetOMSOrderResp getSellerOrderNumber(){
+    public GetOMSOrderResp getSellerOrderNumber() {
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 
@@ -99,7 +106,7 @@ public class OrderImpl extends BaseApiImpl {
         return getOrderResp;
     }
 
-    public void getShipmentForOrderNumber(){
+    public void getShipmentForOrderNumber() {
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 
@@ -130,21 +137,22 @@ public class OrderImpl extends BaseApiImpl {
 
         //Calling the get order API
         ConfirmOrderResp confirmOrderResp = orderApi.putConfirmOrder(confirmOrder);
-        assertNotNull(confirmOrderResp,"unable to confirm the order");
+        assertNotNull(confirmOrderResp, "unable to confirm the order");
     }
 
     public void validateTheOrderStatus(String status) throws IOException, InterruptedException {
+        String orderNumber = (String) ContextData.getDataFromKey("orderNumber");
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 
         //Calling the get order API
-        GetOMSOrderResp getOrderResp = orderApi.getJOMSOrder((String) ContextData.getDataFromKey("orderNumber"));
-        assertEquals(ContextData.getDataFromKey("orderNumber"), getOrderResp.getOrderNumber(), "Order id mismatching");
+        GetOMSOrderResp getOrderResp = orderApi.getJOMSOrder(orderNumber);
+        assertEquals(orderNumber, getOrderResp.getOrderNumber(), "Order id mismatching");
 
         SoftAssert softAssert = new SoftAssert();
         softAssert.assertEquals("Order state not in placed or created state", getOrderResp.getOrderStatus(), status);
         ContextData.addData("orderStatus", getOrderResp.getOrderStatus());
-//        log.info("Order status --> " + status + " for order number : " + Context.buyerOrderNumber);
+        log.info("Order status --> " + status + " for order number : " + orderNumber);
 //        ExtentCucumberAdapter.addTestStepLog("Order status --> " + status + " for order number : " + Context.buyerOrderNumber);
     }
 
@@ -177,7 +185,7 @@ public class OrderImpl extends BaseApiImpl {
 
         Response statusMsg = orderApi.createDORelease(psId);
         assertEquals(statusMsg.getStatus(), 200, "unable to release do");
-//        log.info("Release do response : " + dOReleaseResponse.getBody().asString());
+        log.info("Release do response : " + statusMsg.getEntity().toString());
 //        log.info("DO created and released with quantity --> " + response.getBody().jsonPath().get("psLineItemsDetails[0].plannedQuantity"));
 //        ExtentCucumberAdapter.addTestStepLog("DO created and released with quantity --> " + response.getBody().jsonPath().get("psLineItemsDetails[0].plannedQuantity") +"MT");
     }
@@ -239,9 +247,8 @@ public class OrderImpl extends BaseApiImpl {
             prev = status;
 
             response = callShipmentUpdateApi(updateShipment);
-            System.out.println("UpdateShipment:"+response);
+            System.out.println("UpdateShipment:" + response);
             assertNotNull(response, "unable to update the shipment");
-//            assertEquals(response.getStatus(), 200, "unable to update the shipment" + status);
         }
         return response;
 //        sleep(20000);
@@ -254,14 +261,14 @@ public class OrderImpl extends BaseApiImpl {
         //Calling the get order API
         GetOMSShipmentOrderResp getOMSShipmentOrderResp = orderApi.getJOMSShipmentOrder((String) ContextData.getDataFromKey("orderNumber"));
         InvoiceDelivery invoiceDelivery = getOMSShipmentOrderResp.getSellerShipmentsInfo().get(0).getShipmentDetails().get(0).getLineItemsDetails().get(0).getInvoiceDelivery();
-        if(nonNull(invoiceDelivery)){
+        if (nonNull(invoiceDelivery)) {
             return getOMSShipmentOrderResp.getSellerShipmentsInfo().get(0).getShipmentDetails().get(0).getLineItemsDetails().get(0).getInvoiceDelivery().getId();
         }
         return null;
     }
 
-    public UpdateShipmentResp callShipmentUpdateApi(UpdateShipment updateShipment){
-        System.out.println("updateShipment:"+updateShipment.toString());
+    public UpdateShipmentResp callShipmentUpdateApi(UpdateShipment updateShipment) {
+        System.out.println("updateShipment:" + updateShipment.toString());
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 
@@ -276,8 +283,6 @@ public class OrderImpl extends BaseApiImpl {
         ShipmentInvoice shipmentInvoice = new ShipmentInvoice();
         shipmentInvoice.setShipmentNumber(shipmentNumber);
         ShipmentInvoiceResp shipmentInvoiceResp = orderApi.createShipmentInvoice(shipmentInvoice);
-//        System.out.println("createShipmentInvoiceResp:"+ shipmentInvoiceResp.readEntity(String.class));
-//        assertEquals(shipmentInvoiceResp.getStatus(), 200, "unable to post the invoice");
         assertNotNull(shipmentInvoiceResp, "unable to post the invoice");
         setPojoToContextData("shipmentInvoice", shipmentInvoiceResp);
     }
@@ -295,26 +300,20 @@ public class OrderImpl extends BaseApiImpl {
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 
-        List<LineItemDetails> lineItemDetails = orderApi.getLineItemDetails((String)ContextData.getDataFromKey("orderNumber"));
-        System.out.println("### Output:"+lineItemDetails);
-        System.out.println("### Output:"+lineItemDetails.size());
+        List<LineItemDetails> lineItemDetails = orderApi.getLineItemDetails((String) ContextData.getDataFromKey("orderNumber"));
         double cashbackAmount = 0.0D;
-        if(nonNull(lineItemDetails.get(0).getCashbackDetails())){
+        if (nonNull(lineItemDetails.get(0).getCashbackDetails())) {
             cashbackAmount = lineItemDetails.get(0).getCashbackDetails().getCashbackRate();
         } else {
             ContextData.addData("cashbackAmount", cashbackAmount);
         }
         String orderQuantity = lineItemDetails.get(0).getProductInfo().getPrimaryQuantity().replace(" MT", "");
+        cashbackAmount = lineItemDetails.get(0).getCashbackDetails().getCashbackRate();
         ContextData.addData("orderQuantity", orderQuantity);
-//        double cashbackAmount = jsonPath.getDouble("[0].cashbackDetails.cashbackRate");
-//        assertEquals("Order Sync Failed", 200, response.getStatusCode());
-//        JsonPath jsonPath = response.getBody().jsonPath();
-//        double cashbackAmount = jsonPath.getDouble("[0].cashbackDetails.cashbackRate");
-//        Context.orderQuantity = jsonPath.get("[0].productInfo.primaryQuantity");
-//        Context.orderQuantity = Context.orderQuantity.replace(" MT", "");
-//        Context.cashbackAmount= cashbackAmount;
-//        log.info("Cashback Amount Per Unit: " + cashbackAmount);
-//        log.info("Order Quantity : " + Context.orderQuantity);
+        ContextData.addData("cashbackAmount", cashbackAmount);
+
+        log.info("Cashback Amount Per Unit: " + cashbackAmount);
+        log.info("Order Quantity : " + orderQuantity);
 //        ExtentCucumberAdapter.addTestStepLog("Cashback Amount Per Unit: " + cashbackAmount +" "+ "and Order Quantity : " + Context.orderQuantity);
         return cashbackAmount;
     }

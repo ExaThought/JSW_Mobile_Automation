@@ -3,3 +3,128 @@
 Prerequestites
 1. Get credentials to access JSW nexus
 2. Create directory name `download_dir` in project directory.
+
+## How to execute tests
+
+Ways to execute
+1. Maven with testng xml file 
+`mvn test -DsuiteXmlFile=<testng xml file>`
+2. Maven execute via JSW Nexus credentials
+`mvn test -DsuiteXmlFile=<testng xml file> -s settings.xml -Dnexus-username=<username> -Dnexus-password=<password>`
+3. To run locally right-click on the testng xml file. To run a specific test tag it and specify the `cucumber.filter.tags` testng parameter value to the tag.
+Ex: If a test is tagged as `@smoke` specify the value as `@smoke` for the testng parameter. To ignore a test use the tag `@ignore` as part of the testng parameter. Please refer cucumber docs or use LLM-chat for more complex filtering.
+
+## How to script
+- Add scenarios in feature files
+- Specify the step defs i.e. gherkin steps in package named `src/main/java/com.qapitol.jsw.webbdd.stepdefinition`
+
+### Data
+1. Specify the global property values in `global_qa.properties` file. To access these values in code use `Config.getConfigProperty` or `Config.getIntConfigProperty` etc
+2. You can specify the test data for the `qa` env in the `src/test/resources/data/qa/` folder. If you want to specify the data for all the testcases put them in `default-data.yaml` file. If you need them specific to a test case then provide it via the test id in the yaml file under the `testdata` folder.
+
+Ex: The values in the yaml file under the `testdata` folder could be as follows,
+
+- testCaseId: "id-001"
+  username: "aditya"
+- testCaseId: "id-002"
+  username: "venkat"
+
+If you want to specify the payload file i.e the json file from the `src/test/resources/api/request` folder then specify as below
+
+3. To store or retrieve generated data from the application use ContextData.add
+
+Store data:
+String
+```java
+ContextData.addData("gstin","Hello world");
+```
+Store Complex POJO:
+```java
+setPojoToContextData("shipmentInvoice", shipmentInvoiceResp);
+```
+Retrieve data:
+```java
+ContextData.getDataFromKey(key);
+```
+Retrieve Complex POJO:
+```java
+setPojoToContextData("updateShipmentResp", updateShipmentResp);
+```
+
+Note: Above functions are thread safe and can be used when running tests in parallel.
+
+```yaml
+CREATE_ORDER_PAYLOAD: "create_order_payload"
+CONFIRM_ORDER_PAYLOAD: "confirm_order"
+CREATE_DO_PAYLOAD: "create_do"
+CREATE_SHIPMENT: "create_shipment"
+UPDATE_SHIPMENT: "update_shipment"
+```
+The value represents the file name.
+
+### Locaters
+
+Specify the locators specific to the page where it would be needed. If you need the locator made available to all the pages then specify them in the `basesteps.yaml` file.
+
+Ex: `windowKeys` & `windowValues` are keys which can be accessed from code via function `getLocater("windowKeys")`
+
+```yaml
+elements:
+  windowKeys:
+    en_US:
+      web: xpath=.//div[@class='record-label-name']
+  windowValues:
+    en_US:
+      web: xpath=.//div[contains(@class,'record-summary-data')]
+```
+
+To reuse locator specify the wildcard and add one extra inverted quote if present all over the locator.
+
+Here `'{0}'` represents the wildcard character. To use this in code for example you can call `waitAndClickOn("searchCheckbox", "Credit limit reference id")` the wild card character will be replaced by the value `Credit limit reference id`.
+```yaml
+searchCheckbox:
+    en_US:
+        web: //div[@class=''zc-cb-checkbox''][label[contains(text(),''{0}'')]]//input
+```
+
+### To create new Step defs
+
+After creating a new class extend it with `BaseSteps` class
+
+### API
+
+1. To create a new API request POJO place a sample in a JSON file naming it using the eventual POJO name in `src/test/resources/api_responses` folder. The generated POJO classes would be available in the `src/target/generated-sources` folder.
+
+Command to generate is `mvn clean compile`.
+
+Note: If it fails in creating try to simplify it by removing the key and their value/values and put them in a seperate file where the name of the file is the same as the key name.
+
+2. Once the POJOS are generated specify [OrderApi.java](src/main/java/com/qapitol/jsw/apitest/apis/OrderApi.java)the API path and other relevant things like content type etc in an interface class.
+
+Ex: Here it tells that all the API's requests are of JSON. The `getJOMSOrder` provides a response in the `x-ndjson` format.
+The API `createOrderViaSLOAPI` takes the `CreateOrder` objext as JSON body and provides response as `CreateOrderResp` POJO. 
+If path param needs to be provided then add the wildcard as shown in the path and specify the annotation `@PathParam("orderNumber")` whose value is the wildcard entry.
+
+```java
+@Consumes(APPLICATION_JSON)
+public interface OrderApi {
+    @POST
+    @Path("/data-sync/import/sales-opp")
+    @Produces(APPLICATION_JSON)
+    CreateOrderResp createOrderViaSLOAPI(CreateOrder createOrder);
+
+    @GET
+    @Path("oms/order/v2/number/{orderNumber}")
+    @Produces("application/x-ndjson")
+    GetOMSOrderResp getJOMSOrder(@PathParam("orderNumber") String orderNumber);
+}
+```
+
+3. The credentials i.e. the tokens can be specified in the `LoginApiImpl` class. 
+
+Other functionalities:
+- If you want to read raw API response set the return value of the API in the interface class to the `Response` class from JAX-RS and use the function `getResponseAsString(response)` to read the response body as string.
+
+### Migration methods
+
+1. Use `migrateToTestNgAssertEquals` to move away from Junit assertEquals to TestNg.

@@ -16,7 +16,7 @@ public class JOMSOrderCreationSteps extends BaseSteps {
     private final SimpleLogger log = SauronLogger.getLogger();
 
     @Then("Confirm the order using JOMS API")
-    public void confirmOrderUsingJOMS() throws IOException, InterruptedException{
+    public void confirmOrderUsingJOMS() throws IOException, InterruptedException {
         log.entering();
         OrderImpl orderCreation = new OrderImpl();
         orderCreation.getSellerOrderNumber();
@@ -29,18 +29,17 @@ public class JOMSOrderCreationSteps extends BaseSteps {
     }
 
     @Then("Create and Release DO")
-    public void createAndReleaseDo() throws IOException, InterruptedException {
+    public void createAndReleaseDo() throws IOException {
         log.entering();
         OrderImpl orderCreation = new OrderImpl();
         CreateDoResp createDoResp = orderCreation.createDO();
         sleep(5000);
         orderCreation.releaseDO(createDoResp);
-//        jomsOrderCreationUtil.createAndReleaseDO();
         log.exiting();
     }
 
     @Then("Create shipment")
-    public void createShipment() throws IOException, InterruptedException{
+    public void createShipment() throws IOException, InterruptedException {
         log.entering();
         OrderImpl orderCreation = new OrderImpl();
         orderCreation.createShipment();
@@ -49,39 +48,37 @@ public class JOMSOrderCreationSteps extends BaseSteps {
     }
 
     @Then("Update shipment & make shipment invoice")
-    public void updateShipmentAndInvoiced() throws IOException, InterruptedException{
+    public void updateShipmentAndInvoiced() throws IOException {
         log.entering();
 
         OrderImpl orderCreation = new OrderImpl();
         UpdateShipmentResp updateShipmentResp = orderCreation.updateShipment();
         sleep(20000);
-        setPojoToContextData("updateShipmentResp",updateShipmentResp);
-//        Context.invoiceNumber = response.getBody().jsonPath().get("shipmentInvoiceDetails.invoiceDetails[0].invoiceNumber");
-//        Context.invoiceDate = response.getBody().jsonPath().get("shipmentInvoiceDetails.invoiceDetails[0].invoiceDate");
-//        Context.invoiceDueDate = response.getBody().jsonPath().get("shipmentInvoiceDetails.invoiceDetails[0].invoiceDueDate");
-//        Context.invoiceAmount = response.getBody().jsonPath().get("shipmentInvoiceDetails.totalInvoicedAmount").toString();
+        setPojoToContextData("updateShipmentResp", updateShipmentResp);
+        ContextData.addData("invoiceNumber", updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceNumber());
+        ContextData.addData("invoiceDate", updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceDate());
+        ContextData.addData("invoiceDueDate", updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceDueDate());
+        ContextData.addData("invoiceAmount", updateShipmentResp.getShipmentInvoiceDetails().getTotalInvoicedAmount());
+
 //        ExtentCucumberAdapter.addTestStepLog("Invoice Number : " + Context.invoiceNumber + " And Invoice Date: " + Context.invoiceDate + " And Invoice Amount: " + Context.invoiceAmount);
 //        System.out.println("shipment invoiced response printx = " + response.getBody().asString() + "printz");
-//        totalInvoicedAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.totalInvoicedAmount");
-//        invoicedBaseAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.invoicedBaseAmount");
-//        invoicedTaxAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.invoicedTaxAmount");
-//        invoicedTCSAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.invoicedTCSAmount");
-//        return response.getBody().jsonPath().get("number");
-//        ExtentCucumberAdapter.add
-//        TestStepLog("Shipment with id " + shipmentNumber + " is Invoiced");
+        ContextData.addData("invoicedBaseAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedBaseAmount());
+        ContextData.addData("invoicedTaxAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedTaxAmount());
+        ContextData.addData("invoicedTCSAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedTCSAmount());
+        String shipmentNumber = updateShipmentResp.getNumber();
 //        ExtentCucumberAdapter.addTestStepLog("Shipment with id " + shipmentNumber + " is Invoiced");
         log.exiting();
     }
 
     @Then("Post invoice to Zoho")
-    public void postInvoiceToZoho() throws IOException, InterruptedException{
+    public void postInvoiceToZoho() {
         log.entering();
         UpdateShipmentResp updateShipmentResp = getPojoFromContextData("updateShipmentResp", UpdateShipmentResp.class);
         String shipmentNumber = updateShipmentResp.getNumber();
         OrderImpl orderCreation = new OrderImpl();
         orderCreation.postInvoiceToZoho(shipmentNumber);
-//        log.info("Customer Order Number: {}", Context.buyerOrderNumber);
-//        log.info("Shipment Number: {}", shipmentNumber);
+        log.info(String.format("Customer Order Number: {%s}", ContextData.getDataFromKey("orderNumber")));
+        log.info(String.format("Shipment Number: {%s}", shipmentNumber));
 //        ExtentCucumberAdapter.addTestStepLog("Order with id " + Context.buyerOrderNumber + ", Invoice number--> " +Context.invoiceNumber+ " is posted to Zoho for Shipment Number: " + shipmentNumber );
         log.exiting();
     }
