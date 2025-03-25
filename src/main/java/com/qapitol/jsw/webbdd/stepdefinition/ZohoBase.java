@@ -55,8 +55,7 @@ public class ZohoBase extends BaseSteps {
         try {
             Grid.driver().manage().window().maximize();
             JavascriptExecutor js = Grid.driver();
-            js.executeScript("window.location.href='https://qa-oms.msme.jswone.in/oauth2/redirect?token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhYmhpc2hlay5zaW5naDhAanN3LmluIiwiYXV0aCI6IlJPTEVfVVNFUiIsImlhdCI6MTcyOTIzMjg3MCwiZXhwIjoxNzMxODI0ODcwfQ._5Pf0_LkcEyWGabP0Qh68UriiPIfofWkyqVsZkVBrHT1nWmQZH1-zXGo1LYuSE5iLwe5FoXEBJ5u7fq3v42lFw';");
-            sleep();
+            js.executeScript("window.location.href='https://qa-oms.msme.jswone.in/oauth2/redirect?token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ2X2FiaW5hc2guYmVoZXJhQGpzdy5pbiIsImF1dGgiOiJST0xFX1VTRVIiLCJ1c2VyX2tleSI6IjFhMTAxM2EzLTY0ZTktNDE1NS1iZjJhLWM3Njk3M2E5NjlkMiIsImlhdCI6MTc0MjAyMTY1MSwiZXhwIjoxNzQ0NjEzNjUxfQ.Y605IuGhliU0ZORoNuLpMAaT2_PYjzYtb6hddYjLUGA1a36JDyexgCLUultl0fw3FDnqS0lx9nWtxBAOVnxrHg';");
             js.executeScript("return window.stop();");
             Grid.driver().navigate().refresh();
         } catch (Exception e) {
