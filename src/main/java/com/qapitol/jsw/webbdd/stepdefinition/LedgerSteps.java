@@ -180,6 +180,7 @@ public class LedgerSteps extends BaseSteps {
 
         double totalCashbackAmount = cashbackAmount * Double.parseDouble(orderQuantity);
         String CashBackPayoutDebitAmount = formatDecimalWithComma(String.valueOf(totalCashbackAmount - CurrencyUtils.getNewInstance().getTDSAmount(totalCashbackAmount, 10)));
+        String cashBackPayoutDebitAmount = (String) ContextData.getDataFromKey("cashBackPayoutAmount");
         assertEquals(ledgerData.get(DOCUMENT_TYPE), CASHBACK_PAYOUT, "Document type verification failed");
         assertTrue("Order id verification failed", ledgerData.get(ORDER_ID).contains(buyerOrderNumber));
         assertEquals(ledgerData.get(CREDIT_AMOUNT), ZERO, "Credit (Cashback) amount verification failed");

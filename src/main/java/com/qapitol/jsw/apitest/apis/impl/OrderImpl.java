@@ -296,7 +296,7 @@ public class OrderImpl extends BaseApiImpl {
      * @throws AssertionError       If the assertion for the response status code fails, indicating that the
      *                              order details could not be successfully retrieved from the OMS.
      */
-    public double fetchCashbackAmount() throws IOException, InterruptedException {
+    public double fetchCashbackAmount() {
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 

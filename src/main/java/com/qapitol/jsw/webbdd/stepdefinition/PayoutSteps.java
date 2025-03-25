@@ -33,7 +33,7 @@ public class PayoutSteps extends BaseSteps {
     public static final String CREATED = "Created";
     public static final String ORDER_NUMBER = "Order number";
     public static final String APPROVED = "Approved";
-    public static final String ORDER_NUMBER1 = "Order Number";
+    public static final String DOCUMENT_ID1 = "Document Id";
     public static final String SUCCESS = "Success";
     public static final String PAYOUT_NUMBER = "Payout number";
     public static final String PAYOUT_STATUS = "Payout status";
@@ -60,11 +60,10 @@ public class PayoutSteps extends BaseSteps {
         UpdateShipmentResp updateShipmentResp = getPojoFromContextData("updateShipmentResp", UpdateShipmentResp.class);
         String invoiceAmount = String.valueOf(updateShipmentResp.getShipmentInvoiceDetails().getTotalInvoicedAmount());
 
-        String orderIdSubstring = getOrderSubstring((String) ContextData.getDataFromKey("orderNumber"));
         switch (arg0) {
             case CASHBACK:
-                if (StringUtils.isNotEmpty((String) ContextData.getDataFromKey("cashbackAmount"))) {
-                    payoutAmount = Double.parseDouble((String) ContextData.getDataFromKey("cashbackAmount"));
+                if (StringUtils.isNotEmpty((String) ContextData.getDataFromKey("totalCashbackAmount"))) {
+                    payoutAmount = Double.parseDouble((String) ContextData.getDataFromKey("totalCashbackAmount"));
                 } else {
                     payoutAmount = orderCreation.fetchCashbackAmount();
                 }
@@ -91,9 +90,15 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToPendingPayoutTabAndApproveThePayout(String arg0) {
         log.entering();
 
+        if ("Seller".equalsIgnoreCase(arg0)){
+            ContextData.addData("documentNumber",ContextData.getDataFromKey("invoiceNumber"));
+        }else if ("Refund".equalsIgnoreCase(arg0)){
+            ContextData.addData("documentNumber",ContextData.getDataFromKey("orderNumber"));
+        }
+
         navigateToPendingPayoutsTab();
-        clearSearch();
-        searchStringContains(DOCUMENT_NUMBER, (String) ContextData.getDataFromKey("orderNumber"));
+        searchStringContains(ORDER_NUMBER, (String) ContextData.getDataFromKey("orderNumber"));
+        searchStringContains("Payout type", arg0);
         double payoutAmount = (double) ContextData.getDataFromKey("payoutAmount");
         validatePayoutDetails(arg0, CREATED, payoutAmount);
         popUpClose();
@@ -108,8 +113,7 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToApprovedPayoutTabAndDoBankExportInDeutscheBankFormat(String arg0) {
         log.entering();
         navigateToApprovedPayoutsTab();
-        clearSearch();
-        searchStringContains(ORDER_NUMBER, (String) ContextData.getDataFromKey("orderNumber"));
+        searchStringContains(PAYOUT_NUMBER, (String) ContextData.getDataFromKey("payoutNumber"));
         double payoutAmount = (double) ContextData.getDataFromKey("payoutAmount");
         validatePayoutDetails(arg0, APPROVED, payoutAmount);
         popUpClose();
@@ -122,7 +126,7 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToExportPayoutTabAndExportInXLSXFormat() {
         log.entering();
         navigateToExportPayoutsDBBankTab();
-        searchStringContains(ORDER_NUMBER1, (String) ContextData.getDataFromKey("orderNumber"));
+        searchStringContains(DOCUMENT_ID1, (String) ContextData.getDataFromKey("documentNumber"));
         selectEntryAndClickOnExportButton();
         clickOnExportToXlsx();
         String fileName = clickOnFinalExport();
@@ -149,7 +153,7 @@ public class PayoutSteps extends BaseSteps {
     public void selectTheEntryAndClickOnUpdateStatusButton() {
         log.entering();
         clearSearch();
-        searchStringContains(ORDER_NUMBER1, (String) ContextData.getDataFromKey("orderNumber"));
+        searchStringContains(DOCUMENT_ID1, (String) ContextData.getDataFromKey("documentNumber"));
         clickOnUpdateStatus();
         log.exiting();
     }
@@ -176,6 +180,14 @@ public class PayoutSteps extends BaseSteps {
     public Map<String, String> validatePayoutDetails(String payoutType, String payoutStatus, double amount) {
         selectRowUsingObject(getCallSearchStringContainsFunc, (String) ContextData.getDataFromKey("orderNumber"), 30);
         Map<String, String> payoutData = getDataFromWindow("dataWindowElement");
+        ContextData.addData("payoutNumber", payoutData.get(PAYOUT_NUMBER));
+        ContextData.addData("documentNumber",payoutData.get(DOCUMENT_NUMBER));
+//        assertEquals("Payout type verification failed", payoutType + " payout", payoutData.get(PAYOUT_TYPE));
+//        assertEquals("Document type verification failed", payoutType, payoutData.get(DOCUMENT_TYPE));
+//        assertTrue("Document number verification failed", payoutData.get(DOCUMENT_NUMBER).contains(Context.documentNumber));
+//        assertEquals("Payout status verification failed", payoutStatus, payoutData.get(PAYOUT_STATUS));
+//        assertEquals("GSTIN verification failed", Context.gstin, payoutData.get(GSTIN));
+//        assertEquals("Payee name", Context.customerName, payoutData.get(PAYEE_NAME));
         log.info("Payout entry details for " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
 //        ExtentCucumberAdapter.addTestStepLog("Payout details map => " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
         String payoutNumber = payoutData.get(PAYOUT_NUMBER);
@@ -197,11 +209,12 @@ public class PayoutSteps extends BaseSteps {
 
     public void validateCashbackPayoutDetails(Map<String, String> payoutData, double cashbackAmount) {
 
-        double totalCashbackAmount = cashbackAmount * Double.parseDouble((String) ContextData.getDataFromKey("orderQuantity"));
+        double totalCashbackAmount = Double.parseDouble((String) ContextData.getDataFromKey("totalCashbackAmount"));
 //        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         log.info("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         double tDSAmount = CurrencyUtils.getNewInstance().getTDSAmount(totalCashbackAmount, 10);
         String cashBackPayoutAmount = formatDecimalWithComma(String.valueOf(totalCashbackAmount - tDSAmount));
+        ContextData.addData("cashBackPayoutAmount", cashBackPayoutAmount);
         assertEquals(payoutData.get(DOCUMENT_AMOUNT), formatDecimal(totalCashbackAmount), "Document amount verification failed");
         assertEquals(payoutData.get(BASE_AMOUNT), formatDecimal(totalCashbackAmount), "Base amount verification failed");
         migrateToTestNgAssertEquals("TDS amount verification failed", formatDecimal(tDSAmount), payoutData.get(TDS));
