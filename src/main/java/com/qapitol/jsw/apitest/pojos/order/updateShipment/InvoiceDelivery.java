@@ -29,7 +29,7 @@ public class InvoiceDelivery {
     @JsonProperty("invoiceNumber")
     private String invoiceNumber;
     @JsonProperty("quantity")
-    private Integer quantity;
+    private Double quantity;
     @JsonProperty("amount")
     private Integer amount;
     @JsonProperty("invoicedDeliveryDate")
@@ -74,12 +74,12 @@ public class InvoiceDelivery {
     }
 
     @JsonProperty("quantity")
-    public Integer getQuantity() {
+    public Double getQuantity() {
         return quantity;
     }
 
     @JsonProperty("quantity")
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(Double quantity) {
         this.quantity = quantity;
     }
 

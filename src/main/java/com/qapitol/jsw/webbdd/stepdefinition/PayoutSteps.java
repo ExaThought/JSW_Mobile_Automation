@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.qapitol.jsw.utils.RandomStringGenerator.generateRandomString;
+import static java.util.Objects.isNull;
 import static org.testng.Assert.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -62,10 +63,10 @@ public class PayoutSteps extends BaseSteps {
 
         switch (arg0) {
             case CASHBACK:
-                if (StringUtils.isNotEmpty((String) ContextData.getDataFromKey("totalCashbackAmount"))) {
-                    payoutAmount = Double.parseDouble((String) ContextData.getDataFromKey("totalCashbackAmount"));
-                } else {
+                if(isNull(ContextData.getDataFromKey("totalCashbackAmount"))){
                     payoutAmount = orderCreation.fetchCashbackAmount();
+                } else {
+                    payoutAmount = (double)ContextData.getDataFromKey("totalCashbackAmount");
                 }
                 break;
             case SELLER:
@@ -209,7 +210,7 @@ public class PayoutSteps extends BaseSteps {
 
     public void validateCashbackPayoutDetails(Map<String, String> payoutData, double cashbackAmount) {
 
-        double totalCashbackAmount = Double.parseDouble((String) ContextData.getDataFromKey("totalCashbackAmount"));
+        double totalCashbackAmount = (double)ContextData.getDataFromKey("totalCashbackAmount");
 //        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         log.info("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         double tDSAmount = CurrencyUtils.getNewInstance().getTDSAmount(totalCashbackAmount, 10);

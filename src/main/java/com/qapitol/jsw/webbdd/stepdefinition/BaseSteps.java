@@ -250,11 +250,13 @@ public abstract class BaseSteps extends AbstractWebPage {
         String selectRowLocKey = "selectRow";
 
         for (int i = 0; i < maxTry; i++) {
-            WebElement webElement = locateElement(selectRowLocKey, searchText);
-            if (nonNull(webElement)) {
+            if(waitAndCheckIsElementPresent(selectRowLocKey, searchText)){
+//                WebElement webElement = locateElement(selectRowLocKey, searchText);
                 waitAndClickOn(selectRowLocKey, searchText);
+                log.info("selectRowUsingObject has broken");
                 break;
             } else {
+                log.info("selectRowUsingObject is looping.....");
                 sleep(5000);
                 pageRefresh();
                 if (nonNull(callSearchStringContains)) {

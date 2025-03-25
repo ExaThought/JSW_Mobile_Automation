@@ -268,7 +268,7 @@ public class OrderImpl extends BaseApiImpl {
     }
 
     public UpdateShipmentResp callShipmentUpdateApi(UpdateShipment updateShipment) {
-        System.out.println("updateShipment:" + updateShipment.toString());
+        System.out.println("updateShipment Request:" + updateShipment.toString());
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 

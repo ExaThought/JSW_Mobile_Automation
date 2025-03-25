@@ -4,6 +4,7 @@
   <parameter name="data.env" value="qa"/>
   <parameter name="data.testId" value="testCaseId"/>
   <parameter name="api.retry.count" value="3"/>
+  <parameter name="enableSessionsKeepAlive" value="true"/>
   <test name="Jsw application">
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
