@@ -127,6 +127,7 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToExportPayoutTabAndExportInXLSXFormat() {
         log.entering();
         navigateToExportPayoutsDBBankTab();
+        clearSearch();
         searchStringContains(DOCUMENT_ID1, (String) ContextData.getDataFromKey("documentNumber"));
         selectEntryAndClickOnExportButton();
         clickOnExportToXlsx();
