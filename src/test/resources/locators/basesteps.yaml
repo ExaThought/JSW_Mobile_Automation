@@ -1,7 +1,7 @@
 elements:
   windowKeys:
     en_US:
-      web: xpath=.//div[@class='record-label-name']
+      web: xpath=.//div[@class=' record-label-name']
   windowValues:
     en_US:
       web: xpath=.//div[contains(@class,'record-summary-data')]
@@ -30,6 +30,12 @@ elements:
   searchInput:
     en_US:
       web: //li[contains(@class,''zc-cb-checkbox-selected zc-active-search-block'')][*//label[contains(text(),''{0}'')]]//*[@class=''adv-search-textfield'']//input[@class]
+  searchDropDownListOption:
+    en_US:
+      web: //li/div[text()=''{0}'']
+  searchDropDownSelectOption:
+    en_US:
+      web: //li/div[contains(normalize-space(),''{0}'') or span[contains(normalize-space(),''{1}'')]]
   searchIndexFirst:
     en_US:
       web: //ul[@class='select2-results']/li

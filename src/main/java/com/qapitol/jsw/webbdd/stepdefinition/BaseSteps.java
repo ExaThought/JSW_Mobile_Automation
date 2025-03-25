@@ -191,17 +191,27 @@ public abstract class BaseSteps extends AbstractWebPage {
                 if (isRightPanelShown) {
                     log.info("Right panel has opened.");
                     //Wait and verify if search List is visible
-                    if (waitAndCheckIsElementPresent(2, "searchList")) {
+                    if (isElementPresent("searchList")) {
                         log.info("The search list in the right panel is present.");
-//                        sleep(300);
                         jsClick("searchCheckbox", searchLabel);
-                        //          clickUsingJS(locateElement("searchCheckbox", searchLabel));
+                        //Wait until the search input box is present
                         if (waitAndCheckIsElementPresent("searchInput", searchLabel)) {
-//                            waitAndSetText("searchInput", searchLabel, searchValue + Keys.TAB + Keys.ENTER);
+                            //Set the text in the text box
                             waitAndSetText("searchInput", searchLabel, searchValue);
-                            waitAndClickOn(2, "searchIndexFirst");
+                            //Check if dorop down is present
+                            if (isElementPresent("searchIndexFirst")) {
+                                //Select the option which contains the search value
+                                waitAndClickOn("searchDropDownSelectOption", searchValue, searchValue);
+                                //In case of multiple options in drop down if the default drop down is shown we
+                                // need to close it via off element tap
+                                if (isElementPresent("searchIndexFirst")) {
+                                    tap("searchButton");
+                                    //Closes the any drop down list
+                                }
+                            }
 
-                            boolean isRightPanelOpened = waitAndCheckIsElementPresent("rightPanel");
+                            //Check if right panel is opened and if open close it.
+                            boolean isRightPanelOpened = isElementPresent("rightPanel");
                             if (isRightPanelOpened) {
                                 tap("searchButton");
                             } else {
