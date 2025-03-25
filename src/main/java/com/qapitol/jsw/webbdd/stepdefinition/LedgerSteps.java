@@ -220,7 +220,7 @@ public class LedgerSteps extends BaseSteps {
     public void navigateToLedgerStatementNewTab() {
         log.entering();
         zohoCreatorNavigation(LEDGER_STATEMENT_NEW_PATH);
-        waitForLoaderToDisappear();
+//        waitForLoaderToDisappear();
         log.exiting();
     }
 

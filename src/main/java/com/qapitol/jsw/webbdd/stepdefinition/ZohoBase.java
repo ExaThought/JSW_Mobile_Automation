@@ -36,9 +36,9 @@ public class ZohoBase extends BaseSteps {
         if (platform.equalsIgnoreCase("zoho")) {
             // Switching to "zoho" session present in the sessions.yaml
             Grid.setSessionName("zoho");
-            initZohoSession();
+            initZohoSession(Config.getConfigProperty("creatorUrl"));
             Grid.setSessionName("zoho_books");
-            initZohoSession();
+            initZohoSession(Config.getConfigProperty("booksUrl"));
             Grid.setSessionName("zoho");
         } else if ("erp".equalsIgnoreCase(platform)) {
             // Switching to "erp" session present in the sessions.yaml
@@ -66,11 +66,11 @@ public class ZohoBase extends BaseSteps {
         log.exiting();
     }
 
-    public void initZohoSession() throws Exception {
+    public void initZohoSession(String url) throws Exception {
         log.entering();
         try {
-            createAndManageZohoSession();
-            Grid.driver().get(Config.getConfigProperty("creatorUrl"));
+            createAndManageZohoSession(url);
+            Grid.driver().get(url);
         } catch (Exception e) {
             log.log(Level.FINE, "initZohoSession failed.", e);
             throw e;
@@ -78,7 +78,7 @@ public class ZohoBase extends BaseSteps {
         log.exiting();
     }
 
-    public void createAndManageZohoSession() throws IOException {
+    public void createAndManageZohoSession(String url) throws IOException {
         log.entering();
         Path cookiesFilePath = Paths.get(System.getProperty("user.dir"), "cookies.txt");
         Path cookiesFilteredFilePath = Paths.get(System.getProperty("user.dir"), "filtered_cookies.txt");
@@ -92,7 +92,7 @@ public class ZohoBase extends BaseSteps {
                     Grid.driver().navigate().refresh();
                     Grid.driver().manage().window().maximize();
                     Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
-                    Grid.driver().get(Config.getConfigProperty("creatorUrl"));
+                    Grid.driver().get(url);
                     loginZohoCreator(Config.getConfigProperty("creatorLoginId"), Config.getConfigProperty("creatorPassword"));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -114,7 +114,7 @@ public class ZohoBase extends BaseSteps {
                 Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
             }
             log.info("====== Using already created session ======");
-            Grid.driver().get(Config.getConfigProperty("creatorSignInUrl"));
+            Grid.driver().get(url);
 
             log.info("Step : Load cookies from file");
             Set<Cookie> loadedCookies = SaveAndLoadCookies.loadCookiesFromFile(cookiesFilteredFilePath.toFile().getAbsolutePath());
