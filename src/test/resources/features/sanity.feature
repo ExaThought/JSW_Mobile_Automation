@@ -3,7 +3,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
   Background:
     Given Setup the environment for zoho login
 
-  @testCaseId=id-001 @dataFile="ledger.yaml" @smoke
+  @testCaseId=id-001 @dataFile="ledger.yaml"
   Scenario:Cashback Ledger Entry Validation on ZC [Cashback Issued, Cashback TDS, Cashback Payout]
     When Create a "QP_DISTRIBUTED_CASH_AND_CARRY_CASHBACK" type order with SLO API
     Then validate the order details for "DISTRIBUTED" and "Cash & Carry - Advance"
@@ -26,9 +26,9 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Navigate to Historical Payout tab and validate the entry for "Cashback" payout
     Then Validate ledger statement with Document type as Cashback Payout
 
-#  @testCaseId=id-002 @dataFile="ledger.yaml"
-#  Scenario: Validate the customer ledger should be Frozen when customer has Credit Overdue
-#    When Create a "QP_DISTRIBUTED_CREDIT_ORDER" type order with SLO API
+  @testCaseId=id-002 @dataFile="ledger.yaml" @smoke
+  Scenario: Validate the customer ledger should be Frozen when customer has Credit Overdue
+    When Create a "QP_DISTRIBUTED_CREDIT_ORDER" type order with SLO API
 #    Then validate the order details for "DISTRIBUTED" and "Credit"
 #    Then Confirm the order using JOMS API
 #    Then Create and Release DO

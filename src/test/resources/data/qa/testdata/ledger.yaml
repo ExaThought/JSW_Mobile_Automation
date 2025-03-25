@@ -2,5 +2,4 @@
   QP_DISTRIBUTED_CASH_AND_CARRY_CASHBACK:
     SLO_Order:
 - testCaseId: "id-002"
-  QP_DISTRIBUTED_CASH_AND_CARRY_CASHBACK:
-    SLO_Order:
+  CREATE_ORDER_PAYLOAD: "create_order_credit"
