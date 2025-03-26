@@ -1,5 +1,19 @@
 - testCaseId: "id-001"
+  orderType: "DISTRIBUTED"
+  paymentType: "Cash & Carry - Advance"
   QP_DISTRIBUTED_CASH_AND_CARRY_CASHBACK:
     SLO_Order:
 - testCaseId: "id-002"
   CREATE_ORDER_PAYLOAD: "create_order_credit"
+  orderType: "DISTRIBUTED"
+  paymentType: "Credit"
+  requestAmount: 14160.0
+  plannedQuantity: "10"
+  totalLineItemQuantity: 10.0
+  sellerAddress: "steel 100"
+  vendorLocationDisplayName: "steel 100"
+  sellerCompanyName: "steel 100"
+  taxType: "GST"
+  invoicedBaseAmount: 12000.0
+  invoicedTaxAmount: 2160.0
+  totalInvoicedAmount: 14160.0

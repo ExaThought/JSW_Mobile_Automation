@@ -27,19 +27,19 @@ public class ShipmentInvoiceDetails {
     @JsonProperty("invoice")
     private Object invoice;
     @JsonProperty("invoicedBaseAmount")
-    private Integer invoicedBaseAmount;
+    private Double invoicedBaseAmount;
     @JsonProperty("invoicedTaxAmount")
-    private Integer invoicedTaxAmount;
+    private Double invoicedTaxAmount;
     @JsonProperty("invoiceOtherServicesSum")
     private Integer invoiceOtherServicesSum;
     @JsonProperty("invoiceOtherAmounts")
     private InvoiceOtherAmounts invoiceOtherAmounts;
     @JsonProperty("invoicePayoutHoldAmount")
-    private Integer invoicePayoutHoldAmount;
+    private Double invoicePayoutHoldAmount;
     @JsonProperty("payoutHoldType")
     private String payoutHoldType;
     @JsonProperty("totalInvoicedAmount")
-    private Integer totalInvoicedAmount;
+    private Double totalInvoicedAmount;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
@@ -64,22 +64,22 @@ public class ShipmentInvoiceDetails {
     }
 
     @JsonProperty("invoicedBaseAmount")
-    public Integer getInvoicedBaseAmount() {
+    public Double getInvoicedBaseAmount() {
         return invoicedBaseAmount;
     }
 
     @JsonProperty("invoicedBaseAmount")
-    public void setInvoicedBaseAmount(Integer invoicedBaseAmount) {
+    public void setInvoicedBaseAmount(Double invoicedBaseAmount) {
         this.invoicedBaseAmount = invoicedBaseAmount;
     }
 
     @JsonProperty("invoicedTaxAmount")
-    public Integer getInvoicedTaxAmount() {
+    public Double getInvoicedTaxAmount() {
         return invoicedTaxAmount;
     }
 
     @JsonProperty("invoicedTaxAmount")
-    public void setInvoicedTaxAmount(Integer invoicedTaxAmount) {
+    public void setInvoicedTaxAmount(Double invoicedTaxAmount) {
         this.invoicedTaxAmount = invoicedTaxAmount;
     }
 
@@ -104,12 +104,12 @@ public class ShipmentInvoiceDetails {
     }
 
     @JsonProperty("invoicePayoutHoldAmount")
-    public Integer getInvoicePayoutHoldAmount() {
+    public Double getInvoicePayoutHoldAmount() {
         return invoicePayoutHoldAmount;
     }
 
     @JsonProperty("invoicePayoutHoldAmount")
-    public void setInvoicePayoutHoldAmount(Integer invoicePayoutHoldAmount) {
+    public void setInvoicePayoutHoldAmount(Double invoicePayoutHoldAmount) {
         this.invoicePayoutHoldAmount = invoicePayoutHoldAmount;
     }
 
@@ -124,12 +124,12 @@ public class ShipmentInvoiceDetails {
     }
 
     @JsonProperty("totalInvoicedAmount")
-    public Integer getTotalInvoicedAmount() {
+    public Double getTotalInvoicedAmount() {
         return totalInvoicedAmount;
     }
 
     @JsonProperty("totalInvoicedAmount")
-    public void setTotalInvoicedAmount(Integer totalInvoicedAmount) {
+    public void setTotalInvoicedAmount(Double totalInvoicedAmount) {
         this.totalInvoicedAmount = totalInvoicedAmount;
     }
 

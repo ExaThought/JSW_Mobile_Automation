@@ -14,9 +14,9 @@ elements:
   popoutArea:
     en_US:
       web: //label[text()=''{0}'']/following-sibling::textarea
-  clickIndexBtn:
+  SaveInvoice:
     en_US:
-      web: xpath=(//button[text()=''{0}''])['{1}']
+      web: xpath=(//button[text()=''{0}''])[2]
   firstBtn:
     en_US:
       web: //button//li[contains(text(), ''{0}'')]

@@ -1,6 +1,7 @@
 package com.qapitol.jsw.webbdd.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
+import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -11,7 +12,6 @@ import org.openqa.selenium.interactions.Actions;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -103,10 +103,44 @@ public abstract class BaseSteps extends AbstractWebPage {
         log.exiting();
     }
 
+    /**
+     * Dismisses the alert
+     */
+    public void closeAlert() {
+        try {
+            sleep(5000);
+            alertDismiss();
+            log.info("Alert was closed successfully.");
+        } catch (Exception e) {
+            log.info("No alert found.");
+        }
+    }
+
+    /**
+     * Navigate to Zoho creator with the tab name specified
+     *
+     * @param tabName the name of the tab/module name
+     */
     protected void zohoCreatorNavigation(String tabName) {
+        Grid.setSessionName("zoho");
         navigate(Config.getConfigProperty("creatorUrl") + tabName);
     }
 
+    /**
+     * This switches to the zho_books session and navigates to Zoho books url
+     */
+    protected void navigateToZohoBooksSession() {
+        log.info("================ Zoho Books Launch ====================");
+
+        Grid.setSessionName("zoho_books");
+        Grid.driver().get(Config.getConfigProperty("booksUrl"));
+        waitForLoaderToDisappear();
+        log.info("Current title in the new tab " + Grid.driver().getTitle());
+    }
+
+    /**
+     * Refreshes the page and clears any search filters already present.
+     */
     protected void clearFilter() {
         pageRefresh();
         clearSearch();
@@ -156,17 +190,21 @@ public abstract class BaseSteps extends AbstractWebPage {
         }
     }
 
-    protected void jsClick(String... locater) {
+    /**
+     * Uses the javascript executor to scroll to the target element and click on it.
+     *
+     * @param locator key of the locator from the locators yaml file
+     */
+    protected void jsClick(String... locator) {
         for (int i = 0; i < maxAttempts; i++) {
             try {
-                waitAndCheckIsElementVisible(locater);
-                WebElement webElement = locateElement(locater);
+                waitAndCheckIsElementVisible(locator);
+                WebElement webElement = locateElement(locator);
                 Grid.driver().executeScript("arguments[0].scrollIntoView(true);", webElement);
                 Grid.driver().executeScript("arguments[0].click();", webElement);
                 break;
             } catch (ElementClickInterceptedException | StaleElementReferenceException e) {
                 log.log(Level.FINE, "jsclick Error", e);
-//                log.info(e.getMessage());
             }
         }
     }
@@ -235,7 +273,12 @@ public abstract class BaseSteps extends AbstractWebPage {
         log.exiting();
     }
 
-
+    /**
+     * Function to search for the row with a specific text without using the search filtering
+     *
+     * @param searchText The text to search for in the filter list
+     * @param maxTry     the number of times to retry (based on the server producing the rows)
+     */
     public void selectRowUsingObject(String searchText, int maxTry) {
         selectRowUsingObject(null, searchText, maxTry);
     }
@@ -245,13 +288,20 @@ public abstract class BaseSteps extends AbstractWebPage {
         return null;
     };
 
+    /**
+     * Selects the row until it is visible by refreshing it. The element visibility depends on the
+     * server producing the row.
+     *
+     * @param callSearchStringContains The function to execute the search filtering.
+     * @param searchText               The text to search for in the filter list
+     * @param maxTry                   the number of times to retry (based on the server producing the rows)
+     */
     public void selectRowUsingObject(Function<String, Void> callSearchStringContains, String searchText, int maxTry) {
         sleep(999);
         String selectRowLocKey = "selectRow";
 
         for (int i = 0; i < maxTry; i++) {
-            if(waitAndCheckIsElementPresent(selectRowLocKey, searchText)){
-//                WebElement webElement = locateElement(selectRowLocKey, searchText);
+            if (waitAndCheckIsElementPresent(selectRowLocKey, searchText)) {
                 waitAndClickOn(selectRowLocKey, searchText);
                 log.info("selectRowUsingObject has broken");
                 break;
@@ -284,16 +334,22 @@ public abstract class BaseSteps extends AbstractWebPage {
         return windowMap;
     }
 
+    /**
+     * CLoses the right panel by clicking on the 'X' icon
+     */
     public void popUpClose() {
-       // sleep(1000);
         waitAndClickOn("popupClose");
     }
 
+    /**
+     * Formats the string number to closes 2nd degree
+     *
+     * @param number
+     * @return
+     */
     public String formatDecimal(String number) {
         try {
-            double value = Double.parseDouble(number);
-            DecimalFormat decimalFormat = new DecimalFormat("#.00");
-            return decimalFormat.format(value);
+            return CurrencyUtils.getNewInstance().getDecimalFormatterDecimal().format(Double.parseDouble(number));
         } catch (NumberFormatException e) {
             log.info("Invalid number format or the number is already in the expected format");
             return number;
@@ -302,8 +358,7 @@ public abstract class BaseSteps extends AbstractWebPage {
 
     public static String formatDecimal(double number) {
         try {
-            DecimalFormat decimalFormat = new DecimalFormat("#.00");
-            return decimalFormat.format(number);
+            return CurrencyUtils.getNewInstance().getDecimalFormatterDecimal().format(number);
         } catch (NumberFormatException e) {
             log.info("Invalid number format or the number is already in the expected format");
             return String.valueOf(number);
@@ -312,9 +367,7 @@ public abstract class BaseSteps extends AbstractWebPage {
 
     public String formatDecimalWithComma(String number) {
         try {
-            double value = Double.parseDouble(number);
-            DecimalFormat decimalFormat = new DecimalFormat("#,###.00");
-            return decimalFormat.format(value);
+            return CurrencyUtils.getNewInstance().getDecimalFormatterCommaDecimal().format(Double.parseDouble(number));
         } catch (NumberFormatException e) {
             log.info("Invalid number format or the number is already in the expected format");
             return number;
@@ -369,12 +422,21 @@ public abstract class BaseSteps extends AbstractWebPage {
         }
     }
 
+    /**
+     * Download files from the browser and store them into /<project_dir>/download_dir.
+     * The directory will be created if it does not exist.
+     *
+     * @return provides a list of absolute file paths of the downloaded files.
+     */
     protected List<String> getAllDownloadedFiles() {
         log.entering();
         List<String> downloadedFiles = new ArrayList<>();
         List<String> files = (Grid.driver()).getDownloadableFiles();
         Path targetDirectory = Paths.get(System.getProperty("user.dir"), "download_dir");
         try {
+            if (!targetDirectory.toFile().exists()) {
+                Files.createDirectories(targetDirectory);
+            }
             for (String file : files) {
                 Grid.driver().downloadFile(file, targetDirectory);
                 Path downloadedAbsFilePath = Paths.get(targetDirectory.toFile().toString(), file);
@@ -390,12 +452,20 @@ public abstract class BaseSteps extends AbstractWebPage {
         return downloadedFiles;
     }
 
-    public void tap(String... locater) {
+    /**
+     * Hover & Click on a web element to bypass stale or element click interception issues.
+     * This will Hover & click basis on Selenium actions API.
+     * It retries the click if there is a stale element exception.
+     * The number of retries are at 5.
+     *
+     * @param locator The key of the locator from the locator yaml file
+     */
+    public void tap(String... locator) {
         for (int i = 0; i < maxAttempts; i++) {
             try {
-                if (waitAndCheckIsElementPresent(locater)) {
+                if (waitAndCheckIsElementPresent(locator)) {
                     Actions actions = new Actions(Grid.driver());
-                    List<WebElement> webElements = locateElements(locater);
+                    List<WebElement> webElements = locateElements(locator);
                     for (WebElement webElement : webElements) {
                         actions.moveToElement(webElement).click().perform();
                     }
@@ -407,12 +477,20 @@ public abstract class BaseSteps extends AbstractWebPage {
         }
     }
 
-    public void hover(String... locater) {
+    /**
+     * Hover on a web element to bypass stale or element click interception issues.
+     * This will hover basis on Selenium actions API.
+     * It retries the hover if there is a stale element exception.
+     * The number of retries are at 5.
+     *
+     * @param locator The key of the locator from the locator yaml file
+     */
+    public void hover(String... locator) {
         for (int i = 0; i < maxAttempts; i++) {
             try {
-                if (waitAndCheckIsElementPresent(locater)) {
+                if (waitAndCheckIsElementPresent(locator)) {
                     Actions actions = new Actions(Grid.driver());
-                    WebElement webElement = locateElement(locater);
+                    WebElement webElement = locateElement(locator);
                     actions.moveToElement(webElement).perform();
                 }
                 break;

@@ -16,6 +16,7 @@ public class SaveAndLoadCookies {
 
     //Method to save cookies to a file
     public static void saveCookiesToFile(Set<Cookie> cookies, String filePath) throws IOException {
+        log.entering(cookies, filePath);
         File file = new File(filePath);
         file.createNewFile(); // Create the file if it doesn't exist
         FileWriter fileWriter = new FileWriter(file);
@@ -35,10 +36,12 @@ public class SaveAndLoadCookies {
         }
         bufferedWriter.close();
         fileWriter.close();
+        log.exiting();
     }
 
     // Method to load cookies from a file
     public static Set<Cookie> loadCookiesFromFile(String filePath) throws IOException {
+        log.entering(filePath);
         Set<Cookie> cookies = new HashSet<>();
         File file = new File(filePath);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
@@ -63,11 +66,13 @@ public class SaveAndLoadCookies {
             cookies.add(cookie);
         }
         bufferedReader.close();
+        log.exiting();
         return cookies;
     }
 
     // Method to filer cookies from an input file
     public static void filterCookies(String inputFile, String outputFile) {
+        log.entering(inputFile, outputFile);
         // Define the cookies to keep
         Set<String> cookiesToKeep = new HashSet<>();
         cookiesToKeep.add("_iambdt");
@@ -88,6 +93,7 @@ public class SaveAndLoadCookies {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.exiting();
     }
 }
 

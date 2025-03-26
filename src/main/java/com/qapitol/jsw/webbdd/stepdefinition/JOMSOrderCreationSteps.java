@@ -4,6 +4,7 @@ import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDoResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
 import com.qapitol.jsw.utils.OMSDBUtils;
+import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
@@ -33,8 +34,15 @@ public class JOMSOrderCreationSteps extends BaseSteps {
         log.entering();
         OrderImpl orderCreation = new OrderImpl();
         CreateDoResp createDoResp = orderCreation.createDO();
+
+        double plannedQuantity = createDoResp.getPsLineItemsDetails().get(0).getPlannedQuantity();
+        log.info("DO created with quantity --> " + plannedQuantity);
+
         sleep(5000);
         orderCreation.releaseDO(createDoResp);
+
+        log.info("DO released with quantity --> " + plannedQuantity);
+        //        ExtentCucumberAdapter.addTestStepLog("DO created and released with quantity --> " + response.getBody().jsonPath().get("psLineItemsDetails[0].plannedQuantity") +"MT");
         log.exiting();
     }
 

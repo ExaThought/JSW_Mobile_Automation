@@ -21,6 +21,7 @@ import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.RandomStringGenerator;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.data.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.asserts.SoftAssert;
 
 import javax.ws.rs.core.Response;
@@ -46,9 +47,7 @@ public class OrderImpl extends BaseApiImpl {
     public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     public static final String timeStamp = ZonedDateTime.now().format(formatter);
 
-    public CreateOrderResp createOrder(String orderPaymentType, String sloOrder) throws IOException {
-        ContextData.addData("orderPaymentType", orderPaymentType);
-        ContextData.addData("sloOrder", sloOrder);
+    public CreateOrderResp createOrder() throws IOException {
 
         // CreatePayload POJO
         CreateOrder createOrderRequestBody = getPayloadJsonFileAsPOJO((String) Data.get().get("CREATE_ORDER_PAYLOAD"), CreateOrder.class);
@@ -61,7 +60,7 @@ public class OrderImpl extends BaseApiImpl {
         CreateOrderResp createOrderResp = orderApi.createOrderViaSLOAPI(createOrderRequestBody);
         ContextData.addData("orderNumber", createOrderResp.getOrderNumber());
 
-        log.info("Created Order id is : " + ContextData.getDataFromKey("orderNumber") + " with order type as :" + orderPaymentType);
+        log.info("Created Order id is : " + ContextData.getDataFromKey("orderNumber"));
         return createOrderResp;
     }
 
@@ -158,16 +157,29 @@ public class OrderImpl extends BaseApiImpl {
 
     public CreateDoResp createDO() throws IOException {
 
-        String orderNumber = (String) ContextData.getDataFromKey("orderNumber");
-        String sellerOrderNumber = (String) ContextData.getDataFromKey("sellerOrderNumber");
-
         // Access the Default payload from the YAML test data file
-        Map<Object, Object> values = (Map<Object, Object>) Data.get().get(ContextData.getDataFromKey("orderPaymentType"));
-        Map<Object, Object> createOrderPayload = (Map<Object, Object>) values.get(ContextData.getDataFromKey("sloOrder"));
-
         CreateDo createDo = getPayloadJsonFileAsPOJO((String) Data.get().get("CREATE_DO_PAYLOAD"), CreateDo.class);
         createDo.setCustomerOrderId(ContextData.getDataFromKey("buyerOrderId"));
         createDo.getPsLineItemsDetails().get(0).setLineItemId((Integer) ContextData.getDataFromKey("lineItemId"));
+
+        if(nonNull((Data.get().get("requestAmount")))) {
+            createDo.setRequestAmount((Double) Data.get().get("requestAmount"));
+        }
+        if(nonNull((Data.get().get("plannedQuantity")))) {
+            createDo.getPsLineItemsDetails().get(0).setPlannedQuantity((String) Data.get().get("plannedQuantity"));
+        }
+        if(nonNull((Data.get().get("totalLineItemQuantity")))) {
+            createDo.getPsLineItemsDetails().get(0).setTotalLineItemQuantity((Double) Data.get().get("totalLineItemQuantity"));
+        }
+        if(nonNull((Data.get().get("sellerAddress")))) {
+            createDo.setSellerAddress((String) Data.get().get("sellerAddress"));
+        }
+        if(nonNull((Data.get().get("vendorLocationDisplayName")))) {
+            createDo.getSellerAddressMetadata().setVendorLocationDisplayName((String) Data.get().get("vendorLocationDisplayName"));
+        }
+        if(nonNull((Data.get().get("sellerCompanyName")))) {
+            createDo.setSellerCompanyName((String) Data.get().get("sellerCompanyName"));
+        }
 
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
@@ -186,19 +198,19 @@ public class OrderImpl extends BaseApiImpl {
         Response statusMsg = orderApi.createDORelease(psId);
         assertEquals(statusMsg.getStatus(), 200, "unable to release do");
         log.info("Release do response : " + statusMsg.getEntity().toString());
-//        log.info("DO created and released with quantity --> " + response.getBody().jsonPath().get("psLineItemsDetails[0].plannedQuantity"));
-//        ExtentCucumberAdapter.addTestStepLog("DO created and released with quantity --> " + response.getBody().jsonPath().get("psLineItemsDetails[0].plannedQuantity") +"MT");
     }
 
     public void createShipment() throws IOException {
         // Access the Default payload from the YAML test data file
-        Map<Object, Object> values = (Map<Object, Object>) Data.get().get(ContextData.getDataFromKey("orderPaymentType"));
-        Map<Object, Object> createOrderPayload = (Map<Object, Object>) values.get(ContextData.getDataFromKey("sloOrder"));
 
         CreateShipment createShipment = getPayloadJsonFileAsPOJO((String) Data.get().get("CREATE_SHIPMENT"), CreateShipment.class);
         createShipment.setPlannedDispatchDate(LocalDateTime.now().toString());
         createShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
         createShipment.getLineItemsDetails().get(0).setLineitemId(ContextData.getDataFromKey("lineItemId"));
+
+        if(nonNull((Data.get().get("plannedQuantity")))) {
+            createShipment.getLineItemsDetails().get(0).getPlannedDelivery().setQuantity(Double.valueOf((String) Data.get().get("plannedQuantity")));
+        }
 
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
@@ -218,8 +230,6 @@ public class OrderImpl extends BaseApiImpl {
         for (String status : List.of(READY_FOR_DISPATCH, DISPATCHED, DELIVERED, INVOICED)) {
             Integer temp = getInvoiceDeliveryId();
 // Access the Default payload from the YAML test data file
-            Map<Object, Object> values = (Map<Object, Object>) Data.get().get(ContextData.getDataFromKey("orderPaymentType"));
-            Map<Object, Object> createOrderPayload = (Map<Object, Object>) values.get(ContextData.getDataFromKey("sloOrder"));
 
             UpdateShipment updateShipment = getPayloadJsonFileAsPOJO((String) Data.get().get("UPDATE_SHIPMENT"), UpdateShipment.class);
             updateShipment.setCustomerOrderId(ContextData.getDataFromKey("buyerOrderId"));
@@ -229,6 +239,19 @@ public class OrderImpl extends BaseApiImpl {
             updateShipment.getCurrentState().setState(prev);
             updateShipment.setId(ContextData.getDataFromKey("shipmentId"));
             updateShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
+
+            if(nonNull((Data.get().get("taxType")))) {
+                updateShipment.getLineItemsDetails().get(0).setTaxType((String) Data.get().get("taxType"));
+            }
+            if(nonNull((Data.get().get("invoicedBaseAmount")))) {
+                updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount((double) Data.get().get("invoicedBaseAmount"));
+            }
+            if(nonNull((Data.get().get("invoicedTaxAmount")))) {
+                updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount((double) Data.get().get("invoicedTaxAmount"));
+            }
+            if(nonNull((Data.get().get("totalInvoicedAmount")))) {
+                updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount((double) Data.get().get("totalInvoicedAmount"));
+            }
 
             if (temp != null) {
                 updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setId(temp);

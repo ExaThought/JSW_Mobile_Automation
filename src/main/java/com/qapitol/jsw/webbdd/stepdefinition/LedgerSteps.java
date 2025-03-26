@@ -4,7 +4,9 @@ import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
 import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.OMSDBUtils;
+import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.data.ContextData;
+import com.qapitol.sauron.data.Data;
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
 import io.cucumber.java.en.Then;
@@ -53,25 +55,28 @@ public class LedgerSteps extends BaseSteps {
     public static final String PAYOUT = "Payout";
     public static final String ZBM_CASHBACK_PAYOUT = "Refunds against Credit notes";
 
-    @When("Create a {string} type order with SLO API")
-    public void createOrderWithSloApi(String arg0) throws IOException, InterruptedException {
+    @When("Create order with SLO API")
+    public void createOrderWithSloApi() throws IOException, InterruptedException {
         log.entering();
         OrderImpl orderCreation = new OrderImpl();
-        orderCreation.createOrder(arg0, "SLO_Order");
+        orderCreation.createOrder();
         new OMSDBUtils().updateSalesForceOpportunity((String) ContextData.getDataFromKey("orderNumber"));
 //        ExtentCucumberAdapter.addTestStepLog("Order created successfully, Customer Order Number: " + Context.buyerOrderNumber);
 
         log.exiting();
     }
 
-    @Then("validate the order details for {string} and {string}")
-    public void validateTheOrderDetails(String arg0, String arg1) throws IOException, InterruptedException {
+    @Then("validate the order details")
+    public void validateTheOrderDetails() throws IOException, InterruptedException {
         log.entering();
+        String orderType = (String) Data.get().get("orderType");
+        String paymentType = (String) Data.get().get("paymentType");
+
         OrderImpl orderCreation = new OrderImpl();
-        GetOMSOrderResp getOMSOrderResp = orderCreation.validateOrderDetails(arg0, arg1);
+        GetOMSOrderResp getOMSOrderResp = orderCreation.validateOrderDetails(orderType, paymentType);
         ContextData.addData("gstin", getOMSOrderResp.getBuyerDetails().getGstin());
         ContextData.addData("baseAMount", getOMSOrderResp.getAmounts().get("LIA").getAmount().getDisplayAmount().toString().replace(",", ""));
-        log.info("Order Type: " + arg0 + "And Payment Type: " + arg1);
+        log.info("Order Type: " + orderType + "And Payment Type: " + paymentType);
 //        ExtentCucumberAdapter.addTestStepLog("Order Type: " + arg0 + " And Payment Type: " + arg1);
         log.info("Credit by pass flag -->" + getOMSOrderResp.getCreditBlockBypassFlag());
 //        ExtentCucumberAdapter.addTestStepLog("Credit by pass flag -->" + jsonPath.get("creditBlockBypassFlag"));
@@ -228,12 +233,13 @@ public class LedgerSteps extends BaseSteps {
         navigateToLedgerSummary();
         clearSearch();
         searchStringContains(CUSTOMER_NAME, customerName);
-        waitAndClickOn("retryBtn");
+        tap("retryBtn");
         waitUntilLoaderInvisible();
         sleep(5555);
     }
 
     public void navigateToLedgerSummary() {
+        Grid.setSessionName("zoho");
         zohoCreatorNavigation(LEDGER_SUMMARY_PATH);
         log.info("Navigated to Ledger Summary Page");
 //        ExtentCucumberAdapter.addTestStepLog("Navigated to Ledger Summary Page");

@@ -5,6 +5,7 @@ import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
+import com.qapitol.sauron.web.sessions.WebTestSession;
 import io.cucumber.java.en.Given;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.Cookie;
@@ -28,6 +29,7 @@ public class ZohoBase extends BaseSteps {
 
     @Given("Setup the environment for zoho login")
     public void setupTheEnvironmentForZohoLogin() throws Exception {
+        log.entering();
         String platform = System.getProperty("platform");
         if (StringUtils.isEmpty(platform)) {
             platform = Config.getConfigProperty("platform");
@@ -37,6 +39,7 @@ public class ZohoBase extends BaseSteps {
             // Switching to "zoho" session present in the sessions.yaml
             Grid.setSessionName("zoho");
             initZohoSession(Config.getConfigProperty("creatorUrl"));
+            // Switching to "zoho_books" session present in the sessions.yaml
             Grid.setSessionName("zoho_books");
             initZohoSession(Config.getConfigProperty("booksUrl"));
             Grid.setSessionName("zoho");
@@ -48,6 +51,15 @@ public class ZohoBase extends BaseSteps {
 
         log.info("============== Login done during base set up===============");
         log.info("==============Execution Started for one flow============");
+        log.exiting();
+    }
+
+    @Given("Login to zoho books")
+    public void zohoBooksLogin() {
+        navigateToZohoBooksSession();
+        log.info("Navigated and Logged in to Zoho books ");
+//        ExtentCucumberAdapter.addTestStepLog("Navigated and Logged in to Zoho books ");
+        closeAlert();
     }
 
     public void initERPSession() throws Exception {
@@ -65,6 +77,7 @@ public class ZohoBase extends BaseSteps {
         log.exiting();
     }
 
+
     public void initZohoSession(String url) throws Exception {
         log.entering();
         try {
@@ -79,8 +92,18 @@ public class ZohoBase extends BaseSteps {
 
     public void createAndManageZohoSession(String url) throws IOException {
         log.entering();
-        Path cookiesFilePath = Paths.get(System.getProperty("user.dir"), "cookies.txt");
-        Path cookiesFilteredFilePath = Paths.get(System.getProperty("user.dir"), "filtered_cookies.txt");
+        Path cookiesFilePath = null;
+        Path cookiesFilteredFilePath = null;
+        if (Grid.getTestSession() instanceof WebTestSession) {
+            boolean isHeadless = ((WebTestSession) Grid.getTestSession()).isBrowserRunHeadless();
+            if (isHeadless) {
+                cookiesFilePath = Paths.get(System.getProperty("user.dir"), "cookies_headless.txt");
+                cookiesFilteredFilePath = Paths.get(System.getProperty("user.dir"), "filtered_cookies_headless.txt");
+            } else {
+                cookiesFilePath = Paths.get(System.getProperty("user.dir"), "cookies.txt");
+                cookiesFilteredFilePath = Paths.get(System.getProperty("user.dir"), "filtered_cookies.txt");
+            }
+        }
         File file = cookiesFilteredFilePath.toFile();
         if (file.exists() && file.isFile()) {
             // Check if the file size is 0
@@ -88,7 +111,7 @@ public class ZohoBase extends BaseSteps {
 
                 log.info("Cookies File is empty, Perform login or actions to establish a session");
                 try {
-                    Grid.driver().navigate().refresh();
+//                    Grid.driver().navigate().refresh();
                     Grid.driver().manage().window().maximize();
                     Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
                     Grid.driver().get(url);
@@ -108,7 +131,7 @@ public class ZohoBase extends BaseSteps {
                 log.info("Filter the usable cookies only");
                 SaveAndLoadCookies.filterCookies(cookiesFilePath.toFile().getAbsolutePath(), file.getAbsolutePath());
             } else {
-                Grid.driver().navigate().refresh();
+//                Grid.driver().navigate().refresh();
                 Grid.driver().manage().window().maximize();
                 Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
             }

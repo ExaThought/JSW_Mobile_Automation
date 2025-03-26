@@ -69,7 +69,7 @@ public class ZBInvoicesSteps extends BaseSteps {
         waitAndClickOn("clickBtn", "Save");
         sleep(999);
         setPopInput("Note down the reason for editing an invoice that has already been sent.", "Testing");
-        clickButton("Save", 2);
+        clickOnWithoutWait("SaveInvoice", "Save");
     }
 
     public void clickActionButton(String buttonName) {
@@ -98,14 +98,14 @@ public class ZBInvoicesSteps extends BaseSteps {
     }
 
     public void setPopInput(String fieldLabel, String fieldValue) {
-        clearTextBox("popoutArea");
+        clearTextBox("popoutArea", fieldLabel);
         waitAndSetText("popoutArea", fieldLabel, fieldValue);
     }
 
-    public void clickButton(String buttonLabel, int index) {
-        waitAndClickOn("clickIndexBtn", buttonLabel, String.valueOf(index));
-        log.info("Clicked on the : " + buttonLabel);
-    }
+//    public void clickButton(String buttonLabel, int index) {
+//        waitAndClickOn("clickIndexBtn", buttonLabel, String.valueOf(index));
+//        log.info("Clicked on the : " + buttonLabel);
+//    }
 
     public void clickButtons(String firstButton, String secondButton) {
         waitAndClickOn("firstBtn", firstButton);

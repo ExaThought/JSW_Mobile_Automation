@@ -2,11 +2,23 @@ package com.qapitol.jsw.utils;
 
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
+import lombok.Getter;
 
 import java.text.DecimalFormat;
 
 public class CurrencyUtils {
     private SimpleLogger log = SauronLogger.getLogger();
+
+    @Getter
+    private final DecimalFormat decimalFormatterDecimal;
+
+    @Getter
+    private final DecimalFormat decimalFormatterCommaDecimal;
+
+    private CurrencyUtils() {
+        this.decimalFormatterDecimal = new DecimalFormat("#.00");
+        this.decimalFormatterCommaDecimal = new DecimalFormat("#,###.00");
+    }
 
     public static CurrencyUtils getNewInstance() {
         return new CurrencyUtils();

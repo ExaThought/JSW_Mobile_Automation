@@ -22,8 +22,8 @@ public class CreditLimitSteps extends BaseSteps {
 
     public void clickOnShowMoreAction() {
         sleep(2000);
-        waitAndClickOn("showMoreActionBtn");
-        waitAndClickOn("creditLimitFreezeBtn");
+        tap("showMoreActionBtn");
+        tap("creditLimitFreezeBtn");
         waitUntilLoaderInvisible();
     }
 

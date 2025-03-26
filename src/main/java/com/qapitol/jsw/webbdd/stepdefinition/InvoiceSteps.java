@@ -42,6 +42,10 @@ public class InvoiceSteps extends BaseSteps {
         assertEquals(invoiceDataMap.get("Order Number"), buyerOrderNumber, "Buyer Order Number validation failed");
         assertEquals(invoiceDataMap.get("Invoice Date"), convertDateFormat((String) ContextData.getDataFromKey("invoiceDate")), "Invoice Date validation failed");
 
+        ContextData.addData("BookInvoiceID", invoiceDataMap.get("Book Invoice ID"));
+        log.info("Book Invoice ID:" + ContextData.getDataFromKey("BookInvoiceID"));
+//        assertNotNull(ContextData.getDataFromKey("BookInvoiceID"), "Book Invoice Id:");
+
 //        ExtentCucumberAdapter.addTestStepLog("Invoice Details Entry In Zoho Creator:--> " +invoiceDataMap);
         log.info("Zoho Invoice Validation successful");
         log.exiting();
