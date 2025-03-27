@@ -18,6 +18,7 @@ public class CreditLimitSteps extends BaseSteps {
         searchStringContains(CREDIT_LIMIT_REF_ID, creditProgram);
         clickOnShowMoreAction();
         validateFreezeStatus(freezeStatus, creditProgram);
+        pageRefresh();
     }
 
     public void clickOnShowMoreAction() {

@@ -40,6 +40,11 @@ public abstract class BaseSteps extends AbstractWebPage {
 
     //Validation values
     public static final String CREATOR_ID_DOC = "Creator ID - Documents";
+    public static final String ZOHO_BOOKS_ID = "Zoho BooksID";
+    public static final String ADVANCE_INVOICE = "Advance invoice";
+    public static final String BASE_AMOUNT = "Base amount";
+    public static final String GST_AMOUNT = "GST amount";
+    public static final String INVOICE_NUMBER = "Invoice Number";
 
     public <T> T getPojoFromContextData(String key, Class<T> t) {
         OrderImpl orderCreation = new OrderImpl();

@@ -11,6 +11,7 @@ import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
 
 import java.io.IOException;
@@ -243,6 +244,32 @@ public class LedgerSteps extends BaseSteps {
         zohoCreatorNavigation(LEDGER_SUMMARY_PATH);
         log.info("Navigated to Ledger Summary Page");
 //        ExtentCucumberAdapter.addTestStepLog("Navigated to Ledger Summary Page");
+    }
+
+    @Then("validate the ledger entry, knocked off amount and clearing status on Zoho Creator")
+    public void validateTheLedgerAndIncomingPaymentEntriesKnockedOfAmountAndClearingStatus() {
+
+        SoftAssert softAssert = new SoftAssert();
+        navigateToLedgerStatementNewTab();
+        clearSearch();
+        searchStringContains(DOCUMENT_ID, (String) ContextData.getDataFromKey("invoiceNumber"));
+        selectRowUsingObject((String) ContextData.getDataFromKey("invoiceNumber"), 10);
+        Map<String, String> ledgerAI = getDataFromWindow("dataWindowElement");
+    //    ExtentCucumberAdapter.addTestStepLog("Ledger_Statement_New data with document id --->  And Row data as -->" + ledgerAI);
+        assertNotNull(ledgerAI.get("Entity ID"));
+        Assert.assertEquals(ADVANCE_INVOICE, ledgerAI.get(DOCUMENT_TYPE));
+        Assert.assertEquals(ContextData.getDataFromKey("orderNumber"), ledgerAI.get(ORDER_ID));
+
+        Assert.assertEquals(ContextData.getDataFromKey("invoicedBaseAmount"), Double.parseDouble(ledgerAI.get(BASE_AMOUNT).replace(",", "")));
+        Assert.assertEquals(ContextData.getDataFromKey("invoicedTaxAmount"), Double.parseDouble(ledgerAI.get(GST_AMOUNT).replace(",", "")));
+        Assert.assertEquals(ContextData.getDataFromKey("invoiceAmount"), Double.parseDouble(ledgerAI.get(DEBIT_AMOUNT).replace(",", "")));
+        Assert.assertEquals((double)ContextData.getDataFromKey("invoicedBaseAmount") + (double)ContextData.getDataFromKey("invoicedTaxAmount"), ContextData.getDataFromKey("invoiceAmount"));
+        assertNotNull(ledgerAI.get(CREATOR_ID_MASTERS));
+        assertNotNull(ledgerAI.get(ZOHO_BOOKS_ID));
+        assertNotNull(ledgerAI.get(CREATOR_ID_DOC));
+        softAssert.assertEquals(ContextData.getDataFromKey("invoiceAmount"), Double.parseDouble(ledgerAI.get(KNOCKED_OFF_AMOUNT).replace(",", "")));
+        softAssert.assertEquals(CLEARED, ledgerAI.get(CLEARING_STATUS));
+  //      ExtentCucumberAdapter.addTestStepLog("Advance invoice status : cleared, all amount knocked off");
     }
 
 }
