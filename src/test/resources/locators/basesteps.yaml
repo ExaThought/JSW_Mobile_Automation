@@ -44,7 +44,7 @@ elements:
       web: //*[@class='zc-cb-footer']//a[text()='Search']
   totalRows:
     en_US:
-      web: //tr
+      web: //tbody/tr[@elname='zc-reportRowEl' and (not(@class) or normalize-space(@class)='')]
   selectRow:
     en_US:
       web: //tr[td[contains(text(),''{0}'')]]

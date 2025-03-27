@@ -291,10 +291,7 @@ public abstract class BaseSteps extends AbstractWebPage {
     public int getTotalRowsInTableExcludingHeader(){
         int totalRowCount = 0;
         try {
-            List<WebElement> totalRowElements = waitAndGetElements("totalRows");
-            if(nonNull(totalRowElements) && totalRowElements.size() > 1) {
-                totalRowCount = totalRowElements.size() - 1;
-            }
+            totalRowCount = locateElements("totalRows").size();
         } catch (Exception e){
             log.log(Level.FINE, "Error in fetching total rows", e);
         }
