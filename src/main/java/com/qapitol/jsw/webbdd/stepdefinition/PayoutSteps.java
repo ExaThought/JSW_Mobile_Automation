@@ -10,7 +10,6 @@ import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.Keys;
 
 import java.io.IOException;
@@ -63,10 +62,10 @@ public class PayoutSteps extends BaseSteps {
 
         switch (arg0) {
             case CASHBACK:
-                if(isNull(ContextData.getDataFromKey("totalCashbackAmount"))){
+                if (isNull(ContextData.getDataFromKey("totalCashbackAmount"))) {
                     payoutAmount = orderCreation.fetchCashbackAmount();
                 } else {
-                    payoutAmount = (double)ContextData.getDataFromKey("totalCashbackAmount");
+                    payoutAmount = (double) ContextData.getDataFromKey("totalCashbackAmount");
                 }
                 break;
             case SELLER:
@@ -91,10 +90,10 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToPendingPayoutTabAndApproveThePayout(String arg0) {
         log.entering();
 
-        if ("Seller".equalsIgnoreCase(arg0)){
-            ContextData.addData("documentNumber",ContextData.getDataFromKey("invoiceNumber"));
-        }else if ("Refund".equalsIgnoreCase(arg0)){
-            ContextData.addData("documentNumber",ContextData.getDataFromKey("orderNumber"));
+        if ("Seller".equalsIgnoreCase(arg0)) {
+            ContextData.addData("documentNumber", ContextData.getDataFromKey("invoiceNumber"));
+        } else if ("Refund".equalsIgnoreCase(arg0)) {
+            ContextData.addData("documentNumber", ContextData.getDataFromKey("orderNumber"));
         }
 
         navigateToPendingPayoutsTab();
@@ -180,20 +179,12 @@ public class PayoutSteps extends BaseSteps {
     }
 
     public Map<String, String> validatePayoutDetails(String payoutType, String payoutStatus, double amount) {
-        selectRowUsingObject(getCallSearchStringContainsFunc, (String) ContextData.getDataFromKey("orderNumber"), 30);
+        selectRowUsingObject(getCallSearchStringContainsFunc, (String) ContextData.getDataFromKey("documentNumber"), 10);
         Map<String, String> payoutData = getDataFromWindow("dataWindowElement");
         ContextData.addData("payoutNumber", payoutData.get(PAYOUT_NUMBER));
-        ContextData.addData("documentNumber",payoutData.get(DOCUMENT_NUMBER));
-//        assertEquals("Payout type verification failed", payoutType + " payout", payoutData.get(PAYOUT_TYPE));
-//        assertEquals("Document type verification failed", payoutType, payoutData.get(DOCUMENT_TYPE));
-//        assertTrue("Document number verification failed", payoutData.get(DOCUMENT_NUMBER).contains(Context.documentNumber));
-//        assertEquals("Payout status verification failed", payoutStatus, payoutData.get(PAYOUT_STATUS));
-//        assertEquals("GSTIN verification failed", Context.gstin, payoutData.get(GSTIN));
-//        assertEquals("Payee name", Context.customerName, payoutData.get(PAYEE_NAME));
+        ContextData.addData("documentNumber", payoutData.get(DOCUMENT_NUMBER));
         log.info("Payout entry details for " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
 //        ExtentCucumberAdapter.addTestStepLog("Payout details map => " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
-        String payoutNumber = payoutData.get(PAYOUT_NUMBER);
-        ContextData.addData("payoutNumber", payoutNumber);
 
         assertEquals(payoutData.get(PAYOUT_STATUS), payoutStatus, "Payout status verification failed");
         if (payoutType.equalsIgnoreCase(CASHBACK)) {
@@ -211,7 +202,7 @@ public class PayoutSteps extends BaseSteps {
 
     public void validateCashbackPayoutDetails(Map<String, String> payoutData, double cashbackAmount) {
 
-        double totalCashbackAmount = (double)ContextData.getDataFromKey("totalCashbackAmount");
+        double totalCashbackAmount = (double) ContextData.getDataFromKey("totalCashbackAmount");
 //        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         log.info("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         double tDSAmount = CurrencyUtils.getNewInstance().getTDSAmount(totalCashbackAmount, 10);

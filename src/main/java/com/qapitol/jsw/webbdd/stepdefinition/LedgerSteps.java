@@ -61,7 +61,7 @@ public class LedgerSteps extends BaseSteps {
         OrderImpl orderCreation = new OrderImpl();
         orderCreation.createOrder();
         new OMSDBUtils().updateSalesForceOpportunity((String) ContextData.getDataFromKey("orderNumber"));
-//        ExtentCucumberAdapter.addTestStepLog("Order created successfully, Customer Order Number: " + Context.buyerOrderNumber);
+//        ExtentCucumberAdapter.addTestStepLog("Order created successfully, Customer Order Number: " + (String) ContextData.getDataFromKey("orderNumber"));
 
         log.exiting();
     }
@@ -130,6 +130,7 @@ public class LedgerSteps extends BaseSteps {
         assertNotNull(ledgerData.get(CREATOR_ID_MASTERS), "Creator ID - Master should not be null");
 //        ExtentCucumberAdapter.addTestStepLog("Cashback Issued details: " + ledgerData);
         ContextData.addData("documentNumber", ledgerData.get(DOCUMENT_ID));
+        log.info("Cashback Issued details documentNumber:" + ledgerData.get(DOCUMENT_ID));
         clearFilter();
         log.exiting();
     }
@@ -239,7 +240,7 @@ public class LedgerSteps extends BaseSteps {
     }
 
     public void navigateToLedgerSummary() {
-        Grid.setSessionName("zoho");
+        Grid.setSessionName("zoho_creator");
         zohoCreatorNavigation(LEDGER_SUMMARY_PATH);
         log.info("Navigated to Ledger Summary Page");
 //        ExtentCucumberAdapter.addTestStepLog("Navigated to Ledger Summary Page");

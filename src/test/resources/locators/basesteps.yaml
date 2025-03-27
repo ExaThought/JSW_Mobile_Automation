@@ -42,6 +42,9 @@ elements:
   searchButton:
     en_US:
       web: //*[@class='zc-cb-footer']//a[text()='Search']
+  totalRows:
+    en_US:
+      web: //tr
   selectRow:
     en_US:
       web: //tr[td[contains(text(),''{0}'')]]

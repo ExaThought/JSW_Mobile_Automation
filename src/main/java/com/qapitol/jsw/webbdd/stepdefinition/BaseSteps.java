@@ -122,7 +122,7 @@ public abstract class BaseSteps extends AbstractWebPage {
      * @param tabName the name of the tab/module name
      */
     protected void zohoCreatorNavigation(String tabName) {
-        Grid.setSessionName("zoho");
+        Grid.setSessionName("zoho_creator");
         navigate(Config.getConfigProperty("creatorUrl") + tabName);
     }
 
@@ -288,9 +288,22 @@ public abstract class BaseSteps extends AbstractWebPage {
         return null;
     };
 
+    public int getTotalRowsInTableExcludingHeader(){
+        int totalRowCount = 0;
+        try {
+            List<WebElement> totalRowElements = waitAndGetElements("totalRows");
+            if(nonNull(totalRowElements) && totalRowElements.size() > 1) {
+                totalRowCount = totalRowElements.size() - 1;
+            }
+        } catch (Exception e){
+            log.log(Level.FINE, "Error in fetching total rows", e);
+        }
+        return totalRowCount;
+    }
+
     /**
-     * Selects the row until it is visible by refreshing it. The element visibility depends on the
-     * server producing the row.
+     * Selects a single row until it is visible by refreshing it. The element visibility depends on the
+     * server producing the row. It is expected to have only a single row in the table.
      *
      * @param callSearchStringContains The function to execute the search filtering.
      * @param searchText               The text to search for in the filter list
@@ -302,6 +315,7 @@ public abstract class BaseSteps extends AbstractWebPage {
 
         for (int i = 0; i < maxTry; i++) {
             if (waitAndCheckIsElementPresent(selectRowLocKey, searchText)) {
+                assertEquals(getTotalRowsInTableExcludingHeader(), 1, "No order or multiple orders found.");
                 waitAndClickOn(selectRowLocKey, searchText);
                 log.info("selectRowUsingObject has broken");
                 break;
