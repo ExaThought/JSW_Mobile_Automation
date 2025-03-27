@@ -97,7 +97,7 @@ public abstract class BaseSteps extends AbstractWebPage {
         if (StringUtils.isNotEmpty(displayValue) && displayValue.contains("display: none;")) {
             log.info("No need to wait for pre loader as attribute has value:" + displayValue);
         } else {
-            boolean preLoaderNotDisplayed = waitUntilElementAttributeContains(getLocator(PRE_LOADER), "style", "display: none;", NotFoundException.class, 20);
+            boolean preLoaderNotDisplayed = waitUntilElementAttributeContains(getLocator(PRE_LOADER), "style", "display: none;", NotFoundException.class, 30);
             log.info("waited until Pre loader is gone or until timeout. preLoaderNotDisplayed:" + preLoaderNotDisplayed);
         }
         log.exiting();

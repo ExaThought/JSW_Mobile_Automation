@@ -55,7 +55,6 @@ public class ZBInvoicesSteps extends BaseSteps {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-//        driver.navigate().to(url);
         log.info(" Navigated to --> " + documentType + " for document id -> " + docId + " In Zoho books");
 //        ExtentCucumberAdapter.addTestStepLog(" Navigated to --> " + documentType + " for document id -> " + docId + " In Zoho books");
     }
@@ -87,14 +86,10 @@ public class ZBInvoicesSteps extends BaseSteps {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String formattedDate = previousDate.format(formatter);
         // Find the date input element using the refined XPath
-//        WebElement dateInput = driver.findElement(By.xpath(dateFieldXPath));
         // Clear the existing date value and set the previous day's date
         clearTextBox(locater);
-//        dateInput.clear();
         sleep(1000);
         waitAndSetText(locater, formattedDate + Keys.RETURN);
-//        dateInput.sendKeys(formattedDate);
-//        dateInput.sendKeys(Keys.RETURN);
     }
 
     public void setPopInput(String fieldLabel, String fieldValue) {

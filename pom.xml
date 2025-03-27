@@ -31,12 +31,12 @@
         </dependency>
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
-            <artifactId>report-allure</artifactId>
+            <artifactId>api</artifactId>
             <version>${sauron.version}</version>
         </dependency>
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>report-allure</artifactId>
             <version>${sauron.version}</version>
         </dependency>
         <dependency>

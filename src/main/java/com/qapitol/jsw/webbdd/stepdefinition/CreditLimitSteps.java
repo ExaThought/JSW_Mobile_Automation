@@ -32,6 +32,7 @@ public class CreditLimitSteps extends BaseSteps {
         Map<String, String> creditLimitData = getDataFromWindow("dataWindowElement");
         assertEquals(freezeSatus, creditLimitData.get("Freeze status"), "Credit limit freeze verification failed:");
         log.info("Credit limit freeze status:" + creditLimitData.get("Freeze status"));
+        pageRefresh();
 //        ExtentCucumberAdapter.addTestStepLog("Customer limit freeze status:"+creditLimitData.get("Freeze status"));
     }
 }

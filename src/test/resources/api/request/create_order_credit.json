@@ -35,12 +35,12 @@
       "sellerVendorMasterId": "V1649-1968-JOPL-2427",
       "sellerId": "MH149",
       "sapLineItemId": 10,
-      "salesForceSkuId": "SKUR-350930",
-      "productKey": "2062_2011-E250A-03",
+      "salesForceSkuId": "SKUR-354209",
+      "productKey": "2062_2011-E250A-04",
       "orderedQuantity": 10000,
       "NCOReason": "",
-      "name": "MS HR Sheet 2062:2011 E250A",
-      "MMID": "1000-10000",
+      "name": "MS HR Coil 2062:2011 E250A",
+      "MMID": "1001-10001",
       "meta": {
         "pricing_mode": "EXW"
       },
