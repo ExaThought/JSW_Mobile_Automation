@@ -2,19 +2,62 @@ package com.qapitol.jsw.webbdd.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDoResp;
+import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.OMSDBUtils;
 import com.qapitol.sauron.data.ContextData;
+import com.qapitol.sauron.data.Data;
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class JOMSOrderCreationSteps extends BaseSteps {
     private final SimpleLogger log = SauronLogger.getLogger();
+
+    @When("Create order with SLO API")
+    public void createOrderWithSloApi() throws IOException, InterruptedException {
+        log.entering();
+        OrderImpl orderCreation = new OrderImpl();
+        orderCreation.createOrder();
+        new OMSDBUtils().updateSalesForceOpportunity((String) ContextData.getDataFromKey("orderNumber"));
+        AllureCustomLogReporter.addTestStepLog("Order created successfully, Customer Order Number: " + (String) ContextData.getDataFromKey("orderNumber"));
+        log.exiting();
+    }
+
+    @Then("validate the order details")
+    public void validateTheOrderDetails() throws IOException, InterruptedException {
+        log.entering();
+        String orderType = (String) Data.get().get("orderType");
+        String paymentType = (String) Data.get().get("paymentType");
+
+        OrderImpl orderCreation = new OrderImpl();
+        GetOMSOrderResp getOMSOrderResp = orderCreation.validateOrderDetails(orderType, paymentType);
+        ContextData.addData("gstin", getOMSOrderResp.getBuyerDetails().getGstin());
+        ContextData.addData("baseAMount", getOMSOrderResp.getAmounts().get("LIA").getAmount().getDisplayAmount().toString().replace(",", ""));
+        log.info("Order Type: " + orderType + "And Payment Type: " + paymentType);
+        AllureCustomLogReporter.addTestStepLog("Order Type: " + orderType + " And Payment Type: " + paymentType);
+        log.info("Credit by pass flag -->" + getOMSOrderResp.getCreditBlockBypassFlag());
+        AllureCustomLogReporter.addTestStepLog("Credit by pass flag -->" + getOMSOrderResp.getCreditBlockBypassFlag());
+        log.exiting();
+    }
+
+    @Then("Get cashback amount and quantity details")
+    public void getCashbackAmountAndQuantityDetails() throws IOException, InterruptedException {
+        log.entering();
+        OrderImpl orderCreation = new OrderImpl();
+        double cashbackAmount = orderCreation.fetchCashbackAmount();
+        double totalCashbackAmount = cashbackAmount * Double.parseDouble((String) ContextData.getDataFromKey("orderQuantity"));
+        totalCashbackAmount = Math.round(totalCashbackAmount * 100.0) / 100.0;
+        ContextData.addData("totalCashbackAmount", totalCashbackAmount);
+        AllureCustomLogReporter.addTestStepLog("Customer Order Cashback Amount Per Unit: " + cashbackAmount);
+        AllureCustomLogReporter.addTestStepLog("Customer Order Total Cashback Amount: " + totalCashbackAmount);
+        log.exiting();
+    }
 
     @Then("Confirm the order using JOMS API")
     public void confirmOrderUsingJOMS() throws IOException, InterruptedException {
