@@ -2,6 +2,7 @@ package com.qapitol.jsw.webbdd.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.ExcelUtils;
 import com.qapitol.sauron.core.Grid;
@@ -82,7 +83,7 @@ public class PayoutSteps extends BaseSteps {
         }
         log.info(arg0 + " Payout amount --> " + payoutAmount);
         ContextData.addData("payoutAmount", payoutAmount);
-//        ExtentCucumberAdapter.addTestStepLog(arg0+" Payout amount --> "+payoutAmount);
+        AllureCustomLogReporter.addTestStepLog(arg0+" Payout amount --> "+payoutAmount);
         log.exiting();
     }
 
@@ -184,7 +185,7 @@ public class PayoutSteps extends BaseSteps {
         ContextData.addData("payoutNumber", payoutData.get(PAYOUT_NUMBER));
         ContextData.addData("documentNumber", payoutData.get(DOCUMENT_NUMBER));
         log.info("Payout entry details for " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
-//        ExtentCucumberAdapter.addTestStepLog("Payout details map => " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
+        AllureCustomLogReporter.addTestStepLog("Payout details map => " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
 
         assertEquals(payoutData.get(PAYOUT_STATUS), payoutStatus, "Payout status verification failed");
         if (payoutType.equalsIgnoreCase(CASHBACK)) {
@@ -196,14 +197,14 @@ public class PayoutSteps extends BaseSteps {
             log.info("Seller payout validation passed");
         }
         log.info("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
-//        ExtentCucumberAdapter.addTestStepLog("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
+        AllureCustomLogReporter.addTestStepLog("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
         return payoutData;
     }
 
     public void validateCashbackPayoutDetails(Map<String, String> payoutData, double cashbackAmount) {
 
         double totalCashbackAmount = (double) ContextData.getDataFromKey("totalCashbackAmount");
-//        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
+        AllureCustomLogReporter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         log.info("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         double tDSAmount = CurrencyUtils.getNewInstance().getTDSAmount(totalCashbackAmount, 10);
         String cashBackPayoutAmount = formatDecimalWithComma(String.valueOf(totalCashbackAmount - tDSAmount));
@@ -213,14 +214,14 @@ public class PayoutSteps extends BaseSteps {
         migrateToTestNgAssertEquals("TDS amount verification failed", formatDecimal(tDSAmount), payoutData.get(TDS));
         migrateToTestNgAssertEquals("GST amount verification failed", ZERO, payoutData.get(GST_AMOUNT));
         migrateToTestNgAssertEquals("Payout amount verification failed", cashBackPayoutAmount, payoutData.get(PAYOUT_AMOUNT));
-//        ExtentCucumberAdapter.addTestStepLog("TDS Amount: " + tDSAmount);
+        AllureCustomLogReporter.addTestStepLog("TDS Amount: " + tDSAmount);
         log.info("TDS Amount: " + tDSAmount);
     }
 
     public void validateRefundPayoutDetails(Map<String, String> payoutData, double refundAmount) {
 
         migrateToTestNgAssertEquals("Payout amount verification failed", formatDecimal(String.valueOf(refundAmount)), payoutData.get(PAYOUT_AMOUNT));
-//        ExtentCucumberAdapter.addTestStepLog("Customer Order Refund Amount: " + refundAmount);
+        AllureCustomLogReporter.addTestStepLog("Customer Order Refund Amount: " + refundAmount);
         log.info("Customer Order Refund Amount: " + refundAmount);
     }
 
@@ -299,7 +300,7 @@ public class PayoutSteps extends BaseSteps {
         locateElement("finalExportBtn").clear();
         String fileName = "Export payouts-DB-" + getCurrentTimeStamp();
         log.info("Export payout Filename -->" + fileName);
-//        ExtentCucumberAdapter.addTestStepLog("Export payout Filename -->"+ fileName);
+        AllureCustomLogReporter.addTestStepLog("Export payout Filename -->"+ fileName);
         waitAndSetText("finalExportBtn", fileName + Keys.ENTER);
         tap("finalExport");
         log.info("Clicked on final export button");
@@ -335,7 +336,7 @@ public class PayoutSteps extends BaseSteps {
         excelUtils.copyColumnValueToAnotherCol(inputFilePath, "System Ref No.", "Instrument Refrence No");
         log.info("UTR No --> " + utrNo);
         log.info("Updated status, Ref no and UTR no details in payout excel file : " + inputFilePath);
-//        ExtentCucumberAdapter.addTestStepLog("UTR No --> "+utrNo);
+        AllureCustomLogReporter.addTestStepLog("UTR No --> "+utrNo);
 
     }
 

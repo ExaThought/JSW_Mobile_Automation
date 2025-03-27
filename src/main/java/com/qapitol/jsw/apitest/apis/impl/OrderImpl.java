@@ -17,11 +17,11 @@ import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoice;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoiceResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipment;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.RandomStringGenerator;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.data.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.testng.asserts.SoftAssert;
 
 import javax.ws.rs.core.Response;
@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.Objects.nonNull;
 import static org.testng.Assert.*;
@@ -83,11 +82,11 @@ public class OrderImpl extends BaseApiImpl {
         ContextData.addData("advanceAmountInPaisa", getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount());
 
         log.info("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
-//        ExtentCucumberAdapter.addTestStepLog("Buyer name --> " + jsonPath.get("buyerDetails.name") + " And Seller name --> " + jsonPath.get("childOrders[0].sellerName"));
+        AllureCustomLogReporter.addTestStepLog("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
         log.info("Order status --> " + getOrderResp.getOrderStatus() + " And Payment status --> " + getOrderResp.getPaymentStatus() + " And Advance percentage --> " + getOrderResp.getAdvancePercentage());
-//        ExtentCucumberAdapter.addTestStepLog("Order status --> " + jsonPath.get("orderStatus") + " And Payment status --> " + jsonPath.get("paymentStatus") + " And Advance percentage --> " + jsonPath.get("advancePercentage"));
+        AllureCustomLogReporter.addTestStepLog("Order status --> " + getOrderResp.getOrderStatus() + " And Payment status --> " + getOrderResp.getPaymentStatus() + " And Advance percentage --> " + getOrderResp.getAdvancePercentage());
         log.info("Total Order Amount --> " + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getOrderAmount().getCentAmount()) + "And Advance payment of order amount -->" + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount()));
-//        ExtentCucumberAdapter.addTestStepLog("Total Order Amount --> " + CurrencyUtils.getNewInstance().convertPaisaToRupees(Context.orderAmount) + " And Advance payment of order amount -->" + CurrencyUtils.getNewInstance().convertPaisaToRupees(Context.advanceAmountInPaisa));
+        AllureCustomLogReporter.addTestStepLog("Total Order Amount --> " + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getOrderAmount().getCentAmount()) + " And Advance payment of order amount -->" + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount()));
 //
         return getOrderResp;
     }
@@ -152,7 +151,7 @@ public class OrderImpl extends BaseApiImpl {
         softAssert.assertEquals("Order state not in placed or created state", getOrderResp.getOrderStatus(), status);
         ContextData.addData("orderStatus", getOrderResp.getOrderStatus());
         log.info("Order status --> " + status + " for order number : " + orderNumber);
-//        ExtentCucumberAdapter.addTestStepLog("Order status --> " + status + " for order number : " + Context.buyerOrderNumber);
+        AllureCustomLogReporter.addTestStepLog("Order status --> " + status + " for order number : " + orderNumber);
     }
 
     public CreateDoResp createDO() throws IOException {
@@ -162,22 +161,22 @@ public class OrderImpl extends BaseApiImpl {
         createDo.setCustomerOrderId(ContextData.getDataFromKey("buyerOrderId"));
         createDo.getPsLineItemsDetails().get(0).setLineItemId((Integer) ContextData.getDataFromKey("lineItemId"));
 
-        if(nonNull((Data.get().get("requestAmount")))) {
+        if (nonNull((Data.get().get("requestAmount")))) {
             createDo.setRequestAmount((Double) Data.get().get("requestAmount"));
         }
-        if(nonNull((Data.get().get("plannedQuantity")))) {
+        if (nonNull((Data.get().get("plannedQuantity")))) {
             createDo.getPsLineItemsDetails().get(0).setPlannedQuantity((String) Data.get().get("plannedQuantity"));
         }
-        if(nonNull((Data.get().get("totalLineItemQuantity")))) {
+        if (nonNull((Data.get().get("totalLineItemQuantity")))) {
             createDo.getPsLineItemsDetails().get(0).setTotalLineItemQuantity((Double) Data.get().get("totalLineItemQuantity"));
         }
-        if(nonNull((Data.get().get("sellerAddress")))) {
+        if (nonNull((Data.get().get("sellerAddress")))) {
             createDo.setSellerAddress((String) Data.get().get("sellerAddress"));
         }
-        if(nonNull((Data.get().get("vendorLocationDisplayName")))) {
+        if (nonNull((Data.get().get("vendorLocationDisplayName")))) {
             createDo.getSellerAddressMetadata().setVendorLocationDisplayName((String) Data.get().get("vendorLocationDisplayName"));
         }
-        if(nonNull((Data.get().get("sellerCompanyName")))) {
+        if (nonNull((Data.get().get("sellerCompanyName")))) {
             createDo.setSellerCompanyName((String) Data.get().get("sellerCompanyName"));
         }
 
@@ -208,7 +207,7 @@ public class OrderImpl extends BaseApiImpl {
         createShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
         createShipment.getLineItemsDetails().get(0).setLineitemId(ContextData.getDataFromKey("lineItemId"));
 
-        if(nonNull((Data.get().get("plannedQuantity")))) {
+        if (nonNull((Data.get().get("plannedQuantity")))) {
             createShipment.getLineItemsDetails().get(0).getPlannedDelivery().setQuantity(Double.valueOf((String) Data.get().get("plannedQuantity")));
         }
 
@@ -220,7 +219,7 @@ public class OrderImpl extends BaseApiImpl {
 
         assertNotNull(createShipmentResp, "unable to create the shipment");
         ContextData.addData("shipmentId", createShipmentResp.getId());
-//        ExtentCucumberAdapter.addTestStepLog("Shipment Id --> "+response.getBody().jsonPath().get("number") +" and quantity --> "+response.getBody().jsonPath().get("lineItemsDetails[0].plannedDelivery.quantity"));
+        AllureCustomLogReporter.addTestStepLog("Shipment Id --> " + createShipmentResp.getId() + " and quantity --> " + createShipmentResp.getLineItemsDetails().get(0).getPlannedDelivery().getQuantity());
     }
 
     public UpdateShipmentResp updateShipment() throws IOException {
@@ -240,16 +239,16 @@ public class OrderImpl extends BaseApiImpl {
             updateShipment.setId(ContextData.getDataFromKey("shipmentId"));
             updateShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
 
-            if(nonNull((Data.get().get("taxType")))) {
+            if (nonNull((Data.get().get("taxType")))) {
                 updateShipment.getLineItemsDetails().get(0).setTaxType((String) Data.get().get("taxType"));
             }
-            if(nonNull((Data.get().get("invoicedBaseAmount")))) {
+            if (nonNull((Data.get().get("invoicedBaseAmount")))) {
                 updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount((double) Data.get().get("invoicedBaseAmount"));
             }
-            if(nonNull((Data.get().get("invoicedTaxAmount")))) {
+            if (nonNull((Data.get().get("invoicedTaxAmount")))) {
                 updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount((double) Data.get().get("invoicedTaxAmount"));
             }
-            if(nonNull((Data.get().get("totalInvoicedAmount")))) {
+            if (nonNull((Data.get().get("totalInvoicedAmount")))) {
                 updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount((double) Data.get().get("totalInvoicedAmount"));
             }
 
@@ -337,7 +336,7 @@ public class OrderImpl extends BaseApiImpl {
 
         log.info("Cashback Amount Per Unit: " + cashbackAmount);
         log.info("Order Quantity : " + orderQuantity);
-//        ExtentCucumberAdapter.addTestStepLog("Cashback Amount Per Unit: " + cashbackAmount +" "+ "and Order Quantity : " + Context.orderQuantity);
+        AllureCustomLogReporter.addTestStepLog("Cashback Amount Per Unit: " + cashbackAmount + " " + "and Order Quantity : " + orderQuantity);
         return cashbackAmount;
     }
 }

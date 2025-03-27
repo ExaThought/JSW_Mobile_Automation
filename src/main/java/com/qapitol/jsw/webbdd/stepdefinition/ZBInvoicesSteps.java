@@ -1,5 +1,6 @@
 package com.qapitol.jsw.webbdd.stepdefinition;
 
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.data.ContextData;
 import io.cucumber.java.en.Then;
@@ -43,7 +44,7 @@ public class ZBInvoicesSteps extends BaseSteps {
         String status = locateElement("ribbon").getText();
         migrateToTestNgAssertEquals("Zoho books invoice status verification failed:", invoiceStatus, status);
         log.info("Zoho books invoice status is:" + status);
-//        ExtentCucumberAdapter.addTestStepLog("Zoho books invoice status is:"+status);
+        AllureCustomLogReporter.addTestStepLog("Zoho books invoice status is:"+status);
     }
 
     public void referenceDocument(String documentType, String docId) {
@@ -56,7 +57,7 @@ public class ZBInvoicesSteps extends BaseSteps {
             throw new RuntimeException(e);
         }
         log.info(" Navigated to --> " + documentType + " for document id -> " + docId + " In Zoho books");
-//        ExtentCucumberAdapter.addTestStepLog(" Navigated to --> " + documentType + " for document id -> " + docId + " In Zoho books");
+        AllureCustomLogReporter.addTestStepLog(" Navigated to --> " + documentType + " for document id -> " + docId + " In Zoho books");
     }
 
     public void updateTheInvoiceDateToPrevious() {
@@ -74,7 +75,7 @@ public class ZBInvoicesSteps extends BaseSteps {
     public void clickActionButton(String buttonName) {
         waitAndClickOn("actionBtn", buttonName, buttonName);
         log.info(" Clicked on --> " + buttonName);
-//        ExtentCucumberAdapter.addTestStepLog(" Clicked on --> " + buttonName);
+        AllureCustomLogReporter.addTestStepLog(" Clicked on --> " + buttonName);
     }
 
     public void setPreviousDate(String locater) {

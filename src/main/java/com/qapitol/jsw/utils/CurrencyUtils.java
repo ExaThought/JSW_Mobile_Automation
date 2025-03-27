@@ -34,7 +34,7 @@ public class CurrencyUtils {
         Double tdsAmount = baseAmount * rate / 100;
         tdsAmount = Math.ceil(tdsAmount);
         log.info("TDS Amount --> " + tdsAmount);
-//        ExtentCucumberAdapter.addTestStepLog("TDS Amount --> " + tdsAmount);
+        AllureCustomLogReporter.addTestStepLog("TDS Amount --> " + tdsAmount);
         return tdsAmount;
     }
 
@@ -42,7 +42,7 @@ public class CurrencyUtils {
         Double tdsAmount = baseAmount * rate / 100;
         tdsAmount = Math.ceil(tdsAmount);
         log.info("TDS Amount --> " + tdsAmount);
-//        ExtentCucumberAdapter.addTestStepLog("TDS Amount --> " + tdsAmount);
+        AllureCustomLogReporter.addTestStepLog("TDS Amount --> " + tdsAmount);
         return tdsAmount;
     }
 

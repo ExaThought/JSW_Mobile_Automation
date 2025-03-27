@@ -3,8 +3,8 @@ package com.qapitol.jsw.webbdd.stepdefinition;
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDoResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.OMSDBUtils;
-import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
@@ -42,7 +42,7 @@ public class JOMSOrderCreationSteps extends BaseSteps {
         orderCreation.releaseDO(createDoResp);
 
         log.info("DO released with quantity --> " + plannedQuantity);
-        //        ExtentCucumberAdapter.addTestStepLog("DO created and released with quantity --> " + response.getBody().jsonPath().get("psLineItemsDetails[0].plannedQuantity") +"MT");
+        AllureCustomLogReporter.addTestStepLog("DO created and released with quantity --> " + plannedQuantity + "MT");
         log.exiting();
     }
 
@@ -51,7 +51,8 @@ public class JOMSOrderCreationSteps extends BaseSteps {
         log.entering();
         OrderImpl orderCreation = new OrderImpl();
         orderCreation.createShipment();
-//        ExtentCucumberAdapter.addTestStepLog("For Order " + Context.buyerOrderNumber + " Shipment is Created");
+        String buyerOrderNumber = (String) ContextData.getDataFromKey("orderNumber");
+        AllureCustomLogReporter.addTestStepLog("For Order " + buyerOrderNumber + " Shipment is Created");
         log.exiting();
     }
 
@@ -68,13 +69,12 @@ public class JOMSOrderCreationSteps extends BaseSteps {
         ContextData.addData("invoiceDueDate", updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceDueDate());
         ContextData.addData("invoiceAmount", updateShipmentResp.getShipmentInvoiceDetails().getTotalInvoicedAmount());
 
-//        ExtentCucumberAdapter.addTestStepLog("Invoice Number : " + Context.invoiceNumber + " And Invoice Date: " + Context.invoiceDate + " And Invoice Amount: " + Context.invoiceAmount);
-//        System.out.println("shipment invoiced response printx = " + response.getBody().asString() + "printz");
+        AllureCustomLogReporter.addTestStepLog("Invoice Number : " + ContextData.getDataFromKey("invoiceNumber") + " And Invoice Date: " + ContextData.getDataFromKey("invoiceDate") + " And Invoice Amount: " + ContextData.getDataFromKey("invoiceAmount"));
         ContextData.addData("invoicedBaseAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedBaseAmount());
         ContextData.addData("invoicedTaxAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedTaxAmount());
         ContextData.addData("invoicedTCSAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedTCSAmount());
         String shipmentNumber = updateShipmentResp.getNumber();
-//        ExtentCucumberAdapter.addTestStepLog("Shipment with id " + shipmentNumber + " is Invoiced");
+        AllureCustomLogReporter.addTestStepLog("Shipment with id " + shipmentNumber + " is Invoiced");
         log.exiting();
     }
 
@@ -85,9 +85,11 @@ public class JOMSOrderCreationSteps extends BaseSteps {
         String shipmentNumber = updateShipmentResp.getNumber();
         OrderImpl orderCreation = new OrderImpl();
         orderCreation.postInvoiceToZoho(shipmentNumber);
-        log.info(String.format("Customer Order Number: {%s}", ContextData.getDataFromKey("orderNumber")));
+
+        String buyerOrderNumber = (String) ContextData.getDataFromKey("orderNumber");
+        log.info(String.format("Customer Order Number: {%s}", buyerOrderNumber));
         log.info(String.format("Shipment Number: {%s}", shipmentNumber));
-//        ExtentCucumberAdapter.addTestStepLog("Order with id " + Context.buyerOrderNumber + ", Invoice number--> " +Context.invoiceNumber+ " is posted to Zoho for Shipment Number: " + shipmentNumber );
+        AllureCustomLogReporter.addTestStepLog("Order with id " + buyerOrderNumber + ", Invoice number--> " + ContextData.getDataFromKey("invoiceNumber") + " is posted to Zoho for Shipment Number: " + shipmentNumber);
         log.exiting();
     }
 }

@@ -1,5 +1,6 @@
 package com.qapitol.jsw.webbdd.stepdefinition;
 
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import io.cucumber.java.en.Then;
 
 import java.util.Map;
@@ -33,6 +34,6 @@ public class CreditLimitSteps extends BaseSteps {
         assertEquals(freezeSatus, creditLimitData.get("Freeze status"), "Credit limit freeze verification failed:");
         log.info("Credit limit freeze status:" + creditLimitData.get("Freeze status"));
         pageRefresh();
-//        ExtentCucumberAdapter.addTestStepLog("Customer limit freeze status:"+creditLimitData.get("Freeze status"));
+        AllureCustomLogReporter.addTestStepLog("Customer limit freeze status:"+creditLimitData.get("Freeze status"));
     }
 }

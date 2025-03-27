@@ -1,6 +1,7 @@
 package com.qapitol.jsw.webbdd.stepdefinition;
 
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
@@ -35,7 +36,7 @@ public class InvoiceSteps extends BaseSteps {
 
         String buyerOrderNumber = (String) ContextData.getDataFromKey("orderNumber");
 
-//        ExtentCucumberAdapter.addTestStepLog("Order Invoice Amount validation is done. Invoice Number: " + invoiceNumber + "\n And Invoice Amount: " + invoiceAmount);
+        AllureCustomLogReporter.addTestStepLog("Order Invoice Amount validation is done. Invoice Number: " + invoiceNumber + "\n And Invoice Amount: " + invoiceAmount);
 
         assertTrue(invoiceDataMap.get("Customer Name").contains((String) ContextData.getDataFromKey("customerName")));
         assertEquals(invoiceDataMap.get("Invoice Number"), invoiceNumber, "Invoice Number validation failed");
@@ -46,7 +47,7 @@ public class InvoiceSteps extends BaseSteps {
         log.info("Book Invoice ID:" + ContextData.getDataFromKey("BookInvoiceID"));
 //        assertNotNull(ContextData.getDataFromKey("BookInvoiceID"), "Book Invoice Id:");
 
-//        ExtentCucumberAdapter.addTestStepLog("Invoice Details Entry In Zoho Creator:--> " +invoiceDataMap);
+        AllureCustomLogReporter.addTestStepLog("Invoice Details Entry In Zoho Creator:--> " + invoiceDataMap);
         log.info("Zoho Invoice Validation successful");
         log.exiting();
     }
@@ -74,6 +75,6 @@ public class InvoiceSteps extends BaseSteps {
         ContextData.addData("BookInvoiceID", invoiceWindowData.get("Book Invoice ID"));
         log.info("Book Invoice ID:" + ContextData.getDataFromKey("BookInvoiceID"));
         assertNotNull(ContextData.getDataFromKey("BookInvoiceID"), "Book Invoice Id:");
-//        ExtentCucumberAdapter.addTestStepLog("Book Invoice ID--> " +Context.BookInvoiceID);
+        AllureCustomLogReporter.addTestStepLog("Book Invoice ID--> " + ContextData.getDataFromKey("BookInvoiceID"));
     }
 }
