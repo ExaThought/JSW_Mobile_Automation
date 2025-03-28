@@ -2,6 +2,7 @@ package com.qapitol.jsw.webbdd.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.OMSDBUtils;
 import com.qapitol.sauron.core.Grid;
@@ -56,47 +57,6 @@ public class LedgerSteps extends BaseSteps {
     public static final String PAYOUT = "Payout";
     public static final String ZBM_CASHBACK_PAYOUT = "Refunds against Credit notes";
 
-    @When("Create order with SLO API")
-    public void createOrderWithSloApi() throws IOException, InterruptedException {
-        log.entering();
-        OrderImpl orderCreation = new OrderImpl();
-        orderCreation.createOrder();
-        new OMSDBUtils().updateSalesForceOpportunity((String) ContextData.getDataFromKey("orderNumber"));
-//        ExtentCucumberAdapter.addTestStepLog("Order created successfully, Customer Order Number: " + Context.buyerOrderNumber);
-
-        log.exiting();
-    }
-
-    @Then("validate the order details")
-    public void validateTheOrderDetails() throws IOException, InterruptedException {
-        log.entering();
-        String orderType = (String) Data.get().get("orderType");
-        String paymentType = (String) Data.get().get("paymentType");
-
-        OrderImpl orderCreation = new OrderImpl();
-        GetOMSOrderResp getOMSOrderResp = orderCreation.validateOrderDetails(orderType, paymentType);
-        ContextData.addData("gstin", getOMSOrderResp.getBuyerDetails().getGstin());
-        ContextData.addData("baseAMount", getOMSOrderResp.getAmounts().get("LIA").getAmount().getDisplayAmount().toString().replace(",", ""));
-        log.info("Order Type: " + orderType + "And Payment Type: " + paymentType);
-//        ExtentCucumberAdapter.addTestStepLog("Order Type: " + arg0 + " And Payment Type: " + arg1);
-        log.info("Credit by pass flag -->" + getOMSOrderResp.getCreditBlockBypassFlag());
-//        ExtentCucumberAdapter.addTestStepLog("Credit by pass flag -->" + jsonPath.get("creditBlockBypassFlag"));
-        log.exiting();
-    }
-
-    @Then("Get cashback amount and quantity details")
-    public void getCashbackAmountAndQuantityDetails() throws IOException, InterruptedException {
-        log.entering();
-        OrderImpl orderCreation = new OrderImpl();
-        double cashbackAmount = orderCreation.fetchCashbackAmount();
-        double totalCashbackAmount = cashbackAmount * Double.parseDouble((String) ContextData.getDataFromKey("orderQuantity"));
-        totalCashbackAmount = Math.round(totalCashbackAmount * 100.0) / 100.0;
-        ContextData.addData("totalCashbackAmount", totalCashbackAmount);
-//        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount Per Unit: " + cashbackAmount);
-//        ExtentCucumberAdapter.addTestStepLog("Customer Order Total Cashback Amount: " + totalCashbackAmount);
-        log.exiting();
-    }
-
     @Then("Validate ledger statement with Document type as Cashback Issued on Zoho Creator")
     public void validateLedgerStatementDocumentTypeAsCashbackIssued() {
         log.entering();
@@ -129,8 +89,9 @@ public class LedgerSteps extends BaseSteps {
         assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED), CREDIT_NOTE, "Zoho book Module used verification failed");
         assertNotNull(ledgerData.get(CREATOR_ID_DOC), "Creator ID - Documents should not be null");
         assertNotNull(ledgerData.get(CREATOR_ID_MASTERS), "Creator ID - Master should not be null");
-//        ExtentCucumberAdapter.addTestStepLog("Cashback Issued details: " + ledgerData);
+        AllureCustomLogReporter.addTestStepLog("Cashback Issued details: " + ledgerData);
         ContextData.addData("documentNumber", ledgerData.get(DOCUMENT_ID));
+        log.info("Cashback Issued details documentNumber:" + ledgerData.get(DOCUMENT_ID));
         clearFilter();
         log.exiting();
     }
@@ -164,7 +125,7 @@ public class LedgerSteps extends BaseSteps {
         assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED), ZBM_CASHBACK_TDS, "Zoho book Module used verification failed");
         assertNotNull(ledgerData.get(CREATOR_ID_DOC), "Creator ID - Documents should not be null");
         assertNotNull(ledgerData.get(CREATOR_ID_MASTERS), "Creator ID - Master should not be null");
-//        ExtentCucumberAdapter.addTestStepLog("Cashback TDS details: " + ledgerData);
+        AllureCustomLogReporter.addTestStepLog("Cashback TDS details: " + ledgerData);
         clearFilter();
         log.exiting();
     }
@@ -201,7 +162,7 @@ public class LedgerSteps extends BaseSteps {
         assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED), ZBM_CASHBACK_PAYOUT, "Zoho book Module used verification failed");
         assertNotNull(ledgerData.get(CREATOR_ID_DOC), "Creator ID - Documents should not be null");
         assertNotNull(ledgerData.get(CREATOR_ID_MASTERS), "Creator ID - Master should not be null");
-//        ExtentCucumberAdapter.addTestStepLog("Cashback Payouts details in ledger statement: " + ledgerData);
+        AllureCustomLogReporter.addTestStepLog("Cashback Payouts details in ledger statement: " + ledgerData);
         log.info("Cashback Payouts details in ledger statement: " + ledgerData);
         clearFilter();
         log.exiting();
@@ -220,7 +181,7 @@ public class LedgerSteps extends BaseSteps {
         Map<String, String> ledgerSummaryData = getDataFromWindow("dataWindowElement");
         softAssert.assertEquals("Ledger summary verification failed:",freezeStatus,ledgerSummaryData.get("Freeze status"));
         log.info("Ledger summary freeze status:"+ledgerSummaryData.get("Freeze status"));
-//        ExtentCucumberAdapter.addTestStepLog("Ledger summary freeze status:"+ledgerSummaryData.get("Freeze status"));
+        AllureCustomLogReporter.addTestStepLog("Ledger summary freeze status:"+ledgerSummaryData.get("Freeze status"));
     }
 
     public void navigateToLedgerStatementNewTab() {
@@ -236,14 +197,14 @@ public class LedgerSteps extends BaseSteps {
         searchStringContains(CUSTOMER_NAME, customerName);
         tap("retryBtn");
         waitUntilLoaderInvisible();
-        sleep(5555);
+        sleep(999);
     }
 
     public void navigateToLedgerSummary() {
-        Grid.setSessionName("zoho");
+        Grid.setSessionName("zoho_creator");
         zohoCreatorNavigation(LEDGER_SUMMARY_PATH);
         log.info("Navigated to Ledger Summary Page");
-//        ExtentCucumberAdapter.addTestStepLog("Navigated to Ledger Summary Page");
+        AllureCustomLogReporter.addTestStepLog("Navigated to Ledger Summary Page");
     }
 
     @Then("validate the ledger entry, knocked off amount and clearing status on Zoho Creator")
@@ -255,21 +216,19 @@ public class LedgerSteps extends BaseSteps {
         searchStringContains(DOCUMENT_ID, (String) ContextData.getDataFromKey("invoiceNumber"));
         selectRowUsingObject((String) ContextData.getDataFromKey("invoiceNumber"), 10);
         Map<String, String> ledgerAI = getDataFromWindow("dataWindowElement");
-    //    ExtentCucumberAdapter.addTestStepLog("Ledger_Statement_New data with document id --->  And Row data as -->" + ledgerAI);
+        AllureCustomLogReporter.addTestStepLog("Ledger_Statement data with document id --->  And Row data as -->" + ledgerAI);
         assertNotNull(ledgerAI.get("Entity ID"));
         Assert.assertEquals(ADVANCE_INVOICE, ledgerAI.get(DOCUMENT_TYPE));
         Assert.assertEquals(ContextData.getDataFromKey("orderNumber"), ledgerAI.get(ORDER_ID));
 
-        Assert.assertEquals(ContextData.getDataFromKey("invoicedBaseAmount"), Double.parseDouble(ledgerAI.get(BASE_AMOUNT).replace(",", "")));
-        Assert.assertEquals(ContextData.getDataFromKey("invoicedTaxAmount"), Double.parseDouble(ledgerAI.get(GST_AMOUNT).replace(",", "")));
-        Assert.assertEquals(ContextData.getDataFromKey("invoiceAmount"), Double.parseDouble(ledgerAI.get(DEBIT_AMOUNT).replace(",", "")));
-        Assert.assertEquals((double)ContextData.getDataFromKey("invoicedBaseAmount") + (double)ContextData.getDataFromKey("invoicedTaxAmount"), ContextData.getDataFromKey("invoiceAmount"));
+        Assert.assertEquals((double) ContextData.getDataFromKey("invoicedBaseAmount"), Double.parseDouble(ledgerAI.get(BASE_AMOUNT).replace(",", "")));
+        Assert.assertEquals((double) ContextData.getDataFromKey("invoicedTaxAmount"), Double.parseDouble(ledgerAI.get(GST_AMOUNT).replace(",", "")));
+        Assert.assertEquals((double) ContextData.getDataFromKey("invoiceAmount"), Double.parseDouble(ledgerAI.get(DEBIT_AMOUNT).replace(",", "")));
+        Assert.assertEquals((double) ContextData.getDataFromKey("invoicedBaseAmount") + (double)ContextData.getDataFromKey("invoicedTaxAmount"), (double) ContextData.getDataFromKey("invoiceAmount"));
         assertNotNull(ledgerAI.get(CREATOR_ID_MASTERS));
         assertNotNull(ledgerAI.get(ZOHO_BOOKS_ID));
         assertNotNull(ledgerAI.get(CREATOR_ID_DOC));
-        softAssert.assertEquals(ContextData.getDataFromKey("invoiceAmount"), Double.parseDouble(ledgerAI.get(KNOCKED_OFF_AMOUNT).replace(",", "")));
+        softAssert.assertEquals((double) ContextData.getDataFromKey("invoiceAmount"), Double.parseDouble(ledgerAI.get(KNOCKED_OFF_AMOUNT).replace(",", "")));
         softAssert.assertEquals(CLEARED, ledgerAI.get(CLEARING_STATUS));
-  //      ExtentCucumberAdapter.addTestStepLog("Advance invoice status : cleared, all amount knocked off");
     }
-
 }

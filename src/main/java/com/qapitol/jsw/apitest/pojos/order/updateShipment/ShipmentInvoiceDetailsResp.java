@@ -32,19 +32,19 @@ public class ShipmentInvoiceDetailsResp {
     @JsonProperty("totalInvoicedAmount")
     private Double totalInvoicedAmount;
     @JsonProperty("invoicedBaseAmount")
-    private Integer invoicedBaseAmount;
+    private Double invoicedBaseAmount;
     @JsonProperty("invoicedTaxAmount")
     private Double invoicedTaxAmount;
     @JsonProperty("invoicedTCSAmount")
-    private Integer invoicedTCSAmount;
+    private Double invoicedTCSAmount;
     @JsonProperty("invoiceOtherServicesSum")
-    private Integer invoiceOtherServicesSum;
+    private Double invoiceOtherServicesSum;
     @JsonProperty("invoiceOtherAmounts")
     private InvoiceOtherAmounts invoiceOtherAmounts;
     @JsonProperty("shipmentValue")
     private Double shipmentValue;
     @JsonProperty("invoicePayoutHoldAmount")
-    private Integer invoicePayoutHoldAmount;
+    private Double invoicePayoutHoldAmount;
     @JsonProperty("payoutHoldType")
     private String payoutHoldType;
     @JsonProperty("invoiceComments")
@@ -52,9 +52,9 @@ public class ShipmentInvoiceDetailsResp {
     @JsonProperty("invoiceDetails")
     private List<InvoiceDetail> invoiceDetails = new ArrayList<InvoiceDetail>();
     @JsonProperty("cgstamount")
-    private Integer cgstamount;
+    private Double cgstamount;
     @JsonProperty("sgstamount")
-    private Integer sgstamount;
+    private Double sgstamount;
     @JsonProperty("igstamount")
     private Double igstamount;
     @JsonIgnore
@@ -71,12 +71,12 @@ public class ShipmentInvoiceDetailsResp {
     }
 
     @JsonProperty("invoicedBaseAmount")
-    public Integer getInvoicedBaseAmount() {
+    public Double getInvoicedBaseAmount() {
         return invoicedBaseAmount;
     }
 
     @JsonProperty("invoicedBaseAmount")
-    public void setInvoicedBaseAmount(Integer invoicedBaseAmount) {
+    public void setInvoicedBaseAmount(Double invoicedBaseAmount) {
         this.invoicedBaseAmount = invoicedBaseAmount;
     }
 
@@ -91,22 +91,22 @@ public class ShipmentInvoiceDetailsResp {
     }
 
     @JsonProperty("invoicedTCSAmount")
-    public Integer getInvoicedTCSAmount() {
+    public Double getInvoicedTCSAmount() {
         return invoicedTCSAmount;
     }
 
     @JsonProperty("invoicedTCSAmount")
-    public void setInvoicedTCSAmount(Integer invoicedTCSAmount) {
+    public void setInvoicedTCSAmount(Double invoicedTCSAmount) {
         this.invoicedTCSAmount = invoicedTCSAmount;
     }
 
     @JsonProperty("invoiceOtherServicesSum")
-    public Integer getInvoiceOtherServicesSum() {
+    public Double getInvoiceOtherServicesSum() {
         return invoiceOtherServicesSum;
     }
 
     @JsonProperty("invoiceOtherServicesSum")
-    public void setInvoiceOtherServicesSum(Integer invoiceOtherServicesSum) {
+    public void setInvoiceOtherServicesSum(Double invoiceOtherServicesSum) {
         this.invoiceOtherServicesSum = invoiceOtherServicesSum;
     }
 
@@ -131,12 +131,12 @@ public class ShipmentInvoiceDetailsResp {
     }
 
     @JsonProperty("invoicePayoutHoldAmount")
-    public Integer getInvoicePayoutHoldAmount() {
+    public Double getInvoicePayoutHoldAmount() {
         return invoicePayoutHoldAmount;
     }
 
     @JsonProperty("invoicePayoutHoldAmount")
-    public void setInvoicePayoutHoldAmount(Integer invoicePayoutHoldAmount) {
+    public void setInvoicePayoutHoldAmount(Double invoicePayoutHoldAmount) {
         this.invoicePayoutHoldAmount = invoicePayoutHoldAmount;
     }
 
@@ -171,22 +171,22 @@ public class ShipmentInvoiceDetailsResp {
     }
 
     @JsonProperty("cgstamount")
-    public Integer getCgstamount() {
+    public Double getCgstamount() {
         return cgstamount;
     }
 
     @JsonProperty("cgstamount")
-    public void setCgstamount(Integer cgstamount) {
+    public void setCgstamount(Double cgstamount) {
         this.cgstamount = cgstamount;
     }
 
     @JsonProperty("sgstamount")
-    public Integer getSgstamount() {
+    public Double getSgstamount() {
         return sgstamount;
     }
 
     @JsonProperty("sgstamount")
-    public void setSgstamount(Integer sgstamount) {
+    public void setSgstamount(Double sgstamount) {
         this.sgstamount = sgstamount;
     }
 

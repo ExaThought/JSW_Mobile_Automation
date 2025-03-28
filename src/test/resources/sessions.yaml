@@ -1,4 +1,4 @@
-- name: "zoho"
+- name: "zoho_creator"
   local: true
   platform: "chrome"
   browserRunHeadless: false

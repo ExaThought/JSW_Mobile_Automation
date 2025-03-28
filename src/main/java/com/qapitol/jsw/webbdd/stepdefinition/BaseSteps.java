@@ -23,6 +23,7 @@ import static java.util.Objects.nonNull;
 import static org.testng.Assert.assertEquals;
 
 public abstract class BaseSteps extends AbstractWebPage {
+
     int maxAttempts = 5;
 
     // static Locaters
@@ -102,7 +103,7 @@ public abstract class BaseSteps extends AbstractWebPage {
         if (StringUtils.isNotEmpty(displayValue) && displayValue.contains("display: none;")) {
             log.info("No need to wait for pre loader as attribute has value:" + displayValue);
         } else {
-            boolean preLoaderNotDisplayed = waitUntilElementAttributeContains(getLocator(PRE_LOADER), "style", "display: none;", NotFoundException.class, 20);
+            boolean preLoaderNotDisplayed = waitUntilElementAttributeContains(getLocator(PRE_LOADER), "style", "display: none;", NotFoundException.class, 30);
             log.info("waited until Pre loader is gone or until timeout. preLoaderNotDisplayed:" + preLoaderNotDisplayed);
         }
         log.exiting();
@@ -127,7 +128,7 @@ public abstract class BaseSteps extends AbstractWebPage {
      * @param tabName the name of the tab/module name
      */
     protected void zohoCreatorNavigation(String tabName) {
-        Grid.setSessionName("zoho");
+        Grid.setSessionName("zoho_creator");
         navigate(Config.getConfigProperty("creatorUrl") + tabName);
     }
 
@@ -240,26 +241,26 @@ public abstract class BaseSteps extends AbstractWebPage {
                         //Wait until the search input box is present
                         if (waitAndCheckIsElementPresent("searchInput", searchLabel)) {
                             //Set the text in the text box
-                            waitAndSetText("searchInput", searchLabel, searchValue);
-                            //Check if dorop down is present
-                            if (isElementPresent("searchIndexFirst")) {
-                                //Select the option which contains the search value
-                                waitAndClickOn("searchDropDownSelectOption", searchValue, searchValue);
-                                //In case of multiple options in drop down if the default drop down is shown we
-                                // need to close it via off element tap
-                                if (isElementPresent("searchIndexFirst")) {
-                                    tap("searchButton");
-                                    //Closes the any drop down list
-                                }
-                            }
+                            waitAndSetText("searchInput", searchLabel, searchValue +Keys.TAB+Keys.ENTER);
+                            //Check if drop down is present
+//                            if (isElementPresent("searchIndexFirst")) {
+//                                //Select the option which contains the search value
+//                                waitAndClickOn("searchDropDownSelectOption", searchValue, searchValue);
+//                                //In case of multiple options in drop down if the default drop down is shown we
+//                                // need to close it via off element tap
+//                                if (isElementPresent("searchIndexFirst")) {
+//                                    tap("searchButton");
+//                                    //Closes any drop down list
+//                                }
+//                            }
 
                             //Check if right panel is opened and if open close it.
-                            boolean isRightPanelOpened = isElementPresent("rightPanel");
-                            if (isRightPanelOpened) {
-                                tap("searchButton");
-                            } else {
-                                log.info("Do nothing as right panel is closed.");
-                            }
+//                            boolean isRightPanelOpened = isElementPresent("rightPanel");
+//                            if (isRightPanelOpened) {
+//                                tap("searchButton");
+//                            } else {
+//                                log.info("Do nothing as right panel is closed.");
+//                            }
                         } else {
                             throw new RuntimeException("search Input is not visible. So unable to enter value.");
                         }
@@ -293,9 +294,19 @@ public abstract class BaseSteps extends AbstractWebPage {
         return null;
     };
 
+    public int getTotalRowsInTableExcludingHeader(){
+        int totalRowCount = 0;
+        try {
+            totalRowCount = locateElements("totalRows").size();
+        } catch (Exception e){
+            log.log(Level.FINE, "Error in fetching total rows", e);
+        }
+        return totalRowCount;
+    }
+
     /**
-     * Selects the row until it is visible by refreshing it. The element visibility depends on the
-     * server producing the row.
+     * Selects a single row until it is visible by refreshing it. The element visibility depends on the
+     * server producing the row. It is expected to have only a single row in the table.
      *
      * @param callSearchStringContains The function to execute the search filtering.
      * @param searchText               The text to search for in the filter list
@@ -307,6 +318,7 @@ public abstract class BaseSteps extends AbstractWebPage {
 
         for (int i = 0; i < maxTry; i++) {
             if (waitAndCheckIsElementPresent(selectRowLocKey, searchText)) {
+                assertEquals(getTotalRowsInTableExcludingHeader(), 1, "No order or multiple orders found.");
                 waitAndClickOn(selectRowLocKey, searchText);
                 log.info("selectRowUsingObject has broken");
                 break;

@@ -17,3 +17,8 @@
   invoicedBaseAmount: 12000.0
   invoicedTaxAmount: 2160.0
   totalInvoicedAmount: 14160.0
+- testCaseId: "id-003"
+  orderType: "DISTRIBUTED"
+  paymentType: "Cash & Carry - Advance"
+  QP_DISTRIBUTED_CASH_AND_CARRY_CASHBACK:
+    SLO_Order:

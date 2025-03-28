@@ -23,9 +23,43 @@ public class ZohoBase extends BaseSteps {
 
     private final SimpleLogger log = SauronLogger.getLogger();
 
-    private static String loginId = "loginId";
-    private static String nextButton = "nextButton";
-    private static String password = "password";
+    private String loginId = "loginId";
+    private String nextButton = "nextButton";
+    private String password = "password";
+
+    @Given("Go to session {string}")
+    public void loginAndGoToSession(String sessionName) throws Exception {
+        if (sessionName.equalsIgnoreCase("zoho_creator")) {
+            // Switching to "zoho_creator" session present in the sessions.yaml
+            Grid.setSessionName("zoho_creator");
+            if(!Grid.getTestSession().isStarted()) {
+                log.info("Starting browser with zoho creator...");
+                initZohoSession(Config.getConfigProperty("creatorUrl"));
+                log.info("Started browser and navigated to Zoho creator.");
+            }
+        } else if (sessionName.equalsIgnoreCase("zoho_books")) {
+            // Switching to "zoho_books" session present in the sessions.yaml
+            Grid.setSessionName("zoho_books");
+            if(!Grid.getTestSession().isStarted()) {
+                log.info("Starting browser with zoho books...");
+                initZohoSession(Config.getConfigProperty("booksUrl"));
+                waitForLoaderToDisappear();
+                closeAlert();
+                log.info("Started browser and navigated to Zoho books.");
+            }
+        } else if (sessionName.equalsIgnoreCase("erp")) {
+            // Switching to "erp" session present in the sessions.yaml
+            Grid.setSessionName("erp");
+            if(!Grid.getTestSession().isStarted()) {
+                log.info("Starting browser with erp...");
+                initERPSession();
+                log.info("Started browser and navigated to erp.");
+            }
+        } else {
+            throw new RuntimeException("No session name given. Please provide a valid session name specified in the sessions yaml file.");
+        }
+        log.info(String.format("Browser already running and switched to session named %s", sessionName));
+    }
 
     @Given("Setup the environment for zoho login")
     public void setupTheEnvironmentForZohoLogin() throws Exception {
@@ -35,14 +69,14 @@ public class ZohoBase extends BaseSteps {
             platform = Config.getConfigProperty("platform");
         }
 
-        if (platform.equalsIgnoreCase("zoho")) {
-            // Switching to "zoho" session present in the sessions.yaml
-            Grid.setSessionName("zoho");
+        if (platform.equalsIgnoreCase("zoho_creator")) {
+            // Switching to "zoho_creator" session present in the sessions.yaml
+            Grid.setSessionName("zoho_creator");
             initZohoSession(Config.getConfigProperty("creatorUrl"));
             // Switching to "zoho_books" session present in the sessions.yaml
             Grid.setSessionName("zoho_books");
             initZohoSession(Config.getConfigProperty("booksUrl"));
-            Grid.setSessionName("zoho");
+            Grid.setSessionName("zoho_creator");
         } else if ("erp".equalsIgnoreCase(platform)) {
             // Switching to "erp" session present in the sessions.yaml
             Grid.setSessionName("erp");
@@ -52,14 +86,6 @@ public class ZohoBase extends BaseSteps {
         log.info("============== Login done during base set up===============");
         log.info("==============Execution Started for one flow============");
         log.exiting();
-    }
-
-    @Given("Login to zoho books")
-    public void zohoBooksLogin() {
-        navigateToZohoBooksSession();
-        log.info("Navigated and Logged in to Zoho books ");
-//        ExtentCucumberAdapter.addTestStepLog("Navigated and Logged in to Zoho books ");
-        closeAlert();
     }
 
     public void initERPSession() throws Exception {

@@ -2,6 +2,7 @@ package com.qapitol.jsw.webbdd.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.ExcelUtils;
 import com.qapitol.sauron.core.Grid;
@@ -10,7 +11,6 @@ import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.Keys;
 
 import java.io.IOException;
@@ -63,10 +63,10 @@ public class PayoutSteps extends BaseSteps {
 
         switch (arg0) {
             case CASHBACK:
-                if(isNull(ContextData.getDataFromKey("totalCashbackAmount"))){
+                if (isNull(ContextData.getDataFromKey("totalCashbackAmount"))) {
                     payoutAmount = orderCreation.fetchCashbackAmount();
                 } else {
-                    payoutAmount = (double)ContextData.getDataFromKey("totalCashbackAmount");
+                    payoutAmount = (double) ContextData.getDataFromKey("totalCashbackAmount");
                 }
                 break;
             case SELLER:
@@ -83,7 +83,7 @@ public class PayoutSteps extends BaseSteps {
         }
         log.info(arg0 + " Payout amount --> " + payoutAmount);
         ContextData.addData("payoutAmount", payoutAmount);
-//        ExtentCucumberAdapter.addTestStepLog(arg0+" Payout amount --> "+payoutAmount);
+        AllureCustomLogReporter.addTestStepLog(arg0+" Payout amount --> "+payoutAmount);
         log.exiting();
     }
 
@@ -91,10 +91,10 @@ public class PayoutSteps extends BaseSteps {
     public void navigateToPendingPayoutTabAndApproveThePayout(String arg0) {
         log.entering();
 
-        if ("Seller".equalsIgnoreCase(arg0)){
-            ContextData.addData("documentNumber",ContextData.getDataFromKey("invoiceNumber"));
-        }else if ("Refund".equalsIgnoreCase(arg0)){
-            ContextData.addData("documentNumber",ContextData.getDataFromKey("orderNumber"));
+        if ("Seller".equalsIgnoreCase(arg0)) {
+            ContextData.addData("documentNumber", ContextData.getDataFromKey("invoiceNumber"));
+        } else if ("Refund".equalsIgnoreCase(arg0)) {
+            ContextData.addData("documentNumber", ContextData.getDataFromKey("orderNumber"));
         }
 
         navigateToPendingPayoutsTab();
@@ -180,20 +180,12 @@ public class PayoutSteps extends BaseSteps {
     }
 
     public Map<String, String> validatePayoutDetails(String payoutType, String payoutStatus, double amount) {
-        selectRowUsingObject(getCallSearchStringContainsFunc, (String) ContextData.getDataFromKey("orderNumber"), 30);
+        selectRowUsingObject(getCallSearchStringContainsFunc, (String) ContextData.getDataFromKey("documentNumber"), 10);
         Map<String, String> payoutData = getDataFromWindow("dataWindowElement");
         ContextData.addData("payoutNumber", payoutData.get(PAYOUT_NUMBER));
-        ContextData.addData("documentNumber",payoutData.get(DOCUMENT_NUMBER));
-//        assertEquals("Payout type verification failed", payoutType + " payout", payoutData.get(PAYOUT_TYPE));
-//        assertEquals("Document type verification failed", payoutType, payoutData.get(DOCUMENT_TYPE));
-//        assertTrue("Document number verification failed", payoutData.get(DOCUMENT_NUMBER).contains(Context.documentNumber));
-//        assertEquals("Payout status verification failed", payoutStatus, payoutData.get(PAYOUT_STATUS));
-//        assertEquals("GSTIN verification failed", Context.gstin, payoutData.get(GSTIN));
-//        assertEquals("Payee name", Context.customerName, payoutData.get(PAYEE_NAME));
+        ContextData.addData("documentNumber", payoutData.get(DOCUMENT_NUMBER));
         log.info("Payout entry details for " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
-//        ExtentCucumberAdapter.addTestStepLog("Payout details map => " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
-        String payoutNumber = payoutData.get(PAYOUT_NUMBER);
-        ContextData.addData("payoutNumber", payoutNumber);
+        AllureCustomLogReporter.addTestStepLog("Payout details map => " + payoutType + " with status as " + payoutStatus + " are --> " + payoutData);
 
         assertEquals(payoutData.get(PAYOUT_STATUS), payoutStatus, "Payout status verification failed");
         if (payoutType.equalsIgnoreCase(CASHBACK)) {
@@ -205,14 +197,14 @@ public class PayoutSteps extends BaseSteps {
             log.info("Seller payout validation passed");
         }
         log.info("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
-//        ExtentCucumberAdapter.addTestStepLog("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
+        AllureCustomLogReporter.addTestStepLog("Payout Validation successful for " + payoutType + " with status as " + payoutStatus);
         return payoutData;
     }
 
     public void validateCashbackPayoutDetails(Map<String, String> payoutData, double cashbackAmount) {
 
-        double totalCashbackAmount = (double)ContextData.getDataFromKey("totalCashbackAmount");
-//        ExtentCucumberAdapter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
+        double totalCashbackAmount = (double) ContextData.getDataFromKey("totalCashbackAmount");
+        AllureCustomLogReporter.addTestStepLog("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         log.info("Customer Order Cashback Amount: " + Math.round(totalCashbackAmount * 100.0) / 100.0);
         double tDSAmount = CurrencyUtils.getNewInstance().getTDSAmount(totalCashbackAmount, 10);
         String cashBackPayoutAmount = formatDecimalWithComma(String.valueOf(totalCashbackAmount - tDSAmount));
@@ -222,14 +214,12 @@ public class PayoutSteps extends BaseSteps {
         migrateToTestNgAssertEquals("TDS amount verification failed", formatDecimal(tDSAmount), payoutData.get(TDS));
         migrateToTestNgAssertEquals("GST amount verification failed", ZERO, payoutData.get(GST_AMOUNT));
         migrateToTestNgAssertEquals("Payout amount verification failed", cashBackPayoutAmount, payoutData.get(PAYOUT_AMOUNT));
-//        ExtentCucumberAdapter.addTestStepLog("TDS Amount: " + tDSAmount);
-        log.info("TDS Amount: " + tDSAmount);
-    }
+}
 
     public void validateRefundPayoutDetails(Map<String, String> payoutData, double refundAmount) {
 
         migrateToTestNgAssertEquals("Payout amount verification failed", formatDecimal(String.valueOf(refundAmount)), payoutData.get(PAYOUT_AMOUNT));
-//        ExtentCucumberAdapter.addTestStepLog("Customer Order Refund Amount: " + refundAmount);
+        AllureCustomLogReporter.addTestStepLog("Customer Order Refund Amount: " + refundAmount);
         log.info("Customer Order Refund Amount: " + refundAmount);
     }
 
@@ -261,6 +251,7 @@ public class PayoutSteps extends BaseSteps {
 
     public void clickOnApprove() {
         tap("approveBtn");
+        sleep(2000);
         pageRefresh();
         log.info("Clicked on payout approve button");
     }
@@ -308,7 +299,7 @@ public class PayoutSteps extends BaseSteps {
         locateElement("finalExportBtn").clear();
         String fileName = "Export payouts-DB-" + getCurrentTimeStamp();
         log.info("Export payout Filename -->" + fileName);
-//        ExtentCucumberAdapter.addTestStepLog("Export payout Filename -->"+ fileName);
+        AllureCustomLogReporter.addTestStepLog("Export payout Filename -->"+ fileName);
         waitAndSetText("finalExportBtn", fileName + Keys.ENTER);
         tap("finalExport");
         log.info("Clicked on final export button");
@@ -344,7 +335,7 @@ public class PayoutSteps extends BaseSteps {
         excelUtils.copyColumnValueToAnotherCol(inputFilePath, "System Ref No.", "Instrument Refrence No");
         log.info("UTR No --> " + utrNo);
         log.info("Updated status, Ref no and UTR no details in payout excel file : " + inputFilePath);
-//        ExtentCucumberAdapter.addTestStepLog("UTR No --> "+utrNo);
+        AllureCustomLogReporter.addTestStepLog("UTR No --> "+utrNo);
 
     }
 
