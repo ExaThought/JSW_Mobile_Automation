@@ -13,7 +13,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Get cashback amount and quantity details
     Then validate the ledger entry, knocked off amount and clearing status on Zoho Creator
 
-  @testCaseId=id-001 @dataFile="ledger.yaml" @smoke
+  @testCaseId=id-003 @dataFile="ledger.yaml" @smoke
   Scenario:Cashback Ledger Entry Validation on ZC [Cashback Issued, Cashback TDS, Cashback Payout]
     Given Go to session "zoho_creator"
     Then Validate ledger statement with Document type as Cashback Issued on Zoho Creator
