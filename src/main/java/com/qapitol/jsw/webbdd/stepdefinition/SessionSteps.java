@@ -19,7 +19,7 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.logging.Level;
 
-public class ZohoBase extends BaseSteps {
+public class SessionSteps extends BaseSteps {
 
     private final SimpleLogger log = SauronLogger.getLogger();
 

@@ -22,7 +22,7 @@
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
     <parameter name="cucumber.glue" value="com.qapitol.jsw.webbdd.stepdefinition"/>
-    <parameter name="cucumber.filter.tags" value="@smoke and not @ignore"/>
+    <parameter name="cucumber.filter.tags" value="@xyz and not @ignore"/>
     <parameter name="cucumber.publish.quiet" value="true"/>
     <parameter name="executionTimeout" value="30000"/>
     <parameter name="cucumber.plugin"

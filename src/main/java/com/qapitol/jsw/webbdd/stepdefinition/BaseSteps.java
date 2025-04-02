@@ -33,7 +33,6 @@ public abstract class BaseSteps extends AbstractWebPage {
     public static String WINDOW_KEYS = "windowKeys";
     public static String WINDOW_VALUES = "windowValues";
 
-
     public static final String ORDER_ID = "Order id";
     public static final String DOCUMENT_TYPE = "Document type";
     public static final String DOCUMENT_ID = "Document id";

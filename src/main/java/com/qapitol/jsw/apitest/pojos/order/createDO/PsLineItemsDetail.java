@@ -28,7 +28,7 @@ public class PsLineItemsDetail {
     @JsonProperty("lineItemId")
     private Integer lineItemId;
     @JsonProperty("plannedQuantity")
-    private String plannedQuantity;
+    private Double plannedQuantity;
     @JsonProperty("measurementUnit")
     private String measurementUnit;
     @JsonProperty("totalLineItemQuantity")
@@ -71,12 +71,12 @@ public class PsLineItemsDetail {
     }
 
     @JsonProperty("plannedQuantity")
-    public String getPlannedQuantity() {
+    public Double getPlannedQuantity() {
         return plannedQuantity;
     }
 
     @JsonProperty("plannedQuantity")
-    public void setPlannedQuantity(String plannedQuantity) {
+    public void setPlannedQuantity(Double plannedQuantity) {
         this.plannedQuantity = plannedQuantity;
     }
 

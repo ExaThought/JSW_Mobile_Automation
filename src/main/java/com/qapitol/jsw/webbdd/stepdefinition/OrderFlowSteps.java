@@ -1,5 +1,6 @@
 package com.qapitol.jsw.webbdd.stepdefinition;
 
+import com.qapitol.jsw.apitest.apis.impl.OrderFlowImpl;
 import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDoResp;
 import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
@@ -16,14 +17,15 @@ import io.cucumber.java.en.When;
 import java.io.IOException;
 import java.util.Map;
 
-public class JOMSOrderCreationSteps extends BaseSteps {
+public class OrderFlowSteps extends BaseSteps {
     private final SimpleLogger log = SauronLogger.getLogger();
 
     @When("Create order with SLO API")
     public void createOrderWithSloApi() throws IOException, InterruptedException {
         log.entering();
-        OrderImpl orderCreation = new OrderImpl();
-        orderCreation.createOrder();
+       // OrderImpl orderCreation = new OrderImpl();
+        OrderFlowImpl orderFlow = new OrderFlowImpl();
+        orderFlow.createOrder();
         new OMSDBUtils().updateSalesForceOpportunity((String) ContextData.getDataFromKey("orderNumber"));
         AllureCustomLogReporter.addTestStepLog("Order created successfully, Customer Order Number: " + (String) ContextData.getDataFromKey("orderNumber"));
         log.exiting();
@@ -35,7 +37,7 @@ public class JOMSOrderCreationSteps extends BaseSteps {
         String orderType = (String) Data.get().get("orderType");
         String paymentType = (String) Data.get().get("paymentType");
 
-        OrderImpl orderCreation = new OrderImpl();
+        OrderFlowImpl orderCreation = new OrderFlowImpl();
         GetOMSOrderResp getOMSOrderResp = orderCreation.validateOrderDetails(orderType, paymentType);
         ContextData.addData("gstin", getOMSOrderResp.getBuyerDetails().getGstin());
         ContextData.addData("baseAMount", getOMSOrderResp.getAmounts().get("LIA").getAmount().getDisplayAmount().toString().replace(",", ""));
@@ -62,7 +64,7 @@ public class JOMSOrderCreationSteps extends BaseSteps {
     @Then("Confirm the order using JOMS API")
     public void confirmOrderUsingJOMS() throws IOException, InterruptedException {
         log.entering();
-        OrderImpl orderCreation = new OrderImpl();
+        OrderFlowImpl orderCreation = new OrderFlowImpl();
         orderCreation.getSellerOrderNumber();
         orderCreation.getShipmentForOrderNumber();
         orderCreation.confirmOrderUsingJOMS();
@@ -75,7 +77,7 @@ public class JOMSOrderCreationSteps extends BaseSteps {
     @Then("Create and Release DO")
     public void createAndReleaseDo() throws IOException {
         log.entering();
-        OrderImpl orderCreation = new OrderImpl();
+        OrderFlowImpl orderCreation = new OrderFlowImpl();
         CreateDoResp createDoResp = orderCreation.createDO();
 
         double plannedQuantity = createDoResp.getPsLineItemsDetails().get(0).getPlannedQuantity();

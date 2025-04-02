@@ -17,8 +17,20 @@
   invoicedBaseAmount: 12000.0
   invoicedTaxAmount: 2160.0
   totalInvoicedAmount: 14160.0
+
 - testCaseId: "id-003"
-  orderType: "DISTRIBUTED"
+  orderType: "Distributed"
   paymentType: "Cash & Carry - Advance"
-  QP_DISTRIBUTED_CASH_AND_CARRY_CASHBACK:
-    SLO_Order:
+  advancePercentage: 100
+  orderedQuantity: 10.0
+  customerId: "42ea459f-cbc7-4a62-bdc1-8c7c0abe96a5"
+  shippingAddressId: "HAi4mpoK"
+  cashbackRate: 4.29
+  finalSellingPrice: 120.0
+  sellerName: "steel 100"
+  doQuantity: 10.0
+  shipmentQuantity: 10.0
+  #  LINE_ITEM_DETAILS_PAYLOAD: "line_item_details"
+  #  CREDIT_DETAILS: "credit_details"
+  #  creditLimitBypass: true
+

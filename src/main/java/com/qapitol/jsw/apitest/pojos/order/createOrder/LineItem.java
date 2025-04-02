@@ -2,6 +2,8 @@
 package com.qapitol.jsw.apitest.pojos.order.createOrder;
 
 import com.fasterxml.jackson.annotation.*;
+import com.qapitol.jsw.apitest.pojos.order.getLineItemDetails.CashbackDetails;
+import com.qapitol.jsw.apitest.pojos.order.getOrder.CashBacks;
 
 import javax.annotation.processing.Generated;
 import java.util.LinkedHashMap;
@@ -44,7 +46,7 @@ public class LineItem {
     @JsonProperty("productKey")
     private String productKey;
     @JsonProperty("orderedQuantity")
-    private Integer orderedQuantity;
+    private Double orderedQuantity;
     @JsonProperty("NCOReason")
     private String nCOReason;
     @JsonProperty("name")
@@ -56,13 +58,21 @@ public class LineItem {
     @JsonProperty("isNCO")
     private Boolean isNCO;
     @JsonProperty("finalSellingPrice")
-    private Integer finalSellingPrice;
+    private Double finalSellingPrice;
     @JsonProperty("channelKey")
     private String channelKey;
     @JsonProperty("attributes")
     private Attributes attributes;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
+    @JsonProperty("cashbackDetails")
+    private CashbackDetails cashbackDetails;
+
+    @JsonProperty("cashbackDetails")
+    public CashbackDetails getCashbackDetails(){return cashbackDetails;}
+
+    @JsonProperty("cashbackDetails")
+    public void setCashbackDetails(){this.cashbackDetails= cashbackDetails;}
 
     @JsonProperty("type")
     public String getType() {
@@ -135,12 +145,12 @@ public class LineItem {
     }
 
     @JsonProperty("orderedQuantity")
-    public Integer getOrderedQuantity() {
+    public Double getOrderedQuantity() {
         return orderedQuantity;
     }
 
     @JsonProperty("orderedQuantity")
-    public void setOrderedQuantity(Integer orderedQuantity) {
+    public void setOrderedQuantity(Double orderedQuantity) {
         this.orderedQuantity = orderedQuantity;
     }
 
@@ -195,12 +205,12 @@ public class LineItem {
     }
 
     @JsonProperty("finalSellingPrice")
-    public Integer getFinalSellingPrice() {
+    public Double getFinalSellingPrice() {
         return finalSellingPrice;
     }
 
     @JsonProperty("finalSellingPrice")
-    public void setFinalSellingPrice(Integer finalSellingPrice) {
+    public void setFinalSellingPrice(Double finalSellingPrice) {
         this.finalSellingPrice = finalSellingPrice;
     }
 

@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import static java.util.Objects.nonNull;
 import static org.testng.Assert.*;
@@ -77,7 +78,7 @@ public class OrderImpl extends BaseApiImpl {
         assertTrue(getOrderResp.getIsZohoCustomer(), "Not a Zoho Customer");
         assertTrue(getOrderResp.getPaymentType().contains(paymentType), "Payment type is not correct");
         assertNotEquals(getOrderResp.getPaymentStatus().trim(), "PENDING", "Order payment status is Pending ");
-        assertEquals(getOrderResp.getCategory(), orderType.trim(), "Order type is not correct");
+        assertEquals(getOrderResp.getCategory(), orderType.trim().toUpperCase(Locale.ROOT), "Order type is not correct");
         ContextData.addData("orderAmount", getOrderResp.getOrderAmount().getCentAmount());
         ContextData.addData("advanceAmountInPaisa", getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount());
 
@@ -165,7 +166,7 @@ public class OrderImpl extends BaseApiImpl {
             createDo.setRequestAmount((Double) Data.get().get("requestAmount"));
         }
         if (nonNull((Data.get().get("plannedQuantity")))) {
-            createDo.getPsLineItemsDetails().get(0).setPlannedQuantity((String) Data.get().get("plannedQuantity"));
+            createDo.getPsLineItemsDetails().get(0).setPlannedQuantity((Double) Data.get().get("plannedQuantity"));
         }
         if (nonNull((Data.get().get("totalLineItemQuantity")))) {
             createDo.getPsLineItemsDetails().get(0).setTotalLineItemQuantity((Double) Data.get().get("totalLineItemQuantity"));
