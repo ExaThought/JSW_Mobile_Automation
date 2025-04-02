@@ -177,21 +177,21 @@
     <distributionManagement>
         <snapshotRepository>
             <id>sauron-snapshot</id>
-            <url>https://nexus.qapitol.com/repository/sauron-snapshot/</url>
+            <url>http://master.jswone.in/repository/sauron-snapshot/</url>
         </snapshotRepository>
         <repository>
             <id>sauron-release</id>
-            <url>https://nexus.qapitol.com/repository/sauron-release/</url>
+            <url>http://master.jswone.in/repository/sauron-release/</url>
         </repository>
     </distributionManagement>
     <repositories>
         <repository>
             <id>sauron-snapshot</id>
-            <url>https://nexus.qapitol.com/repository/sauron-snapshot/</url>
+            <url>http://master.jswone.in/repository/sauron-snapshot/</url>
         </repository>
         <repository>
             <id>sauron-release</id>
-            <url>https://nexus.qapitol.com/repository/sauron-release/</url>
+            <url>http://master.jswone.in/repository/sauron-release/</url>
         </repository>
     </repositories>
 </project>
