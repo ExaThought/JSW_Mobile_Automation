@@ -25,7 +25,8 @@ import java.util.Map;
     "lineItemsDetails",
     "customerOrderId",
     "customerOrderNumber",
-    "shipmentInvoiceLedgerPayoutEntriesFlag"
+    "shipmentInvoiceLedgerPayoutEntriesFlag",
+        "nvoicePostingStatus"
 })
 @Generated("jsonschema2pojo")
 public class ShipmentDetails {
@@ -62,6 +63,14 @@ public class ShipmentDetails {
     private Boolean shipmentInvoiceLedgerPayoutEntriesFlag;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
+    @JsonProperty("invoicePostingStatus")
+    private String invoicePostingStatus;
+
+    @JsonProperty("invoicePostingStatus")
+    public String getInvoicePostingStatus(){return invoicePostingStatus; }
+
+    @JsonProperty("invoicePostingStatus")
+    public void setInvoicePostingStatus(String invoicePostingStatus){this.invoicePostingStatus = invoicePostingStatus;}
 
     @JsonProperty("id")
     public Integer getId() {

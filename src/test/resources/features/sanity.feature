@@ -2,13 +2,12 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
 
   @testCaseId=id-003 @dataFile="ledger.yaml" @sanity
   Scenario:Advance Invoice Ledger Entry Validation on Zoho Creator
-#    When Create order with SLO API
+    When Create order with SLO API
     Then validate the order details
     Then Confirm the order using JOMS API
     Then Create and Release DO
     Then Create shipment
-    Then Update shipment & make shipment invoice
-    Then Post invoice to Zoho
+    Then Update shipment and post Invoice to Zoho
     Given Go to session "zoho_creator"
     Then Validate invoice amount and invoice entry under invoice on Zoho Creator
     Then Get cashback amount and quantity details
@@ -36,8 +35,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Confirm the order using JOMS API
     Then Create and Release DO
     Then Create shipment
-    Then Update shipment & make shipment invoice
-    Then Post invoice to Zoho
+    Then Update shipment and post Invoice to Zoho
     Given Go to session "zoho_creator"
     Then Validate invoice amount and invoice entry under invoice on Zoho Creator
     Given Go to session "zoho_books"

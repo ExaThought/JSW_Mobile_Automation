@@ -1,0 +1,12 @@
+{
+"penalInterest": 0,
+"isCreditRequired": "true",
+"CreditUtilisation": 1000000000,
+"creditType": "BNPL",
+"creditLimitReferenceId": "Intellect31220241",
+"creditInstrument": "BNPL-JODL-2024P1",
+"creditExpirationDate": "2025-12-31",
+"creditDays": "10",
+"creditAvailable": 1000000000,
+"creditAmount": 14160
+}

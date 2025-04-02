@@ -128,13 +128,34 @@ public class OrderFlowSteps extends BaseSteps {
         log.entering();
         UpdateShipmentResp updateShipmentResp = getPojoFromContextData("updateShipmentResp", UpdateShipmentResp.class);
         String shipmentNumber = updateShipmentResp.getNumber();
-        OrderImpl orderCreation = new OrderImpl();
+        OrderFlowImpl orderCreation = new OrderFlowImpl();
         orderCreation.postInvoiceToZoho(shipmentNumber);
 
         String buyerOrderNumber = (String) ContextData.getDataFromKey("orderNumber");
         log.info(String.format("Customer Order Number: {%s}", buyerOrderNumber));
         log.info(String.format("Shipment Number: {%s}", shipmentNumber));
         AllureCustomLogReporter.addTestStepLog("Order with id " + buyerOrderNumber + ", Invoice number--> " + ContextData.getDataFromKey("invoiceNumber") + " is posted to Zoho for Shipment Number: " + shipmentNumber);
+        log.exiting();
+    }
+
+    @Then("Update shipment and post Invoice to Zoho")
+    public void updateShipmentandPostInvoice() throws IOException, InterruptedException {
+        OrderFlowImpl orderFlow = new OrderFlowImpl();
+        UpdateShipmentResp updateShipmentResp = orderFlow.updateShipmentReadyToShip();
+        orderFlow.postInvoiceToZoho(updateShipmentResp.getNumber());
+        orderFlow.updateShipmentDelivered();
+
+        ContextData.addData("invoiceNumber", updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceNumber());
+        ContextData.addData("invoiceDate", updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceDate());
+        ContextData.addData("invoiceDueDate", updateShipmentResp.getShipmentInvoiceDetails().getInvoiceDetails().get(0).getInvoiceDueDate());
+        ContextData.addData("invoiceAmount", updateShipmentResp.getShipmentInvoiceDetails().getTotalInvoicedAmount());
+
+        AllureCustomLogReporter.addTestStepLog("Invoice Number : " + ContextData.getDataFromKey("invoiceNumber") + " And Invoice Date: " + ContextData.getDataFromKey("invoiceDate") + " And Invoice Amount: " + ContextData.getDataFromKey("invoiceAmount"));
+        ContextData.addData("invoicedBaseAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedBaseAmount());
+        ContextData.addData("invoicedTaxAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedTaxAmount());
+        ContextData.addData("invoicedTCSAmount", updateShipmentResp.getShipmentInvoiceDetails().getInvoicedTCSAmount());
+        String shipmentNumber = updateShipmentResp.getNumber();
+        AllureCustomLogReporter.addTestStepLog("Shipment with id " + shipmentNumber + " is Invoiced");
         log.exiting();
     }
 }
