@@ -1,7 +1,5 @@
 package com.qapitol.jsw.apitest.apis.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qapitol.jsw.apitest.apis.OrderApi;
 import com.qapitol.jsw.apitest.pojos.order.confirmOrder.ConfirmOrder;
 import com.qapitol.jsw.apitest.pojos.order.confirmOrder.ConfirmOrderResp;
@@ -10,7 +8,6 @@ import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDoResp;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrder;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreditDetails;
-import com.qapitol.jsw.apitest.pojos.order.createOrder.LineItem;
 import com.qapitol.jsw.apitest.pojos.order.createShipment.CreateShipment;
 import com.qapitol.jsw.apitest.pojos.order.createShipment.CreateShipmentResp;
 import com.qapitol.jsw.apitest.pojos.order.getLineItemDetails.LineItemDetails;
@@ -67,7 +64,6 @@ public class OrderFlowImpl extends BaseApiImpl {
             int advancePer = (Integer) Data.get().get("advancePercentage");
             double finalSellingPrice = (Double) Data.get().get("finalSellingPrice");
             double orderedQuantity = (Double) Data.get().get("orderedQuantity");
-          //  createOrderRequestBody.setAdvancePayment((Integer) Data.get().get("advancePercentage")*((Double) Data.get().get("finalSellingPrice")*10)*(Double) Data.get().get("orderedQuantity")/100);
             createOrderRequestBody.setAdvancePayment(((double) advancePer*finalSellingPrice*orderedQuantity*10/100)*1.18);
         }
         if (nonNull((Data.get().get("customerId")))) {
@@ -133,7 +129,7 @@ public class OrderFlowImpl extends BaseApiImpl {
         AllureCustomLogReporter.addTestStepLog("Order status --> " + getOrderResp.getOrderStatus() + " And Payment status --> " + getOrderResp.getPaymentStatus() + " And Advance percentage --> " + getOrderResp.getAdvancePercentage());
         log.info("Total Order Amount --> " + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getOrderAmount().getCentAmount()) + "And Advance payment of order amount -->" + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount()));
         AllureCustomLogReporter.addTestStepLog("Total Order Amount --> " + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getOrderAmount().getCentAmount()) + " And Advance payment of order amount -->" + CurrencyUtils.getNewInstance().convertPaisaToRupees(getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount()));
-//
+
         return getOrderResp;
     }
 
@@ -217,16 +213,6 @@ public class OrderFlowImpl extends BaseApiImpl {
         createDo.setSellerAddress((String) ContextData.getDataFromKey("sellerAddress"));
         createDo.getSellerAddressMetadata().setVendorLocationDisplayName((String) ContextData.getDataFromKey("sellerAddress"));
         createDo.setSellerCompanyName((String) ContextData.getDataFromKey("sellerAddress"));
-
-//        if (nonNull((Data.get().get("sellerAddress")))) {
-//            createDo.setSellerAddress((String)ContextData.getDataFromKey("sellerAddress"));
-//        }
-//        if (nonNull((Data.get().get("vendorLocationDisplayName")))) {
-//            createDo.getSellerAddressMetadata().setVendorLocationDisplayName((String) Data.get().get("vendorLocationDisplayName"));
-//        }
-//        if (nonNull((Data.get().get("sellerCompanyName")))) {
-//            createDo.setSellerCompanyName((String) Data.get().get("sellerCompanyName"));
-//        }
 
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
@@ -321,7 +307,6 @@ public class OrderFlowImpl extends BaseApiImpl {
             assertNotNull(response, "unable to update the shipment");
         }
         return response;
-//        sleep(20000);
     }
 
     public Integer getInvoiceDeliveryId() {
@@ -354,10 +339,6 @@ public class OrderFlowImpl extends BaseApiImpl {
                 return getOMSShipmentOrderResp.getSellerShipmentsInfo().get(0).getShipmentDetails().get(0).getLineItemsDetails().get(0).getInvoiceDelivery().getId();
             }
 
-//            Response response = utils.getRequestForJOMSOrder("oms/shipment/order-number/".concat(Context.buyerOrderNumber));
-//            invoiceDeliveryId = response.getBody().jsonPath().get("sellerShipmentsInfo[0].shipmentDetails[0].lineItemsDetails[0].invoiceDelivery.id");
-//            status = response.getBody().jsonPath().getString("sellerShipmentsInfo[0].shipmentDetails[0].invoicePostingStatus");
-//
             retryCount++;
         }
         return invoiceDeliveryId;
@@ -416,12 +397,11 @@ public class OrderFlowImpl extends BaseApiImpl {
 
     public UpdateShipmentResp updateShipmentReadyToShip() throws IOException, InterruptedException {
 
-        String prev = PLANNED;
-        String status = "Ready to ship";
+      //  String prev = PLANNED;
+        String status = READY_TO_SHIP;
         String uuid = RandomStringGenerator.RandomInteger();
         UpdateShipmentResp response = null;
-    //    for (String status : List.of(READY_FOR_DISPATCH, DISPATCHED, DELIVERED, INVOICED)) {
-            Integer temp = getInvoiceDeliveryId();
+        Integer temp = getInvoiceDeliveryId();
 // Access the Default payload from the YAML test data file
 
             UpdateShipment updateShipment = getPayloadJsonFileAsPOJO((String) Data.get().get("UPDATE_SHIPMENT"), UpdateShipment.class);
@@ -430,7 +410,7 @@ public class OrderFlowImpl extends BaseApiImpl {
             updateShipment.setInvoiceDate(timeStamp);
             updateShipment.setActualDispatchDate(timeStamp);
             updateShipment.setActualDeliveryDate(timeStamp);
-            updateShipment.getCurrentState().setState(prev);
+            updateShipment.getCurrentState().setState(status);
             updateShipment.setId(ContextData.getDataFromKey("shipmentId"));
             updateShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
 
@@ -458,28 +438,12 @@ public class OrderFlowImpl extends BaseApiImpl {
                 updateShipment.getLineItemsDetails().get(0).setLineitemId((Integer) ContextData.getDataFromKey("lineItemId"));
             }
             updateShipment.getCurrentState().setState(status);
-            prev = status;
+          //  prev = status;
 
             response = callShipmentUpdateApi(updateShipment);
             System.out.println("UpdateShipment:" + response);
             assertNotNull(response, "unable to update the shipment");
             setPojoToContextData("updateShipmentResp", response);
-
-     //   String uuid = seleniumHelper.RandomInteger();
-     //   String payload = reqBodyMap.get("UPDATE_SHIPMENT");
-//        payload = String.format(payload, Context.buyerOrderId, timeStamp, timeStamp, timeStamp, "Ready to ship", Context.shipmentId, Context.sellerOrderId, "\"\"", timeStamp, uuid, Context.lineItemId);
-//        Response response = callShipmentUpdateApi(payload);
-//        assertEquals("unable to update the shipment", 200, response.getStatusCode());
-//        Context.invoiceNumber = response.getBody().jsonPath().get("shipmentInvoiceDetails.invoiceDetails[0].invoiceNumber");
-//        Context.invoiceDate = response.getBody().jsonPath().get("shipmentInvoiceDetails.invoiceDetails[0].invoiceDate");
-//        Context.invoiceDueDate = response.getBody().jsonPath().get("shipmentInvoiceDetails.invoiceDetails[0].invoiceDueDate");
-//        Context.invoiceAmount = response.getBody().jsonPath().get("shipmentInvoiceDetails.totalInvoicedAmount").toString();
-//    //    ExtentCucumberAdapter.addTestStepLog("Invoice Number : " + Context.invoiceNumber + " And Invoice Date: " + Context.invoiceDate + " And Invoice Amount: " + Context.invoiceAmount);
-//        System.out.println("shipment invoiced response printx = " + response.getBody().asString() + "printz");
-//        totalInvoicedAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.totalInvoicedAmount");
-//        invoicedBaseAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.invoicedBaseAmount");
-//        invoicedTaxAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.invoicedTaxAmount");
-//        invoicedTCSAmount = response.getBody().jsonPath().getDouble("shipmentInvoiceDetails.invoicedTCSAmount");
 
         return response;
     }
@@ -532,10 +496,6 @@ public class OrderFlowImpl extends BaseApiImpl {
             System.out.println("UpdateShipment:" + response);
             assertNotNull(response, "unable to update the shipment");
 
-//            String payload = reqBodyMap.get("UPDATE_SHIPMENT");
-//            payload = String.format(payload, Context.buyerOrderId, timeStamp, getTimestampTomorrow, getTimestampTomorrow, status, Context.shipmentId, Context.sellerOrderId, temp.intValue(), getTimestampTomorrow, uuid, Context.lineItemId);
-//            response = callShipmentUpdateApi(payload);
-//            assertEquals("unable to update the shipment", 200, response.getStatusCode());
         }
     }
 }

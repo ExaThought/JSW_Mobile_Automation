@@ -94,7 +94,7 @@ public class OrderFlowSteps extends BaseSteps {
     @Then("Create shipment")
     public void createShipment() throws IOException, InterruptedException {
         log.entering();
-        OrderImpl orderCreation = new OrderImpl();
+        OrderFlowImpl orderCreation = new OrderFlowImpl();
         orderCreation.createShipment();
         String buyerOrderNumber = (String) ContextData.getDataFromKey("orderNumber");
         AllureCustomLogReporter.addTestStepLog("For Order " + buyerOrderNumber + " Shipment is Created");
@@ -139,7 +139,9 @@ public class OrderFlowSteps extends BaseSteps {
     }
 
     @Then("Update shipment and post Invoice to Zoho")
-    public void updateShipmentandPostInvoice() throws IOException, InterruptedException {
+    public void updateShipmentAndPostInvoice() throws IOException, InterruptedException {
+        log.entering();
+
         OrderFlowImpl orderFlow = new OrderFlowImpl();
         UpdateShipmentResp updateShipmentResp = orderFlow.updateShipmentReadyToShip();
         orderFlow.postInvoiceToZoho(updateShipmentResp.getNumber());

@@ -5,7 +5,7 @@
     SLO_Order:
 - testCaseId: "id-002"
   CREATE_ORDER_PAYLOAD: "create_order_credit"
-  orderType: "DISTRIBUTED"
+  orderType: "Distributed"
   paymentType: "Credit"
   requestAmount: 14160.0
   plannedQuantity: "10"
@@ -34,3 +34,7 @@
   #  CREDIT_DETAILS: "credit_details"
   #  creditLimitBypass: true
 
+- testCaseId: "004"
+  CREATE_ORDER_PAYLOAD: "credit_order_intellect"
+  orderType: "Distributed"
+  paymentType: "Credit"
