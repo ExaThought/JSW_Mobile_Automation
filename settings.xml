@@ -6,13 +6,13 @@
     <servers>
         <server>
             <id>sauron-snapshot</id>
-            <username>member</username>
-            <password>member@098</password>
+            <username>${nexus-username}</username>
+            <password>${nexus-password}</password>
         </server>
         <server>
             <id>sauron-release</id>
-            <username>member</username>
-            <password>member@098</password>
+            <username>${nexus-username}</username>
+            <password>${nexus-password}</password>
         </server>
     </servers>
 

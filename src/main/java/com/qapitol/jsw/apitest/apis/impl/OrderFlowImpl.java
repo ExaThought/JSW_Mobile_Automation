@@ -122,6 +122,7 @@ public class OrderFlowImpl extends BaseApiImpl {
         assertEquals(getOrderResp.getCategory(), orderType.trim().toUpperCase(), "Order type is not correct");
         ContextData.addData("orderAmount", getOrderResp.getOrderAmount().getCentAmount());
         ContextData.addData("advanceAmountInPaisa", getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount());
+        ContextData.addData("orderType",getOrderResp.getCategory());
 
         log.info("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
         AllureCustomLogReporter.addTestStepLog("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
@@ -169,6 +170,12 @@ public class OrderFlowImpl extends BaseApiImpl {
         ConfirmOrder confirmOrder = getPayloadJsonFileAsPOJO((String) Data.get().get("CONFIRM_ORDER_PAYLOAD"), ConfirmOrder.class);
         confirmOrder.setOrderNumber(orderNumber);
         confirmOrder.getChildOrders().get(0).setSellerOrderNumber(sellerOrderNumber);
+
+        if("Distributed".equalsIgnoreCase((String) ContextData.getDataFromKey("orderType"))){
+            confirmOrder.setIsVerifiedSO(false);
+        }else {
+            confirmOrder.setIsVerifiedSO(true);
+        }
 
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
