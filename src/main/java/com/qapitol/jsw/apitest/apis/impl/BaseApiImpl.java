@@ -9,7 +9,6 @@ import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +23,10 @@ public abstract class BaseApiImpl {
 
     protected ApiClientFactory getZohoOMSApiClientFactory() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("omsUrl"));
+    }
+
+    protected ApiClientFactory getZohoAPIClientFactory(){
+        return ApiClientFactory.getInstance((Config.getConfigProperty("zohoUrl")));
     }
 
     public <T> T getPayloadAsPOJO(String payload, Class<T> t) throws JsonProcessingException {

@@ -1,0 +1,58 @@
+{
+  "contains": [
+    "payment"
+  ],
+  "account_id": "acc_HQNb9tWZTJcm4b",
+  "payload": {
+    "payment": {
+      "entity": {
+        "notes": {
+          "CT_CustomerId": "6168f5a0-b583-4472-8dd4-231670fbd8eb",
+          "address": "",
+          "buyerEmail": "testautomation@test.com",
+          "razorPayCustomerId": "cust_L1y8Yv9Z0z0sQQA001",
+          "CT_OrderId": "897d15c1-2996-4901-a759-e1207ebff148",
+          "sellerCompanyName": "QaCapitals seller Maharashtra",
+          "gstin": "03CUBPS0240K1ZW",
+          "buyerCompanyName": "NARAYANI FOODS",
+          "CT_OrderNumber": "JOO-6S2DGPAAT"
+        },
+        "fee": 698984,
+        "description": null,
+        "created_at": 1718345241,
+        "amount_refunded": 0,
+        "bank": "HDFC",
+        "error_reason": null,
+        "error_description": null,
+        "acquirer_data": {
+          "bank_transaction_id": "4320708"
+        },
+        "captured": true,
+        "contact": "+919039430746",
+        "invoice_id": null,
+        "base_amount": 177000,
+        "currency": "INR",
+        "id": "pay_vQWEqTESTPayID01",
+        "international": false,
+        "email": "puneet.kundliya@jsw.in",
+        "reward": null,
+        "amount": 100000,
+        "refund_status": null,
+        "wallet": null,
+        "method": "netbanking",
+        "vpa": null,
+        "error_source": null,
+        "error_step": null,
+        "tax": 106624,
+        "card_id": null,
+        "error_code": null,
+        "order_id": "pay_OMXImliVrQQA001",
+        "entity": "payment",
+        "status": "captured"
+      }
+    }
+  },
+  "created_at": 1718345257,
+  "event": "payment.captured",
+  "entity": "event"
+}

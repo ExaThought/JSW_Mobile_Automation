@@ -15,15 +15,20 @@ public class LoginApiImpl implements LoginService {
 
     @Override
     public Map<String, String> login(ApiClientFactory apiClientFactory) {
-        String zohoUrl = Config.getConfigProperty("customerPortalUrl");
+        String ccpUrl = Config.getConfigProperty("customerPortalUrl");
         String omsUrl = Config.getConfigProperty("omsUrl");
-        if(zohoUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
+        String zohoUrl = Config.getConfigProperty("zohoUrl");
+        if(ccpUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
             String ACCESS_TOKEN = "access_token";
             return Map.of(ACCESS_TOKEN, Config.getConfigProperty("customerPortalAuthToken"));
         }
         if (omsUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
             String AUTHORIZATION = "Authorization";
             return Map.of(AUTHORIZATION, Config.getConfigProperty("omsAuthToken"));
+        }
+        if (zohoUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
+            String COOKIE = "Cookie";
+            return Map.of(COOKIE, Config.getConfigProperty("zohoCookie"));
         }
         return Map.of();
     }

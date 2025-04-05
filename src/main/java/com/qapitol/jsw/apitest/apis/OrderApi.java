@@ -4,6 +4,7 @@ import com.qapitol.jsw.apitest.pojos.order.confirmOrder.ConfirmOrder;
 import com.qapitol.jsw.apitest.pojos.order.confirmOrder.ConfirmOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDo;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDoResp;
+import com.qapitol.jsw.apitest.pojos.order.createIncomingPayment.CreateIncomingPayment;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrder;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.createShipment.CreateShipment;
@@ -15,6 +16,7 @@ import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoice;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoiceResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipment;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
+import com.qapitol.sauron.common.configuration.Config;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -76,4 +78,10 @@ public interface OrderApi {
     @Path("oms/line-item/order-number/{orderNumber}")
     @Produces(APPLICATION_JSON)
     List<LineItemDetails> getLineItemDetails(@PathParam("orderNumber") String orderNumber);
+
+    @POST
+    @Path("Incoming_Payments")
+    @Produces(APPLICATION_JSON)
+    Response createIncomingPayment(@QueryParam("publickey") String publicKey, CreateIncomingPayment createIncomingPayment);
+
 }

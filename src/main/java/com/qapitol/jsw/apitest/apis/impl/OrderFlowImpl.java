@@ -5,6 +5,7 @@ import com.qapitol.jsw.apitest.pojos.order.confirmOrder.ConfirmOrder;
 import com.qapitol.jsw.apitest.pojos.order.confirmOrder.ConfirmOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDo;
 import com.qapitol.jsw.apitest.pojos.order.createDO.CreateDoResp;
+import com.qapitol.jsw.apitest.pojos.order.createIncomingPayment.CreateIncomingPayment;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrder;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreditDetails;
@@ -21,6 +22,7 @@ import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.CurrencyUtils;
 import com.qapitol.jsw.utils.RandomStringGenerator;
+import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.data.Data;
 import org.testng.asserts.SoftAssert;
@@ -502,7 +504,35 @@ public class OrderFlowImpl extends BaseApiImpl {
             response = callShipmentUpdateApi(updateShipment);
             System.out.println("UpdateShipment:" + response);
             assertNotNull(response, "unable to update the shipment");
-
         }
+    }
+
+    public String createIncomingPayment() throws IOException {
+
+        String paymentId = RandomStringGenerator.generateRandomString("Pay_", 16);
+        String fileName=(String) Data.get().get("CREATE_INCOMING_PAYMENT");
+        CreateIncomingPayment createIncomingPayment = getPayloadJsonFileAsPOJO(fileName, CreateIncomingPayment.class);
+        createIncomingPayment.getPayload().getPayment().getEntity().setId(paymentId);
+
+        if (nonNull(ContextData.getDataFromKey("advanceAmountInPaisa"))){
+            createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) ContextData.getDataFromKey("advanceAmountInPaisa"));
+        }else if (nonNull(Data.get().get("incomingPaymentAmount"))) {
+            createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) Data.get().get("incomingPaymentAmount"));
+        }
+        if (nonNull(Data.get().get("buyerGstin"))) {
+            createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setGstin((String) Data.get().get("buyerGstin"));
+        }
+        if (nonNull(Data.get().get("paymentMethod"))) {
+            createIncomingPayment.getPayload().getPayment().getEntity().setMethod((String) Data.get().get("paymentMethod"));
+        }
+        if (nonNull(ContextData.getDataFromKey("orderNumber"))) {
+            createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setCTOrderNumber((String) Data.get().get("CT_OrderNumber"));
+        }
+        OrderApi orderApi = getZohoAPIClientFactory().create(OrderApi.class);
+
+        //Calling the create incoming payment API
+        orderApi.createIncomingPayment(Config.getConfigProperty("zohoPublicKey"), createIncomingPayment);
+        log.info("Incoming Payment API Call Successful With For amount --> " + createIncomingPayment.getPayload().getPayment().getEntity().getAmount() + " Payment id: " + paymentId);
+        return paymentId;
     }
 }

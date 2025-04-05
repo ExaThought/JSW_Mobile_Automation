@@ -1,6 +1,6 @@
 Feature: Zoho ledger module sanity suite verification on Zoho creator
 
-  @testCaseId=id-001 @dataFile="ledger.yaml" @sanity
+  @testCaseId=id-001 @dataFile="ledger.yaml"
   Scenario:Advance Invoice Ledger Entry Validation on Zoho Creator
     When Create order with SLO API
     Then validate the order details
@@ -28,7 +28,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Navigate to Historical Payout tab and validate the entry for "Cashback" payout
     Then Validate ledger statement with Document type as Cashback Payout
 
-  @testCaseId=id-002 @dataFile="ledger.yaml" @sanity
+  @testCaseId=id-002 @dataFile="ledger.yaml"
   Scenario: Validate the customer ledger should be Frozen when customer has Credit Overdue
     When Create order with SLO API
     Then validate the order details
@@ -48,3 +48,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Given Go to session "zoho_creator"
     Then Navigate to Credit module tab and search the credit program and validate the freeze status as "Frozen" for Credit program "Intellect31220241"
     Then Navigate to ledger summary tab, click on Retry and validate the freeze status as "Frozen" for "INTELLECT DESIGN" customer
+
+  @testCaseId=id-004 @dataFile="ledger.yaml" @sanity
+  Scenario: Validate the Incoming payment ledger entry in Zoho Creator
+    Then Create Incoming Payment In Zoho
