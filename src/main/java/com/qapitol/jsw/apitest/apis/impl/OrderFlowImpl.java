@@ -103,6 +103,8 @@ public class OrderFlowImpl extends BaseApiImpl {
         CreateOrderResp createOrderResp = orderApi.createOrderViaSLOAPI(createOrderRequestBody);
         ContextData.addData("orderNumber", createOrderResp.getOrderNumber());
         ContextData.addData("orderedQuantity", createOrderRequestBody.getLineItems().get(0).getOrderedQuantity());
+        ContextData.addData("finalSellingPrice",createOrderRequestBody.getLineItems().get(0).getFinalSellingPrice());
+        ContextData.addData("sellerVendorMasterId",createOrderRequestBody.getLineItems().get(0).getSellerVendorMasterId());
         log.info("Created Order id is : " + ContextData.getDataFromKey("orderNumber"));
         return createOrderResp;
     }
@@ -125,6 +127,10 @@ public class OrderFlowImpl extends BaseApiImpl {
         ContextData.addData("orderAmount", getOrderResp.getOrderAmount().getCentAmount());
         ContextData.addData("advanceAmountInPaisa", getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount());
         ContextData.addData("orderType",getOrderResp.getCategory());
+        ContextData.addData("sellerOrderNumber", getOrderResp.getChildOrders().get(0).getSellerOrderNumber());
+        ContextData.addData("buyerOrderId", getOrderResp.getId());
+        ContextData.addData("customerName", getOrderResp.getBuyerDetails().getName());
+        ContextData.addData("sellerName",getOrderResp.getChildOrders().get(0).getSellerName());
 
         log.info("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
         AllureCustomLogReporter.addTestStepLog("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
@@ -159,7 +165,6 @@ public class OrderFlowImpl extends BaseApiImpl {
         ContextData.addData("lineItemId", getOMSShipmentOrderResp.getSellerShipmentsInfo().get(0).getLineItems().get(0).getLineItemId());
         ContextData.addData("sellerGstin", getOMSShipmentOrderResp.getSellerShipmentsInfo().get(0).getSellerInfo().getGstin());
 
-
         assertNotEquals(ContextData.getDataFromKey("lineItemId"), 0, "Line item sync failed ");
         assertNotEquals(ContextData.getDataFromKey("sellerOrderId"), 0, "seller order creation failed ");
     }
@@ -187,7 +192,7 @@ public class OrderFlowImpl extends BaseApiImpl {
         assertNotNull(confirmOrderResp, "unable to confirm the order");
     }
 
-    public void validateTheOrderStatus(String status) throws IOException, InterruptedException {
+    public void validateTheOrderStatus(String status) {
         String orderNumber = (String) ContextData.getDataFromKey("orderNumber");
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
@@ -211,18 +216,17 @@ public class OrderFlowImpl extends BaseApiImpl {
         createDo.getPsLineItemsDetails().get(0).setLineItemId((Integer) ContextData.getDataFromKey("lineItemId"));
         if (nonNull((Data.get().get("doQuantity")))) {
             createDo.getPsLineItemsDetails().get(0).setPlannedQuantity((Double) Data.get().get("doQuantity"));
-            if (nonNull(Data.get().get("finalSellingPrice"))){
-                createDo.setRequestAmount((Double) Data.get().get("doQuantity")*(Double) Data.get().get("finalSellingPrice")*10*1.18);
+            if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))){
+                createDo.setRequestAmount((Double) Data.get().get("doQuantity")*(Double) ContextData.getDataFromKey("finalSellingPrice")*10*1.18);
             }else {
                 createDo.setRequestAmount((Double) ContextData.getDataFromKey("orderAmount")/100);
             }
             createDo.getPsLineItemsDetails().get(0).setTotalLineItemQuantity((Double) ContextData.getDataFromKey("orderedQuantity"));
-
         }
-        createDo.setSellerAddress((String) ContextData.getDataFromKey("sellerAddress"));
-        createDo.getSellerAddressMetadata().setVendorLocationDisplayName((String) ContextData.getDataFromKey("sellerAddress"));
-        createDo.setSellerCompanyName((String) ContextData.getDataFromKey("sellerAddress"));
-
+        createDo.setSellerAddress((String) ContextData.getDataFromKey("sellerName"));
+        createDo.getSellerAddressMetadata().setVendorLocationDisplayName((String) ContextData.getDataFromKey("sellerName"));
+        createDo.setSellerCompanyName((String) ContextData.getDataFromKey("sellerName"));
+        createDo.getSellerAddressMetadata().setVendorLocationKey((String) ContextData.getDataFromKey("sellerVendorMasterId"));
         // Fetch the Order API
         OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
 
@@ -287,7 +291,7 @@ public class OrderFlowImpl extends BaseApiImpl {
 
             if (nonNull(Data.get().get("shipmentQuantity"))) {
                 updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity(Double.valueOf((String) Data.get().get("shipmentQuantity")));
-                if (nonNull(Data.get().get("finalSellingPrice"))) {
+                if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
                     double invoiceBaseAmount= Double.valueOf((String) Data.get().get("shipmentQuantity"))*(Double) Data.get().get("finalSellingPrice")*10;
                     updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount(invoiceBaseAmount);
                     updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount*1.18);
@@ -425,7 +429,7 @@ public class OrderFlowImpl extends BaseApiImpl {
 
             if (nonNull(Data.get().get("shipmentQuantity"))) {
                 updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity((Double) Data.get().get("shipmentQuantity"));
-                if (nonNull(Data.get().get("finalSellingPrice"))) {
+                if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
                     double invoiceBaseAmount= (Double) Data.get().get("shipmentQuantity")*(Double) Data.get().get("finalSellingPrice")*10;
                     updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount(invoiceBaseAmount);
                     updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount*1.18);
@@ -477,7 +481,7 @@ public class OrderFlowImpl extends BaseApiImpl {
 
             if (nonNull(Data.get().get("shipmentQuantity"))) {
                 updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity((Double) Data.get().get("shipmentQuantity"));
-                if (nonNull(Data.get().get("finalSellingPrice"))) {
+                if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
                     double invoiceBaseAmount= (Double) Data.get().get("shipmentQuantity")*(Double) Data.get().get("finalSellingPrice")*10;
                     updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount(invoiceBaseAmount);
                     updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount*1.18);
@@ -514,13 +518,15 @@ public class OrderFlowImpl extends BaseApiImpl {
         CreateIncomingPayment createIncomingPayment = getPayloadJsonFileAsPOJO(fileName, CreateIncomingPayment.class);
         createIncomingPayment.getPayload().getPayment().getEntity().setId(paymentId);
 
-        if (nonNull(ContextData.getDataFromKey("advanceAmountInPaisa"))){
+        if (nonNull(Data.get().get("incomingPaymentAmount"))){
             createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) ContextData.getDataFromKey("advanceAmountInPaisa"));
-        }else if (nonNull(Data.get().get("incomingPaymentAmount"))) {
+        }else if (nonNull(ContextData.getDataFromKey("orderAmount"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) Data.get().get("incomingPaymentAmount"));
         }
         if (nonNull(Data.get().get("buyerGstin"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setGstin((String) Data.get().get("buyerGstin"));
+        }else if(nonNull(ContextData.getDataFromKey("gstin"))){
+            createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setGstin((String) ContextData.getDataFromKey("gstin"));
         }
         if (nonNull(Data.get().get("paymentMethod"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().setMethod((String) Data.get().get("paymentMethod"));
@@ -533,6 +539,8 @@ public class OrderFlowImpl extends BaseApiImpl {
         //Calling the create incoming payment API
         orderApi.createIncomingPayment(Config.getConfigProperty("zohoPublicKey"), createIncomingPayment);
         log.info("Incoming Payment API Call Successful With For amount --> " + createIncomingPayment.getPayload().getPayment().getEntity().getAmount() + " Payment id: " + paymentId);
+        ContextData.addData("paymentId", paymentId);
+        ContextData.addData("buyerGstin", createIncomingPayment.getPayload().getPayment().getEntity().getNotes().getGstin());
         return paymentId;
     }
 }

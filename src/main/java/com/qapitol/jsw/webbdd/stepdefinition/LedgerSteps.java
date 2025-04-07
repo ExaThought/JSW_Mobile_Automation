@@ -1,10 +1,7 @@
 package com.qapitol.jsw.webbdd.stepdefinition;
 
-import com.qapitol.jsw.apitest.apis.impl.OrderImpl;
-import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.CurrencyUtils;
-import com.qapitol.jsw.utils.OMSDBUtils;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.data.Data;
@@ -15,9 +12,11 @@ import io.cucumber.java.en.When;
 import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
 
-import java.io.IOException;
 import java.util.Map;
 
+import static com.qapitol.jsw.utils.AllureCustomLogReporter.addTestStepLog;
+import static com.qapitol.jsw.webbdd.stepdefinition.IncomingPaymentSteps.*;
+import static java.util.Objects.nonNull;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
@@ -34,6 +33,9 @@ public class LedgerSteps extends BaseSteps {
     public static final String CASHBACK_TDS = "Cashback TDS";
     public static final String CASHBACK_PAYOUT = "Cashback payout";
     public static final String CUSTOMER_NAME = "Customer Name";
+    public static final String ACCOUNTING_LEDGER_BALANCE = "Accounting Ledger Balance";
+    public static final String USABLE_LEDGER_BALANCE = "Usable Ledger Balance";
+    public static final String BLOCKED_LEDGER_BALANCE = "Blocked Balance";
 
     // Validation/Assertion values
     public static final String KNOCKED_OFF_AMOUNT = "Knocked off amount";
@@ -56,6 +58,12 @@ public class LedgerSteps extends BaseSteps {
     public static final String ZBM_CASHBACK_TDS = "Cashback_TDS";
     public static final String PAYOUT = "Payout";
     public static final String ZBM_CASHBACK_PAYOUT = "Refunds against Credit notes";
+
+    private static Map<String, String> ledgerSummaryMapBefore;
+    private static Map<String, String> ledgerSummaryMapAfterOrderPlaced;
+    private static Map<String, String> ledgerSummaryMapAfterOrderInvoice;
+
+    SoftAssert softAssert = new SoftAssert();
 
     @Then("Validate ledger statement with Document type as Cashback Issued on Zoho Creator")
     public void validateLedgerStatementDocumentTypeAsCashbackIssued() {
@@ -89,7 +97,7 @@ public class LedgerSteps extends BaseSteps {
         assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED), CREDIT_NOTE, "Zoho book Module used verification failed");
         assertNotNull(ledgerData.get(CREATOR_ID_DOC), "Creator ID - Documents should not be null");
         assertNotNull(ledgerData.get(CREATOR_ID_MASTERS), "Creator ID - Master should not be null");
-        AllureCustomLogReporter.addTestStepLog("Cashback Issued details: " + ledgerData);
+        addTestStepLog("Cashback Issued details: " + ledgerData);
         ContextData.addData("documentNumber", ledgerData.get(DOCUMENT_ID));
         log.info("Cashback Issued details documentNumber:" + ledgerData.get(DOCUMENT_ID));
         clearFilter();
@@ -125,7 +133,7 @@ public class LedgerSteps extends BaseSteps {
         assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED), ZBM_CASHBACK_TDS, "Zoho book Module used verification failed");
         assertNotNull(ledgerData.get(CREATOR_ID_DOC), "Creator ID - Documents should not be null");
         assertNotNull(ledgerData.get(CREATOR_ID_MASTERS), "Creator ID - Master should not be null");
-        AllureCustomLogReporter.addTestStepLog("Cashback TDS details: " + ledgerData);
+        addTestStepLog("Cashback TDS details: " + ledgerData);
         clearFilter();
         log.exiting();
     }
@@ -162,7 +170,7 @@ public class LedgerSteps extends BaseSteps {
         assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED), ZBM_CASHBACK_PAYOUT, "Zoho book Module used verification failed");
         assertNotNull(ledgerData.get(CREATOR_ID_DOC), "Creator ID - Documents should not be null");
         assertNotNull(ledgerData.get(CREATOR_ID_MASTERS), "Creator ID - Master should not be null");
-        AllureCustomLogReporter.addTestStepLog("Cashback Payouts details in ledger statement: " + ledgerData);
+        addTestStepLog("Cashback Payouts details in ledger statement: " + ledgerData);
         log.info("Cashback Payouts details in ledger statement: " + ledgerData);
         clearFilter();
         log.exiting();
@@ -181,7 +189,7 @@ public class LedgerSteps extends BaseSteps {
         Map<String, String> ledgerSummaryData = getDataFromWindow("dataWindowElement");
         softAssert.assertEquals("Ledger summary verification failed:",freezeStatus,ledgerSummaryData.get("Freeze status"));
         log.info("Ledger summary freeze status:"+ledgerSummaryData.get("Freeze status"));
-        AllureCustomLogReporter.addTestStepLog("Ledger summary freeze status:"+ledgerSummaryData.get("Freeze status"));
+        addTestStepLog("Ledger summary freeze status:"+ledgerSummaryData.get("Freeze status"));
     }
 
     public void navigateToLedgerStatementNewTab() {
@@ -204,7 +212,7 @@ public class LedgerSteps extends BaseSteps {
         Grid.setSessionName("zoho_creator");
         zohoCreatorNavigation(LEDGER_SUMMARY_PATH);
         log.info("Navigated to Ledger Summary Page");
-        AllureCustomLogReporter.addTestStepLog("Navigated to Ledger Summary Page");
+        addTestStepLog("Navigated to Ledger Summary Page");
     }
 
     @Then("validate the ledger entry, knocked off amount and clearing status on Zoho Creator")
@@ -216,9 +224,9 @@ public class LedgerSteps extends BaseSteps {
         searchStringContains(DOCUMENT_ID, (String) ContextData.getDataFromKey("invoiceNumber"));
         selectRowUsingObject((String) ContextData.getDataFromKey("invoiceNumber"), 10);
         Map<String, String> ledgerAI = getDataFromWindow("dataWindowElement");
-        AllureCustomLogReporter.addTestStepLog("Ledger_Statement data with document id --->  And Row data as -->" + ledgerAI);
+        addTestStepLog("Ledger_Statement data with document id --->  And Row data as -->" + ledgerAI);
         assertNotNull(ledgerAI.get("Entity ID"));
-        Assert.assertEquals(ADVANCE_INVOICE, ledgerAI.get(DOCUMENT_TYPE));
+        Assert.assertEquals(ledgerAI.get(DOCUMENT_TYPE), ADVANCE_INVOICE);
         Assert.assertEquals(ContextData.getDataFromKey("orderNumber"), ledgerAI.get(ORDER_ID));
 
         Assert.assertEquals((double) ContextData.getDataFromKey("invoicedBaseAmount"), Double.parseDouble(ledgerAI.get(BASE_AMOUNT).replace(",", "")));
@@ -231,4 +239,104 @@ public class LedgerSteps extends BaseSteps {
         softAssert.assertEquals((double) ContextData.getDataFromKey("invoiceAmount"), Double.parseDouble(ledgerAI.get(KNOCKED_OFF_AMOUNT).replace(",", "")));
         softAssert.assertEquals(CLEARED, ledgerAI.get(CLEARING_STATUS));
     }
+
+    public Map<String, String> fetchLedgerSummary(String customerNameValue) {
+
+        navigateToLedgerSummary();
+        clearFilter();
+        log.info("Buyer or customer details for customer name:- " + customerNameValue);
+        searchStringContains(CUSTOMER_NAME, customerNameValue);
+        return getLedgerSummaryByCustomerName(customerNameValue);
+
+    }
+
+    public Map<String, String> getLedgerSummaryByCustomerName(String customerNameValue){
+        Map<String, String> tableData = getRowDataAsMap(customerNameValue);
+        if (tableData == null) {
+            tableData = retryIfTableDataIsNull(tableData, customerNameValue);
+        }
+        return tableData;
+    }
+
+    @When("Check customer ledger balance before in ledger summary for {string} customer")
+    public void checkCustomerLedgerBalanceBeforeInLedgerSummary(String arg0) {
+
+        ledgerSummaryMapBefore = fetchLedgerSummary(arg0);
+        addTestStepLog("Customer Ledger Details Before Order Creation For Customer : " + arg0 + " ---> " + ledgerSummaryMapBefore);
+        log.info("Customer Ledger Details Before Order Creation For Customer : " + arg0 + " ---> " + ledgerSummaryMapBefore);
+    }
+
+    @Then("validate the ledger balance after order placed in ledger summary for {string} customer")
+    public void validateTheLedgerBalanceAfterOrderPlacedInLedgerSummaryForCustomer(String arg0) {
+        syncTheCustomerLedger(arg0);
+        ledgerSummaryMapAfterOrderPlaced = getLedgerSummaryByCustomerName(arg0);
+        addTestStepLog("Customer Ledger Details After Order Creation For Customer : " + arg0 + " ---> " + ledgerSummaryMapAfterOrderPlaced);
+        assertTrue("Validation failed for customer name in ledger summary", ledgerSummaryMapBefore.get(CUSTOMER_NAME).contains(arg0));
+        validateLedgerBalBeforeAndAfterOrderPlaced(ledgerSummaryMapBefore, ledgerSummaryMapAfterOrderPlaced, (Integer) ContextData.getDataFromKey("orderAmount"));
+        log.info("Ledger summary details after order placed : " + ledgerSummaryMapAfterOrderPlaced);
+        addTestStepLog("Ledger summary details after order placed : " + ledgerSummaryMapAfterOrderPlaced);
+    }
+
+    public void validateLedgerBalBeforeAndAfterOrderPlaced(Map<String, String> before, Map<String, String> after, int orderAmount) {
+
+        String expectedUsableLedBal = String.valueOf(Double.parseDouble(replaceComma(before.get(USABLE_LEDGER_BALANCE))) - Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(orderAmount)));
+        String expectedBlockedLedBal = String.valueOf(Double.parseDouble(replaceComma(before.get(BLOCKED_LEDGER_BALANCE))) + Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(orderAmount)));
+        assertEquals( before.get(ACCOUNTING_LEDGER_BALANCE), after.get(ACCOUNTING_LEDGER_BALANCE), "Available ledger balance validation failed");
+        softAssert.assertEquals(replaceComma(after.get(USABLE_LEDGER_BALANCE)), formatDecimal(expectedUsableLedBal), "Usable ledger balance validation failed");
+        assertEquals(replaceComma(after.get(BLOCKED_LEDGER_BALANCE)), formatDecimal(expectedBlockedLedBal), "Blocked ledger balance validation failed");
+    }
+
+    public void validateLedgerBalBeforeAndAfterIncomingPaymentTagging(Map<String, String> before, Map<String, String> after, int amount) {
+        String currentAccLedgerBal = String.valueOf(Double.parseDouble(replaceComma(after.get(ACCOUNTING_LEDGER_BALANCE))) - Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(amount)));
+        String currentBlockedLedBal = String.valueOf(Double.parseDouble(replaceComma(after.get(BLOCKED_LEDGER_BALANCE))) - Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(amount)));
+        assertEquals(replaceComma(before.get(ACCOUNTING_LEDGER_BALANCE)), formatDecimal(currentAccLedgerBal), "Available ledger balance validation failed");
+        assertEquals(before.get(USABLE_LEDGER_BALANCE), after.get(USABLE_LEDGER_BALANCE), "Usable ledger balance validation failed");
+        assertEquals(replaceComma(before.get(BLOCKED_LEDGER_BALANCE)), formatDecimal(currentBlockedLedBal), "Blocked ledger balance validation failed");
+    }
+
+    @Then("validate the ledger entry for incoming payment under new ledger statement")
+    public void validateTheLedgerEntryForIncomingPayment() {
+
+        String gstin = (String) ContextData.getDataFromKey("buyerGstin");
+        String paymentId = (String) ContextData.getDataFromKey("paymentId");
+        navigateToLedgerStatementNewTab();
+        clearSearch();
+        searchStringContains(DOCUMENT_ID, paymentId);
+        selectRowUsingObject(paymentId, 5);
+        Map<String, String> ledgerData = getDataFromWindow();
+
+        AllureCustomLogReporter.addTestStepLog("Ledger_Statement_New data with document id ---> " + paymentId + " And Row data as -->" + ledgerData);
+        assertEquals(ledgerData.get(DOCUMENT_TYPE), INCOMING_PAYMENT, "Document type validation failed");
+        assertEquals(CurrencyUtils.convertPaisaToRupeeWithCommaFormat((long) ContextData.getDataFromKey("orderAmount")), formatDecimalWithComma(ledgerData.get(CREDIT_AMOUNT)), "Credited Amount validation failed");
+        assertEquals(ledgerData.get(KNOCKED_OFF_AMOUNT), ZERO, "Knock off amount validation failed");
+        assertEquals(ledgerData.get(DEBIT_AMOUNT), ZERO, "Debit amount validation failed");
+        assertEquals(CurrencyUtils.convertPaisaToRupeeWithCommaFormat((long)ContextData.getDataFromKey("orderAmount")), formatDecimalWithComma(ledgerData.get(LED_PENDING_AMOUNT)), "Pending Amount validation failed");
+        assertEquals(ledgerData.get(MODULE_NAME), PAYMENTS_RECEIVED, "Module name validation failed");
+        assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED), PAYMENTS_RECEIVED2, "Zoho Books module used validation failed");
+        assertEquals(gstin, ledgerData.get(GSTIN), "GSTIN validation failed");
+        assertEquals(getLedgerStatementKey(ledgerData), ledgerData.get(LEDGER_STATEMENT_KEY), "Ledger Statement Key validation failed");
+        assertNotNull(ledgerData.get(CREATOR_ID_DOC));
+        assertNotNull(ledgerData.get(CREATOR_ID_MASTERS));
+        log.info("Zoho Ledger Validation for incoming payment auto tagging successful");
+        clearFilter();
+    }
+
+    @Then("Check customer ledger balance after incoming payment in ledger summary for {string} and validate")
+    public void checkCustomerLedgerBalanceAfterInLedgerSummaryAndValidate(String arg0) {
+        syncTheCustomerLedger(arg0);
+        Map<String, String> afterLedgerSummaryMap = getLedgerSummaryByCustomerName(arg0);
+        AllureCustomLogReporter.addTestStepLog("Customer Ledger Details After Incoming Payment Successful For Customer : " + arg0 + " ---> " + afterLedgerSummaryMap);
+
+        int amount = 0;
+        if (nonNull(Data.get().get("incomingPaymentAmount"))){
+            amount = (int) Data.get().get("incomingPaymentAmount");
+        } else if (nonNull(ContextData.getDataFromKey("orderAmount"))){
+            amount = (int) ContextData.getDataFromKey("orderAmount");
+        }
+        assertEquals(arg0, ledgerSummaryMapBefore.get(CUSTOMER_NAME), "Validation failed for customer name in ledger summary");
+        validateLedgerBalBeforeAndAfterIncomingPaymentTagging(ledgerSummaryMapBefore, afterLedgerSummaryMap,amount );
+        log.info("Ledger summary details after incoming payment : " + afterLedgerSummaryMap);
+        AllureCustomLogReporter.addTestStepLog("Ledger summary details after incoming payment : " + afterLedgerSummaryMap);
+    }
+
 }

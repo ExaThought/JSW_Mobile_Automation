@@ -13,7 +13,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Get cashback amount and quantity details
     Then validate the ledger entry, knocked off amount and clearing status on Zoho Creator
 
-  @testCaseId=id-001 @dataFile="ledger.yaml" @sanity_dependent
+  @testCaseId=id-001 @dataFile="ledger.yaml" @sanity_dependents
   Scenario:Cashback Ledger Entry Validation on ZC [Cashback Issued, Cashback TDS, Cashback Payout]
     Given Go to session "zoho_creator"
     Then Validate ledger statement with Document type as Cashback Issued on Zoho Creator
@@ -50,5 +50,12 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Navigate to ledger summary tab, click on Retry and validate the freeze status as "Frozen" for "INTELLECT DESIGN" customer
 
   @testCaseId=id-004 @dataFile="ledger.yaml" @sanity
-  Scenario: Validate the Incoming payment ledger entry in Zoho Creator
+  Scenario: Incoming payment ledger entry validations - ZC [Auto-Tagging]
+    When Check customer ledger balance before in ledger summary for "NARAYANI FOODS" customer
+    Then Create order with SLO API
+    Then validate the order details
+    Then validate the ledger balance after order placed in ledger summary for "NARAYANI FOODS" customer
     Then Create Incoming Payment In Zoho
+    Then validate the incoming payment details in zoho creator
+    Then validate the ledger entry for incoming payment under new ledger statement
+    And Check customer ledger balance after incoming payment in ledger summary for "NARAYANI FOODS" and validate

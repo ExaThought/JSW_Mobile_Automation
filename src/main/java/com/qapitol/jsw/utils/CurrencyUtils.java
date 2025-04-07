@@ -29,6 +29,12 @@ public class CurrencyUtils {
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(rupees);
     }
+    public static String convertPaisaToRupeeWithCommaFormat(long paisa) {
+
+        double rupees = paisa / 100.0;
+        DecimalFormat df = new DecimalFormat("#,###.00");
+        return df.format(rupees);
+    }
 
     public Double getTDSAmount(Double baseAmount, int rate) {
         Double tdsAmount = baseAmount * rate / 100;

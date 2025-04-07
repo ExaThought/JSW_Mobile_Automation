@@ -54,3 +54,12 @@ elements:
   popupClose:
     en_US:
       web: //span[@class='popupClose']
+  baseTable:
+    en_US:
+      web: //*[@id="listReportMainContainer"]/div['{0}']/div/div/div/table
+  headerCells:
+    en_US:
+      web: xpath=.//thead/tr//th[@searchallowed='true']
+  rowCells:
+    en_Us:
+      web: xpath=.//td[contains(@class,'zc-mapping-field')]

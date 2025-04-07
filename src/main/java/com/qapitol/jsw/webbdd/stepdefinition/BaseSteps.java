@@ -45,6 +45,12 @@ public abstract class BaseSteps extends AbstractWebPage {
     public static final String BASE_AMOUNT = "Base amount";
     public static final String GST_AMOUNT = "GST amount";
     public static final String INVOICE_NUMBER = "Invoice Number";
+    public static final String AMOUNT = "Amount";
+    public static final String GSTIN = "GSTIN";
+    public static final String PENDING = "Pending";
+    public static final String SUCCESS = "Success";
+    public static final String OPEN = "Open";
+
 
     public <T> T getPojoFromContextData(String key, Class<T> t) {
         OrderImpl orderCreation = new OrderImpl();
@@ -333,6 +339,10 @@ public abstract class BaseSteps extends AbstractWebPage {
         }
     }
 
+    public Map<String, String> getDataFromWindow() {
+        return getDataFromWindow("dataWindowElement");
+    }
+
     public Map<String, String> getDataFromWindow(String locaterKey) {
         sleep(999);
         Map<String, String> windowMap = new HashMap<>();
@@ -527,4 +537,108 @@ public abstract class BaseSteps extends AbstractWebPage {
         log.info("Ledger Statement Key Value --> " + ledgerStatementKey);
         return ledgerStatementKey;
     }
+
+    public static String replaceComma(String value) {
+        return value.replace(",", "");
+    }
+
+    /**
+     * This method being used to fetch any row data in Zoho creator as a map by passing any unique cell value
+     *
+     * @param cellValue Unique cell value to pass to identify the row
+     * @return Map<String, String> of entire row data as key value pair.
+     */
+    public Map<String, String> getRowDataAsMap(String cellValue) {
+
+        Map<String, String> tableData = new HashMap<>();
+        sleep(999);
+        WebElement table = getBaseTable(1);
+        if (isTableVisible(table)) {
+            List<WebElement> headerCells = table.findElements(By.xpath("headerCells"));
+            log.info("Header Size--->"+ headerCells.size());
+
+            WebElement row = findRowWithCellValue(table, cellValue);
+            if (row == null) {
+                log.info("Row with value '" + cellValue + "' not found.");
+                return null;
+            }
+
+            List<WebElement> rowCells = row.findElements(By.xpath("rowCells"));
+            log.info("Row cells size-->"+rowCells.size());
+            if (headerCells.size() == rowCells.size()) {
+                for (int i = 0; i < headerCells.size(); i++) {
+
+                    List<WebElement> headerElements = getBaseTable(2).findElements(By.xpath("headerCells"));
+                    String headerText = headerElements.get(i).getAttribute("displayname");
+                    String rowData = rowCells.get(i).getText().trim();
+                    tableData.put(headerText, rowData);
+                }
+            } else {
+                log.info("The number of headers does not match the number of cells in the matched row.");
+            }
+        }
+        log.info("Table Data Map Containing Cell Value - "+cellValue +" are--> "+tableData);
+
+        return tableData;
+    }
+
+    private WebElement findRowWithCellValue(WebElement table, String cellValue) {
+
+        int rowCount = 0;
+        List<WebElement> rows = table.findElements(By.xpath(".//tbody/tr"));
+        log.info("Number of rows ---> "+rows.size());
+        for (WebElement row : rows) {
+            List<WebElement> cells = row.findElements(By.tagName("td"));
+            for (WebElement cell : cells) {
+                if (cell.getText().trim().equals(cellValue)) {
+                    rowCount++;
+                    if (rowCount>1){
+                        return rows.get(0);
+                    }
+                    return row;  // Return the row that contains the search value
+                }
+            }
+        }
+
+        return null;  // Return null if no matching row is found
+    }
+
+    public boolean isTableVisible(WebElement table) {
+        try {
+            //to be checked
+            waitAndCheckIsElementVisible(String.valueOf(table));
+      //      driverHelper.waitUntilElementVisible(table);
+            log.info("===Table is visible===");
+            return table.isDisplayed();
+        } catch (TimeoutException e) {
+            log.info("Table not visible within the specified timeout");
+            return false;
+        }
+    }
+
+    public WebElement getBaseTable(int i){
+        String baseTable = String.format("baseTable",i);
+    //    return driverHelper.findElement(By.xpath(xpath));
+        waitAndCheckIsElementPresent(baseTable);
+        return locateElement(baseTable);
+    }
+
+    public Map<String, String> retryIfTableDataIsNull(Map<String, String> map, String cellValue){
+        Map<String, String> tableData=null;
+        int maxRetries = 2;
+        int attempt = 0;
+
+        while (attempt <= maxRetries) {
+            if(map == null){
+                pageRefresh();
+                tableData = getRowDataAsMap(cellValue);
+            }else {
+                log.info("Table data is not null. Proceeding with validation.");
+                break; // Exit the loop if the object is not null
+            }
+            attempt++;
+        }
+        return tableData;
+    }
+
 }
