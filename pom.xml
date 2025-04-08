@@ -35,6 +35,11 @@
             <version>${sauron.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.qapitol.jsw</groupId>
+            <artifactId>order-api</artifactId>
+            <version>4.0.6-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>report-allure</artifactId>
             <version>${sauron.version}</version>
@@ -68,12 +73,12 @@
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.1.0</version>
                     <configuration>
-<!--                        <filesets>-->
-<!--                            <fileset>-->
-<!--                                <directory>${user.dir}/allure-results/</directory>-->
-<!--                                <followSymlinks>false</followSymlinks>-->
-<!--                            </fileset>-->
-<!--                        </filesets>-->
+                        <filesets>
+                            <fileset>
+                                <directory>${user.dir}/allure-results</directory>
+                                <followSymlinks>false</followSymlinks>
+                            </fileset>
+                        </filesets>
                     </configuration>
                 </plugin>
                 <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
@@ -177,11 +182,11 @@
     <repositories>
         <repository>
             <id>sauron-snapshot</id>
-            <url>http://master.jswone.in/repository/sauron-snapshot/</url>
+            <url>https://master.jswone.in/repository/sauron-snapshot/</url>
         </repository>
         <repository>
             <id>sauron-release</id>
-            <url>http://master.jswone.in/repository/sauron-release/</url>
+            <url>https://master.jswone.in/repository/sauron-release/</url>
         </repository>
     </repositories>
 </project>

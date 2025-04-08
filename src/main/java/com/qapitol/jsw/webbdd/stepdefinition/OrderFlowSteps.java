@@ -21,9 +21,8 @@ public class OrderFlowSteps extends BaseSteps {
     private final SimpleLogger log = SauronLogger.getLogger();
 
     @When("Create order with SLO API")
-    public void createOrderWithSloApi() throws IOException, InterruptedException {
+    public void createOrderWithSloApi() throws IOException {
         log.entering();
-       // OrderImpl orderCreation = new OrderImpl();
         OrderFlowImpl orderFlow = new OrderFlowImpl();
         orderFlow.createOrder();
         new OMSDBUtils().updateSalesForceOpportunity((String) ContextData.getDataFromKey("orderNumber"));
@@ -32,7 +31,7 @@ public class OrderFlowSteps extends BaseSteps {
     }
 
     @Then("validate the order details")
-    public void validateTheOrderDetails() throws IOException, InterruptedException {
+    public void validateTheOrderDetails() {
         log.entering();
         String orderType = (String) Data.get().get("orderType");
         String paymentType = (String) Data.get().get("paymentType");
@@ -62,7 +61,7 @@ public class OrderFlowSteps extends BaseSteps {
     }
 
     @Then("Confirm the order using JOMS API")
-    public void confirmOrderUsingJOMS() throws IOException, InterruptedException {
+    public void confirmOrderUsingJOMS() throws IOException {
         log.entering();
         OrderFlowImpl orderCreation = new OrderFlowImpl();
         orderCreation.getSellerOrderNumber();
