@@ -11,40 +11,30 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "contains",
     "account_id",
-    "payload",
+    "contains",
     "created_at",
+    "entity",
     "event",
-    "entity"
+    "payload"
 })
 @Generated("jsonschema2pojo")
 public class CreateIncomingPayment {
 
-    @JsonProperty("contains")
-    private List<String> contains = new ArrayList<String>();
     @JsonProperty("account_id")
     private String accountId;
-    @JsonProperty("payload")
-    private Payload payload;
+    @JsonProperty("contains")
+    private List<String> contains = new ArrayList<String>();
     @JsonProperty("created_at")
     private Integer createdAt;
-    @JsonProperty("event")
-    private String event;
     @JsonProperty("entity")
     private String entity;
+    @JsonProperty("event")
+    private String event;
+    @JsonProperty("payload")
+    private Payload payload;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
-
-    @JsonProperty("contains")
-    public List<String> getContains() {
-        return contains;
-    }
-
-    @JsonProperty("contains")
-    public void setContains(List<String> contains) {
-        this.contains = contains;
-    }
 
     @JsonProperty("account_id")
     public String getAccountId() {
@@ -56,14 +46,14 @@ public class CreateIncomingPayment {
         this.accountId = accountId;
     }
 
-    @JsonProperty("payload")
-    public Payload getPayload() {
-        return payload;
+    @JsonProperty("contains")
+    public List<String> getContains() {
+        return contains;
     }
 
-    @JsonProperty("payload")
-    public void setPayload(Payload payload) {
-        this.payload = payload;
+    @JsonProperty("contains")
+    public void setContains(List<String> contains) {
+        this.contains = contains;
     }
 
     @JsonProperty("created_at")
@@ -76,6 +66,16 @@ public class CreateIncomingPayment {
         this.createdAt = createdAt;
     }
 
+    @JsonProperty("entity")
+    public String getEntity() {
+        return entity;
+    }
+
+    @JsonProperty("entity")
+    public void setEntity(String entity) {
+        this.entity = entity;
+    }
+
     @JsonProperty("event")
     public String getEvent() {
         return event;
@@ -86,14 +86,14 @@ public class CreateIncomingPayment {
         this.event = event;
     }
 
-    @JsonProperty("entity")
-    public String getEntity() {
-        return entity;
+    @JsonProperty("payload")
+    public Payload getPayload() {
+        return payload;
     }
 
-    @JsonProperty("entity")
-    public void setEntity(String entity) {
-        this.entity = entity;
+    @JsonProperty("payload")
+    public void setPayload(Payload payload) {
+        this.payload = payload;
     }
 
     @JsonAnyGetter
@@ -110,29 +110,29 @@ public class CreateIncomingPayment {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(CreateIncomingPayment.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("contains");
-        sb.append('=');
-        sb.append(((this.contains == null)?"<null>":this.contains));
-        sb.append(',');
         sb.append("accountId");
         sb.append('=');
         sb.append(((this.accountId == null)?"<null>":this.accountId));
         sb.append(',');
-        sb.append("payload");
+        sb.append("contains");
         sb.append('=');
-        sb.append(((this.payload == null)?"<null>":this.payload));
+        sb.append(((this.contains == null)?"<null>":this.contains));
         sb.append(',');
         sb.append("createdAt");
         sb.append('=');
         sb.append(((this.createdAt == null)?"<null>":this.createdAt));
         sb.append(',');
+        sb.append("entity");
+        sb.append('=');
+        sb.append(((this.entity == null)?"<null>":this.entity));
+        sb.append(',');
         sb.append("event");
         sb.append('=');
         sb.append(((this.event == null)?"<null>":this.event));
         sb.append(',');
-        sb.append("entity");
+        sb.append("payload");
         sb.append('=');
-        sb.append(((this.entity == null)?"<null>":this.entity));
+        sb.append(((this.payload == null)?"<null>":this.payload));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');

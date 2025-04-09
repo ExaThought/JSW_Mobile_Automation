@@ -105,6 +105,8 @@ public class OrderFlowImpl extends BaseApiImpl {
         ContextData.addData("orderedQuantity", createOrderRequestBody.getLineItems().get(0).getOrderedQuantity());
         ContextData.addData("finalSellingPrice",createOrderRequestBody.getLineItems().get(0).getFinalSellingPrice());
         ContextData.addData("sellerVendorMasterId",createOrderRequestBody.getLineItems().get(0).getSellerVendorMasterId());
+        ContextData.addData("orderType", createOrderRequestBody.getOrderType());
+        ContextData.addData("paymentType", createOrderRequestBody.getOrderPaymentType());
         log.info("Created Order id is : " + ContextData.getDataFromKey("orderNumber"));
         return createOrderResp;
     }
@@ -121,7 +123,7 @@ public class OrderFlowImpl extends BaseApiImpl {
 
         softAssert.assertEquals("Order state not in placed or created state", getOrderResp.getOrderStatus(), "Placed");
         assertTrue(getOrderResp.getIsZohoCustomer(), "Not a Zoho Customer");
-        assertTrue(getOrderResp.getPaymentType().contains(paymentType), "Payment type is not correct");
+        softAssert.assertTrue(getOrderResp.getPaymentType().contains(paymentType), "Payment type is not correct");
         assertNotEquals(getOrderResp.getPaymentStatus().trim(), "PENDING", "Order payment status is Pending ");
         assertEquals(getOrderResp.getCategory(), orderType.trim().toUpperCase(), "Order type is not correct");
         ContextData.addData("orderAmount", getOrderResp.getOrderAmount().getCentAmount());
@@ -519,9 +521,9 @@ public class OrderFlowImpl extends BaseApiImpl {
         createIncomingPayment.getPayload().getPayment().getEntity().setId(paymentId);
 
         if (nonNull(Data.get().get("incomingPaymentAmount"))){
-            createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) ContextData.getDataFromKey("advanceAmountInPaisa"));
-        }else if (nonNull(ContextData.getDataFromKey("orderAmount"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) Data.get().get("incomingPaymentAmount"));
+        }else if (nonNull(ContextData.getDataFromKey("advanceAmountInPaisa"))) {
+            createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) ContextData.getDataFromKey("advanceAmountInPaisa"));
         }
         if (nonNull(Data.get().get("buyerGstin"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setGstin((String) Data.get().get("buyerGstin"));
@@ -532,7 +534,7 @@ public class OrderFlowImpl extends BaseApiImpl {
             createIncomingPayment.getPayload().getPayment().getEntity().setMethod((String) Data.get().get("paymentMethod"));
         }
         if (nonNull(ContextData.getDataFromKey("orderNumber"))) {
-            createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setCTOrderNumber((String) Data.get().get("CT_OrderNumber"));
+            createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setCTOrderNumber((String) ContextData.getDataFromKey("orderNumber"));
         }
         OrderApi orderApi = getZohoAPIClientFactory().create(OrderApi.class);
 

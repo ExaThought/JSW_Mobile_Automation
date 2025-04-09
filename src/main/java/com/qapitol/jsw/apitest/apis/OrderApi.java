@@ -16,7 +16,6 @@ import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoice;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoiceResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipment;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipmentResp;
-import com.qapitol.sauron.common.configuration.Config;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;

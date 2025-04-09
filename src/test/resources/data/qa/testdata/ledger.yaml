@@ -5,12 +5,10 @@
     SLO_Order:
 - testCaseId: "id-002"
   CREATE_ORDER_PAYLOAD: "create_order_credit"
-  orderType: "Distributed"
-  paymentType: "Credit"
   requestAmount: 14160.0
   plannedQuantity: "10"
   totalLineItemQuantity: 10.0
-  sellerAddress: "steel 100"
+  sellerName: "steel 100"
   vendorLocationDisplayName: "steel 100"
   sellerCompanyName: "steel 100"
   taxType: "GST"
@@ -33,4 +31,8 @@
   #  CREDIT_DETAILS: "credit_details"
   #  creditLimitBypass: true
 - testCaseId: "id-004"
-  incomingPaymentAmount: 100000
+  customerId: "6168f5a0-b583-4472-8dd4-231670fbd8eb"
+  shippingAddressId: "MhZqEnh1"
+- testCaseId: "id-005"     #manual tagging
+  incomingPaymentAmount: 100041 #in paisa
+  buyerGstin: "27AABCI6363G1ZJ"

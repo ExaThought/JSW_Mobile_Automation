@@ -1,0 +1,13 @@
+elements:
+  tagButton:
+    en_US:
+      web: xpath=//td[contains(text(),''{0}'')]/following-sibling::td[2]/a
+  searchDropDown:
+    en_US:
+      web: //*[@class='select2-chosen' and text()='-Select-']
+  searchBar:
+    en_US:
+      web: //input[@name='zc-sel2-inp-Customer_GSTIN' and @aria-activedescendant]
+  saveButton:
+    en_US:
+      web: //input[@type='submit' and @name='Tag']

@@ -33,8 +33,8 @@ public class OrderFlowSteps extends BaseSteps {
     @Then("validate the order details")
     public void validateTheOrderDetails() {
         log.entering();
-        String orderType = (String) Data.get().get("orderType");
-        String paymentType = (String) Data.get().get("paymentType");
+        String orderType = (String) ContextData.getDataFromKey("orderType");
+        String paymentType = (String) ContextData.getDataFromKey("paymentType");
 
         OrderFlowImpl orderCreation = new OrderFlowImpl();
         GetOMSOrderResp getOMSOrderResp = orderCreation.validateOrderDetails(orderType, paymentType);

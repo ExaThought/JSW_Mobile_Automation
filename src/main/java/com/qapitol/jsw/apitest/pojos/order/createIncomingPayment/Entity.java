@@ -9,144 +9,124 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "notes",
-    "fee",
-    "description",
-    "created_at",
+    "acquirer_data",
+    "amount",
     "amount_refunded",
     "bank",
-    "error_reason",
-    "error_description",
-    "acquirer_data",
-    "captured",
-    "contact",
-    "invoice_id",
     "base_amount",
+    "captured",
+    "card_id",
+    "contact",
+    "created_at",
     "currency",
-    "id",
-    "international",
+    "description",
     "email",
-    "reward",
-    "amount",
-    "refund_status",
-    "wallet",
-    "method",
-    "vpa",
+    "entity",
+    "error_code",
+    "error_description",
+    "error_reason",
     "error_source",
     "error_step",
-    "tax",
-    "card_id",
-    "error_code",
+    "fee",
+    "id",
+    "international",
+    "invoice_id",
+    "method",
+    "notes",
     "order_id",
-    "entity",
-    "status"
+    "refund_status",
+    "reward",
+    "status",
+    "tax",
+    "vpa",
+    "wallet"
 })
 @Generated("jsonschema2pojo")
 public class Entity {
 
-    @JsonProperty("notes")
-    private Notes notes;
-    @JsonProperty("fee")
-    private Integer fee;
-    @JsonProperty("description")
-    private Object description;
-    @JsonProperty("created_at")
-    private Integer createdAt;
+    @JsonProperty("acquirer_data")
+    private AcquirerData acquirerData;
+    @JsonProperty("amount")
+    private Integer amount;
     @JsonProperty("amount_refunded")
     private Integer amountRefunded;
     @JsonProperty("bank")
     private String bank;
-    @JsonProperty("error_reason")
-    private Object errorReason;
-    @JsonProperty("error_description")
-    private Object errorDescription;
-    @JsonProperty("acquirer_data")
-    private AcquirerData acquirerData;
-    @JsonProperty("captured")
-    private Boolean captured;
-    @JsonProperty("contact")
-    private String contact;
-    @JsonProperty("invoice_id")
-    private Object invoiceId;
     @JsonProperty("base_amount")
     private Integer baseAmount;
+    @JsonProperty("captured")
+    private Boolean captured;
+    @JsonProperty("card_id")
+    private Object cardId;
+    @JsonProperty("contact")
+    private String contact;
+    @JsonProperty("created_at")
+    private Integer createdAt;
     @JsonProperty("currency")
     private String currency;
-    @JsonProperty("id")
-    private String id;
-    @JsonProperty("international")
-    private Boolean international;
+    @JsonProperty("description")
+    private Object description;
     @JsonProperty("email")
     private String email;
-    @JsonProperty("reward")
-    private Object reward;
-    @JsonProperty("amount")
-    private Integer amount;
-    @JsonProperty("refund_status")
-    private Object refundStatus;
-    @JsonProperty("wallet")
-    private Object wallet;
-    @JsonProperty("method")
-    private String method;
-    @JsonProperty("vpa")
-    private Object vpa;
+    @JsonProperty("entity")
+    private String entity;
+    @JsonProperty("error_code")
+    private Object errorCode;
+    @JsonProperty("error_description")
+    private Object errorDescription;
+    @JsonProperty("error_reason")
+    private Object errorReason;
     @JsonProperty("error_source")
     private Object errorSource;
     @JsonProperty("error_step")
     private Object errorStep;
-    @JsonProperty("tax")
-    private Integer tax;
-    @JsonProperty("card_id")
-    private Object cardId;
-    @JsonProperty("error_code")
-    private Object errorCode;
+    @JsonProperty("fee")
+    private Integer fee;
+    @JsonProperty("id")
+    private String id;
+    @JsonProperty("international")
+    private Boolean international;
+    @JsonProperty("invoice_id")
+    private Object invoiceId;
+    @JsonProperty("method")
+    private String method;
+    @JsonProperty("notes")
+    private Notes notes;
     @JsonProperty("order_id")
     private String orderId;
-    @JsonProperty("entity")
-    private String entity;
+    @JsonProperty("refund_status")
+    private Object refundStatus;
+    @JsonProperty("reward")
+    private Object reward;
     @JsonProperty("status")
     private String status;
+    @JsonProperty("tax")
+    private Integer tax;
+    @JsonProperty("vpa")
+    private Object vpa;
+    @JsonProperty("wallet")
+    private Object wallet;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
-    @JsonProperty("notes")
-    public Notes getNotes() {
-        return notes;
+    @JsonProperty("acquirer_data")
+    public AcquirerData getAcquirerData() {
+        return acquirerData;
     }
 
-    @JsonProperty("notes")
-    public void setNotes(Notes notes) {
-        this.notes = notes;
+    @JsonProperty("acquirer_data")
+    public void setAcquirerData(AcquirerData acquirerData) {
+        this.acquirerData = acquirerData;
     }
 
-    @JsonProperty("fee")
-    public Integer getFee() {
-        return fee;
+    @JsonProperty("amount")
+    public Integer getAmount() {
+        return amount;
     }
 
-    @JsonProperty("fee")
-    public void setFee(Integer fee) {
-        this.fee = fee;
-    }
-
-    @JsonProperty("description")
-    public Object getDescription() {
-        return description;
-    }
-
-    @JsonProperty("description")
-    public void setDescription(Object description) {
-        this.description = description;
-    }
-
-    @JsonProperty("created_at")
-    public Integer getCreatedAt() {
-        return createdAt;
-    }
-
-    @JsonProperty("created_at")
-    public void setCreatedAt(Integer createdAt) {
-        this.createdAt = createdAt;
+    @JsonProperty("amount")
+    public void setAmount(Integer amount) {
+        this.amount = amount;
     }
 
     @JsonProperty("amount_refunded")
@@ -169,34 +149,14 @@ public class Entity {
         this.bank = bank;
     }
 
-    @JsonProperty("error_reason")
-    public Object getErrorReason() {
-        return errorReason;
+    @JsonProperty("base_amount")
+    public Integer getBaseAmount() {
+        return baseAmount;
     }
 
-    @JsonProperty("error_reason")
-    public void setErrorReason(Object errorReason) {
-        this.errorReason = errorReason;
-    }
-
-    @JsonProperty("error_description")
-    public Object getErrorDescription() {
-        return errorDescription;
-    }
-
-    @JsonProperty("error_description")
-    public void setErrorDescription(Object errorDescription) {
-        this.errorDescription = errorDescription;
-    }
-
-    @JsonProperty("acquirer_data")
-    public AcquirerData getAcquirerData() {
-        return acquirerData;
-    }
-
-    @JsonProperty("acquirer_data")
-    public void setAcquirerData(AcquirerData acquirerData) {
-        this.acquirerData = acquirerData;
+    @JsonProperty("base_amount")
+    public void setBaseAmount(Integer baseAmount) {
+        this.baseAmount = baseAmount;
     }
 
     @JsonProperty("captured")
@@ -209,6 +169,16 @@ public class Entity {
         this.captured = captured;
     }
 
+    @JsonProperty("card_id")
+    public Object getCardId() {
+        return cardId;
+    }
+
+    @JsonProperty("card_id")
+    public void setCardId(Object cardId) {
+        this.cardId = cardId;
+    }
+
     @JsonProperty("contact")
     public String getContact() {
         return contact;
@@ -219,24 +189,14 @@ public class Entity {
         this.contact = contact;
     }
 
-    @JsonProperty("invoice_id")
-    public Object getInvoiceId() {
-        return invoiceId;
+    @JsonProperty("created_at")
+    public Integer getCreatedAt() {
+        return createdAt;
     }
 
-    @JsonProperty("invoice_id")
-    public void setInvoiceId(Object invoiceId) {
-        this.invoiceId = invoiceId;
-    }
-
-    @JsonProperty("base_amount")
-    public Integer getBaseAmount() {
-        return baseAmount;
-    }
-
-    @JsonProperty("base_amount")
-    public void setBaseAmount(Integer baseAmount) {
-        this.baseAmount = baseAmount;
+    @JsonProperty("created_at")
+    public void setCreatedAt(Integer createdAt) {
+        this.createdAt = createdAt;
     }
 
     @JsonProperty("currency")
@@ -249,24 +209,14 @@ public class Entity {
         this.currency = currency;
     }
 
-    @JsonProperty("id")
-    public String getId() {
-        return id;
+    @JsonProperty("description")
+    public Object getDescription() {
+        return description;
     }
 
-    @JsonProperty("id")
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @JsonProperty("international")
-    public Boolean getInternational() {
-        return international;
-    }
-
-    @JsonProperty("international")
-    public void setInternational(Boolean international) {
-        this.international = international;
+    @JsonProperty("description")
+    public void setDescription(Object description) {
+        this.description = description;
     }
 
     @JsonProperty("email")
@@ -279,64 +229,44 @@ public class Entity {
         this.email = email;
     }
 
-    @JsonProperty("reward")
-    public Object getReward() {
-        return reward;
+    @JsonProperty("entity")
+    public String getEntity() {
+        return entity;
     }
 
-    @JsonProperty("reward")
-    public void setReward(Object reward) {
-        this.reward = reward;
+    @JsonProperty("entity")
+    public void setEntity(String entity) {
+        this.entity = entity;
     }
 
-    @JsonProperty("amount")
-    public Integer getAmount() {
-        return amount;
+    @JsonProperty("error_code")
+    public Object getErrorCode() {
+        return errorCode;
     }
 
-    @JsonProperty("amount")
-    public void setAmount(Integer amount) {
-        this.amount = amount;
+    @JsonProperty("error_code")
+    public void setErrorCode(Object errorCode) {
+        this.errorCode = errorCode;
     }
 
-    @JsonProperty("refund_status")
-    public Object getRefundStatus() {
-        return refundStatus;
+    @JsonProperty("error_description")
+    public Object getErrorDescription() {
+        return errorDescription;
     }
 
-    @JsonProperty("refund_status")
-    public void setRefundStatus(Object refundStatus) {
-        this.refundStatus = refundStatus;
+    @JsonProperty("error_description")
+    public void setErrorDescription(Object errorDescription) {
+        this.errorDescription = errorDescription;
     }
 
-    @JsonProperty("wallet")
-    public Object getWallet() {
-        return wallet;
+    @JsonProperty("error_reason")
+    public Object getErrorReason() {
+        return errorReason;
     }
 
-    @JsonProperty("wallet")
-    public void setWallet(Object wallet) {
-        this.wallet = wallet;
-    }
-
-    @JsonProperty("method")
-    public String getMethod() {
-        return method;
-    }
-
-    @JsonProperty("method")
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    @JsonProperty("vpa")
-    public Object getVpa() {
-        return vpa;
-    }
-
-    @JsonProperty("vpa")
-    public void setVpa(Object vpa) {
-        this.vpa = vpa;
+    @JsonProperty("error_reason")
+    public void setErrorReason(Object errorReason) {
+        this.errorReason = errorReason;
     }
 
     @JsonProperty("error_source")
@@ -359,34 +289,64 @@ public class Entity {
         this.errorStep = errorStep;
     }
 
-    @JsonProperty("tax")
-    public Integer getTax() {
-        return tax;
+    @JsonProperty("fee")
+    public Integer getFee() {
+        return fee;
     }
 
-    @JsonProperty("tax")
-    public void setTax(Integer tax) {
-        this.tax = tax;
+    @JsonProperty("fee")
+    public void setFee(Integer fee) {
+        this.fee = fee;
     }
 
-    @JsonProperty("card_id")
-    public Object getCardId() {
-        return cardId;
+    @JsonProperty("id")
+    public String getId() {
+        return id;
     }
 
-    @JsonProperty("card_id")
-    public void setCardId(Object cardId) {
-        this.cardId = cardId;
+    @JsonProperty("id")
+    public void setId(String id) {
+        this.id = id;
     }
 
-    @JsonProperty("error_code")
-    public Object getErrorCode() {
-        return errorCode;
+    @JsonProperty("international")
+    public Boolean getInternational() {
+        return international;
     }
 
-    @JsonProperty("error_code")
-    public void setErrorCode(Object errorCode) {
-        this.errorCode = errorCode;
+    @JsonProperty("international")
+    public void setInternational(Boolean international) {
+        this.international = international;
+    }
+
+    @JsonProperty("invoice_id")
+    public Object getInvoiceId() {
+        return invoiceId;
+    }
+
+    @JsonProperty("invoice_id")
+    public void setInvoiceId(Object invoiceId) {
+        this.invoiceId = invoiceId;
+    }
+
+    @JsonProperty("method")
+    public String getMethod() {
+        return method;
+    }
+
+    @JsonProperty("method")
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    @JsonProperty("notes")
+    public Notes getNotes() {
+        return notes;
+    }
+
+    @JsonProperty("notes")
+    public void setNotes(Notes notes) {
+        this.notes = notes;
     }
 
     @JsonProperty("order_id")
@@ -399,14 +359,24 @@ public class Entity {
         this.orderId = orderId;
     }
 
-    @JsonProperty("entity")
-    public String getEntity() {
-        return entity;
+    @JsonProperty("refund_status")
+    public Object getRefundStatus() {
+        return refundStatus;
     }
 
-    @JsonProperty("entity")
-    public void setEntity(String entity) {
-        this.entity = entity;
+    @JsonProperty("refund_status")
+    public void setRefundStatus(Object refundStatus) {
+        this.refundStatus = refundStatus;
+    }
+
+    @JsonProperty("reward")
+    public Object getReward() {
+        return reward;
+    }
+
+    @JsonProperty("reward")
+    public void setReward(Object reward) {
+        this.reward = reward;
     }
 
     @JsonProperty("status")
@@ -417,6 +387,36 @@ public class Entity {
     @JsonProperty("status")
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @JsonProperty("tax")
+    public Integer getTax() {
+        return tax;
+    }
+
+    @JsonProperty("tax")
+    public void setTax(Integer tax) {
+        this.tax = tax;
+    }
+
+    @JsonProperty("vpa")
+    public Object getVpa() {
+        return vpa;
+    }
+
+    @JsonProperty("vpa")
+    public void setVpa(Object vpa) {
+        this.vpa = vpa;
+    }
+
+    @JsonProperty("wallet")
+    public Object getWallet() {
+        return wallet;
+    }
+
+    @JsonProperty("wallet")
+    public void setWallet(Object wallet) {
+        this.wallet = wallet;
     }
 
     @JsonAnyGetter
@@ -433,21 +433,13 @@ public class Entity {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(Entity.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("notes");
+        sb.append("acquirerData");
         sb.append('=');
-        sb.append(((this.notes == null)?"<null>":this.notes));
+        sb.append(((this.acquirerData == null)?"<null>":this.acquirerData));
         sb.append(',');
-        sb.append("fee");
+        sb.append("amount");
         sb.append('=');
-        sb.append(((this.fee == null)?"<null>":this.fee));
-        sb.append(',');
-        sb.append("description");
-        sb.append('=');
-        sb.append(((this.description == null)?"<null>":this.description));
-        sb.append(',');
-        sb.append("createdAt");
-        sb.append('=');
-        sb.append(((this.createdAt == null)?"<null>":this.createdAt));
+        sb.append(((this.amount == null)?"<null>":this.amount));
         sb.append(',');
         sb.append("amountRefunded");
         sb.append('=');
@@ -457,73 +449,53 @@ public class Entity {
         sb.append('=');
         sb.append(((this.bank == null)?"<null>":this.bank));
         sb.append(',');
-        sb.append("errorReason");
+        sb.append("baseAmount");
         sb.append('=');
-        sb.append(((this.errorReason == null)?"<null>":this.errorReason));
-        sb.append(',');
-        sb.append("errorDescription");
-        sb.append('=');
-        sb.append(((this.errorDescription == null)?"<null>":this.errorDescription));
-        sb.append(',');
-        sb.append("acquirerData");
-        sb.append('=');
-        sb.append(((this.acquirerData == null)?"<null>":this.acquirerData));
+        sb.append(((this.baseAmount == null)?"<null>":this.baseAmount));
         sb.append(',');
         sb.append("captured");
         sb.append('=');
         sb.append(((this.captured == null)?"<null>":this.captured));
         sb.append(',');
+        sb.append("cardId");
+        sb.append('=');
+        sb.append(((this.cardId == null)?"<null>":this.cardId));
+        sb.append(',');
         sb.append("contact");
         sb.append('=');
         sb.append(((this.contact == null)?"<null>":this.contact));
         sb.append(',');
-        sb.append("invoiceId");
+        sb.append("createdAt");
         sb.append('=');
-        sb.append(((this.invoiceId == null)?"<null>":this.invoiceId));
-        sb.append(',');
-        sb.append("baseAmount");
-        sb.append('=');
-        sb.append(((this.baseAmount == null)?"<null>":this.baseAmount));
+        sb.append(((this.createdAt == null)?"<null>":this.createdAt));
         sb.append(',');
         sb.append("currency");
         sb.append('=');
         sb.append(((this.currency == null)?"<null>":this.currency));
         sb.append(',');
-        sb.append("id");
+        sb.append("description");
         sb.append('=');
-        sb.append(((this.id == null)?"<null>":this.id));
-        sb.append(',');
-        sb.append("international");
-        sb.append('=');
-        sb.append(((this.international == null)?"<null>":this.international));
+        sb.append(((this.description == null)?"<null>":this.description));
         sb.append(',');
         sb.append("email");
         sb.append('=');
         sb.append(((this.email == null)?"<null>":this.email));
         sb.append(',');
-        sb.append("reward");
+        sb.append("entity");
         sb.append('=');
-        sb.append(((this.reward == null)?"<null>":this.reward));
+        sb.append(((this.entity == null)?"<null>":this.entity));
         sb.append(',');
-        sb.append("amount");
+        sb.append("errorCode");
         sb.append('=');
-        sb.append(((this.amount == null)?"<null>":this.amount));
+        sb.append(((this.errorCode == null)?"<null>":this.errorCode));
         sb.append(',');
-        sb.append("refundStatus");
+        sb.append("errorDescription");
         sb.append('=');
-        sb.append(((this.refundStatus == null)?"<null>":this.refundStatus));
+        sb.append(((this.errorDescription == null)?"<null>":this.errorDescription));
         sb.append(',');
-        sb.append("wallet");
+        sb.append("errorReason");
         sb.append('=');
-        sb.append(((this.wallet == null)?"<null>":this.wallet));
-        sb.append(',');
-        sb.append("method");
-        sb.append('=');
-        sb.append(((this.method == null)?"<null>":this.method));
-        sb.append(',');
-        sb.append("vpa");
-        sb.append('=');
-        sb.append(((this.vpa == null)?"<null>":this.vpa));
+        sb.append(((this.errorReason == null)?"<null>":this.errorReason));
         sb.append(',');
         sb.append("errorSource");
         sb.append('=');
@@ -533,29 +505,57 @@ public class Entity {
         sb.append('=');
         sb.append(((this.errorStep == null)?"<null>":this.errorStep));
         sb.append(',');
-        sb.append("tax");
+        sb.append("fee");
         sb.append('=');
-        sb.append(((this.tax == null)?"<null>":this.tax));
+        sb.append(((this.fee == null)?"<null>":this.fee));
         sb.append(',');
-        sb.append("cardId");
+        sb.append("id");
         sb.append('=');
-        sb.append(((this.cardId == null)?"<null>":this.cardId));
+        sb.append(((this.id == null)?"<null>":this.id));
         sb.append(',');
-        sb.append("errorCode");
+        sb.append("international");
         sb.append('=');
-        sb.append(((this.errorCode == null)?"<null>":this.errorCode));
+        sb.append(((this.international == null)?"<null>":this.international));
+        sb.append(',');
+        sb.append("invoiceId");
+        sb.append('=');
+        sb.append(((this.invoiceId == null)?"<null>":this.invoiceId));
+        sb.append(',');
+        sb.append("method");
+        sb.append('=');
+        sb.append(((this.method == null)?"<null>":this.method));
+        sb.append(',');
+        sb.append("notes");
+        sb.append('=');
+        sb.append(((this.notes == null)?"<null>":this.notes));
         sb.append(',');
         sb.append("orderId");
         sb.append('=');
         sb.append(((this.orderId == null)?"<null>":this.orderId));
         sb.append(',');
-        sb.append("entity");
+        sb.append("refundStatus");
         sb.append('=');
-        sb.append(((this.entity == null)?"<null>":this.entity));
+        sb.append(((this.refundStatus == null)?"<null>":this.refundStatus));
+        sb.append(',');
+        sb.append("reward");
+        sb.append('=');
+        sb.append(((this.reward == null)?"<null>":this.reward));
         sb.append(',');
         sb.append("status");
         sb.append('=');
         sb.append(((this.status == null)?"<null>":this.status));
+        sb.append(',');
+        sb.append("tax");
+        sb.append('=');
+        sb.append(((this.tax == null)?"<null>":this.tax));
+        sb.append(',');
+        sb.append("vpa");
+        sb.append('=');
+        sb.append(((this.vpa == null)?"<null>":this.vpa));
+        sb.append(',');
+        sb.append("wallet");
+        sb.append('=');
+        sb.append(((this.wallet == null)?"<null>":this.wallet));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
@@ -578,15 +578,15 @@ public class Entity {
         result = ((result* 31)+((this.orderId == null)? 0 :this.orderId.hashCode()));
         result = ((result* 31)+((this.fee == null)? 0 :this.fee.hashCode()));
         result = ((result* 31)+((this.description == null)? 0 :this.description.hashCode()));
-        result = ((result* 31)+((this.refundStatus == null)? 0 :this.refundStatus.hashCode()));
         result = ((result* 31)+((this.errorCode == null)? 0 :this.errorCode.hashCode()));
+        result = ((result* 31)+((this.refundStatus == null)? 0 :this.refundStatus.hashCode()));
         result = ((result* 31)+((this.errorStep == null)? 0 :this.errorStep.hashCode()));
         result = ((result* 31)+((this.createdAt == null)? 0 :this.createdAt.hashCode()));
         result = ((result* 31)+((this.bank == null)? 0 :this.bank.hashCode()));
         result = ((result* 31)+((this.amountRefunded == null)? 0 :this.amountRefunded.hashCode()));
-        result = ((result* 31)+((this.errorReason == null)? 0 :this.errorReason.hashCode()));
         result = ((result* 31)+((this.captured == null)? 0 :this.captured.hashCode()));
         result = ((result* 31)+((this.contact == null)? 0 :this.contact.hashCode()));
+        result = ((result* 31)+((this.errorReason == null)? 0 :this.errorReason.hashCode()));
         result = ((result* 31)+((this.currency == null)? 0 :this.currency.hashCode()));
         result = ((result* 31)+((this.id == null)? 0 :this.id.hashCode()));
         result = ((result* 31)+((this.international == null)? 0 :this.international.hashCode()));
@@ -616,7 +616,7 @@ public class Entity {
             return false;
         }
         Entity rhs = ((Entity) other);
-        return (((((((((((((((((((((((((((((((((this.notes == rhs.notes)||((this.notes!= null)&&this.notes.equals(rhs.notes)))&&((this.errorDescription == rhs.errorDescription)||((this.errorDescription!= null)&&this.errorDescription.equals(rhs.errorDescription))))&&((this.errorSource == rhs.errorSource)||((this.errorSource!= null)&&this.errorSource.equals(rhs.errorSource))))&&((this.orderId == rhs.orderId)||((this.orderId!= null)&&this.orderId.equals(rhs.orderId))))&&((this.fee == rhs.fee)||((this.fee!= null)&&this.fee.equals(rhs.fee))))&&((this.description == rhs.description)||((this.description!= null)&&this.description.equals(rhs.description))))&&((this.refundStatus == rhs.refundStatus)||((this.refundStatus!= null)&&this.refundStatus.equals(rhs.refundStatus))))&&((this.errorCode == rhs.errorCode)||((this.errorCode!= null)&&this.errorCode.equals(rhs.errorCode))))&&((this.errorStep == rhs.errorStep)||((this.errorStep!= null)&&this.errorStep.equals(rhs.errorStep))))&&((this.createdAt == rhs.createdAt)||((this.createdAt!= null)&&this.createdAt.equals(rhs.createdAt))))&&((this.bank == rhs.bank)||((this.bank!= null)&&this.bank.equals(rhs.bank))))&&((this.amountRefunded == rhs.amountRefunded)||((this.amountRefunded!= null)&&this.amountRefunded.equals(rhs.amountRefunded))))&&((this.errorReason == rhs.errorReason)||((this.errorReason!= null)&&this.errorReason.equals(rhs.errorReason))))&&((this.captured == rhs.captured)||((this.captured!= null)&&this.captured.equals(rhs.captured))))&&((this.contact == rhs.contact)||((this.contact!= null)&&this.contact.equals(rhs.contact))))&&((this.currency == rhs.currency)||((this.currency!= null)&&this.currency.equals(rhs.currency))))&&((this.id == rhs.id)||((this.id!= null)&&this.id.equals(rhs.id))))&&((this.international == rhs.international)||((this.international!= null)&&this.international.equals(rhs.international))))&&((this.email == rhs.email)||((this.email!= null)&&this.email.equals(rhs.email))))&&((this.reward == rhs.reward)||((this.reward!= null)&&this.reward.equals(rhs.reward))))&&((this.amount == rhs.amount)||((this.amount!= null)&&this.amount.equals(rhs.amount))))&&((this.wallet == rhs.wallet)||((this.wallet!= null)&&this.wallet.equals(rhs.wallet))))&&((this.method == rhs.method)||((this.method!= null)&&this.method.equals(rhs.method))))&&((this.vpa == rhs.vpa)||((this.vpa!= null)&&this.vpa.equals(rhs.vpa))))&&((this.tax == rhs.tax)||((this.tax!= null)&&this.tax.equals(rhs.tax))))&&((this.baseAmount == rhs.baseAmount)||((this.baseAmount!= null)&&this.baseAmount.equals(rhs.baseAmount))))&&((this.acquirerData == rhs.acquirerData)||((this.acquirerData!= null)&&this.acquirerData.equals(rhs.acquirerData))))&&((this.cardId == rhs.cardId)||((this.cardId!= null)&&this.cardId.equals(rhs.cardId))))&&((this.invoiceId == rhs.invoiceId)||((this.invoiceId!= null)&&this.invoiceId.equals(rhs.invoiceId))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.entity == rhs.entity)||((this.entity!= null)&&this.entity.equals(rhs.entity))))&&((this.status == rhs.status)||((this.status!= null)&&this.status.equals(rhs.status))));
+        return (((((((((((((((((((((((((((((((((this.notes == rhs.notes)||((this.notes!= null)&&this.notes.equals(rhs.notes)))&&((this.errorDescription == rhs.errorDescription)||((this.errorDescription!= null)&&this.errorDescription.equals(rhs.errorDescription))))&&((this.errorSource == rhs.errorSource)||((this.errorSource!= null)&&this.errorSource.equals(rhs.errorSource))))&&((this.orderId == rhs.orderId)||((this.orderId!= null)&&this.orderId.equals(rhs.orderId))))&&((this.fee == rhs.fee)||((this.fee!= null)&&this.fee.equals(rhs.fee))))&&((this.description == rhs.description)||((this.description!= null)&&this.description.equals(rhs.description))))&&((this.errorCode == rhs.errorCode)||((this.errorCode!= null)&&this.errorCode.equals(rhs.errorCode))))&&((this.refundStatus == rhs.refundStatus)||((this.refundStatus!= null)&&this.refundStatus.equals(rhs.refundStatus))))&&((this.errorStep == rhs.errorStep)||((this.errorStep!= null)&&this.errorStep.equals(rhs.errorStep))))&&((this.createdAt == rhs.createdAt)||((this.createdAt!= null)&&this.createdAt.equals(rhs.createdAt))))&&((this.bank == rhs.bank)||((this.bank!= null)&&this.bank.equals(rhs.bank))))&&((this.amountRefunded == rhs.amountRefunded)||((this.amountRefunded!= null)&&this.amountRefunded.equals(rhs.amountRefunded))))&&((this.captured == rhs.captured)||((this.captured!= null)&&this.captured.equals(rhs.captured))))&&((this.contact == rhs.contact)||((this.contact!= null)&&this.contact.equals(rhs.contact))))&&((this.errorReason == rhs.errorReason)||((this.errorReason!= null)&&this.errorReason.equals(rhs.errorReason))))&&((this.currency == rhs.currency)||((this.currency!= null)&&this.currency.equals(rhs.currency))))&&((this.id == rhs.id)||((this.id!= null)&&this.id.equals(rhs.id))))&&((this.international == rhs.international)||((this.international!= null)&&this.international.equals(rhs.international))))&&((this.email == rhs.email)||((this.email!= null)&&this.email.equals(rhs.email))))&&((this.reward == rhs.reward)||((this.reward!= null)&&this.reward.equals(rhs.reward))))&&((this.amount == rhs.amount)||((this.amount!= null)&&this.amount.equals(rhs.amount))))&&((this.wallet == rhs.wallet)||((this.wallet!= null)&&this.wallet.equals(rhs.wallet))))&&((this.method == rhs.method)||((this.method!= null)&&this.method.equals(rhs.method))))&&((this.vpa == rhs.vpa)||((this.vpa!= null)&&this.vpa.equals(rhs.vpa))))&&((this.tax == rhs.tax)||((this.tax!= null)&&this.tax.equals(rhs.tax))))&&((this.baseAmount == rhs.baseAmount)||((this.baseAmount!= null)&&this.baseAmount.equals(rhs.baseAmount))))&&((this.acquirerData == rhs.acquirerData)||((this.acquirerData!= null)&&this.acquirerData.equals(rhs.acquirerData))))&&((this.cardId == rhs.cardId)||((this.cardId!= null)&&this.cardId.equals(rhs.cardId))))&&((this.invoiceId == rhs.invoiceId)||((this.invoiceId!= null)&&this.invoiceId.equals(rhs.invoiceId))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.entity == rhs.entity)||((this.entity!= null)&&this.entity.equals(rhs.entity))))&&((this.status == rhs.status)||((this.status!= null)&&this.status.equals(rhs.status))));
     }
 
 }

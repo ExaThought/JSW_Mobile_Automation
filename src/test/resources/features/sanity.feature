@@ -49,8 +49,9 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Navigate to Credit module tab and search the credit program and validate the freeze status as "Frozen" for Credit program "Intellect31220241"
     Then Navigate to ledger summary tab, click on Retry and validate the freeze status as "Frozen" for "INTELLECT DESIGN" customer
 
-  @testCaseId=id-004 @dataFile="ledger.yaml" @sanity
+  @testCaseId=id-004 @dataFile="ledger.yaml"
   Scenario: Incoming payment ledger entry validations - ZC [Auto-Tagging]
+    Given Go to session "zoho_creator"
     When Check customer ledger balance before in ledger summary for "NARAYANI FOODS" customer
     Then Create order with SLO API
     Then validate the order details
@@ -59,3 +60,13 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then validate the incoming payment details in zoho creator
     Then validate the ledger entry for incoming payment under new ledger statement
     And Check customer ledger balance after incoming payment in ledger summary for "NARAYANI FOODS" and validate
+
+  @testCaseId=id-005 @dataFile="ledger.yaml" @sanity
+  Scenario: Incoming payment ledger entry validations - ZC [Manual-Tagging]
+    Given Go to session "zoho_creator"
+#    When Check customer ledger balance before in ledger summary for "NARAYANI FOODS" customer
+#    Then Create Incoming Payment In Zoho
+    And tag the incoming payment manually to customer ledger using gstin for "NARAYANI FOODS 001Ik000005grptIAA"
+    Then validate the incoming payment details in zoho creator
+    Then validate the ledger entry for incoming payment under new ledger statement
+    Then Check customer ledger balance after incoming payment in ledger summary for "NARAYANI FOODS 001Ik000005grptIAA" and validate

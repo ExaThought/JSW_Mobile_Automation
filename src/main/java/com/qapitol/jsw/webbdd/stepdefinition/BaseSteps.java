@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -552,9 +553,10 @@ public abstract class BaseSteps extends AbstractWebPage {
 
         Map<String, String> tableData = new HashMap<>();
         sleep(999);
-        WebElement table = getBaseTable(1);
+        WebElement table = locateElement("baseTable1");;
         if (isTableVisible(table)) {
-            List<WebElement> headerCells = table.findElements(By.xpath("headerCells"));
+            By headerCell = getByFromLocator(getLocator("headerCells"));
+            List<WebElement> headerCells = table.findElements(headerCell);
             log.info("Header Size--->"+ headerCells.size());
 
             WebElement row = findRowWithCellValue(table, cellValue);
@@ -562,13 +564,14 @@ public abstract class BaseSteps extends AbstractWebPage {
                 log.info("Row with value '" + cellValue + "' not found.");
                 return null;
             }
-
-            List<WebElement> rowCells = row.findElements(By.xpath("rowCells"));
+            By rowCell = getByFromLocator(getLocator("rowCells"));
+            List<WebElement> rowCells = row.findElements(rowCell);
             log.info("Row cells size-->"+rowCells.size());
             if (headerCells.size() == rowCells.size()) {
                 for (int i = 0; i < headerCells.size(); i++) {
 
-                    List<WebElement> headerElements = getBaseTable(2).findElements(By.xpath("headerCells"));
+                    WebElement table2 = locateElement("baseTable2");
+                    List<WebElement> headerElements = table2.findElements(headerCell);
                     String headerText = headerElements.get(i).getAttribute("displayname");
                     String rowData = rowCells.get(i).getText().trim();
                     tableData.put(headerText, rowData);
@@ -590,11 +593,12 @@ public abstract class BaseSteps extends AbstractWebPage {
         for (WebElement row : rows) {
             List<WebElement> cells = row.findElements(By.tagName("td"));
             for (WebElement cell : cells) {
-                if (cell.getText().trim().equals(cellValue)) {
+                if (cell.getText().trim().contains(cellValue)) {
                     rowCount++;
                     if (rowCount>1){
                         return rows.get(0);
                     }
+                    log.info("row ---> "+ row + " And Cell --->"+ cell);
                     return row;  // Return the row that contains the search value
                 }
             }
@@ -606,21 +610,14 @@ public abstract class BaseSteps extends AbstractWebPage {
     public boolean isTableVisible(WebElement table) {
         try {
             //to be checked
-            waitAndCheckIsElementVisible(String.valueOf(table));
-      //      driverHelper.waitUntilElementVisible(table);
+            waitUntilElementIsVisible("baseTable1", NoSuchElementException.class);
+
             log.info("===Table is visible===");
             return table.isDisplayed();
         } catch (TimeoutException e) {
             log.info("Table not visible within the specified timeout");
             return false;
         }
-    }
-
-    public WebElement getBaseTable(int i){
-        String baseTable = String.format("baseTable",i);
-    //    return driverHelper.findElement(By.xpath(xpath));
-        waitAndCheckIsElementPresent(baseTable);
-        return locateElement(baseTable);
     }
 
     public Map<String, String> retryIfTableDataIsNull(Map<String, String> map, String cellValue){
