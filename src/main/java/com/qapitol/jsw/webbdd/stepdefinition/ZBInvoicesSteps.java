@@ -115,4 +115,11 @@ public class ZBInvoicesSteps extends BaseSteps {
         waitAndClickOn("submitBtn");
         log.info("Clicked on the Submit");
     }
+
+    @Then("Refresh the zoho books page")
+    public void refreshTheZohoBooksPage() {
+        pageRefresh();
+        sleep(999);
+        pageRefresh();
+    }
 }

@@ -3,13 +3,14 @@
 <suite verbose="1" name="Jsw automation" data-provider-thread-count="1" annotations="JDK">
   <parameter name="data.env" value="qa"/>
   <parameter name="data.testId" value="testCaseId"/>
-  <parameter name="api.retry.count" value="3"/>
+  <parameter name="api.retry
+  .count" value="3"/>
   <parameter name="enableSessionsKeepAlive" value="true"/>
   <test name="Jsw application">
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
     <parameter name="cucumber.glue" value="com.qapitol.jsw.webbdd.stepdefinition"/>
-    <parameter name="cucumber.filter.tags" value="@sanity and not @ignore"/>
+    <parameter name="cucumber.filter.tags" value="@po"/>
     <parameter name="cucumber.publish.quiet" value="true"/>
     <parameter name="executionTimeout" value="30000"/>
     <parameter name="cucumber.plugin"
@@ -22,7 +23,7 @@
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
     <parameter name="cucumber.glue" value="com.qapitol.jsw.webbdd.stepdefinition"/>
-    <parameter name="cucumber.filter.tags" value="@sanity_dependent and not @ignore"/>
+    <parameter name="cucumber.filter.tags" value="@p"/>
     <parameter name="cucumber.publish.quiet" value="true"/>
     <parameter name="executionTimeout" value="30000"/>
     <parameter name="cucumber.plugin"

@@ -56,4 +56,12 @@ public class CurrencyUtils {
         double gstAmount = 1 + gstPercentage;
         return invoiceAmount / gstAmount;
     }
+    public static String formatAmountWithRupeeAndCommas(double amount) {
+        DecimalFormat formatter = new DecimalFormat("₹#,###.00");  // Format with ₹ and commas
+        return formatter.format(amount);
+    }
+
+    public static double formatLedgerBalance(String amount) {
+        return Double.parseDouble(amount.replaceAll("[^0-9.]", ""));
+    }
 }

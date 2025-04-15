@@ -66,7 +66,7 @@ public class OrderFlowImpl extends BaseApiImpl {
             int advancePer = (Integer) Data.get().get("advancePercentage");
             double finalSellingPrice = (Double) Data.get().get("finalSellingPrice");
             double orderedQuantity = (Double) Data.get().get("orderedQuantity");
-            createOrderRequestBody.setAdvancePayment(((double) advancePer*finalSellingPrice*orderedQuantity*10/100)*1.18);
+            createOrderRequestBody.setAdvancePayment(((double) advancePer * finalSellingPrice * orderedQuantity * 10 / 100) * 1.18);
         }
         if (nonNull((Data.get().get("customerId")))) {
             createOrderRequestBody.setCustomerId((String) Data.get().get("customerId"));
@@ -76,7 +76,7 @@ public class OrderFlowImpl extends BaseApiImpl {
             createOrderRequestBody.setBillingAddressId((String) Data.get().get("shippingAddressId"));
         }
         if (nonNull((Data.get().get("orderedQuantity")))) {
-            double orderQuantity = ((Double) Data.get().get("orderedQuantity")*1000);
+            double orderQuantity = ((Double) Data.get().get("orderedQuantity") * 1000);
             createOrderRequestBody.getLineItems().get(0).setOrderedQuantity(orderQuantity);
             createOrderRequestBody.getLineItems().get(0).setFinalSellingPrice((Double) Data.get().get("finalSellingPrice"));
         }
@@ -85,14 +85,14 @@ public class OrderFlowImpl extends BaseApiImpl {
 //            List<LineItem> lineItems = objectMapper.readValue((String) Data.get().get("LINE_ITEM_DETAILS_PAYLOAD"), new TypeReference<List<LineItem>>(){});
 //            createOrderRequestBody.setLineItems(lineItems);
 //        }
-        if (nonNull((Data.get().get("CREDIT_DETAILS")))){
+        if (nonNull((Data.get().get("CREDIT_DETAILS")))) {
             CreditDetails creditDetails = getPayloadJsonFileAsPOJO((String) Data.get().get("CREDIT_DETAILS"), CreditDetails.class);
             createOrderRequestBody.getCustomFields().setCreditDetails(creditDetails);
         }
-        if (nonNull((Data.get().get("creditLimitBypass")))){
+        if (nonNull((Data.get().get("creditLimitBypass")))) {
             createOrderRequestBody.setCreditLimitBypass((boolean) Data.get().get("creditLimitBypass"));
         }
-        if (nonNull(Data.get().get("cashbackRate"))){
+        if (nonNull(Data.get().get("cashbackRate"))) {
             createOrderRequestBody.getLineItems().get(0).getCashbackDetails().setCashbackRate((double) Data.get().get("cashbackRate"));
         }
 
@@ -103,8 +103,8 @@ public class OrderFlowImpl extends BaseApiImpl {
         CreateOrderResp createOrderResp = orderApi.createOrderViaSLOAPI(createOrderRequestBody);
         ContextData.addData("orderNumber", createOrderResp.getOrderNumber());
         ContextData.addData("orderedQuantity", createOrderRequestBody.getLineItems().get(0).getOrderedQuantity());
-        ContextData.addData("finalSellingPrice",createOrderRequestBody.getLineItems().get(0).getFinalSellingPrice());
-        ContextData.addData("sellerVendorMasterId",createOrderRequestBody.getLineItems().get(0).getSellerVendorMasterId());
+        ContextData.addData("finalSellingPrice", createOrderRequestBody.getLineItems().get(0).getFinalSellingPrice());
+        ContextData.addData("sellerVendorMasterId", createOrderRequestBody.getLineItems().get(0).getSellerVendorMasterId());
         ContextData.addData("orderType", createOrderRequestBody.getOrderType());
         ContextData.addData("paymentType", createOrderRequestBody.getOrderPaymentType());
         log.info("Created Order id is : " + ContextData.getDataFromKey("orderNumber"));
@@ -128,11 +128,11 @@ public class OrderFlowImpl extends BaseApiImpl {
         assertEquals(getOrderResp.getCategory(), orderType.trim().toUpperCase(), "Order type is not correct");
         ContextData.addData("orderAmount", getOrderResp.getOrderAmount().getCentAmount());
         ContextData.addData("advanceAmountInPaisa", getOrderResp.getAmounts().get("ADP").getAmount().getCentAmount());
-        ContextData.addData("orderType",getOrderResp.getCategory());
+        ContextData.addData("orderType", getOrderResp.getCategory());
         ContextData.addData("sellerOrderNumber", getOrderResp.getChildOrders().get(0).getSellerOrderNumber());
         ContextData.addData("buyerOrderId", getOrderResp.getId());
         ContextData.addData("customerName", getOrderResp.getBuyerDetails().getName());
-        ContextData.addData("sellerName",getOrderResp.getChildOrders().get(0).getSellerName());
+        ContextData.addData("sellerName", getOrderResp.getChildOrders().get(0).getSellerName());
 
         log.info("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
         AllureCustomLogReporter.addTestStepLog("Buyer name --> " + getOrderResp.getBuyerDetails().getName() + " And Seller name --> " + getOrderResp.getSellerDetails().getName());
@@ -153,7 +153,7 @@ public class OrderFlowImpl extends BaseApiImpl {
         ContextData.addData("sellerOrderNumber", getOrderResp.getChildOrders().get(0).getSellerOrderNumber());
         ContextData.addData("buyerOrderId", getOrderResp.getId());
         ContextData.addData("customerName", getOrderResp.getBuyerDetails().getName());
-        ContextData.addData("sellerName",getOrderResp.getChildOrders().get(0).getSellerName());
+        ContextData.addData("sellerName", getOrderResp.getChildOrders().get(0).getSellerName());
         return getOrderResp;
     }
 
@@ -180,9 +180,9 @@ public class OrderFlowImpl extends BaseApiImpl {
         confirmOrder.setOrderNumber(orderNumber);
         confirmOrder.getChildOrders().get(0).setSellerOrderNumber(sellerOrderNumber);
 
-        if("Distributed".equalsIgnoreCase((String) ContextData.getDataFromKey("orderType"))){
+        if ("Distributed".equalsIgnoreCase((String) ContextData.getDataFromKey("orderType"))) {
             confirmOrder.setIsVerifiedSO(false);
-        }else {
+        } else {
             confirmOrder.setIsVerifiedSO(true);
         }
 
@@ -218,10 +218,10 @@ public class OrderFlowImpl extends BaseApiImpl {
         createDo.getPsLineItemsDetails().get(0).setLineItemId((Integer) ContextData.getDataFromKey("lineItemId"));
         if (nonNull((Data.get().get("doQuantity")))) {
             createDo.getPsLineItemsDetails().get(0).setPlannedQuantity((Double) Data.get().get("doQuantity"));
-            if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))){
-                createDo.setRequestAmount((Double) Data.get().get("doQuantity")*(Double) ContextData.getDataFromKey("finalSellingPrice")*10*1.18);
-            }else {
-                createDo.setRequestAmount((Double) ContextData.getDataFromKey("orderAmount")/100);
+            if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
+                createDo.setRequestAmount((Double) Data.get().get("doQuantity") * (Double) ContextData.getDataFromKey("finalSellingPrice") * 10 * 1.18);
+            } else {
+                createDo.setRequestAmount((Double) ContextData.getDataFromKey("orderAmount") / 100);
             }
             createDo.getPsLineItemsDetails().get(0).setTotalLineItemQuantity((Double) ContextData.getDataFromKey("orderedQuantity"));
         }
@@ -257,7 +257,8 @@ public class OrderFlowImpl extends BaseApiImpl {
         createShipment.getLineItemsDetails().get(0).setLineitemId(ContextData.getDataFromKey("lineItemId"));
         createShipment.setSellerGstin((String) ContextData.getDataFromKey("sellerGstin"));
         if (nonNull(Data.get().get("shipmentQuantity"))) {
-            createShipment.getLineItemsDetails().get(0).getPlannedDelivery().setQuantity(Double.valueOf((String) Data.get().get("shipmentQuantity")));
+//            createShipment.getLineItemsDetails().get(0).getPlannedDelivery().setQuantity((double)Data.get().get("shipmentQuantity"));
+            createShipment.getLineItemsDetails().get(0).getPlannedDelivery().setQuantity((double) Data.get().get("shipmentQuantity"));
         }
 
         // Fetch the Order API
@@ -292,12 +293,14 @@ public class OrderFlowImpl extends BaseApiImpl {
             updateShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
 
             if (nonNull(Data.get().get("shipmentQuantity"))) {
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity(Double.valueOf((String) Data.get().get("shipmentQuantity")));
+//                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity(Double.valueOf((String) Data.get().get("shipmentQuantity")));
+                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity((double) Data.get().get("shipmentQuantity"));
+
                 if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
-                    double invoiceBaseAmount= Double.valueOf((String) Data.get().get("shipmentQuantity"))*(Double) Data.get().get("finalSellingPrice")*10;
+                    double invoiceBaseAmount = Double.valueOf((String) Data.get().get("shipmentQuantity")) * (Double) Data.get().get("finalSellingPrice") * 10;
                     updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount(invoiceBaseAmount);
-                    updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount*1.18);
-                    updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount(invoiceBaseAmount*0.18);
+                    updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount * 1.18);
+                    updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount(invoiceBaseAmount * 0.18);
                 }
             }
 
@@ -412,53 +415,53 @@ public class OrderFlowImpl extends BaseApiImpl {
 
     public UpdateShipmentResp updateShipmentReadyToShip() throws IOException, InterruptedException {
 
-      //  String prev = PLANNED;
+        //  String prev = PLANNED;
         String status = READY_TO_SHIP;
         String uuid = RandomStringGenerator.RandomInteger();
         UpdateShipmentResp response = null;
         Integer temp = getInvoiceDeliveryId();
 // Access the Default payload from the YAML test data file
 
-            UpdateShipment updateShipment = getPayloadJsonFileAsPOJO((String) Data.get().get("UPDATE_SHIPMENT"), UpdateShipment.class);
-            updateShipment.setCustomerOrderId(ContextData.getDataFromKey("buyerOrderId"));
-            updateShipment.setSellerGstin((String) ContextData.getDataFromKey("sellerGstin"));
+        UpdateShipment updateShipment = getPayloadJsonFileAsPOJO((String) Data.get().get("UPDATE_SHIPMENT"), UpdateShipment.class);
+        updateShipment.setCustomerOrderId(ContextData.getDataFromKey("buyerOrderId"));
+        updateShipment.setSellerGstin((String) ContextData.getDataFromKey("sellerGstin"));
+        updateShipment.setInvoiceDate(timeStamp);
+        updateShipment.setActualDispatchDate(timeStamp);
+        updateShipment.setActualDeliveryDate(timeStamp);
+        updateShipment.getCurrentState().setState(status);
+        updateShipment.setId(ContextData.getDataFromKey("shipmentId"));
+        updateShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
+
+        if (nonNull(Data.get().get("shipmentQuantity"))) {
+            updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity((Double) Data.get().get("shipmentQuantity"));
+            if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
+                double invoiceBaseAmount = (Double) Data.get().get("shipmentQuantity") * (Double) Data.get().get("finalSellingPrice") * 10;
+                updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount(invoiceBaseAmount);
+                updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount * 1.18);
+                updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount(invoiceBaseAmount * 0.18);
+            }
+        }
+
+        if (temp != null) {
+            updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setId(temp);
+            updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoicedDeliveryDate(timeStamp);
+            updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoiceNumber(uuid);
+            updateShipment.getLineItemsDetails().get(0).setLineitemId((Integer) ContextData.getDataFromKey("lineItemId"));
+
             updateShipment.setInvoiceDate(timeStamp);
-            updateShipment.setActualDispatchDate(timeStamp);
-            updateShipment.setActualDeliveryDate(timeStamp);
-            updateShipment.getCurrentState().setState(status);
-            updateShipment.setId(ContextData.getDataFromKey("shipmentId"));
-            updateShipment.setSellerOrderId(ContextData.getDataFromKey("sellerOrderId"));
+        } else {
+            updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setId(null);
+            updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoicedDeliveryDate(null);
+            updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoiceNumber(uuid);
+            updateShipment.getLineItemsDetails().get(0).setLineitemId((Integer) ContextData.getDataFromKey("lineItemId"));
+        }
+        updateShipment.getCurrentState().setState(status);
+        //  prev = status;
 
-            if (nonNull(Data.get().get("shipmentQuantity"))) {
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity((Double) Data.get().get("shipmentQuantity"));
-                if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
-                    double invoiceBaseAmount= (Double) Data.get().get("shipmentQuantity")*(Double) Data.get().get("finalSellingPrice")*10;
-                    updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount(invoiceBaseAmount);
-                    updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount*1.18);
-                    updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount(invoiceBaseAmount*0.18);
-                }
-            }
-
-            if (temp != null) {
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setId(temp);
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoicedDeliveryDate(timeStamp);
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoiceNumber(uuid);
-                updateShipment.getLineItemsDetails().get(0).setLineitemId((Integer) ContextData.getDataFromKey("lineItemId"));
-
-                updateShipment.setInvoiceDate(timeStamp);
-            } else {
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setId(null);
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoicedDeliveryDate(null);
-                updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setInvoiceNumber(uuid);
-                updateShipment.getLineItemsDetails().get(0).setLineitemId((Integer) ContextData.getDataFromKey("lineItemId"));
-            }
-            updateShipment.getCurrentState().setState(status);
-          //  prev = status;
-
-            response = callShipmentUpdateApi(updateShipment);
-            System.out.println("UpdateShipment:" + response);
-            assertNotNull(response, "unable to update the shipment");
-            setPojoToContextData("updateShipmentResp", response);
+        response = callShipmentUpdateApi(updateShipment);
+        System.out.println("UpdateShipment:" + response);
+        assertNotNull(response, "unable to update the shipment");
+        setPojoToContextData("updateShipmentResp", response);
 
         return response;
     }
@@ -484,10 +487,10 @@ public class OrderFlowImpl extends BaseApiImpl {
             if (nonNull(Data.get().get("shipmentQuantity"))) {
                 updateShipment.getLineItemsDetails().get(0).getInvoiceDelivery().setQuantity((Double) Data.get().get("shipmentQuantity"));
                 if (nonNull(ContextData.getDataFromKey("finalSellingPrice"))) {
-                    double invoiceBaseAmount= (Double) Data.get().get("shipmentQuantity")*(Double) Data.get().get("finalSellingPrice")*10;
+                    double invoiceBaseAmount = (Double) Data.get().get("shipmentQuantity") * (Double) Data.get().get("finalSellingPrice") * 10;
                     updateShipment.getShipmentInvoiceDetails().setInvoicedBaseAmount(invoiceBaseAmount);
-                    updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount*1.18);
-                    updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount(invoiceBaseAmount*0.18);
+                    updateShipment.getShipmentInvoiceDetails().setTotalInvoicedAmount(invoiceBaseAmount * 1.18);
+                    updateShipment.getShipmentInvoiceDetails().setInvoicedTaxAmount(invoiceBaseAmount * 0.18);
                 }
             }
 
@@ -505,7 +508,7 @@ public class OrderFlowImpl extends BaseApiImpl {
                 updateShipment.getLineItemsDetails().get(0).setLineitemId((Integer) ContextData.getDataFromKey("lineItemId"));
             }
             updateShipment.getCurrentState().setState(status);
-           // prev = status;
+            // prev = status;
 
             response = callShipmentUpdateApi(updateShipment);
             System.out.println("UpdateShipment:" + response);
@@ -516,18 +519,18 @@ public class OrderFlowImpl extends BaseApiImpl {
     public String createIncomingPayment() throws IOException {
 
         String paymentId = RandomStringGenerator.generateRandomString("Pay_", 16);
-        String fileName=(String) Data.get().get("CREATE_INCOMING_PAYMENT");
+        String fileName = (String) Data.get().get("CREATE_INCOMING_PAYMENT");
         CreateIncomingPayment createIncomingPayment = getPayloadJsonFileAsPOJO(fileName, CreateIncomingPayment.class);
         createIncomingPayment.getPayload().getPayment().getEntity().setId(paymentId);
 
-        if (nonNull(Data.get().get("incomingPaymentAmount"))){
+        if (nonNull(Data.get().get("incomingPaymentAmount"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) Data.get().get("incomingPaymentAmount"));
-        }else if (nonNull(ContextData.getDataFromKey("advanceAmountInPaisa"))) {
+        } else if (nonNull(ContextData.getDataFromKey("advanceAmountInPaisa"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().setAmount((Integer) ContextData.getDataFromKey("advanceAmountInPaisa"));
         }
         if (nonNull(Data.get().get("buyerGstin"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setGstin((String) Data.get().get("buyerGstin"));
-        }else if(nonNull(ContextData.getDataFromKey("gstin"))){
+        } else if (nonNull(ContextData.getDataFromKey("gstin"))) {
             createIncomingPayment.getPayload().getPayment().getEntity().getNotes().setGstin((String) ContextData.getDataFromKey("gstin"));
         }
         if (nonNull(Data.get().get("paymentMethod"))) {

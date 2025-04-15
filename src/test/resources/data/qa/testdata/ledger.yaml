@@ -36,3 +36,27 @@
 - testCaseId: "id-005"     #manual tagging
   incomingPaymentAmount: 100041 #in paisa
   buyerGstin: "27AABCI6363G1ZJ"
+
+
+
+- testCaseId: "id-007"
+  CREATE_ORDER_PAYLOAD: "create_order_creditRapid"
+  doQuantity: 1.0
+  shipmentQuantity: 1.0
+  finalSellingPrice: 120.0
+  incomingPaymentAmount: 141600 #in paisa
+  buyerGstin: "33AAICR6870L1ZV"
+
+
+
+
+
+
+
+
+
+
+
+
+
+

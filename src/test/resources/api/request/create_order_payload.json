@@ -11,6 +11,7 @@
   "ratesValidity": "24 hours",
   "priceType": "Ex-works",
   "poDetails": "PO-0136946",
+  "payTo": "JOPL Nodal",
   "paymentTerms": "100% advance",
   "orderType": "Distributed",
   "orderPaymentType": "Cash & Carry",

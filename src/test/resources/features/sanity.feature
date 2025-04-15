@@ -1,6 +1,6 @@
 Feature: Zoho ledger module sanity suite verification on Zoho creator
 
-  @testCaseId=id-001 @dataFile="ledger.yaml"
+  @testCaseId=id-003 @dataFile="ledger.yaml" @s
   Scenario:Advance Invoice Ledger Entry Validation on Zoho Creator
     When Create order with SLO API
     Then validate the order details
@@ -28,7 +28,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Navigate to Historical Payout tab and validate the entry for "Cashback" payout
     Then Validate ledger statement with Document type as Cashback Payout
 
-  @testCaseId=id-002 @dataFile="ledger.yaml"
+  @testCaseId=id-002 @dataFile="ledger.yaml" @s
   Scenario: Validate the customer ledger should be Frozen when customer has Credit Overdue
     When Create order with SLO API
     Then validate the order details
@@ -61,11 +61,11 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then validate the ledger entry for incoming payment under new ledger statement
     And Check customer ledger balance after incoming payment in ledger summary for "NARAYANI FOODS" and validate
 
-  @testCaseId=id-005 @dataFile="ledger.yaml" @sanity
+  @testCaseId=id-005 @dataFile="ledger.yaml" @sanity @po
   Scenario: Incoming payment ledger entry validations - ZC [Manual-Tagging]
     Given Go to session "zoho_creator"
 #    When Check customer ledger balance before in ledger summary for "NARAYANI FOODS" customer
-#    Then Create Incoming Payment In Zoho
+    Then Create Incoming Payment In Zoho
     And tag the incoming payment manually to customer ledger using gstin for "NARAYANI FOODS 001Ik000005grptIAA"
     Then validate the incoming payment details in zoho creator
     Then validate the ledger entry for incoming payment under new ledger statement
