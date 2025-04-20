@@ -90,9 +90,8 @@ public class CustomerLedgerSteps extends BaseSteps {
     }
     public void validateLedgerDetailsAfterEarlyKnockOff() {
         SoftAssert softAssert = new SoftAssert();
-//        Map<String, String> windowData = getDataFromWindow();
-        String ARNotDueAmount=waitAndGetText("abc","AR not due:");
-        String usableLedgerBalance=waitAndGetText("abc","Usable ledger balance");
+        String ARNotDueAmount=waitAndGetText("getAmountXpath","AR not due:");
+        String usableLedgerBalance=waitAndGetText("getAmountXpath","Usable ledger balance");
         log.info("Before early knock off , AR not due amount was:" + ARNotDueAmount);
         double ARNotDueAmountNew = formatLedgerBalance(ARNotDueAmount);
         double usableLedgerBalanceNew1 = formatLedgerBalance(usableLedgerBalance);

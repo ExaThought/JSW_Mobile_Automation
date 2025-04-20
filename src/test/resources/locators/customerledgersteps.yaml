@@ -15,6 +15,6 @@ elements:
     en_US:
       web: xpath=//input[@type='submit' and @name='Confirm']
 
-  abc:
+  getAmountXpath:
     en_US:
       web: xpath=//*[contains(text(), ''{0}'')]/parent::p//following-sibling::p
