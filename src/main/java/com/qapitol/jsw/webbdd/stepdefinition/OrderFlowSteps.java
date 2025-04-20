@@ -159,4 +159,16 @@ public class OrderFlowSteps extends BaseSteps {
         AllureCustomLogReporter.addTestStepLog("Shipment with id " + shipmentNumber + " is Invoiced");
         log.exiting();
     }
+
+    @Then("Create DO")
+    public void createDO() throws IOException {
+        log.entering();
+        OrderFlowImpl orderCreation = new OrderFlowImpl();
+        CreateDoResp createDoResp = orderCreation.createDO();
+        double plannedQuantity = createDoResp.getPsLineItemsDetails().get(0).getPlannedQuantity();
+        log.info("DO created with quantity --> " + plannedQuantity);
+        double doAmount=createDoResp.getRequestAmount();
+        log.info("DO Amount/ Requested Amount -->" +doAmount);
+
+    }
 }

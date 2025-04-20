@@ -1,0 +1,99 @@
+{
+  "slo": true,
+  "shipToType": "primary",
+  "shippingAddressSFId": "a03Ik000001GDk7IAG",
+  "shippingAddressId": "PZs62F_P",
+  "selfPickup": false,
+  "salesforceOpportunityURL": "https://jswoneplatforms--uat.sandbox.my.salesforce.com/006Ik000002rgITIAY",
+  "salesforceOpportunityId": "006Ik000002rgITIAY",
+  "salesAssociate": "QaQapital Vipul Shah",
+  "remarks": "NA",
+  "ratesValidity": "24 hours",
+  "priceType": "Ex-works",
+  "poDetails": "PO-0136768",
+  "payTo": "JOPL Nodal",
+  "paymentTerms": "100% advance",
+  "orderType": "Distributed",
+  "orderPaymentType": "Credit",
+  "opportunityString": "15,6(1)C6,0",
+  "opportunityOwnerEmail": "v_vipul.shah@jsw.in",
+  "lineItems": [
+    {
+      "type": "ON_CATALOG",
+      "sourceSeller": {
+        "sourceSellerVendorMasterId": "V1649-1968-JOPL-2427",
+        "SourceSellerSKUPrice": "1000.00",
+        "SourceSellerMobile": "9967745635",
+        "sourceSellerId": "MH149",
+        "sourceSellerGST": "23ERABM4615Y3Z0",
+        "SourceSellerEmail": "v_sagar.kanherkar@jsw.in",
+        "sourceSellerCompanyName": "steel 100",
+        "sourceSellerAddress": {
+          "sourceSellerShipFromAddress": {},
+          "sourceSellerBillFromAddress": {}
+        }
+      },
+      "sellerVendorMasterId": "V1649-1968-JOPL-2427",
+      "sellerId": "MH149",
+      "sapLineItemId": 10,
+      "salesForceSkuId": "SKUR-354209",
+      "productKey": "2062_2011-E250A-04",
+      "orderedQuantity": 10000,
+      "NCOReason": "",
+      "name": "MS HR Coil 2062:2011 E250A",
+      "MMID": "1001-10001",
+      "meta": {
+        "pricing_mode": "EXW"
+      },
+      "isNCO": false,
+      "finalSellingPrice": 120,
+      "channelKey": "V1649-1968-JOPL-2427",
+      "attributes": {
+        "WIDTH_MM": "1250",
+        "THICKNESS_MM": "2",
+        "LENGTH_MM": "1000"
+      }
+    }
+  ],
+  "ledgerBalance": 0,
+  "isPBDistributor": false,
+  "isDirect": false,
+  "deliveryType": "Seller Delivery",
+  "customFields": {
+    "tdc_requirements": {
+      "tdc_text": "null"
+    },
+    "specialDeliveryInstructions": {
+      "terms": "NA"
+    },
+    "sellerPaymentTerms": {
+      "terms": "null"
+    },
+    "estimatedDeliveryTimeline": {
+      "text": "4 days"
+    },
+    "creditDetails": {
+      "penalInterest": 0,
+      "isCreditRequired": "true",
+      "CreditUtilisation": 6330672,
+      "creditType": "BNPL",
+      "creditLimitReferenceId": "Xoriant2024",
+      "creditInstrument": "BNPL-JODL-2024P1",
+      "creditExpirationDate": "2025-12-31",
+      "creditDays": "10",
+      "creditAvailable": 9644112,
+      "creditAmount": 11328
+    },
+    "committedDeliveryTimeline": {
+      "terms": "null"
+    }
+  },
+  "customerId": "aaf1f611-5044-43fb-b63a-fc64348f0c6b",
+  "creditLimitBypass": false,
+  "businessUnit": "Manufacturing",
+  "blockOrderSummaryFlag": false,
+  "billingAddressSFId": "a03Ik000001GDk7IAG",
+  "billingAddressId": "PZs62F_P",
+  "advancePercentage": 20,
+  "advancePayment": 2832
+}

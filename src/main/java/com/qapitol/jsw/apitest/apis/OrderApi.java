@@ -9,6 +9,7 @@ import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrder;
 import com.qapitol.jsw.apitest.pojos.order.createOrder.CreateOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.createShipment.CreateShipment;
 import com.qapitol.jsw.apitest.pojos.order.createShipment.CreateShipmentResp;
+import com.qapitol.jsw.apitest.pojos.order.getCreditDetails.GetCreditDetailsResp;
 import com.qapitol.jsw.apitest.pojos.order.getLineItemDetails.LineItemDetails;
 import com.qapitol.jsw.apitest.pojos.order.getOMSShipmentOrder.GetOMSShipmentOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
@@ -82,5 +83,11 @@ public interface OrderApi {
     @Path("Incoming_Payments")
     @Produces(APPLICATION_JSON)
     Response createIncomingPayment(@QueryParam("publickey") String publicKey, CreateIncomingPayment createIncomingPayment);
+
+    @GET
+    @Path("joms/api/external/v2/getCreditInfoByPan")
+    @Produces(APPLICATION_JSON)
+    GetCreditDetailsResp getCreditDetails(@QueryParam("pan") String pan, @QueryParam("gstin") String gstin);
+
 
 }

@@ -13,6 +13,9 @@ import io.cucumber.java.en.When;
 import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.qapitol.jsw.utils.AllureCustomLogReporter.addTestStepLog;
@@ -28,6 +31,7 @@ public class LedgerSteps extends BaseSteps {
     //URL paths for ledger pages
     public static final String LEDGER_STATEMENT_NEW_PATH = "#Report:Ledger_statement_new_Report";
     public static final String LEDGER_SUMMARY_PATH = "#Report:All_Ledger_Summaries";
+    public static final String LEDGER_STATEMENT_AR_PATH= "#Report:Accounts_Receivables_Data_Report";
 
     // Options in search menu
     public static final String CASHBACK_ISSUED = "Cashback Issued";
@@ -59,10 +63,27 @@ public class LedgerSteps extends BaseSteps {
     public static final String ZBM_CASHBACK_TDS = "Cashback_TDS";
     public static final String PAYOUT = "Payout";
     public static final String ZBM_CASHBACK_PAYOUT = "Refunds against Credit notes";
+    public static final String CREDIT_INVOICE="Credit invoice";
+    public static final String AR_DOCUMENT_TYPE="Document Type";
+    public static final String CUSTOMER_COMPANY_NAME="Customer company name";
+    public static final String ORDER_NUMBER1="Order Number";
+    public static final String AR_DOCUMENT_ID="Document ID";
+    public static final String AR_DOCUMENT_AMOUNT="Document Amount";
+    public static final String DOCUMENT_DATE="Document Date";
+    public static final String PENDING="Pending";
+    public static final String AC_STATUS="Status";
+    public static final String PENDING_AMOUNT_LD="Pending amount";
+    public static final String INVOICE="Invoice";
 
     private static Map<String, String> ledgerSummaryMapBefore;
     private static Map<String, String> ledgerSummaryMapAfterOrderPlaced;
     private static Map<String, String> ledgerSummaryMapAfterOrderInvoice;
+    public static Float baseAmount;
+    String ledgerId;
+    private static Map<String, String> incomingPaymentBeforeOrder;
+    private static Map<String, String> ledgerSummaryMapAfterDOCreated;
+    private static Map<String,String> ledgerSummaryMapAfterDORejected;
+    private static Map<String,String> ledgerSummaryMapAfterDOCreatedCreditByPass;
 
     SoftAssert softAssert = new SoftAssert();
 
@@ -264,8 +285,8 @@ public class LedgerSteps extends BaseSteps {
 
     @When("Check customer ledger balance before in ledger summary for {string} customer")
     public void checkCustomerLedgerBalanceBeforeInLedgerSummary(String arg0) {
-
         log.entering();
+        syncTheCustomerLedger(arg0);
         ledgerSummaryMapBefore = fetchLedgerSummary(arg0);
         addTestStepLog("Customer Ledger Details Before Order Creation For Customer : " + arg0 + " ---> " + ledgerSummaryMapBefore);
         log.info("Customer Ledger Details Before Order Creation For Customer : " + arg0 + " ---> " + ledgerSummaryMapBefore);
@@ -300,6 +321,30 @@ public class LedgerSteps extends BaseSteps {
         assertEquals(before.get(USABLE_LEDGER_BALANCE), after.get(USABLE_LEDGER_BALANCE), "Usable ledger balance validation failed");
         assertEquals(replaceComma(before.get(BLOCKED_LEDGER_BALANCE)), formatDecimal(currentBlockedLedBal), "Blocked ledger balance validation failed");
 
+    }
+    public void validateLedgerBalBeforeAndAfterDoCreated(Map<String, String> before, Map<String, String> after, int advanceAmount) {
+
+        String currentUsableLedBal = String.valueOf(Double.parseDouble(replaceComma(before.get(USABLE_LEDGER_BALANCE))) - Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount))- Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount)));
+        String currentBlockedLedBal = String.valueOf(Double.parseDouble(replaceComma(before.get(BLOCKED_LEDGER_BALANCE))) + Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount))+ Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount)));
+        Assert.assertEquals(after.get(ACCOUNTING_LEDGER_BALANCE),before.get(ACCOUNTING_LEDGER_BALANCE), "Available ledger balance validation failed");
+        Assert.assertEquals(formatDecimal(currentUsableLedBal),replaceComma(after.get(USABLE_LEDGER_BALANCE)), "Usable ledger balance validation failed");
+        Assert.assertEquals(formatDecimal(currentBlockedLedBal),replaceComma(after.get(BLOCKED_LEDGER_BALANCE)),"Blocked ledger balance validation failed");
+    }
+    public void validateLedgerBalBeforeAndAfterDoRejected(Map<String, String> before, Map<String, String> after, int advanceAmount) {
+
+        String currentUsableLedBal = String.valueOf(Double.parseDouble(replaceComma(after.get(USABLE_LEDGER_BALANCE))) + Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount)));
+        String currentBlockedLedBal = String.valueOf(Double.parseDouble(replaceComma(after.get(BLOCKED_LEDGER_BALANCE))) - Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount)));
+        Assert.assertEquals(after.get(ACCOUNTING_LEDGER_BALANCE),before.get(ACCOUNTING_LEDGER_BALANCE), "Available ledger balance validation failed");
+        Assert.assertEquals(formatDecimal(currentUsableLedBal),replaceComma(before.get(USABLE_LEDGER_BALANCE)), "Usable ledger balance validation failed");
+        Assert.assertEquals(formatDecimal(currentBlockedLedBal),replaceComma(before.get(BLOCKED_LEDGER_BALANCE)), "Blocked ledger balance validation failed");
+    }
+    public void validateLedgerBalBeforeAndAfterDoCreatedForCreditBypass(Map<String, String> before, Map<String, String> after, int advanceAmount) {
+
+        String currentUsableLedBal = String.valueOf(Double.parseDouble(replaceComma(before.get(USABLE_LEDGER_BALANCE))) - Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount)));
+        String currentBlockedLedBal = String.valueOf(Double.parseDouble(replaceComma(before.get(BLOCKED_LEDGER_BALANCE))) + Double.parseDouble(CurrencyUtils.getNewInstance().convertPaisaToRupees(advanceAmount)));
+        Assert.assertEquals(after.get(ACCOUNTING_LEDGER_BALANCE),before.get(ACCOUNTING_LEDGER_BALANCE), "Available ledger balance validation failed");
+        Assert.assertEquals(formatDecimal(currentUsableLedBal),replaceComma(after.get(USABLE_LEDGER_BALANCE)), "Usable ledger balance validation failed");
+        Assert.assertEquals(formatDecimal(currentBlockedLedBal),replaceComma(after.get(BLOCKED_LEDGER_BALANCE)), "Blocked ledger balance validation failed");
     }
 
     @Then("validate the ledger entry for incoming payment under new ledger statement")
@@ -349,4 +394,178 @@ public class LedgerSteps extends BaseSteps {
         log.exiting();
     }
 
+    public Map<String, String> validateAccountReceivablesData(String cellValue) {
+        Map<String, String> accountReceivablesData = getRowDataAsMap(cellValue);
+        if (accountReceivablesData == null) {
+            accountReceivablesData = retryIfTableDataIsNull(accountReceivablesData, cellValue);
+        }
+        log.info("==========Validating Invoice Data in Zoho Creator=========");
+        return accountReceivablesData;
+    }
+    public void clickOnAccountReceivablesTab() {
+        zohoCreatorNavigation(LEDGER_STATEMENT_AR_PATH);
+    }
+
+
+    @Then("Validate the account receivables entry under ledger statement on Zoho Creator")
+    public void validateTheAccountReceivablesEntryUnderLedgerStatement() {
+
+        clickOnAccountReceivablesTab();
+        clearSearch();
+        Map<String, String> accountReceivablesData = validateAccountReceivablesData((String) ContextData.getDataFromKey("invoiceNumber"));
+        sleep(999);
+        assertEquals(accountReceivablesData.get(AR_DOCUMENT_TYPE),CREDIT_INVOICE,"Document type validation failed");
+        assertEquals(accountReceivablesData.get(CUSTOMER_COMPANY_NAME),ContextData.getDataFromKey("customerName"),"Customer Company Name validation failed");
+        assertEquals(gstin, "GSTIN validation failed", accountReceivablesData.get(GSTIN));
+        assertEquals(accountReceivablesData.get(ORDER_NUMBER1),ContextData.getDataFromKey("buyerOrderNumber"),"Order Number validation failed");
+        assertEquals(accountReceivablesData.get(AR_DOCUMENT_ID),ContextData.getDataFromKey("invoiceNumber"),"Document Id validation failed");
+        assertEquals(accountReceivablesData.get(AR_DOCUMENT_AMOUNT),(ContextData.getDataFromKey("invoiceAmount")),"Document Amount validation failed");
+        assertEquals(accountReceivablesData.get(AC_STATUS),PENDING,"Document Status validation failed");
+        assertEquals(accountReceivablesData.get(DOCUMENT_DATE),convertDateFormat((String)ContextData.getDataFromKey("invoiceDate")),"Document Date validation failed");
+
+        LocalDate currentDate = LocalDate.now(); // Current Date
+        LocalDate newDate = currentDate.plusDays((Long) ContextData.getDataFromKey("creditDays")); // Add 10 days to the current date
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy"); // Define a custom date format
+        assertEquals(accountReceivablesData.get("Due Date"),newDate.format(formatter),"Document Due Date verification failed");
+        AllureCustomLogReporter.addTestStepLog("Account receivables entry validated for Credit type order in Zoho creator, with entry details--> " + accountReceivablesData);
+    }
+
+    @Then("Validate the ledger entry for Credit Order under new ledger statement on Zoho Creator")
+    public void validateTheLedgerEntryForCreditOrderUnderNewLedgerStatementOnZohoCreator() {
+        navigateToLedgerStatementNewTab();
+        clearSearch();
+        searchStringContains(DOCUMENT_ID, (String)ContextData.getDataFromKey("invoiceNumber"));
+        selectRowUsingObject((String)ContextData.getDataFromKey("invoiceNumber"), 20);
+        Map<String, String> ledgerData = getDataFromWindow();
+
+
+        String baseAndGstAmountSum = String.valueOf(Double.parseDouble(ledgerData.get(BASE_AMOUNT).replace(",", "")) + Double.parseDouble(ledgerData.get(GST_AMOUNT).replace(",", "")));
+        assertEquals(ledgerData.get(DOCUMENT_TYPE),CREDIT_INVOICE,"Document type validation failed");
+        assertEquals(formatDecimalWithComma(ledgerData.get(DEBIT_AMOUNT).replace(",", "")),formatDecimalWithComma((String)ContextData.getDataFromKey("invoiceAmount")),"Debit amount validation failed");
+        assertEquals(formatDecimalWithComma(ledgerData.get(PENDING_AMOUNT_LD).replace(",", "")),formatDecimalWithComma((String)ContextData.getDataFromKey("invoiceAmount")),"Pending amount validation failed");
+        assertEquals(ledgerData.get(KNOCKED_OFF_AMOUNT).replace(",", ""),ZERO,"Knock off amount validation failed");
+        assertEquals(ledgerData.get(CREDIT_AMOUNT).replace(",", ""),ZERO,"Credit amount validation failed");
+        softAssert.assertEquals(ledgerData.get(CLEARING_STATUS),OPEN,"Clearing status validation failed");
+        assertEquals(ledgerData.get(MODULE_NAME),INVOICE,"Module name validation failed");
+        assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED),INVOICE,"Zoho Books module used validation failed");
+        assertEquals(ledgerData.get(GSTIN),gstin,"GSTIN validation failed");
+        assertEquals(ledgerData.get(LEDGER_STATEMENT_KEY),getLedgerStatementKey(ledgerData),"Ledger Statement Key validation failed");
+        assertNotNull(ledgerData.get(CREATOR_ID_DOC));
+        assertNotNull(ledgerData.get(CREATOR_ID_MASTERS));
+        assertEquals(ledgerData.get(ORDER_ID),ContextData.getDataFromKey("buyerOrderNumber"),"Order id validation failed");
+        assertEquals(ledgerData.get(DOCUMENT_ID),ContextData.getDataFromKey("invoiceNumber"),"Document id validation failed");
+        assertEquals(formatDecimalWithComma(baseAndGstAmountSum.replace(",", "")),formatDecimalWithComma(ledgerData.get(DEBIT_AMOUNT)),"Debit amount validation failed");
+        assertEquals(formatDecimalWithComma(ledgerData.get(BASE_AMOUNT).replace(",", "")),formatDecimalWithComma(baseAmount.toString()),"Base amount validation failed");
+        assertEquals(formatDecimalWithComma(ledgerData.get(GST_AMOUNT).replace(",", "")),formatDecimalWithComma(String.valueOf(getGSTAmount(baseAmount, 18))),"GST amount validation failed");
+        log.info("Zoho Ledger Validation for Credit Order successful");
+        AllureCustomLogReporter.addTestStepLog("Ledger statement new for Credit Invoice type -->" + ledgerData);
+    }
+
+    @Then("Validate the ledger entry for Credit Order Knocked Off Amount under new ledger statement")
+    public void validateTheLedgerEntryForCreditOrderKnockedOffAmountUnderNewLedgerStatement() {
+
+        navigateToLedgerStatementNewTab();
+        clearSearch();
+        searchStringContains(DOCUMENT_ID, (String)ContextData.getDataFromKey("invoiceNumber"));
+        selectRowUsingObject((String)ContextData.getDataFromKey("invoiceNumber"), 20);
+        Map<String, String> ledgerData = getDataFromWindow("dataWindowElement");
+
+        String baseAndGstAmountSum = String.valueOf(Double.parseDouble(ledgerData.get(BASE_AMOUNT).replace(",", "")) + Double.parseDouble(ledgerData.get(GST_AMOUNT).replace(",", "")));
+        AllureCustomLogReporter.addTestStepLog("Ledger statement new for Credit Invoice type -->" + ledgerData);
+        Assert.assertEquals(ledgerData.get(DOCUMENT_TYPE),CREDIT_INVOICE,"Document type validation failed");
+        Assert.assertEquals(formatDecimalWithComma(ledgerData.get(DEBIT_AMOUNT).replace(",", "")),formatDecimalWithComma((String)ContextData.getDataFromKey("invoiceAmount")),"Debit amount validation failed");
+        Assert.assertEquals(formatDecimalWithComma(String.valueOf(Double.parseDouble(ledgerData.get(PENDING_AMOUNT_LD).replace(",", "")) + Double.parseDouble(ledgerData.get(KNOCKED_OFF_AMOUNT).replace(",", "")))),formatDecimalWithComma((String)ContextData.getDataFromKey("invoiceAmount")),"Pending amount validation failed");
+        softAssert.assertEquals(formatDecimalWithComma(ledgerData.get(KNOCKED_OFF_AMOUNT).replace(",", "")),formatDecimalWithComma((String)ContextData.getDataFromKey("advanceAmount")),"Knock off amount validation failed");
+        assertEquals(ledgerData.get(CREDIT_AMOUNT).replace(",", ""),ZERO,"Credit amount validation failed");
+        softAssert.assertEquals(ledgerData.get(CLEARING_STATUS),OPEN,"Clearing status validation failed");
+        Assert.assertEquals(ledgerData.get(MODULE_NAME),INVOICE,"Module name validation failed");
+        Assert.assertEquals(ledgerData.get(ZOHO_BOOKS_MODULE_USED),INVOICE,"Zoho Books module used validation failed");
+        Assert.assertEquals(ledgerData.get(GSTIN),gstin,"GSTIN validation failed");
+        Assert.assertNotNull(ledgerData.get(CREATOR_ID_DOC));
+        Assert.assertNotNull(ledgerData.get(CREATOR_ID_MASTERS));
+        Assert.assertEquals(ledgerData.get(LEDGER_STATEMENT_KEY),getLedgerStatementKey(ledgerData),"Ledger Statement Key validation failed");
+        Assert.assertEquals(formatDecimalWithComma(ledgerData.get(BASE_AMOUNT).replace(",", "")),formatDecimalWithComma(baseAmount.toString()),"Base amount validation failed");
+        Assert.assertEquals(formatDecimalWithComma(ledgerData.get(GST_AMOUNT).replace(",", "")),formatDecimalWithComma(String.valueOf(getGSTAmount(baseAmount, 18))),"GST amount validation failed");
+        Assert.assertEquals(formatDecimalWithComma(baseAndGstAmountSum.replace(",", "")),formatDecimalWithComma(ledgerData.get(DEBIT_AMOUNT)),"Debit amount validation failed");
+        Assert.assertEquals(ledgerData.get("Order id"),(String)ContextData.getDataFromKey("buyerOrderNumber"),"Order id validation failed");
+        Assert.assertEquals(ledgerData.get(DOCUMENT_ID),(String)ContextData.getDataFromKey("invoiceNumber"),"Document id validation failed");
+        log.info("Zoho Ledger Validation for Credit Order successful");
+        clearFilter();
+    }
+    @Then("Get the incoming payment pending amount details before order creation in ledger statement for GSTIN {string}")
+    public void getTheLedgerEntryForIncomingPaymentBeforeOrder(String arg0) {
+
+        navigateToLedgerStatementNewTab();
+        clearSearch();
+        sortTable( "Document date", "Ascending");
+        searchStringContains(GSTIN, arg0);
+        searchStringContains(CLEARING_STATUS, OPEN);
+        searchStringContains(DOCUMENT_TYPE, INCOMING_PAYMENT);
+        selectRowUsingObject(arg0, 5);
+        Map<String, String> ledgerData = getDataFromWindow();
+        ledgerId = ledgerData.get(LEDGER_STATEMENT_KEY);
+
+        AllureCustomLogReporter.addTestStepLog("Ledger_Statement_New data with GSTIN ---> " + arg0 + " And Row data as -->" + ledgerData);
+        org.junit.Assert.assertEquals("Document type validation failed", INCOMING_PAYMENT, ledgerData.get(DOCUMENT_TYPE));
+        incomingPaymentBeforeOrder = new HashMap<String, String>();
+        incomingPaymentBeforeOrder.put(KNOCKED_OFF_AMOUNT, ledgerData.get(KNOCKED_OFF_AMOUNT));
+        incomingPaymentBeforeOrder.put(PENDING_AMOUNT_LD, formatDecimalWithComma(ledgerData.get(PENDING_AMOUNT_LD)));
+        log.info("Zoho Ledger incoming payment before order creation");
+        clearFilter();
+    }
+    @Then("validate the ledger entry for incoming payment after order invoice under new ledger statement for GSTIN {string}")
+    public void validateTheLedgerEntryForIncomingPaymentAfterOrderInvoice(String arg0) {
+
+        navigateToLedgerStatementNewTab();
+        clearSearch();
+        searchStringContains(LEDGER_STATEMENT_KEY, ledgerId);
+        selectRowUsingObject(arg0, 10);
+        Map<String, String> ledgerData = getDataFromWindow();
+
+        log.info("After Invoice Knocked off amount : " + ledgerData.get(KNOCKED_OFF_AMOUNT));
+        log.info("After Invoice Pending Amount: " + formatDecimalWithComma(ledgerData.get(PENDING_AMOUNT_LD)));
+
+        log.info("Before Order Knocked off amount : " + incomingPaymentBeforeOrder.get(KNOCKED_OFF_AMOUNT));
+        log.info("Before Order Pending Amount : " + formatDecimalWithComma(incomingPaymentBeforeOrder.get(PENDING_AMOUNT_LD)));
+
+        AllureCustomLogReporter.addTestStepLog("Ledger_Statement_New data with GSTIN ---> " + gstin + " And Row data as -->" + ledgerData);
+        org.junit.Assert.assertEquals("Document type validation failed", INCOMING_PAYMENT, ledgerData.get(DOCUMENT_TYPE));
+        org.junit.Assert.assertEquals("Pending Amount validation failed", formatDecimalWithComma((String)ContextData.getDataFromKey("advanceAmount")), formatDecimalWithComma(String.valueOf(Double.parseDouble(incomingPaymentBeforeOrder.get(PENDING_AMOUNT_LD).replace(",", "")) - Double.parseDouble(ledgerData.get(PENDING_AMOUNT_LD).replace(",", "")))));
+        org.junit.Assert.assertEquals("Knock Off Amount validation failed", formatDecimalWithComma((String)ContextData.getDataFromKey("advanceAmount")), formatDecimalWithComma(String.valueOf(Double.parseDouble(ledgerData.get(KNOCKED_OFF_AMOUNT).replace(",", "")) - Double.parseDouble(incomingPaymentBeforeOrder.get(KNOCKED_OFF_AMOUNT).replace(",", "")))));
+        log.info("Zoho Ledger incoming payment before order creation");
+        clearFilter();
+    }
+    @Then("validate the ledger balance after DO created in ledger summary for {string} customer")
+    public void validateTheLedgerBalanceAfterDOCreatedInLedgerSummaryForCustomer(String arg0) {
+        log.entering();
+        syncTheCustomerLedger(arg0);
+        ledgerSummaryMapAfterDOCreated= getLedgerSummaryByCustomerName(arg0);
+        AllureCustomLogReporter.addTestStepLog("Customer Ledger Details After DO Creation For Customer : " + arg0 + " ---> " + ledgerSummaryMapAfterDOCreated);
+        Assert.assertEquals(ledgerSummaryMapBefore.get(CUSTOMER_NAME),arg0, "Validation failed for customer name in ledger summary");
+        validateLedgerBalBeforeAndAfterDoCreated(ledgerSummaryMapBefore, ledgerSummaryMapAfterDOCreated, (Integer) ContextData.getDataFromKey("advanceAmountInPaisa"));
+        log.info("Ledger summary details after DO created : " + ledgerSummaryMapAfterDOCreated);
+        AllureCustomLogReporter.addTestStepLog("Ledger summary details after DO created : " + ledgerSummaryMapAfterDOCreated);
+    }
+    @Then("validate the ledger balance after DO rejected in ledger summary for {string} customer")
+    public void validateTheLedgerBalanceAfterDORejectedInLedgerSummaryForCustomer(String arg0) {
+        log.entering();
+        syncTheCustomerLedger(arg0);
+        ledgerSummaryMapAfterDORejected=getLedgerSummaryByCustomerName(arg0);
+        AllureCustomLogReporter.addTestStepLog("Customer Ledger Details After DO Rejected For Customer : " + arg0 + " ---> " + ledgerSummaryMapAfterDORejected);
+        Assert.assertEquals(ledgerSummaryMapBefore.get(CUSTOMER_NAME),arg0, "Validation failed for customer name in ledger summary");
+        validateLedgerBalBeforeAndAfterDoRejected(ledgerSummaryMapBefore, ledgerSummaryMapAfterDORejected, (Integer)ContextData.getDataFromKey("advanceAmountInPaisa"));
+        log.info("Ledger summary details after DO Rejected : " + ledgerSummaryMapAfterDORejected);
+        AllureCustomLogReporter.addTestStepLog("Ledger summary details after DO Rejected : " + ledgerSummaryMapAfterDORejected);
+    }
+    @Then("validate the ledger balance after DO created for credit bypass in ledger summary for {string} customer")
+    public void validateTheLedgerBalanceAfterDOCreatedForCreditBypassInLedgerSummaryForCustomer(String arg0) {
+        log.entering();
+        syncTheCustomerLedger(arg0);
+        ledgerSummaryMapAfterDOCreatedCreditByPass=getLedgerSummaryByCustomerName(arg0);
+        AllureCustomLogReporter.addTestStepLog("Customer Ledger Details After DO Creation For Customer : " + arg0 + " ---> " + ledgerSummaryMapAfterDOCreatedCreditByPass);
+        Assert.assertEquals(ledgerSummaryMapBefore.get(CUSTOMER_NAME),arg0, "Validation failed for customer name in ledger summary");
+        validateLedgerBalBeforeAndAfterDoCreatedForCreditBypass(ledgerSummaryMapBefore, ledgerSummaryMapAfterDOCreatedCreditByPass, (Integer)ContextData.getDataFromKey("advanceAmountInPaisa"));
+        log.info("Ledger summary details after DO created : " + ledgerSummaryMapAfterDOCreatedCreditByPass);
+        AllureCustomLogReporter.addTestStepLog("Ledger summary details after DO created : " + ledgerSummaryMapAfterDOCreatedCreditByPass);
+    }
 }

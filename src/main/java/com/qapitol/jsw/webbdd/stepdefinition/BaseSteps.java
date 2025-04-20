@@ -637,5 +637,35 @@ public abstract class BaseSteps extends AbstractWebPage {
         }
         return tableData;
     }
+    public static Float getGSTAmount(Float baseAmount, int rate) {
+        Float gstAmount;
+        gstAmount = baseAmount * rate / 100;
+        log.info("GST Amount --> " + gstAmount);
+        return gstAmount;
+    }
+    public void sortTable(String columnName, String sortBy) {
+        pageRefresh();
+        tap("columnName", columnName);
+        waitAndCheckIsElementPresent("sortPopup");
+        waitAndClickOn("sortBy", sortBy);
+        waitForFooterLoaderToDisappear();
+    }
+    public void waitForFooterLoaderToDisappear() { //this below methods is already there in basesteps
+        log.entering();
+        //Checks if the loader animation is present for 1 seconds and if present will wait for upto 10 seconds to close
+        WebElement loaderElement;
+        try {
+            loaderElement = locateElement("footerLoader");
+        } catch (NotFoundException e) {
+            loaderElement = null;
+        }
+        if (nonNull(loaderElement)) {
+            boolean isNotPresent = waitUntilElementIsNotPresent(getLocator("footerLoader"), 10);
+            log.info("waited until footer loader is gone or until timeout. IsNotPresent:" + isNotPresent);
+        } else {
+            log.info("Did not find footer loader so going ahead.");
+        }
+        log.exiting();
+    }
 
 }
