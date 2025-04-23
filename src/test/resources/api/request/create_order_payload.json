@@ -4,50 +4,50 @@
   "shippingAddressSFId": "a03Ik000001FxkTIAS",
   "shippingAddressId": "HAi4mpoK",
   "selfPickup": true,
-  "salesforceOpportunityURL": "https://jswoneplatforms--uat.sandbox.my.salesforce.com/006Ik000002rhslIAA",
-  "salesforceOpportunityId": "006Ik000002rhslIAA001",
+  "salesforceOpportunityURL": "https://jswoneplatforms--uat.sandbox.my.salesforce.com/006Bh00000BtJEzIAN",
+  "salesforceOpportunityId": "006Bh00000BtJEzIAN",
   "salesAssociate": "QaQapital Team",
   "remarks": "NA",
   "ratesValidity": "24 hours",
   "priceType": "Ex-works",
-  "poDetails": "PO-0136946",
+  "poDetails": "PO-0140413",
   "payTo": "JOPL Nodal",
   "paymentTerms": "100% advance",
   "orderType": "Distributed",
-  "orderPaymentType": "Cash & Carry",
-  "opportunityString": "18,6(5)C0,0",
-  "opportunityOwnerEmail": "abinash.behera@jsw.in",
+  "orderPaymentType": "Cash & Carry - Part",
+  "opportunityString": "119,41(22)C3,0",
+  "opportunityOwnerEmail": "v_abinash.behera@jsw.in",
   "lineItems": [
     {
       "type": "ON_CATALOG",
       "sourceSeller": {
-        "sourceSellerVendorMasterId": "V1146-1147-JOPL-1147",
+        "sourceSellerVendorMasterId": "V1649-1968-JOPL-2427",
         "SourceSellerSKUPrice": "1000.00",
-        "SourceSellerMobile": "9236842312",
-        "sourceSellerId": "JD001",
-        "sourceSellerGST": "27AAACJ4323N1ZG",
-        "SourceSellerEmail": "saikiran8@yopmail.com",
-        "sourceSellerCompanyName": "JODL Maharashtra",
+        "SourceSellerMobile": "9967745635",
+        "sourceSellerId": "MH149",
+        "sourceSellerGST": "23ERABM4615Y3Z0",
+        "SourceSellerEmail": "chaitanya.deshkar@yopmail.com",
+        "sourceSellerCompanyName": "steel 100",
         "sourceSellerAddress": {
           "sourceSellerShipFromAddress": {},
           "sourceSellerBillFromAddress": {}
         }
       },
-      "sellerVendorMasterId": "V1725-2098-JODL-2561",
-      "sellerId": "JD001",
+      "sellerVendorMasterId": "V1649-1968-JOPL-2427",
+      "sellerId": "MH149",
       "sapLineItemId": 10,
-      "salesForceSkuId": "SKUR-354209",
-      "productKey": "2062_2011-E250A-04",
-      "orderedQuantity": 10400,
+      "salesForceSkuId": "SKUR-356119",
+      "productKey": "2062_2011-E250A-03",
+      "orderedQuantity": 10000,
       "NCOReason": "",
-      "name": "MS HR Coil 2062:2011 E250A",
-      "MMID": "1001-10001",
+      "name": "MS HR Sheet 2062:2011 E250A",
+      "MMID": "1000-10000",
       "meta": {
         "pricing_mode": "EXW"
       },
       "isNCO": false,
-      "finalSellingPrice": 120,
-      "channelKey": "V1725-2098-JODL-2561",
+      "finalSellingPrice": 220,
+      "channelKey": "V1649-1968-JOPL-2427",
       "cashbackDetails": {
         "talon_cashback_applied": false,
         "cashbackUoM": "MT",
@@ -56,13 +56,14 @@
       "attributes": {
         "WIDTH_MM": "1250",
         "THICKNESS_MM": "2.00",
-        "LENGTH_MM": "1000"
+        "LENGTH_MM": "100"
       }
     }
   ],
   "ledgerBalance": 0,
   "isPBDistributor": false,
   "isDirect": false,
+  "isBillingAddressValidated": false,
   "deliveryType": "Self pickup",
   "customFields": {
     "tdc_requirements": {
@@ -75,7 +76,7 @@
       "terms": "null"
     },
     "estimatedDeliveryTimeline": {
-      "text": "3 days"
+      "text": "1 day"
     },
     "creditDetails": {
       "isCreditRequired": "false"
@@ -91,5 +92,5 @@
   "billingAddressSFId": "a03Ik000001FxkTIAS",
   "billingAddressId": "HAi4mpoK",
   "advancePercentage": 100,
-  "advancePayment": 14726.4
+  "advancePayment": 25960
 }

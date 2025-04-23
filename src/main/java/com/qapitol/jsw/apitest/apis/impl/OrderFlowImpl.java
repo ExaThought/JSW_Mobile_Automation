@@ -16,6 +16,8 @@ import com.qapitol.jsw.apitest.pojos.order.getLineItemDetails.LineItemDetails;
 import com.qapitol.jsw.apitest.pojos.order.getOMSShipmentOrder.GetOMSShipmentOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.getOMSShipmentOrder.InvoiceDelivery;
 import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
+import com.qapitol.jsw.apitest.pojos.order.rejectDo.RejectDO;
+import com.qapitol.jsw.apitest.pojos.order.rejectDo.RejectDOResp;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoice;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoiceResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipment;
@@ -558,6 +560,17 @@ public class OrderFlowImpl extends BaseApiImpl {
         //Calling the get order API
         GetCreditDetailsResp getCreditDetailsResp = orderApi.getCreditDetails(pan,gstin);
         return getCreditDetailsResp;
+    }
+    public void rejectDO() throws IOException {
+        int doID = (int) ContextData.getDataFromKey("doID");
+
+        RejectDO rejectDO = getPayloadJsonFileAsPOJO((String) Data.get().get("REJECT_DO"), RejectDO.class);
+        rejectDO.setPsId(doID);
+        OrderApi orderApi = getZohoOMSApiClientFactory().create(OrderApi.class);
+        RejectDOResp response = orderApi.rejectDO(rejectDO);
+        assertEquals(response.getTransactionStatus(), "Rejected", "Unable to reject DO");
+        log.info("DO status --> " + response.getTransactionStatus());
+        AllureCustomLogReporter.addTestStepLog("DO rejected successfully with status as --> " + response.getTransactionStatus());
     }
 }
 

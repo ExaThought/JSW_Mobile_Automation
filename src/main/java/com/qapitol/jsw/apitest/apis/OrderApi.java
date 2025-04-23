@@ -13,6 +13,8 @@ import com.qapitol.jsw.apitest.pojos.order.getCreditDetails.GetCreditDetailsResp
 import com.qapitol.jsw.apitest.pojos.order.getLineItemDetails.LineItemDetails;
 import com.qapitol.jsw.apitest.pojos.order.getOMSShipmentOrder.GetOMSShipmentOrderResp;
 import com.qapitol.jsw.apitest.pojos.order.getOrder.GetOMSOrderResp;
+import com.qapitol.jsw.apitest.pojos.order.rejectDo.RejectDO;
+import com.qapitol.jsw.apitest.pojos.order.rejectDo.RejectDOResp;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoice;
 import com.qapitol.jsw.apitest.pojos.order.shipmentInvoice.ShipmentInvoiceResp;
 import com.qapitol.jsw.apitest.pojos.order.updateShipment.UpdateShipment;
@@ -89,5 +91,8 @@ public interface OrderApi {
     @Produces(APPLICATION_JSON)
     GetCreditDetailsResp getCreditDetails(@QueryParam("pan") String pan, @QueryParam("gstin") String gstin);
 
-
+    @PUT
+    @Path("oms/plant-supply")
+    @Produces(APPLICATION_JSON)
+    RejectDOResp rejectDO(RejectDO rejectDO);
 }

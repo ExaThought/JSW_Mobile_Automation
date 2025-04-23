@@ -80,6 +80,7 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Given Get Credit Limit Details for Customer Before Order creation
 #    When Get Credit Limit Details for Customer Before Order creation for Credit Program "Xoriant2024"
 #    Then Create a "QP_DISTRIBUTED_CASHAndCREDIT_ORDER_XORIANT" type order with SLO API
+    When Create order with SLO API
     Then validate the order details
     Then Confirm the order using JOMS API
     Then Create and Release DO
@@ -89,11 +90,13 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then Validate the ledger entry for Credit Order Knocked Off Amount under new ledger statement
     Then validate the ledger entry for incoming payment after order invoice under new ledger statement for GSTIN "27AAACX0146P2Z0"
 
-  @testCaseId=id-013 @dataFile="ledger.yaml" @CashAndCreditOrderForPlantSupply #Intellect
+  @testCaseId=id-013 @dataFile="ledger.yaml" @CashAndCreditOrderForPlantSupply #Xoriant
   Scenario: Validate the Credit Invoice entry in ledger statement on Zoho Creator for the Plant Supply credit & cash type order
     Given Get Credit Limit Details for Customer Before Order creation
 #    When Create a "QP_PLANT_SUPPLY_CREDIT_ORDER" type order with SLO API
 #    Then validate the order details for "PLANT SUPPLY" and "Credit"
+    When Create order with SLO API
+    Then validate the order details
     Then Confirm the order using JOMS API
     Then Create and Release DO
     Then Create shipment
@@ -108,6 +111,8 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     When Check customer ledger balance before in ledger summary for "UNICO CONNECT PRIVATE LIMITED" customer
 #    When Create a "DISTRIBUTED_CASH_AND_CARRY_20%ADV_ORDER" type order with SLO API
 #    Then validate the order details for "DISTRIBUTED" and "Cash & Carry - Advance"
+     When Create order with SLO API
+     Then validate the order details
     Then validate the ledger balance after order placed in ledger summary for "UNICO CONNECT PRIVATE LIMITED" customer
     And Confirm the order using JOMS API
     Then Create DO
@@ -116,16 +121,18 @@ Feature: Zoho ledger module sanity suite verification on Zoho creator
     Then validate the ledger balance after DO rejected in ledger summary for "UNICO CONNECT PRIVATE LIMITED" customer
 
 
-  @testCaseId=id-015 @dataFile="ledger.yaml" @Do_RejectionCreditByPassCashAndCredit #Unico
+  @testCaseId=id-015 @dataFile="ledger.yaml" @Do_RejectionCreditByPassCashAndCredit #Xoriant
   Scenario: Validate the Blocked limit and Usable limit in Credit limit after DO reject
-    When Check customer ledger balance before in ledger summary for "UNICO CONNECT PRIVATE LIMITED" customer
+    When Check customer ledger balance before in ledger summary for "XORIANT SOLUTIONS PRIVATE LIMITED" customer
 #    When Create a "DISTRIBUTED_20%ADV80%CREDIT_ORDER" type order with SLO API
 #    Then validate the order details for "DISTRIBUTED" and "Credit"
+    When Create order with SLO API
+    Then validate the order details
     Then Confirm the order using JOMS API
     Then Create DO
-    Then validate the ledger balance after DO created for credit bypass in ledger summary for "UNICO CONNECT PRIVATE LIMITED" customer
+    Then validate the ledger balance after DO created for credit bypass in ledger summary for "XORIANT SOLUTIONS PRIVATE LIMITED" customer
     Then Reject DO
-    Then validate the ledger balance after DO rejected in ledger summary for "UNICO CONNECT PRIVATE LIMITED " customer
+    Then validate the ledger balance after DO rejected in ledger summary for "XORIANT SOLUTIONS PRIVATE LIMITED" customer
 
 
 

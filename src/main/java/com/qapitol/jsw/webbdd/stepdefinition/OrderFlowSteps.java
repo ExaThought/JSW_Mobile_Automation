@@ -171,4 +171,11 @@ public class OrderFlowSteps extends BaseSteps {
         log.info("DO Amount/ Requested Amount -->" +doAmount);
 
     }
+    @Then("Reject DO")
+    public void rejectDO() throws IOException {
+        log.entering();
+        OrderFlowImpl orderCreation = new OrderFlowImpl();
+        orderCreation.rejectDO();
+        log.exiting();
+    }
 }
