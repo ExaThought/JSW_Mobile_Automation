@@ -15,7 +15,7 @@ public class LoginApiImpl implements LoginService {
 
     @Override
     public Map<String, String> login(ApiClientFactory apiClientFactory) {
-        String ccpUrl = Config.getConfigProperty("customerPortalUrl");
+        String ccpUrl = Config.getConfigProperty("ccpUrl");
         String omsUrl = Config.getConfigProperty("omsUrl");
         String zohoUrl = Config.getConfigProperty("zohoUrl");
         if(ccpUrl.equalsIgnoreCase(apiClientFactory.getAddress())){

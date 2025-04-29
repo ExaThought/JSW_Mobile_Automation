@@ -17,8 +17,8 @@ public abstract class BaseApiImpl {
 
     protected final SimpleLogger log = SauronLogger.getLogger();
 
-    protected ApiClientFactory getZohoCCPClientFactory() {
-        return ApiClientFactory.getInstance(Config.getConfigProperty("customerPortalUrl"));
+    protected ApiClientFactory ccpUrl() {
+        return ApiClientFactory.getInstance(Config.getConfigProperty("ccpUrl"));
     }
 
     protected ApiClientFactory getZohoOMSApiClientFactory() {
