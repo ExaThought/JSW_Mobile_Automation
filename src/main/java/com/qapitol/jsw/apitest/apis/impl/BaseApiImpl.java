@@ -2,6 +2,7 @@ package com.qapitol.jsw.apitest.apis.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qapitol.jsw.apitest.pojos.order.Rcv2Request.Rcv2Req;
 import com.qapitol.sauron.api.client.ApiClientFactory;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.data.ContextData;
@@ -16,6 +17,7 @@ import java.nio.file.Paths;
 public abstract class BaseApiImpl {
 
     protected final SimpleLogger log = SauronLogger.getLogger();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected ApiClientFactory ccpUrl() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("ccpUrl"));
@@ -41,7 +43,7 @@ public abstract class BaseApiImpl {
         // Construct the path to the JSON file
         Path path = Paths.get(userDir, "src", "test", "resources", "api", "request", jsonFileName + ".json");
 
-        ObjectMapper objectMapper = new ObjectMapper();
+//        ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(path.toFile(), t);
     }
 
