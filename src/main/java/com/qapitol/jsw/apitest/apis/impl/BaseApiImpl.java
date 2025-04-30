@@ -42,8 +42,6 @@ public abstract class BaseApiImpl {
 
         // Construct the path to the JSON file
         Path path = Paths.get(userDir, "src", "test", "resources", "api", "request", jsonFileName + ".json");
-
-//        ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(path.toFile(), t);
     }
 
