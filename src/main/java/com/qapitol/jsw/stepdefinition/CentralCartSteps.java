@@ -13,7 +13,7 @@ public class CentralCartSteps {
     @Given("Request the Api for MSME from WEBSITE")
     public void requestTheApiForMsmeFromWebsite() throws IOException {
         CentralCartImpl centralCart=new CentralCartImpl(); //creating Object
-       cartId= centralCart.GetRcV2Response();// Getting the response and checking the response
+       cartId= centralCart.getRcV2Response();// Getting the response and checking the response
     }
      @Then("Delete the Cart")
      public void deleteTheCart(){
@@ -23,25 +23,25 @@ public class CentralCartSteps {
     @Given("Request the Api for MSME from MOBILE")
     public void requestTheApiForMsmeFromMobile() throws IOException {
         CentralCartImpl centralCart=new CentralCartImpl(); //creating Object
-        cartId= centralCart.GetRcV2Response();// Getting the response and checking the response
+        cartId= centralCart.getRcV2Response();// Getting the response and checking the response
     }
 
     @Given("Request the Api for CONSTRUCT from WEBSITE")
     public void requestTheApiForConstructFromWebsite() throws IOException {
         CentralCartImpl centralCart=new CentralCartImpl(); //creating Object
-        cartId= centralCart.GetRcV2Response();// Getting the response and checking the response
+        cartId= centralCart.getRcV2Response();// Getting the response and checking the response
     }
 
     @Given("Request the Api for CONSTRUCT from MOBILE")
     public void requestTheApiForConstructFromMobile() throws IOException {
         CentralCartImpl centralCart=new CentralCartImpl(); //creating Object
-        cartId= centralCart.GetRcV2Response();// Getting the response and checking the response
+        cartId= centralCart.getRcV2Response();// Getting the response and checking the response
     }
 
     @Given("Request API and check delivery type in response")
     public void requestApiAndCheckDeliveryTypeInResponse() throws IOException {
         CentralCartImpl centralCart=new CentralCartImpl(); //creating Object
-        cartId= centralCart.GetRcV2Response();// Getting the response and checking the response
+        cartId= centralCart.getRcV2Response();// Getting the response and checking the response
     }
 
 
