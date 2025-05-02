@@ -16,4 +16,9 @@ public interface RequestApi {
     @Path("v2/cart/add")
     @Produces(APPLICATION_JSON)
     Rcv2Res createRcViaV2API(Rcv2Req rcv2Req);
+
+//    @DELETE
+//    @Path("central-cart/api/internal/v1/cart/delete")
+//    @Produces(APPLICATION_JSON)
+
 }
