@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.rcv2Response;
+package com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse;
 
 import com.fasterxml.jackson.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.Map;
     "uom"
 })
 @Generated("jsonschema2pojo")
-public class PrimaryQuantity {
+public class PurchasedQuantity {
 
     @JsonProperty("quantity")
     private Double quantity;
@@ -55,7 +55,7 @@ public class PrimaryQuantity {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(PrimaryQuantity.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(PurchasedQuantity.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("quantity");
         sb.append('=');
         sb.append(((this.quantity == null)?"<null>":this.quantity));
@@ -90,10 +90,10 @@ public class PrimaryQuantity {
         if (other == this) {
             return true;
         }
-        if ((other instanceof PrimaryQuantity) == false) {
+        if ((other instanceof PurchasedQuantity) == false) {
             return false;
         }
-        PrimaryQuantity rhs = ((PrimaryQuantity) other);
+        PurchasedQuantity rhs = ((PurchasedQuantity) other);
         return ((((this.uom == rhs.uom)||((this.uom!= null)&&this.uom.equals(rhs.uom)))&&((this.quantity == rhs.quantity)||((this.quantity!= null)&&this.quantity.equals(rhs.quantity))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 

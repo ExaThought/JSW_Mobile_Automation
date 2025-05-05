@@ -12,14 +12,10 @@ public class CentralCartDeleteApiImpl extends BaseApiImpl{
 
     public void deleteCartId(CentralCartDeleteApiReq deleteApiRequestBody) throws IOException {
 
-        //Generate random RequestId(We need to pass in request header)
-        String requestId = UUID.randomUUID().toString();
-        String apiKey = "zk9656eke06c6gp4ombsc5thknmqz3hho33xwi59g8fq12vx8oatr2fmxl3qmyvz10keukce1a1h";
-
         // Call The Api
-        RequestApi requestApi = ccpUrl().create(RequestApi.class);
+        RequestApi requestApi = centralCartCcpUrl().create(RequestApi.class);
         // Request the Api
-         CentralCartDeleteApiRes deleteApiResponseBody=requestApi.deleteCartId(requestId, apiKey, deleteApiRequestBody);
+         CentralCartDeleteApiRes deleteApiResponseBody=requestApi.deleteCartId( deleteApiRequestBody);
 
          //Verify the Delete Api Response
         Assert.assertEquals(deleteApiResponseBody.getStatus(),"OK");

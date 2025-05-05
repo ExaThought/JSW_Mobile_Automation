@@ -1,7 +1,7 @@
+@Test
+Feature: Check central cart RC v2 ADD-to-Cart Api
 
-Feature: Check central cart RC v2 Api
-
-  @testCaseId=id-001 @dataFile="centralCartRcV2.yaml" @Test
+  @testCaseId=id-001 @dataFile="centralCartRcV2.yaml"
   Scenario: Check RC v2 API for MSME from WEBSITE
     Given Request the Api for MSME from WEBSITE
 #    Then Delete the Cart
@@ -42,3 +42,4 @@ Feature: Check central cart RC v2 Api
   Scenario: Check for Self pick-up
     Given Request API and check delivery type in response
     #delivery_type: "SELF_PICKUP"
+

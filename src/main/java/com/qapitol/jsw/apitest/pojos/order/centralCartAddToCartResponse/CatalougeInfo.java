@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.rcv2Response;
+package com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse;
 
 import com.fasterxml.jackson.annotation.*;
 

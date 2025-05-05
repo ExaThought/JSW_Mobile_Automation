@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.rcv2Response;
+package com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse;
 
 import com.fasterxml.jackson.annotation.*;
 
@@ -15,7 +15,7 @@ import java.util.Map;
     "success"
 })
 @Generated("jsonschema2pojo")
-public class Rcv2Res {
+public class AddToCartRes {
 
     @JsonProperty("status")
     private String status;
@@ -81,7 +81,7 @@ public class Rcv2Res {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(Rcv2Res.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(AddToCartRes.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("status");
         sb.append('=');
         sb.append(((this.status == null)?"<null>":this.status));
@@ -126,10 +126,10 @@ public class Rcv2Res {
         if (other == this) {
             return true;
         }
-        if ((other instanceof Rcv2Res) == false) {
+        if ((other instanceof AddToCartRes) == false) {
             return false;
         }
-        Rcv2Res rhs = ((Rcv2Res) other);
+        AddToCartRes rhs = ((AddToCartRes) other);
         return ((((((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties)))&&((this.data == rhs.data)||((this.data!= null)&&this.data.equals(rhs.data))))&&((this.error == rhs.error)||((this.error!= null)&&this.error.equals(rhs.error))))&&((this.success == rhs.success)||((this.success!= null)&&this.success.equals(rhs.success))))&&((this.status == rhs.status)||((this.status!= null)&&this.status.equals(rhs.status))));
     }
 

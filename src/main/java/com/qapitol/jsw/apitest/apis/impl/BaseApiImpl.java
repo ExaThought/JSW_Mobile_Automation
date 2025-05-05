@@ -21,6 +21,9 @@ public abstract class BaseApiImpl {
     protected ApiClientFactory ccpUrl() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("ccpUrl"));
     }
+    protected ApiClientFactory centralCartCcpUrl() {
+        return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
+    }
 
     protected ApiClientFactory getZohoOMSApiClientFactory() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("omsUrl"));
