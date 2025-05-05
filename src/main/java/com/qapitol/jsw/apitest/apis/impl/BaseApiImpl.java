@@ -2,7 +2,6 @@ package com.qapitol.jsw.apitest.apis.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.qapitol.jsw.apitest.pojos.order.Rcv2Request.Rcv2Req;
 import com.qapitol.sauron.api.client.ApiClientFactory;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.data.ContextData;
@@ -27,7 +26,7 @@ public abstract class BaseApiImpl {
         return ApiClientFactory.getInstance(Config.getConfigProperty("omsUrl"));
     }
 
-    protected ApiClientFactory getZohoAPIClientFactory(){
+    protected ApiClientFactory getZohoAPIClientFactory() {
         return ApiClientFactory.getInstance((Config.getConfigProperty("zohoUrl")));
     }
 
@@ -36,7 +35,7 @@ public abstract class BaseApiImpl {
         return objectMapper.readValue(payload, t);
     }
 
-    public  <T> T getPayloadJsonFileAsPOJO(String jsonFileName, Class<T> t) throws IOException {
+    public <T> T getPayloadJsonFileAsPOJO(String jsonFileName, Class<T> t) throws IOException {
         // Get the user.dir system property (current working directory)
         String userDir = System.getProperty("user.dir");
 
@@ -53,9 +52,9 @@ public abstract class BaseApiImpl {
         return response.readEntity(String.class);
     }
 
-    public String getStringFromPojo(Object object){
+    public String getStringFromPojo(Object object) {
         ObjectMapper objectMapper = new ObjectMapper();
-        try{
+        try {
             return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
             throw new RuntimeException("Error converting object to JSON", e);
