@@ -5,7 +5,10 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCa
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiResponse.CentralCartDeleteApiRes;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiRequest.CentralCartFetchApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiResponse.CentralCartFetchApiRes;
-import com.qapitol.jsw.apitest.pojos.order.rcv2Request.Rcv2Req;
+import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.CentralCartRcAddToCartReq;
+import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSizeReq;
+import com.qapitol.jsw.apitest.pojos.order.centralCartSizeResponse.CentralCartSizeRes;
+import com.qapitol.jsw.apitest.pojos.order.jswServiceRcv2Request.Rcv2Req;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
 
 import javax.ws.rs.*;
@@ -30,4 +33,13 @@ public interface RequestApi {
     @Produces(APPLICATION_JSON)
     CentralCartFetchApiRes fetchCartId(CentralCartFetchApiReq fetchRequestBody);
 
+    @POST
+    @Path("v1/cart/add")
+    @Produces(APPLICATION_JSON)
+    AddToCartRes centralCartRcAddToCart(CentralCartRcAddToCartReq centralCartRcAddToCartReq);
+
+    @POST
+    @Path("v1/cart/cart-size")
+    @Produces(APPLICATION_JSON)
+    CentralCartSizeRes cartSize(CentralCartSizeReq centralCartSizeReq);
 }

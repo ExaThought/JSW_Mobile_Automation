@@ -1,12 +1,12 @@
 package com.qapitol.jsw.apitest.apis.impl;
 
-
 import com.qapitol.jsw.apitest.apis.RequestApi;
+import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCartDeleteApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiRequest.CentralCartFetchApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiResponse.CentralCartFetchApiRes;
-import com.qapitol.jsw.apitest.pojos.order.rcv2Request.Rcv2Req;
-import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
+import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.CentralCartRcAddToCartReq;
+import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSizeReq;
 import com.qapitol.sauron.data.Data;
 import org.testng.Assert;
 
@@ -14,9 +14,8 @@ import java.io.IOException;
 
 import static java.util.Objects.nonNull;
 
-
-public class CentralCartRcV2Impl extends BaseApiImpl {
-    private Rcv2Req rcv2RequestBody;
+public class CentralCartRcImpl extends BaseApiImpl{
+    private CentralCartRcAddToCartReq centralCartRcAddToCartReq;
     private AddToCartRes addToCartApiResponse;
     private CentralCartDeleteApiReq deleteApiReq;
     private String cartId;
@@ -28,10 +27,11 @@ public class CentralCartRcV2Impl extends BaseApiImpl {
     private int listItemsSize;
 
 
-    public AddToCartRes getRcV2Response() throws IOException {
+
+    public AddToCartRes getCentralCartRcAddToCartResponse() throws IOException {
 
         // Load request body from JSON file
-        rcv2RequestBody = getPayloadJsonFileAsPOJO((String) Data.get().get("RC_V2_REQ"), Rcv2Req.class);
+        centralCartRcAddToCartReq = getPayloadJsonFileAsPOJO((String) Data.get().get("CENTRAL_CART_RC_ADD_TO_CART"), CentralCartRcAddToCartReq.class);
 
         // Read values from YAML/test data
         String deviceType = (String) Data.get().get("device_type");
@@ -42,24 +42,24 @@ public class CentralCartRcV2Impl extends BaseApiImpl {
 
         // Set request payload values from test data
         if (nonNull(deviceType)) {
-            rcv2RequestBody.getCartIdentifier().setDeviceType(deviceType);
+            centralCartRcAddToCartReq.getCartIdentifier().setDeviceType(deviceType);
         }
         if (nonNull(storeFront)) {
-            rcv2RequestBody.getCartIdentifier().setStoreFront(storeFront);
+            centralCartRcAddToCartReq.getCartIdentifier().setStoreFront(storeFront);
         }
         if (nonNull(cartType)) {
-            rcv2RequestBody.getCartIdentifier().setCartType(cartType);
+            centralCartRcAddToCartReq.getCartIdentifier().setCartType(cartType);
         }
         if (nonNull(cartJourneyType)) {
-            rcv2RequestBody.getCartIdentifier().setCartJourneyType(cartJourneyType);
+            centralCartRcAddToCartReq.getCartIdentifier().setCartJourneyType(cartJourneyType);
         }
         if (nonNull(deliveryType)) {
-            rcv2RequestBody.getShippingDetails().setDeliveryType(deliveryType);
+            centralCartRcAddToCartReq.getShippingDetails().setDeliveryType(deliveryType);
         }
 
         // Call the API
-        RequestApi requestApi = ccpUrl().create(RequestApi.class);
-        addToCartApiResponse = requestApi.createRcViaV2API(rcv2RequestBody);
+        RequestApi requestApi = centralCartCcpUrl().create(RequestApi.class);
+        addToCartApiResponse = requestApi.centralCartRcAddToCart(centralCartRcAddToCartReq);
         log.info("RC V2 API successfully Triggered ");
 
         // Log Cart ID
@@ -102,17 +102,17 @@ public class CentralCartRcV2Impl extends BaseApiImpl {
         Assert.assertEquals(addToCartApiResponse.getStatus(), "CREATED");
 
         // validation for Cart Identifier(Cart should create with requested Cart Identifier)
-        requestedDeviceType = rcv2RequestBody.getCartIdentifier().getDeviceType();
+        requestedDeviceType = centralCartRcAddToCartReq.getCartIdentifier().getDeviceType();
         Assert.assertEquals(addToCartApiResponse.getData().getCartIdentifier().getDeviceType(), requestedDeviceType);
-        requestedStoreFront = rcv2RequestBody.getCartIdentifier().getStoreFront();
+        requestedStoreFront = centralCartRcAddToCartReq.getCartIdentifier().getStoreFront();
         Assert.assertEquals(addToCartApiResponse.getData().getCartIdentifier().getStoreFront(), requestedStoreFront);
-        requestedCartType = rcv2RequestBody.getCartIdentifier().getCartType();
+        requestedCartType = centralCartRcAddToCartReq.getCartIdentifier().getCartType();
         Assert.assertEquals(addToCartApiResponse.getData().getCartIdentifier().getCartType(), requestedCartType);
-        requestedCartJourneyType =rcv2RequestBody.getCartIdentifier().getCartJourneyType();
+        requestedCartJourneyType = centralCartRcAddToCartReq.getCartIdentifier().getCartJourneyType();
         Assert.assertEquals(addToCartApiResponse.getData().getCartIdentifier().getCartJourneyType(), requestedCartJourneyType);
 
         // Validation For delivery type(Request deliveryType and Response deliveryType should be same)
-        String requestedDeliveryType = rcv2RequestBody.getShippingDetails().getDeliveryType();
+        String requestedDeliveryType = centralCartRcAddToCartReq.getShippingDetails().getDeliveryType();
         String responseDeliveryType = addToCartApiResponse.getData().getShippingDetails().getDeliveryType();
         Assert.assertEquals(requestedDeliveryType, responseDeliveryType);
         log.info("Delivery Type validation is working fine =" + responseDeliveryType);
@@ -124,7 +124,7 @@ public class CentralCartRcV2Impl extends BaseApiImpl {
         //check metaData CreatedBy and ModifiedBy CustomerID
         String responseCreatedBy = addToCartApiResponse.getData().getMetadata().getCreatedBy();
         String responseModifiedBy = addToCartApiResponse.getData().getMetadata().getModifiedBy();
-        requestedSfCustomerId = rcv2RequestBody.getCustomerDetails().getSfCustomerId();
+        requestedSfCustomerId = centralCartRcAddToCartReq.getCustomerDetails().getSfCustomerId();
         if (responseCreatedBy.equals(responseModifiedBy)) {
             Assert.assertEquals(requestedSfCustomerId, responseCreatedBy,"Created and requested customerID does not match");
         }
@@ -136,12 +136,12 @@ public class CentralCartRcV2Impl extends BaseApiImpl {
         //Validation for Line items
         for (int i = 0; i < listItemsSize; i++) {
             //Request quantity and Response quantity should be same
-            int requestedPurchasedQuantity = rcv2RequestBody.getLineItems().get(i).getPurchasedQuantity().getQuantity();//Reading requested purchase quantity
+            int requestedPurchasedQuantity = centralCartRcAddToCartReq.getLineItems().get(i).getPurchasedQuantity().getQuantity();//Reading requested purchase quantity
             Double responsePurchasedQuantity = addToCartApiResponse.getData().getLineItems().get(i).getPurchasedQuantity().getQuantity(); //Reading response purchase quantity
             Assert.assertEquals(requestedPurchasedQuantity, responsePurchasedQuantity);
             log.info("Purchase Quantity validation is working fine =" + responsePurchasedQuantity);
             //Requested productMMID,Response productMMI and Response catalogueId should be same
-            String requestedProductMMID = rcv2RequestBody.getLineItems().get(i).getProductMmid();
+            String requestedProductMMID = centralCartRcAddToCartReq.getLineItems().get(i).getProductMmid();
             String responseProductMMID = addToCartApiResponse.getData().getLineItems().get(i).getProductMmid();
             String responseCatalogueID = addToCartApiResponse.getData().getLineItems().get(i).getCatalougeInfo().getCatalougeId();
             Assert.assertTrue(requestedProductMMID.equals(responseProductMMID) && requestedProductMMID.equals(responseCatalogueID),
@@ -155,16 +155,16 @@ public class CentralCartRcV2Impl extends BaseApiImpl {
         CentralCartDeleteApiReq deleteRequestBody = getPayloadJsonFileAsPOJO((String) Data.get().get("DELETE_API_REQ"), CentralCartDeleteApiReq.class);
 
         //Read Cart Identifier from the RCV2RequestBody
-        requestedDeviceType = rcv2RequestBody.getCartIdentifier().getDeviceType();
-        requestedStoreFront = rcv2RequestBody.getCartIdentifier().getStoreFront();
-        requestedCartType = rcv2RequestBody.getCartIdentifier().getCartType();
-        requestedCartJourneyType =rcv2RequestBody.getCartIdentifier().getCartJourneyType();
+        requestedDeviceType = centralCartRcAddToCartReq.getCartIdentifier().getDeviceType();
+        requestedStoreFront = centralCartRcAddToCartReq.getCartIdentifier().getStoreFront();
+        requestedCartType = centralCartRcAddToCartReq.getCartIdentifier().getCartType();
+        requestedCartJourneyType = centralCartRcAddToCartReq.getCartIdentifier().getCartJourneyType();
 
         //Set CartId
         deleteRequestBody.setCartId(cartId);
 
         //Set SfCustomerID
-        requestedSfCustomerId =rcv2RequestBody.getCustomerDetails().getSfCustomerId();
+        requestedSfCustomerId = centralCartRcAddToCartReq.getCustomerDetails().getSfCustomerId();
 
         //Set the cart Identifier
         deleteRequestBody.setSfCustomerId(requestedSfCustomerId);
@@ -194,4 +194,19 @@ public class CentralCartRcV2Impl extends BaseApiImpl {
         CentralCartFetchApiRes fetchCartResponse=fetchApi.fetchCart(fetchRequestBody,addToCartApiResponse);
     }
 
+    public void getCartSize() throws IOException {
+
+        //Call Cart Size RequestBody
+        CentralCartSizeReq cartSizeRequestBody=getPayloadJsonFileAsPOJO((String)Data.get().get("CENTRAL_CART_RC_ADD_TO_CART"), CentralCartSizeReq.class);
+
+        //Set the Request Body
+        cartSizeRequestBody.setSfCustomerId(requestedSfCustomerId);
+        cartSizeRequestBody.setStoreFront(requestedStoreFront);
+        int cartSize=addToCartApiResponse.getData().getLineItems().size();
+
+        //Call Cart Size Method
+        CentralCartSizeImpl centralCartSize=new CentralCartSizeImpl();
+        centralCartSize.getCartSizeResponse(cartSizeRequestBody,cartSize);
+
+    }
 }

@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.rcv2Request;
+package com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

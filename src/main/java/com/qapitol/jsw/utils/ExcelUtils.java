@@ -27,7 +27,7 @@ public class ExcelUtils {
         return new ExcelUtils();
     }
 
-    //Add new column headers and values in the excel at the end
+    //Add new column headers and values in the Excel at the end
     public void addColumnAndValues(String inputFilePath, List<String> headers, List<Map<String, String>> values) throws IOException {
 
         ExcelDataProviderImpl excelDataProvider = (ExcelDataProviderImpl) DataProviderFactory.getDataProvider(getIOStreamResource(inputFilePath));

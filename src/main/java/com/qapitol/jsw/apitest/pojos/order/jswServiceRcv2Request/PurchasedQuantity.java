@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.rcv2Request;
+package com.qapitol.jsw.apitest.pojos.order.jswServiceRcv2Request;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,37 +13,37 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "key",
-    "value"
+    "quantity",
+    "uom"
 })
 @Generated("jsonschema2pojo")
-public class CtAttribute {
+public class PurchasedQuantity {
 
-    @JsonProperty("key")
-    private String key;
-    @JsonProperty("value")
-    private Integer value;
+    @JsonProperty("quantity")
+    private Integer quantity;
+    @JsonProperty("uom")
+    private String uom;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
-    @JsonProperty("key")
-    public String getKey() {
-        return key;
+    @JsonProperty("quantity")
+    public Integer getQuantity() {
+        return quantity;
     }
 
-    @JsonProperty("key")
-    public void setKey(String key) {
-        this.key = key;
+    @JsonProperty("quantity")
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
-    @JsonProperty("value")
-    public Integer getValue() {
-        return value;
+    @JsonProperty("uom")
+    public String getUom() {
+        return uom;
     }
 
-    @JsonProperty("value")
-    public void setValue(Integer value) {
-        this.value = value;
+    @JsonProperty("uom")
+    public void setUom(String uom) {
+        this.uom = uom;
     }
 
     @JsonAnyGetter
@@ -59,14 +59,14 @@ public class CtAttribute {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(CtAttribute.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("key");
+        sb.append(PurchasedQuantity.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("quantity");
         sb.append('=');
-        sb.append(((this.key == null)?"<null>":this.key));
+        sb.append(((this.quantity == null)?"<null>":this.quantity));
         sb.append(',');
-        sb.append("value");
+        sb.append("uom");
         sb.append('=');
-        sb.append(((this.value == null)?"<null>":this.value));
+        sb.append(((this.uom == null)?"<null>":this.uom));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
@@ -83,8 +83,8 @@ public class CtAttribute {
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+((this.value == null)? 0 :this.value.hashCode()));
-        result = ((result* 31)+((this.key == null)? 0 :this.key.hashCode()));
+        result = ((result* 31)+((this.uom == null)? 0 :this.uom.hashCode()));
+        result = ((result* 31)+((this.quantity == null)? 0 :this.quantity.hashCode()));
         result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
         return result;
     }
@@ -94,11 +94,11 @@ public class CtAttribute {
         if (other == this) {
             return true;
         }
-        if ((other instanceof CtAttribute) == false) {
+        if ((other instanceof PurchasedQuantity) == false) {
             return false;
         }
-        CtAttribute rhs = ((CtAttribute) other);
-        return ((((this.value == rhs.value)||((this.value!= null)&&this.value.equals(rhs.value)))&&((this.key == rhs.key)||((this.key!= null)&&this.key.equals(rhs.key))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
+        PurchasedQuantity rhs = ((PurchasedQuantity) other);
+        return ((((this.uom == rhs.uom)||((this.uom!= null)&&this.uom.equals(rhs.uom)))&&((this.quantity == rhs.quantity)||((this.quantity!= null)&&this.quantity.equals(rhs.quantity))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 
 }

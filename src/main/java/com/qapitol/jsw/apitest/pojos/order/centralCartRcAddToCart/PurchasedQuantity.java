@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.rcv2Request;
+package com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,38 +13,37 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "sf_customer_id",
-    "ct_customer_id"
+    "quantity",
+    "uom"
 })
 @Generated("jsonschema2pojo")
-public class CustomerDetails {
+public class PurchasedQuantity {
 
-
-    @JsonProperty("sf_customer_id")
-    private String sfCustomerId;
-    @JsonProperty("ct_customer_id")
-    private String ctCustomerId;
+    @JsonProperty("quantity")
+    private Integer quantity;
+    @JsonProperty("uom")
+    private String uom;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
-    @JsonProperty("sf_customer_id")
-    public String getSfCustomerId() {
-        return sfCustomerId;
+    @JsonProperty("quantity")
+    public Integer getQuantity() {
+        return quantity;
     }
 
-    @JsonProperty("sf_customer_id")
-    public void setSfCustomerId(String sfCustomerId) {
-        this.sfCustomerId = sfCustomerId;
+    @JsonProperty("quantity")
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
-    @JsonProperty("ct_customer_id")
-    public String getCtCustomerId() {
-        return ctCustomerId;
+    @JsonProperty("uom")
+    public String getUom() {
+        return uom;
     }
 
-    @JsonProperty("ct_customer_id")
-    public void setCtCustomerId(String ctCustomerId) {
-        this.ctCustomerId = ctCustomerId;
+    @JsonProperty("uom")
+    public void setUom(String uom) {
+        this.uom = uom;
     }
 
     @JsonAnyGetter
@@ -60,14 +59,14 @@ public class CustomerDetails {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(CustomerDetails.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("sfCustomerId");
+        sb.append(PurchasedQuantity.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("quantity");
         sb.append('=');
-        sb.append(((this.sfCustomerId == null)?"<null>":this.sfCustomerId));
+        sb.append(((this.quantity == null)?"<null>":this.quantity));
         sb.append(',');
-        sb.append("ctCustomerId");
+        sb.append("uom");
         sb.append('=');
-        sb.append(((this.ctCustomerId == null)?"<null>":this.ctCustomerId));
+        sb.append(((this.uom == null)?"<null>":this.uom));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
@@ -84,8 +83,8 @@ public class CustomerDetails {
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+((this.ctCustomerId == null)? 0 :this.ctCustomerId.hashCode()));
-        result = ((result* 31)+((this.sfCustomerId == null)? 0 :this.sfCustomerId.hashCode()));
+        result = ((result* 31)+((this.uom == null)? 0 :this.uom.hashCode()));
+        result = ((result* 31)+((this.quantity == null)? 0 :this.quantity.hashCode()));
         result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
         return result;
     }
@@ -95,11 +94,11 @@ public class CustomerDetails {
         if (other == this) {
             return true;
         }
-        if ((other instanceof CustomerDetails) == false) {
+        if ((other instanceof PurchasedQuantity) == false) {
             return false;
         }
-        CustomerDetails rhs = ((CustomerDetails) other);
-        return ((((this.ctCustomerId == rhs.ctCustomerId)||((this.ctCustomerId!= null)&&this.ctCustomerId.equals(rhs.ctCustomerId)))&&((this.sfCustomerId == rhs.sfCustomerId)||((this.sfCustomerId!= null)&&this.sfCustomerId.equals(rhs.sfCustomerId))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
+        PurchasedQuantity rhs = ((PurchasedQuantity) other);
+        return ((((this.uom == rhs.uom)||((this.uom!= null)&&this.uom.equals(rhs.uom)))&&((this.quantity == rhs.quantity)||((this.quantity!= null)&&this.quantity.equals(rhs.quantity))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 
 }

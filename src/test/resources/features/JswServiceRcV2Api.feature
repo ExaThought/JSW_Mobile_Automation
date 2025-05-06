@@ -21,7 +21,7 @@ Feature: Check central cart RC v2 ADD-to-Cart Api
     #"device_type": "MOBILE"
 
   @testCaseId=id-003 @dataFile="centralCartRcV2.yaml"
-  Scenario: Check RC V2 Api for CONSTRUCT from WEBSITE
+  Scenario: Check JSW Service RC V2 Api for CONSTRUCT from WEBSITE
     Given Request the Api for CONSTRUCT from WEBSITE
     #Check cart_identifier
     # cart_type: "ENQUIRY_CART",
