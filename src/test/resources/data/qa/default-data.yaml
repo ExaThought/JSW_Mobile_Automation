@@ -1,4 +1,7 @@
 username: test
 password: pass
 RC_V2_REQ: "rc_v2_Req"
+DELETE_API_REQ: "centralCartDeleteApiReq"
+FETCH_API_REQ: "centralCartFetchApiReq"
+CENTRAL_CART_RC_ADD_TO_CART: "CentralCartRcAddToCart"
 
