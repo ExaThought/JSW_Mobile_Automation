@@ -51,7 +51,7 @@
       "attributes": [
         {
           "name": "thickness",
-          "value": 2.5,
+          "value": 3,
           "unit": "mm"
         },
         {
@@ -66,7 +66,31 @@
         }
       ],
       "purchased_quantity": {
-        "quantity": 27,
+        "quantity": 25,
+        "uom": "mt"
+      }
+    },
+    {
+      "product_mmid": "1000-10005",
+      "attributes": [
+        {
+          "name": "thickness",
+          "value": 2,
+          "unit": "mm"
+        },
+        {
+          "name": "width",
+          "value": 1500,
+          "unit": "mm"
+        },
+        {
+          "name": "length",
+          "value": 2500,
+          "unit": "mm"
+        }
+      ],
+      "purchased_quantity": {
+        "quantity": 20,
         "uom": "mt"
       }
     }

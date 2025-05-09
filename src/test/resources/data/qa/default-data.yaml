@@ -4,4 +4,6 @@ RC_V2_REQ: "rc_v2_Req"
 DELETE_API_REQ: "centralCartDeleteApiReq"
 FETCH_API_REQ: "centralCartFetchApiReq"
 CENTRAL_CART_RC_ADD_TO_CART: "CentralCartRcAddToCart"
+CENTRAL_CART_UPDATE_LINE_ITEM: "centralCartUpdateLineItemReq"
+CENTRAL_CART_DELETE_LINE_ITEM: "centralCartDeleteLineItemReq"
 

@@ -1,0 +1,16 @@
+
+
+{
+  "cart_id": "681c1ea4ac38586ca98d373c",
+  "line_item_ids": [
+    "ff456b0e-bdb8-43b7-b7a6-80371b93a2cc"
+  ],
+  "sf_customer_id": "0019D00000Q5W0XQAV",
+  "cart_identifier": {
+    "cart_type": "ENQUIRY_CART",
+    "cart_journey_type": "REQUIREMENTS_CART_V2",
+    "store_front": "MSME",
+    "device_type": "WEBSITE"
+  }
+}
+

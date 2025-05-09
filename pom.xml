@@ -74,6 +74,11 @@
             <artifactId>hibernate-validator</artifactId>
             <version>7.0.5.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.11.0</version> <!-- or latest stable version -->
+        </dependency>
 
     </dependencies>
     <build>

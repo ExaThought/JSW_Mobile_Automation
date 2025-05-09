@@ -6,20 +6,25 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSiz
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeResponse.CentralCartSizeRes;
 import org.testng.Assert;
 
+import java.util.Optional;
+
+import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+
 public class CentralCartSizeImpl extends BaseApiImpl {
 
 
-    public void getCartSizeResponse(CentralCartSizeReq cartSizeRequestBody, int cartSize) {
-
+    public void getCartSizeResponse(CentralCartSizeReq cartSizeRequestBody, Integer cartSize) {
 
         RequestApi requestApi = centralCartCcpUrl().create(RequestApi.class);
 
         // Request the Api
-        CentralCartSizeRes cartSizeResponseBody = requestApi.cartSize(cartSizeRequestBody);
+        CentralCartSizeRes cartSizeResponseBody = requestApi.requestCentralCartSizeApi(cartSizeRequestBody);
 
         //Validation
-        Assert.assertEquals(cartSizeResponseBody.getStatus(),"OK");
-        Assert.assertEquals(cartSizeResponseBody.getData().getTotalLineItemCount(),cartSize);//Check cartSize
+        softAssert.assertEquals(cartSizeResponseBody.getStatus(),"OK");
+        //Check cartSize
+        softAssert.assertEquals(cartSizeResponseBody.getData().getTotalLineItemCount(),cartSize,"Checking CartSize");
+
     }
 
 }
