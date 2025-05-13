@@ -10,6 +10,7 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiResponse.CentralCa
 import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.CentralCartRcAddToCartReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSizeReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeResponse.CentralCartSizeRes;
+import com.qapitol.jsw.apitest.pojos.order.centralCartSlcAddToCartRequest.CentralCartSlcAddToCartReq;
 import com.qapitol.jsw.apitest.pojos.order.jswServiceRcv2Request.Rcv2Req;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
 
@@ -24,14 +25,7 @@ public interface RequestApi {
     @POST
     @Path("v2/cart/add")
     @Produces(APPLICATION_JSON)
-    default AddToCartRes createRcViaV2API(Rcv2Req rcv2Req) {
-        try {
-            // Call the API normally
-            return createRcViaV2API(rcv2Req);
-        } catch (WebApplicationException ex) {
-            return createRcViaV2API(rcv2Req);
-        }
-    }
+     AddToCartRes createRcViaV2API(Rcv2Req rcv2Req);
 
     @POST
     @Path("v1/cart/delete")
@@ -46,13 +40,7 @@ public interface RequestApi {
     @POST
     @Path("v1/cart/add")
     @Produces(APPLICATION_JSON)
-    default AddToCartRes requestCentralCartRcAddToCart(CentralCartRcAddToCartReq centralCartRcAddToCartReq){
-        try {
-            return requestCentralCartRcAddToCart(centralCartRcAddToCartReq);
-        } catch (Exception e) {
-            return requestCentralCartRcAddToCart(centralCartRcAddToCartReq);
-        }
-    }
+    AddToCartRes rcAddToCart(CentralCartRcAddToCartReq centralCartRcAddToCartReq);
 
     @POST
     @Path("v1/cart/cart-size")
@@ -69,4 +57,9 @@ public interface RequestApi {
     @Path("v1/cart/delete/line-items")
     @Produces(APPLICATION_JSON)
     AddToCartRes centralCartDeleteLineItem(CentralCartDeleteLineItemReq requestBody);
+
+    @POST
+    @Path("v1/cart/add")
+    @Produces(APPLICATION_JSON)
+    AddToCartRes slcAddToCart(CentralCartSlcAddToCartReq addToCartReq);
 }

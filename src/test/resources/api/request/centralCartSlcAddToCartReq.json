@@ -1,0 +1,132 @@
+{
+  "cart_identifier": {
+    "cart_type": "ORDER_CART",
+    "cart_journey_type": "SALES_LEAD_CART",
+    "store_front": "MSME",
+    "device_type": "WEBSITE"
+  },
+  "customer_details": {
+    "sf_customer_id": "0019D00000Q5W0XQAV",
+    "ct_customer_id": "f8252d23-bd62-43d9-ae6a-02b91446cefc",
+    "pb_distributor": {
+      "is_pb_distributor": false,
+      "retailer_name": "Ambika St"
+    },
+    "billing_address_validated": true
+  },
+  "shipping_details": {
+    "cart_address": [
+      {
+        "sf_address_id": "cvsuw9",
+        "ct_address_id": "R0cUGySz",
+        "address_type": "SHIPPING",
+        "street_line1": "Address1",
+        "street_line2": "Address2",
+        "pin_code": "560004",
+        "city": "Mumbai",
+        "region": "Mumbai",
+        "state": "Maharashtra",
+        "company": "MS Steel",
+        "mobile": "9787878787",
+        "name": "jsw-customer",
+        "email": "jsw-customer@gmail.in"
+      },
+      {
+        "sf_address_id": "cvsuw9",
+        "ct_address_id": "R0cUGySz",
+        "address_type": "BILLING",
+        "street_line1": "Address1",
+        "street_line2": "Address2",
+        "pin_code": "560004",
+        "city": "Mumbai",
+        "region": "Mumbai",
+        "state": "Maharashtra",
+        "company": "MS Steel",
+        "mobile": "9787878787",
+        "name": "jsw-customer",
+        "email": "jsw-customer@gmail.com"
+      }
+    ],
+    "delivery_type": "DELIVERY"
+  },
+  "opportunity_details": {
+    "opportunity_id": "006Hz00000TkTrIKAK",
+    "opportunity_url": "https://xx-salesforce.com/006Hz00000TkTrIKAK",
+    "sales_associate_name": "sales1",
+    "opportunity_owner_email": "sales1@jsw.in",
+    "opportunity_string": "cnsdknf,sdn",
+    "seller_pi": "2025-04-15T10:30:00"
+  },
+  "order_details": {
+    "order_type": "DISTRIBUTED",
+    "payment_details": {
+      "payment_method": "CREDIT",
+      "advance_required": true,
+      "advance_amount": "1043",
+      "order_payment_transaction_type": "NODAL"
+    }
+  },
+  "credit_details": {
+    "is_credit_required": true,
+    "credit_limit_bypass": false,
+    "limit_reference_id": "Jsw-one-2",
+    "credit_days": "13",
+    "credit_amount": 2371.8,
+    "credit_usable_amount": 23456
+  },
+  "cart_currency": "INR",
+  "line_items": [
+    {
+      "product_mmid": "1000-10000",
+      "attributes": [
+        {
+          "name": "thickness",
+          "value": 3,
+          "unit": "mm"
+        },
+        {
+          "name": "width",
+          "value": 1250,
+          "unit": "mm"
+        },
+        {
+          "name": "length",
+          "value": 2500,
+          "unit": "mm"
+        }
+      ],
+      "purchased_quantity": {
+        "quantity": "10",
+        "uom": "MT"
+      },
+      "vendor_location_key": "V2078-2759-JODL-3276",
+      "source_vendor_location_key": "V2078-2759-JODL-3233",
+      "pricing_mode": "EXW",
+      "line_item_price": {
+        "offers": [
+          {
+            "type": "CASHBACK",
+            "total_amount": 30,
+            "rate_per_uom": 3,
+            "uom": "MT",
+            "source": "SALESFORCE",
+            "coupon_code": "CSH-300"
+          }
+        ],
+        "unit_price": 10,
+        "line_item_amount": "100",
+        "tax_amount": 144
+      }
+    }
+  ],
+  "service_charges": [
+    {
+      "type": "FREIGHT",
+      "total_amount": 100,
+      "is_gst_applied": true,
+      "total_tax_amount": 18,
+      "vendor_location_key": "V2078-2759-JODL-6776",
+      "pricing_mode": "EXW"
+    }
+  ]
+}

@@ -22,7 +22,7 @@ public class AddToCartRes {
     @JsonProperty("data")
     private Data data;
     @JsonProperty("error")
-    private Object error;
+    private Error error;
     @JsonProperty("success")
     private Boolean success;
     @JsonIgnore
@@ -49,12 +49,12 @@ public class AddToCartRes {
     }
 
     @JsonProperty("error")
-    public Object getError() {
+    public Error getError() {
         return error;
     }
 
     @JsonProperty("error")
-    public void setError(Object error) {
+    public void setError(Error error) {
         this.error = error;
     }
 

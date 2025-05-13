@@ -3,7 +3,6 @@ package com.qapitol.jsw.apitest.apis.impl;
 import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.pojos.order.CentralCartUpdateItemQuantityRequest.CentralCartUpdateLineItemReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
-import org.testng.Assert;
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
@@ -17,7 +16,7 @@ public class CentralCartUpdateLineItemImpl extends BaseApiImpl{
         //Request the API
         AddToCartRes updateLineItemResponseBody=requestApi.requestUpdateLineItemApi(updateLineItemRequestBody);
         softAssert.assertEquals(updateLineItemResponseBody.getStatus(),"OK"); //Check Response Status
-//        softAssert.assertEquals(updateLineItemResponseBody.getData().getLineItems().get(0).getPurchasedQuantity(),quantityIncrease);//Need to develop this validation
+////        softAssert.assertEquals(updateLineItemResponseBody.getData().getLineItems().get(0).getPurchasedQuantity(),quantityIncrease);//Need to develop this validation
 
 
 

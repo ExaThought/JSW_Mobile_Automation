@@ -6,14 +6,17 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCar
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCartDeleteApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteLineItemRequest.CentralCartDeleteLineItemReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiRequest.CentralCartFetchApiReq;
-import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiResponse.CentralCartFetchApiRes;
+import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.Attribute;
 import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.CentralCartRcAddToCartReq;
+import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.LineItem;
+import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.PurchasedQuantity;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSizeReq;
 import com.qapitol.jsw.utils.MongoDBDao;
 import com.qapitol.sauron.data.Data;
 import org.testng.Assert;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;
@@ -63,7 +66,7 @@ public class CentralCartRcImpl extends BaseApiImpl {
 
         // Call the API
         RequestApi requestApi = centralCartCcpUrl().create(RequestApi.class);
-        addToCartApiResponse = requestApi.requestCentralCartRcAddToCart(centralCartRcAddToCartReq);
+        addToCartApiResponse = requestApi.rcAddToCart(centralCartRcAddToCartReq);
         log.info("RC V2 API successfully Triggered ");
 
         // Log Cart ID
@@ -103,7 +106,7 @@ public class CentralCartRcImpl extends BaseApiImpl {
         }
     }
 
-    public void validationForRCApi() {
+    public void validateRCApi() {
         // Verify response status(Response status should be "Created")
         Assert.assertEquals(addToCartApiResponse.getStatus(), "CREATED");
 
@@ -270,5 +273,37 @@ public class CentralCartRcImpl extends BaseApiImpl {
         CentralCartDeleteLineItemImpl deleteLineItemRequest = new CentralCartDeleteLineItemImpl();
         deleteLineItemRequest.deleteLineItem(deleteLineItemReq, addToCartApiResponse);
 
+    }
+
+    public AddToCartRes getCementProductAddToCartResponse() throws IOException {
+        centralCartRcAddToCartReq = getPayloadJsonFileAsPOJO((String) Data.get().get("CENTRAL_CART_RC_ADD_TO_CART"), CentralCartRcAddToCartReq.class);
+        List<LineItem> lineItems = centralCartRcAddToCartReq.getLineItems();
+        lineItems.clear();
+
+        LineItem lineItem = new LineItem();
+
+        // Set attributes
+        Attribute newAttribute = new Attribute();
+        newAttribute.setName("NUMBER_OF_BAGS");
+        newAttribute.setValue(51);
+        List<Attribute> addAttribute = new ArrayList<>();
+        addAttribute.add(newAttribute);
+        lineItem.setAttributes(addAttribute);
+
+       // Set product MMID
+        lineItem.setProductMmid("1016-11052");
+
+       //  Initialize and set PurchasedQuantity
+        PurchasedQuantity purchasedQuantity = new PurchasedQuantity();
+        purchasedQuantity.setQuantity(51);
+        purchasedQuantity.setUom("mt"); // if applicable
+        lineItem.setPurchasedQuantity(purchasedQuantity);
+
+        // Add to lineItems
+        lineItems.add(lineItem);
+
+       // Proceed with request
+        System.out.println(centralCartRcAddToCartReq);
+        return null;
     }
 }
