@@ -1,0 +1,67 @@
+elements:
+  loginButton:
+    en_US:
+      web: //button[@id='login-cta']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+  cartPage:
+    en_US:
+      web: //div[@class='cart-icon-container full-cart']
+  cartTotalAmount:
+    en_US:
+      web: xpath=//div[@class='d-none d-md-block']//div[@class='ps-total-value']
+  priceAmount:
+    en_US:
+      web: (//div[@class='group-discount-normal-price'] //div[@class='ps-row-value'])[1]
+  ErpPaymentType:
+    en_US:
+      web: //p[text()='Payment type']/following-sibling::*[1]
+  cartLineItemCashBack:
+    en_US:
+      web: //div[@class='typography-sub-heading typography-font-semibold typography-text-cashback-item-green s-mt-12 s-mt-md-0']
+  cartLineItemProductAmount:
+    en_US:
+      web: //div[@class='d-flex']//span[@class='line-item-amt']
+  cartLineItemPerMtAmount:
+    en_US:
+      web: //div[@class='d-flex']//span[@class='discounted-price']
+  cartLineItemTaxPercentage:
+    en_US:
+      web: //div[@class='d-flex']//span[@class='greyed-comment']
+  cartLineItemQuantity:
+    en_US:
+      web: xpath=(//div[@class='d-flex']//span[@class='product-qty-value'])[2]
+  cartShipTo:
+    en_US:
+      web: //label[text()='Ship to ']
+  cartBillTo:
+    en_US:
+      web: //*[text()='Bill to']
+  cartPriceAmount:
+    en_US:
+      web: xpath=(//div[@class='price-summary-container']//div[@class='ps-row-value'])[1]
+  cartTaxesAmount:
+    en_US:
+      web: xpath=(//div[@class='price-summary-container']//div[@class='ps-row-value'])[2]
+  cartDeliveryChargesAmount:
+    en_US:
+      web: xpath=(//div[@class='price-summary-container']//div[@class='ps-row-value'])[3]
+  cartLineItemThickness:
+    en_US:
+      web: //span[contains(text(),'Thickness')]/following-sibling::span[@class='attribute-value']
+  cartLineItemWidth:
+    en_US:
+      web: //span[contains(text(),'Width')]/following-sibling::span[@class='attribute-value']
+  cartLineItemLength:
+    en_US:
+      web: //span[contains(text(),'Length')]/following-sibling::span[@class='attribute-value']

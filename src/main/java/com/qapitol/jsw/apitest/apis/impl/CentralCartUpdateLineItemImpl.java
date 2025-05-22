@@ -1,7 +1,7 @@
 package com.qapitol.jsw.apitest.apis.impl;
 
 import com.qapitol.jsw.apitest.apis.RequestApi;
-import com.qapitol.jsw.apitest.pojos.order.CentralCartUpdateItemQuantityRequest.CentralCartUpdateLineItemReq;
+import com.qapitol.jsw.apitest.pojos.order.centralCartUpdateItemQuantityRequest.CentralCartUpdateLineItemReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;

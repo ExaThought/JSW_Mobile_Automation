@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.CentralCartUpdateItemQuantityRequest;
+package com.qapitol.jsw.apitest.pojos.order.centralCartUpdateItemQuantityRequest;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

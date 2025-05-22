@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +46,6 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
 
     private ChromeOptions getChromeOptions(Map<String, Object> chromeOptionCapsObj, String userProfilePath) {
         ChromeOptions customChromeOptions = new ChromeOptions();
-
         Map<String, Object> existingOptionsMap = chromeOptionCapsObj;
         if (existingOptionsMap.containsKey("args")) {
             List<String> existingArgs = (List<String>) existingOptionsMap.get("args");
@@ -53,6 +53,11 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
             if (nonNull(userProfilePath)) {
                 newArgs.add("user-data-dir=" + userProfilePath);
             }
+
+            Map<String, Object> prefs = new HashMap<>();
+            prefs.put("profile.default_content_setting_values.notifications", 2);
+            customChromeOptions.setExperimentalOption("prefs", prefs);
+            customChromeOptions.addArguments("--disable-gpu");              // Disables GPU hardware acceleration
             customChromeOptions.addArguments(newArgs);
         }
         return customChromeOptions;
