@@ -1,0 +1,232 @@
+
+package com.qapitol.jsw.apitest.pojos.order.centralCartSlcAddToCartRequest;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.processing.Generated;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({
+    "cart_identifier",
+    "customer_details",
+    "shipping_details",
+    "opportunity_details",
+    "order_details",
+    "credit_details",
+    "cart_currency",
+    "line_items",
+    "service_charges"
+})
+@Generated("jsonschema2pojo")
+public class CentralCartSlcAddToCartReq {
+
+    @JsonProperty("cart_identifier")
+    private CartIdentifier cartIdentifier;
+    @JsonProperty("customer_details")
+    private CustomerDetails customerDetails;
+    @JsonProperty("shipping_details")
+    private ShippingDetails shippingDetails;
+    @JsonProperty("opportunity_details")
+    private OpportunityDetails opportunityDetails;
+    @JsonProperty("order_details")
+    private OrderDetails orderDetails;
+    @JsonProperty("credit_details")
+    private CreditDetails creditDetails;
+    @JsonProperty("cart_currency")
+    private String cartCurrency;
+    @JsonProperty("line_items")
+    private List<LineItem> lineItems = new ArrayList<LineItem>();
+    @JsonProperty("service_charges")
+    private List<ServiceCharge> serviceCharges = new ArrayList<ServiceCharge>();
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
+
+    @JsonProperty("cart_identifier")
+    public CartIdentifier getCartIdentifier() {
+        return cartIdentifier;
+    }
+
+    @JsonProperty("cart_identifier")
+    public void setCartIdentifier(CartIdentifier cartIdentifier) {
+        this.cartIdentifier = cartIdentifier;
+    }
+
+    @JsonProperty("customer_details")
+    public CustomerDetails getCustomerDetails() {
+        return customerDetails;
+    }
+
+    @JsonProperty("customer_details")
+    public void setCustomerDetails(CustomerDetails customerDetails) {
+        this.customerDetails = customerDetails;
+    }
+
+    @JsonProperty("shipping_details")
+    public ShippingDetails getShippingDetails() {
+        return shippingDetails;
+    }
+
+    @JsonProperty("shipping_details")
+    public void setShippingDetails(ShippingDetails shippingDetails) {
+        this.shippingDetails = shippingDetails;
+    }
+
+    @JsonProperty("opportunity_details")
+    public OpportunityDetails getOpportunityDetails() {
+        return opportunityDetails;
+    }
+
+    @JsonProperty("opportunity_details")
+    public void setOpportunityDetails(OpportunityDetails opportunityDetails) {
+        this.opportunityDetails = opportunityDetails;
+    }
+
+    @JsonProperty("order_details")
+    public OrderDetails getOrderDetails() {
+        return orderDetails;
+    }
+
+    @JsonProperty("order_details")
+    public void setOrderDetails(OrderDetails orderDetails) {
+        this.orderDetails = orderDetails;
+    }
+
+    @JsonProperty("credit_details")
+    public CreditDetails getCreditDetails() {
+        return creditDetails;
+    }
+
+    @JsonProperty("credit_details")
+    public void setCreditDetails(CreditDetails creditDetails) {
+        this.creditDetails = creditDetails;
+    }
+
+    @JsonProperty("cart_currency")
+    public String getCartCurrency() {
+        return cartCurrency;
+    }
+
+    @JsonProperty("cart_currency")
+    public void setCartCurrency(String cartCurrency) {
+        this.cartCurrency = cartCurrency;
+    }
+
+    @JsonProperty("line_items")
+    public List<LineItem> getLineItems() {
+        return lineItems;
+    }
+
+    @JsonProperty("line_items")
+    public void setLineItems(List<LineItem> lineItems) {
+        this.lineItems = lineItems;
+    }
+
+    @JsonProperty("service_charges")
+    public List<ServiceCharge> getServiceCharges() {
+        return serviceCharges;
+    }
+
+    @JsonProperty("service_charges")
+    public void setServiceCharges(List<ServiceCharge> serviceCharges) {
+        this.serviceCharges = serviceCharges;
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
+
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(CentralCartSlcAddToCartReq.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("cartIdentifier");
+        sb.append('=');
+        sb.append(((this.cartIdentifier == null)?"<null>":this.cartIdentifier));
+        sb.append(',');
+        sb.append("customerDetails");
+        sb.append('=');
+        sb.append(((this.customerDetails == null)?"<null>":this.customerDetails));
+        sb.append(',');
+        sb.append("shippingDetails");
+        sb.append('=');
+        sb.append(((this.shippingDetails == null)?"<null>":this.shippingDetails));
+        sb.append(',');
+        sb.append("opportunityDetails");
+        sb.append('=');
+        sb.append(((this.opportunityDetails == null)?"<null>":this.opportunityDetails));
+        sb.append(',');
+        sb.append("orderDetails");
+        sb.append('=');
+        sb.append(((this.orderDetails == null)?"<null>":this.orderDetails));
+        sb.append(',');
+        sb.append("creditDetails");
+        sb.append('=');
+        sb.append(((this.creditDetails == null)?"<null>":this.creditDetails));
+        sb.append(',');
+        sb.append("cartCurrency");
+        sb.append('=');
+        sb.append(((this.cartCurrency == null)?"<null>":this.cartCurrency));
+        sb.append(',');
+        sb.append("lineItems");
+        sb.append('=');
+        sb.append(((this.lineItems == null)?"<null>":this.lineItems));
+        sb.append(',');
+        sb.append("serviceCharges");
+        sb.append('=');
+        sb.append(((this.serviceCharges == null)?"<null>":this.serviceCharges));
+        sb.append(',');
+        sb.append("additionalProperties");
+        sb.append('=');
+        sb.append(((this.additionalProperties == null)?"<null>":this.additionalProperties));
+        sb.append(',');
+        if (sb.charAt((sb.length()- 1)) == ',') {
+            sb.setCharAt((sb.length()- 1), ']');
+        } else {
+            sb.append(']');
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = ((result* 31)+((this.opportunityDetails == null)? 0 :this.opportunityDetails.hashCode()));
+        result = ((result* 31)+((this.lineItems == null)? 0 :this.lineItems.hashCode()));
+        result = ((result* 31)+((this.orderDetails == null)? 0 :this.orderDetails.hashCode()));
+        result = ((result* 31)+((this.serviceCharges == null)? 0 :this.serviceCharges.hashCode()));
+        result = ((result* 31)+((this.shippingDetails == null)? 0 :this.shippingDetails.hashCode()));
+        result = ((result* 31)+((this.creditDetails == null)? 0 :this.creditDetails.hashCode()));
+        result = ((result* 31)+((this.cartCurrency == null)? 0 :this.cartCurrency.hashCode()));
+        result = ((result* 31)+((this.cartIdentifier == null)? 0 :this.cartIdentifier.hashCode()));
+        result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
+        result = ((result* 31)+((this.customerDetails == null)? 0 :this.customerDetails.hashCode()));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if ((other instanceof CentralCartSlcAddToCartReq) == false) {
+            return false;
+        }
+        CentralCartSlcAddToCartReq rhs = ((CentralCartSlcAddToCartReq) other);
+        return (((((((((((this.opportunityDetails == rhs.opportunityDetails)||((this.opportunityDetails!= null)&&this.opportunityDetails.equals(rhs.opportunityDetails)))&&((this.lineItems == rhs.lineItems)||((this.lineItems!= null)&&this.lineItems.equals(rhs.lineItems))))&&((this.orderDetails == rhs.orderDetails)||((this.orderDetails!= null)&&this.orderDetails.equals(rhs.orderDetails))))&&((this.serviceCharges == rhs.serviceCharges)||((this.serviceCharges!= null)&&this.serviceCharges.equals(rhs.serviceCharges))))&&((this.shippingDetails == rhs.shippingDetails)||((this.shippingDetails!= null)&&this.shippingDetails.equals(rhs.shippingDetails))))&&((this.creditDetails == rhs.creditDetails)||((this.creditDetails!= null)&&this.creditDetails.equals(rhs.creditDetails))))&&((this.cartCurrency == rhs.cartCurrency)||((this.cartCurrency!= null)&&this.cartCurrency.equals(rhs.cartCurrency))))&&((this.cartIdentifier == rhs.cartIdentifier)||((this.cartIdentifier!= null)&&this.cartIdentifier.equals(rhs.cartIdentifier))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.customerDetails == rhs.customerDetails)||((this.customerDetails!= null)&&this.customerDetails.equals(rhs.customerDetails))));
+    }
+
+}

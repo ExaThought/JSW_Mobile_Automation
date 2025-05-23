@@ -1,0 +1,12 @@
+{
+  "sf_customer_id" : "0019D00000Q5W0XQAV",
+  "cart_id" : "68188e6b83d6c4221f00ac2b",
+  "cart_identifier" : {
+    "cart_type" : "ENQUIRY_CART",
+    "cart_journey_type" : "REQUIREMENTS_CART_V2",
+    "store_front" : "MSME",
+    "device_type" : "MOBILE"
+  },
+  "line_item_id" : "b3349c09-6c8a-4406-aba8-4771044a1186",
+  "quantity" : 1.6
+}
