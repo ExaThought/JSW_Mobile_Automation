@@ -16,5 +16,10 @@ public class CustomUtills {
     public static String requestWidth;
     public static String requestThickness;
     public static String requestLength;
+    public static String requestPaymentType;
+    public static String requestedSourceSeller;
+    public static String requestOrderType;
+    public static String requestNodelorNonNodel;
+    public static String requestDeliveryType;
 
 }

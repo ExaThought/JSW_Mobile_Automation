@@ -54,6 +54,7 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
                     requestWidth=item.getAttributes().getWidthMm();
                     requestLength=item.getAttributes().getLengthMm();
                     requestThickness=item.getAttributes().getThicknessMm();
+                    requestedSourceSeller=item.getSourceSeller().getSourceSellerCompanyName();
 
                     if(item.getCashbackDetails().getCashbackRate() != null){
                         double cashBack = item.getCashbackDetails().getCashbackRate() * (item.getOrderedQuantity() / 1000);
@@ -75,6 +76,12 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
 
             //Requested Total Amount
             requestTotalAmount=requestProductPrice+requestProductTaxes+requestedDeliveryCharges;
+
+            requestPaymentType=requestPayload.getOrderPaymentType();
+            requestNodelorNonNodel=requestPayload.getPayTo();
+            requestOrderType=requestPayload.getOrderType();
+            requestDeliveryType=requestPayload.getDeliveryType();
+
             return responseBody;
         } catch (BadRequestException e) {
             throw new RuntimeException(e);
