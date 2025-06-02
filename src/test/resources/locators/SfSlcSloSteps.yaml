@@ -23,9 +23,6 @@ elements:
   priceAmount:
     en_US:
       web: (//div[@class='group-discount-normal-price'] //div[@class='ps-row-value'])[1]
-  ErpPaymentType:
-    en_US:
-      web: //p[text()='Payment type']/following-sibling::*[1]
   cartLineItemCashBack:
     en_US:
       web: //div[@class='typography-sub-heading typography-font-semibold typography-text-cashback-item-green s-mt-12 s-mt-md-0']
@@ -65,3 +62,52 @@ elements:
   cartLineItemLength:
     en_US:
       web: //span[contains(text(),'Length')]/following-sibling::span[@class='attribute-value']
+  cartCashbackDescription:
+    en_US:
+      web: xpath=(//div[@class='cashback-description typography-sub-heading s-mt-4'])[1]
+  cartSummaryDescription:
+    en_US:
+      web: xpath=(//label[@for='termsCondition'])[1]
+  ErpPaymentType:
+    en_US:
+      web: xpath=//p[contains(text(),'Payment type')]/following-sibling::div[@class='MuiBox-root css-0']
+  erpBuyerName:
+    en_US:
+      web: xpath=(//p[contains(text(),'Buyer')]/following-sibling::div)[2]
+  erpOrderNumber:
+    en_US:
+      web: xpath=(//p[contains(text(),'Buyer')]/following-sibling::div)[1]
+  erpOrderCategory:
+    en_US:
+      web: xpath=//p[contains(text(),'Order category')]/following-sibling::div
+  erpMMID:
+    en_US:
+      web: xpath=//tbody[@class='MuiTableBody-root css-1xnox0e']//td[3]
+  erpSKUDetails:
+    en_US:
+      web: xpath=//tbody[@class='MuiTableBody-root css-1xnox0e']//td//p[@class='css-1vg189s']
+  erpCashBack:
+    en_US:
+      web: xpath=//tbody[@class='MuiTableBody-root css-1xnox0e']//td[11]
+  erpOrderPaymentType:
+    en_US:
+      web: xpath=//p[contains(text(),'Order payment type')]/following-sibling::div
+  erpOrderQuantity:
+    en_US:
+      web: xpath=//tbody[@class='MuiTableBody-root css-1xnox0e']//td[6]
+  erpTotalAmount:
+    en_US:
+      web: xpath=//div[@class='MuiBox-root css-11pq19m']//p[contains(text(),'Total order amount')]/following-sibling::p
+  erpSourceSeller:
+    en_Us:
+      web: xpath=//tbody[@class='MuiTableBody-root css-1xnox0e']//td[5]
+  erpDeliveryType:
+    en_US:
+      web: xpath=//p[contains(text(),'Delivery type')]/following-sibling::div
+  ccpOrderNumber:
+    en_US:
+      web: xpath=//div[contains(text(),'Order number')]/following-sibling::div
+  ccpCreateOrderCTA:
+    en_US:
+      web: xpath=//button[@class='proceed-to-pay primary']
+
