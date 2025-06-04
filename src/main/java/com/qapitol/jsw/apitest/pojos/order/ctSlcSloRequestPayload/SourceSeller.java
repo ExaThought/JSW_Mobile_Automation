@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.ctCreditReqPayload;
+package com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

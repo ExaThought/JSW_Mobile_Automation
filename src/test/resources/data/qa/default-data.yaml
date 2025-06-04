@@ -8,4 +8,7 @@ CENTRAL_CART_UPDATE_LINE_ITEM: "centralCartUpdateLineItemReq"
 CENTRAL_CART_DELETE_LINE_ITEM: "centralCartDeleteLineItemReq"
 CENTRAL_CART_SLC_ADD_TO_CART: "centralCartSlcAddToCartReq"
 CT_SLC_SLO_CASH_AND_CARRY: "ctSlcSloCashAndCarryReqPayload"
+CT_SLC_CASH_AND_CARRY_ADVANCE: "ctSlcSloCashAndCarryAdvanceReqPayload"
+CT_SLC_CREDIT: "ctSlcSloCreditReqPayload"
+REQUEST_BODY: "Request"
 

@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.ctCreditReqPayload;
+package com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "terms"
 })
 @Generated("jsonschema2pojo")
-public class SellerPaymentTerms {
+public class SpecialDeliveryInstructions {
 
     @JsonProperty("terms")
     private String terms;
@@ -46,7 +46,7 @@ public class SellerPaymentTerms {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(SellerPaymentTerms.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(SpecialDeliveryInstructions.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("terms");
         sb.append('=');
         sb.append(((this.terms == null)?"<null>":this.terms));
@@ -76,10 +76,10 @@ public class SellerPaymentTerms {
         if (other == this) {
             return true;
         }
-        if ((other instanceof SellerPaymentTerms) == false) {
+        if ((other instanceof SpecialDeliveryInstructions) == false) {
             return false;
         }
-        SellerPaymentTerms rhs = ((SellerPaymentTerms) other);
+        SpecialDeliveryInstructions rhs = ((SpecialDeliveryInstructions) other);
         return (((this.terms == rhs.terms)||((this.terms!= null)&&this.terms.equals(rhs.terms)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 
