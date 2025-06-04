@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.ctCreditReqPayload;
+package com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,24 +13,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "terms"
+    "pricing_mode"
 })
 @Generated("jsonschema2pojo")
-public class CommittedDeliveryTimeline {
+public class Meta {
 
-    @JsonProperty("terms")
-    private String terms;
+    @JsonProperty("pricing_mode")
+    private String pricingMode;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
-    @JsonProperty("terms")
-    public String getTerms() {
-        return terms;
+    @JsonProperty("pricing_mode")
+    public String getPricingMode() {
+        return pricingMode;
     }
 
-    @JsonProperty("terms")
-    public void setTerms(String terms) {
-        this.terms = terms;
+    @JsonProperty("pricing_mode")
+    public void setPricingMode(String pricingMode) {
+        this.pricingMode = pricingMode;
     }
 
     @JsonAnyGetter
@@ -46,10 +46,10 @@ public class CommittedDeliveryTimeline {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(CommittedDeliveryTimeline.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("terms");
+        sb.append(Meta.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("pricingMode");
         sb.append('=');
-        sb.append(((this.terms == null)?"<null>":this.terms));
+        sb.append(((this.pricingMode == null)?"<null>":this.pricingMode));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
@@ -66,7 +66,7 @@ public class CommittedDeliveryTimeline {
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+((this.terms == null)? 0 :this.terms.hashCode()));
+        result = ((result* 31)+((this.pricingMode == null)? 0 :this.pricingMode.hashCode()));
         result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
         return result;
     }
@@ -76,11 +76,11 @@ public class CommittedDeliveryTimeline {
         if (other == this) {
             return true;
         }
-        if ((other instanceof CommittedDeliveryTimeline) == false) {
+        if ((other instanceof Meta) == false) {
             return false;
         }
-        CommittedDeliveryTimeline rhs = ((CommittedDeliveryTimeline) other);
-        return (((this.terms == rhs.terms)||((this.terms!= null)&&this.terms.equals(rhs.terms)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
+        Meta rhs = ((Meta) other);
+        return (((this.pricingMode == rhs.pricingMode)||((this.pricingMode!= null)&&this.pricingMode.equals(rhs.pricingMode)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 
 }

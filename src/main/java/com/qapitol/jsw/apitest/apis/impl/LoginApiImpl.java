@@ -24,6 +24,8 @@ public class LoginApiImpl implements LoginService {
             String ACCESS_TOKEN = "access_token";
             return Map.of(ACCESS_TOKEN, Config.getConfigProperty("customerPortalAuthToken"));
         }
+
+
         if(centralCartCcpUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
             String X_API_KEY = "X-API-KEY";
             String Request_ID="X-Request-ID";

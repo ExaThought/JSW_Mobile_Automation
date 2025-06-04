@@ -19,55 +19,40 @@ elements:
       web: //div[@class='cart-icon-container full-cart']
   cartTotalAmount:
     en_US:
-      web: xpath=//div[@class='d-none d-md-block']//div[@class='ps-total-value']
-  priceAmount:
-    en_US:
-      web: (//div[@class='group-discount-normal-price'] //div[@class='ps-row-value'])[1]
+      web: xpath=//div[contains(text(),'Total amount')]/following-sibling::div
   cartLineItemCashBack:
     en_US:
-      web: //div[@class='typography-sub-heading typography-font-semibold typography-text-cashback-item-green s-mt-12 s-mt-md-0']
+      web: xpath=//img[@alt='Cashback Icon']/following-sibling::span[1]
   cartLineItemProductAmount:
     en_US:
-      web: //div[@class='d-flex']//span[@class='line-item-amt']
-  cartLineItemPerMtAmount:
+      web: xpath=//div[@id="line-item-section"]//div[@class='s-pt-8 text-right']/child::div[1]
+  cartLineItemPerMtAmountAndTaxPercentage:
     en_US:
-      web: //div[@class='d-flex']//span[@class='discounted-price']
-  cartLineItemTaxPercentage:
-    en_US:
-      web: //div[@class='d-flex']//span[@class='greyed-comment']
+      web: xpath=//div[@id="line-item-section"]//div[@class='s-pt-8 text-right']/child::div[2]
   cartLineItemQuantity:
     en_US:
-      web: xpath=(//div[@class='d-flex']//span[@class='product-qty-value'])[2]
+      web: xpath=//div[@class='d-flex justify-content-between align-items-center s-pt-8 s-pb-12 s-py-md-16']/child::div[1]
   cartShipTo:
     en_US:
-      web: //label[text()='Ship to ']
+      web: xpath=//div[contains(text(),'Delivery address:')]/child::span
   cartBillTo:
     en_US:
-      web: //*[text()='Bill to']
+      web: xpath=//div[contains(text(),'Billing address')]/following-sibling::div
   cartPriceAmount:
     en_US:
-      web: xpath=(//div[@class='price-summary-container']//div[@class='ps-row-value'])[1]
+      web: xpath=//div[contains(text(),'Price')]/following-sibling::div
   cartTaxesAmount:
     en_US:
-      web: xpath=(//div[@class='price-summary-container']//div[@class='ps-row-value'])[2]
+      web: xpath=//div[contains(text(),'Taxes')]/following-sibling::div
   cartDeliveryChargesAmount:
     en_US:
-      web: xpath=(//div[@class='price-summary-container']//div[@class='ps-row-value'])[3]
-  cartLineItemThickness:
+      web: xpath=//div[@class='d-flex flex-column']/following-sibling::div
+  cartLineItemAttributes:
     en_US:
-      web: //span[contains(text(),'Thickness')]/following-sibling::span[@class='attribute-value']
-  cartLineItemWidth:
-    en_US:
-      web: //span[contains(text(),'Width')]/following-sibling::span[@class='attribute-value']
-  cartLineItemLength:
-    en_US:
-      web: //span[contains(text(),'Length')]/following-sibling::span[@class='attribute-value']
+      web: //div[@class='line-item-attributes s-pt-4 s-pt-md-8 d-flex flex-wrap']/child::div/child::div
   cartCashbackDescription:
     en_US:
       web: xpath=(//div[@class='cashback-description typography-sub-heading s-mt-4'])[1]
-  cartSummaryDescription:
-    en_US:
-      web: xpath=(//label[@for='termsCondition'])[1]
   ErpPaymentType:
     en_US:
       web: xpath=//p[contains(text(),'Payment type')]/following-sibling::div[@class='MuiBox-root css-0']
@@ -109,5 +94,5 @@ elements:
       web: xpath=//div[contains(text(),'Order number')]/following-sibling::div
   ccpCreateOrderCTA:
     en_US:
-      web: xpath=//button[@class='proceed-to-pay primary']
+      web: xpath=//button[contains(text(),'Confirm order')]
 

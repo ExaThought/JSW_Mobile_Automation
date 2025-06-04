@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.ctCreditReqPayload;
+package com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -51,7 +51,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "advancePayment"
 })
 @Generated("jsonschema2pojo")
-public class CtSlcSloCreditReqPayload {
+public class CtSlcSloRequestPayload {
 
     @JsonProperty("slo")
     private Boolean slo;
@@ -477,7 +477,7 @@ public class CtSlcSloCreditReqPayload {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(CtSlcSloCreditReqPayload.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(CtSlcSloRequestPayload.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("slo");
         sb.append('=');
         sb.append(((this.slo == null)?"<null>":this.slo));
@@ -672,10 +672,10 @@ public class CtSlcSloCreditReqPayload {
         if (other == this) {
             return true;
         }
-        if ((other instanceof CtSlcSloCreditReqPayload) == false) {
+        if ((other instanceof CtSlcSloRequestPayload) == false) {
             return false;
         }
-        CtSlcSloCreditReqPayload rhs = ((CtSlcSloCreditReqPayload) other);
+        CtSlcSloRequestPayload rhs = ((CtSlcSloRequestPayload) other);
         return ((((((((((((((((((((((((((((((((((((this.salesAssociate == rhs.salesAssociate)||((this.salesAssociate!= null)&&this.salesAssociate.equals(rhs.salesAssociate)))&&((this.ratesValidity == rhs.ratesValidity)||((this.ratesValidity!= null)&&this.ratesValidity.equals(rhs.ratesValidity))))&&((this.orderType == rhs.orderType)||((this.orderType!= null)&&this.orderType.equals(rhs.orderType))))&&((this.businessUnit == rhs.businessUnit)||((this.businessUnit!= null)&&this.businessUnit.equals(rhs.businessUnit))))&&((this.customFields == rhs.customFields)||((this.customFields!= null)&&this.customFields.equals(rhs.customFields))))&&((this.shipToType == rhs.shipToType)||((this.shipToType!= null)&&this.shipToType.equals(rhs.shipToType))))&&((this.shippingAddressId == rhs.shippingAddressId)||((this.shippingAddressId!= null)&&this.shippingAddressId.equals(rhs.shippingAddressId))))&&((this.orderPaymentType == rhs.orderPaymentType)||((this.orderPaymentType!= null)&&this.orderPaymentType.equals(rhs.orderPaymentType))))&&((this.lineItems == rhs.lineItems)||((this.lineItems!= null)&&this.lineItems.equals(rhs.lineItems))))&&((this.advancePayment == rhs.advancePayment)||((this.advancePayment!= null)&&this.advancePayment.equals(rhs.advancePayment))))&&((this.customerId == rhs.customerId)||((this.customerId!= null)&&this.customerId.equals(rhs.customerId))))&&((this.selfPickup == rhs.selfPickup)||((this.selfPickup!= null)&&this.selfPickup.equals(rhs.selfPickup))))&&((this.billingAddressId == rhs.billingAddressId)||((this.billingAddressId!= null)&&this.billingAddressId.equals(rhs.billingAddressId))))&&((this.payTo == rhs.payTo)||((this.payTo!= null)&&this.payTo.equals(rhs.payTo))))&&((this.salesforceOpportunityId == rhs.salesforceOpportunityId)||((this.salesforceOpportunityId!= null)&&this.salesforceOpportunityId.equals(rhs.salesforceOpportunityId))))&&((this.paymentTerms == rhs.paymentTerms)||((this.paymentTerms!= null)&&this.paymentTerms.equals(rhs.paymentTerms))))&&((this.blockOrderSummaryFlag == rhs.blockOrderSummaryFlag)||((this.blockOrderSummaryFlag!= null)&&this.blockOrderSummaryFlag.equals(rhs.blockOrderSummaryFlag))))&&((this.advancePercentage == rhs.advancePercentage)||((this.advancePercentage!= null)&&this.advancePercentage.equals(rhs.advancePercentage))))&&((this.creditLimitBypass == rhs.creditLimitBypass)||((this.creditLimitBypass!= null)&&this.creditLimitBypass.equals(rhs.creditLimitBypass))))&&((this.poDetails == rhs.poDetails)||((this.poDetails!= null)&&this.poDetails.equals(rhs.poDetails))))&&((this.salesforceOpportunityURL == rhs.salesforceOpportunityURL)||((this.salesforceOpportunityURL!= null)&&this.salesforceOpportunityURL.equals(rhs.salesforceOpportunityURL))))&&((this.priceType == rhs.priceType)||((this.priceType!= null)&&this.priceType.equals(rhs.priceType))))&&((this.deliveryType == rhs.deliveryType)||((this.deliveryType!= null)&&this.deliveryType.equals(rhs.deliveryType))))&&((this.billingAddressSFId == rhs.billingAddressSFId)||((this.billingAddressSFId!= null)&&this.billingAddressSFId.equals(rhs.billingAddressSFId))))&&((this.shippingAddressSFId == rhs.shippingAddressSFId)||((this.shippingAddressSFId!= null)&&this.shippingAddressSFId.equals(rhs.shippingAddressSFId))))&&((this.ledgerBalance == rhs.ledgerBalance)||((this.ledgerBalance!= null)&&this.ledgerBalance.equals(rhs.ledgerBalance))))&&((this.opportunityOwnerEmail == rhs.opportunityOwnerEmail)||((this.opportunityOwnerEmail!= null)&&this.opportunityOwnerEmail.equals(rhs.opportunityOwnerEmail))))&&((this.slo == rhs.slo)||((this.slo!= null)&&this.slo.equals(rhs.slo))))&&((this.opportunityString == rhs.opportunityString)||((this.opportunityString!= null)&&this.opportunityString.equals(rhs.opportunityString))))&&((this.isPBDistributor == rhs.isPBDistributor)||((this.isPBDistributor!= null)&&this.isPBDistributor.equals(rhs.isPBDistributor))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.isDirect == rhs.isDirect)||((this.isDirect!= null)&&this.isDirect.equals(rhs.isDirect))))&&((this.remarks == rhs.remarks)||((this.remarks!= null)&&this.remarks.equals(rhs.remarks))))&&((this.channelOfOrder == rhs.channelOfOrder)||((this.channelOfOrder!= null)&&this.channelOfOrder.equals(rhs.channelOfOrder))))&&((this.isBillingAddressValidated == rhs.isBillingAddressValidated)||((this.isBillingAddressValidated!= null)&&this.isBillingAddressValidated.equals(rhs.isBillingAddressValidated))));
     }
 

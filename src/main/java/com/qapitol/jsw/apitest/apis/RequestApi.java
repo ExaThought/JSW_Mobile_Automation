@@ -11,7 +11,8 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.CentralCartRcA
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSizeReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeResponse.CentralCartSizeRes;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSlcAddToCartRequest.CentralCartSlcAddToCartReq;
-import com.qapitol.jsw.apitest.pojos.order.ctCashAndCarryRequestPayload.CtSlcSloCashAndCarryReq;
+import com.qapitol.jsw.apitest.pojos.order.ctCashAndCarryAdvRequestPayload.CtSlcSloCashCarryAdvReqPayload;
+import com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload.CtSlcSloRequestPayload;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
 import com.qapitol.jsw.apitest.pojos.order.jswServiceRcv2Request.Rcv2Req;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
@@ -68,5 +69,6 @@ public interface RequestApi {
     @POST
     @Path("data-sync/import/sales-opp")
     @Produces(APPLICATION_JSON)
-    CtSlcSloRes requestCtSlcSlo(CtSlcSloCashAndCarryReq requestBody);
+    CtSlcSloRes requestCtCashAndCarrySlcSlo(CtSlcSloRequestPayload requestBody);
+
 }

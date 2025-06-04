@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.ctCreditReqPayload;
+package com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,24 +13,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "text"
+    "terms"
 })
 @Generated("jsonschema2pojo")
-public class EstimatedDeliveryTimeline {
+public class CommittedDeliveryTimeline {
 
-    @JsonProperty("text")
-    private String text;
+    @JsonProperty("terms")
+    private String terms;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
-    @JsonProperty("text")
-    public String getText() {
-        return text;
+    @JsonProperty("terms")
+    public String getTerms() {
+        return terms;
     }
 
-    @JsonProperty("text")
-    public void setText(String text) {
-        this.text = text;
+    @JsonProperty("terms")
+    public void setTerms(String terms) {
+        this.terms = terms;
     }
 
     @JsonAnyGetter
@@ -46,10 +46,10 @@ public class EstimatedDeliveryTimeline {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(EstimatedDeliveryTimeline.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("text");
+        sb.append(CommittedDeliveryTimeline.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("terms");
         sb.append('=');
-        sb.append(((this.text == null)?"<null>":this.text));
+        sb.append(((this.terms == null)?"<null>":this.terms));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
@@ -66,7 +66,7 @@ public class EstimatedDeliveryTimeline {
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+((this.text == null)? 0 :this.text.hashCode()));
+        result = ((result* 31)+((this.terms == null)? 0 :this.terms.hashCode()));
         result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
         return result;
     }
@@ -76,11 +76,11 @@ public class EstimatedDeliveryTimeline {
         if (other == this) {
             return true;
         }
-        if ((other instanceof EstimatedDeliveryTimeline) == false) {
+        if ((other instanceof CommittedDeliveryTimeline) == false) {
             return false;
         }
-        EstimatedDeliveryTimeline rhs = ((EstimatedDeliveryTimeline) other);
-        return (((this.text == rhs.text)||((this.text!= null)&&this.text.equals(rhs.text)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
+        CommittedDeliveryTimeline rhs = ((CommittedDeliveryTimeline) other);
+        return (((this.terms == rhs.terms)||((this.terms!= null)&&this.terms.equals(rhs.terms)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 
 }

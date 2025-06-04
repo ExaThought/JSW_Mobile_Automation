@@ -1,5 +1,5 @@
 
-package com.qapitol.jsw.apitest.pojos.order.ctCreditReqPayload;
+package com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,24 +13,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "pricing_mode"
+    "text"
 })
 @Generated("jsonschema2pojo")
-public class Meta {
+public class EstimatedDeliveryTimeline {
 
-    @JsonProperty("pricing_mode")
-    private String pricingMode;
+    @JsonProperty("text")
+    private String text;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
-    @JsonProperty("pricing_mode")
-    public String getPricingMode() {
-        return pricingMode;
+    @JsonProperty("text")
+    public String getText() {
+        return text;
     }
 
-    @JsonProperty("pricing_mode")
-    public void setPricingMode(String pricingMode) {
-        this.pricingMode = pricingMode;
+    @JsonProperty("text")
+    public void setText(String text) {
+        this.text = text;
     }
 
     @JsonAnyGetter
@@ -46,10 +46,10 @@ public class Meta {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(Meta.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("pricingMode");
+        sb.append(EstimatedDeliveryTimeline.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("text");
         sb.append('=');
-        sb.append(((this.pricingMode == null)?"<null>":this.pricingMode));
+        sb.append(((this.text == null)?"<null>":this.text));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
@@ -66,7 +66,7 @@ public class Meta {
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+((this.pricingMode == null)? 0 :this.pricingMode.hashCode()));
+        result = ((result* 31)+((this.text == null)? 0 :this.text.hashCode()));
         result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
         return result;
     }
@@ -76,11 +76,11 @@ public class Meta {
         if (other == this) {
             return true;
         }
-        if ((other instanceof Meta) == false) {
+        if ((other instanceof EstimatedDeliveryTimeline) == false) {
             return false;
         }
-        Meta rhs = ((Meta) other);
-        return (((this.pricingMode == rhs.pricingMode)||((this.pricingMode!= null)&&this.pricingMode.equals(rhs.pricingMode)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
+        EstimatedDeliveryTimeline rhs = ((EstimatedDeliveryTimeline) other);
+        return (((this.text == rhs.text)||((this.text!= null)&&this.text.equals(rhs.text)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 
 }
