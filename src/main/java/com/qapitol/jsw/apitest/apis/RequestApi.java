@@ -1,8 +1,6 @@
 package com.qapitol.jsw.apitest.apis;
 
 
-import com.qapitol.jsw.apitest.pojos.order.Request.Request;
-import com.qapitol.jsw.apitest.pojos.order.Response.Response;
 import com.qapitol.jsw.apitest.pojos.order.centralCartUpdateItemQuantityRequest.CentralCartUpdateLineItemReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCartDeleteApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiResponse.CentralCartDeleteApiRes;
