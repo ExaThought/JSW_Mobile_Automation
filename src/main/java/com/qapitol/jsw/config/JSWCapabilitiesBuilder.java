@@ -51,6 +51,15 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
         if (existingOptionsMap.containsKey("args")) {
             List<String> existingArgs = (List<String>) existingOptionsMap.get("args");
             List<String> newArgs = new ArrayList<>(existingArgs);
+
+            // Clean up duplicate headless arguments
+            newArgs.removeIf(arg -> arg.startsWith("--headless"));
+
+            // Add clean set of arguments
+            newArgs.add("--headless=new");
+            newArgs.add("--disable-gpu");
+            newArgs.add("--window-size=1920,1080");
+            newArgs.add("--no-sandbox");
             if (nonNull(userProfilePath)) {
                 newArgs.add("user-data-dir=" + userProfilePath);
             }
