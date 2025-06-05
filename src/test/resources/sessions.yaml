@@ -1,14 +1,5 @@
-- name: "zoho_creator"
-  local: true
-  platform: "chrome"
-  browserRunHeadless: false
 
-- name: "zoho_books"
+- name: "ccp"
   local: true
   platform: "chrome"
-  browserRunHeadless: false
-
-- name: "erp"
-  local: true
-  platform: "chrome"
-  browserRunHeadless: false
+  browserRunHeadless: true

@@ -58,6 +58,7 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
             prefs.put("profile.default_content_setting_values.notifications", 2);
             customChromeOptions.setExperimentalOption("prefs", prefs);
             customChromeOptions.addArguments("--disable-gpu");              // Disables GPU hardware acceleration
+            customChromeOptions.addArguments("--headless=new");
             customChromeOptions.addArguments(newArgs);
         }
         return customChromeOptions;

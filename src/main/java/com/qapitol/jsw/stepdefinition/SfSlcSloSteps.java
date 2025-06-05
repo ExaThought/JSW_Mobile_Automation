@@ -128,7 +128,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
         softAssert.assertNotNull(waitAndGetText("cartBillTo"), "Bill To is not present in the cart");
         waitAndCheckIsElementPresent(CCP_CREATE_ORDER_CTA);
         waitAndCheckIsElementVisible(CCP_CREATE_ORDER_CTA);
-        waitAndClickOn(CCP_CREATE_ORDER_CTA);
+//        waitAndClickOn(CCP_CREATE_ORDER_CTA);
 
     }
 

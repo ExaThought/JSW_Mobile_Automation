@@ -47,6 +47,7 @@ public class CentralCartRcImpl extends BaseApiImpl {
         String cartType = (String) Data.get().get("cart_type");
         String cartJourneyType = (String) Data.get().get("cart_journey_type");
         String deliveryType = (String) Data.get().get("delivery_type");
+        
 
         // Set request payload values from test data
         if (nonNull(deviceType)) {
