@@ -2,11 +2,11 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
 
@@ -46,26 +46,46 @@ public class SfSlcSloSteps extends AbstractWebPage {
     public static final String ERP_TOTAL_AMOUNT = "erpTotalAmount";
     public static final String ERP_SOURCE_SELLER = "erpSourceSeller";
     public static final String ERP_DELIVERY_TYPE = "erpDeliveryType";
+    public static final String CCP_CART_PAYMENT_NOW="ccpPaymentNow";
 
     CtSlcSloRes response;
     String ccpOrderNumber;
     String orderType;
+    CtSlcSlocreationImpl ctSlcSlocreation;
 
-    @When("Request and create and cashAndCarry distributer cart")
-    public void request_and_create_and_cashAndCarry_distributer_cart() throws IOException {
-        CtSlcSlocreationImpl ctSlcSlocreation = new CtSlcSlocreationImpl();
+    @When("Request and create an cashAndCarry distributer cart")
+    public void request_and_create_an_cashAndCarry_distributer_cart() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
         orderType="CT_SLC_SLO_CASH_AND_CARRY";
         response = ctSlcSlocreation.getSlcSloResponse(orderType);
     }
-    @When("Request and create and cashAndCarryAdvance distributer cart")
-    public void request_and_create_and_cashAndCarryAdvance_distributer_cart() throws IOException {
-        CtSlcSlocreationImpl ctSlcSlocreation = new CtSlcSlocreationImpl();
+    @When("Request and create an cashAndCarryAdvance distributer cart")
+    public void request_and_create_an_cashAndCarryAdvance_distributer_cart() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
         orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
         response=ctSlcSlocreation.getSlcSloResponse(orderType);
     }
-    @When("Request and create and credit distributer cart")
-    public void request_and_create_and_credit_distributer_cart() throws IOException {
-        CtSlcSlocreationImpl ctSlcSlocreation = new CtSlcSlocreationImpl();
+    @When("Request and create an credit distributer cart")
+    public void request_and_create_an_credit_distributer_cart() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CREDIT";
+        response=ctSlcSlocreation.getSlcSloResponse(orderType);
+    }
+    @When("Request and create an cash and carry withAdvance direct cart")
+    public void request_and_create_an_cash_and_carry_withAdvance_direct_cart() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
+        response=ctSlcSlocreation.getSlcSloResponse(orderType);
+    }
+    @When("Request and create an cash and carry ZeroAdvance direct cart")
+    public void request_and_create_an_cash_and_carry_ZeroAdvance_direct_cart() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
+        response=ctSlcSlocreation.getSlcSloResponse(orderType);
+    }
+    @When("Request and create an Credit direct cart")
+    public void request_and_create_an_credit_direct_cart() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
         orderType="CT_SLC_CREDIT";
         response=ctSlcSlocreation.getSlcSloResponse(orderType);
     }
@@ -109,13 +129,15 @@ public class SfSlcSloSteps extends AbstractWebPage {
         softAssert.assertEquals(Double.parseDouble(cleanUpUiCartDeliveryChargesAmount), requestedDeliveryCharges, "Failing in Delivery Charges");
         requestedDeliveryCharges=0;
 
-        String uiCartTotalAmount = waitAndGetText(CCP_CART_TOTAL_AMOUNT);
-        String cleanUpUiCartTotalAmount = uiCartTotalAmount.replaceAll("[^\\d.]", "");
-        if(requestAdvanaceAmount!=0) {
-            requestAdvanaceAmount = requestTotalAmount - requestAdvanaceAmount;
-            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartTotalAmount) + requestAdvanaceAmount, requestTotalAmount, "Failing in Total Amount");
+        if(requestOrderType.equals("Plant Supply")) {
+            String uiCartPaymentNow = waitAndGetText(CCP_CART_PAYMENT_NOW);
+            String cleanUpUiCartPaymentNow = uiCartPaymentNow.replaceAll("[^\\d.]", "");
+            requestAdvanceAmount = requestTotalAmount - requestAdvanceAmount;
+            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartPaymentNow) + requestAdvanceAmount, requestTotalAmount, "Failing in Total Amount");
         }
         else {
+            String uiCartTotalAmount = waitAndGetText(CCP_CART_TOTAL_AMOUNT);
+            String cleanUpUiCartTotalAmount = uiCartTotalAmount.replaceAll("[^\\d.]", "");
             softAssert.assertEquals(Double.parseDouble(cleanUpUiCartTotalAmount), requestTotalAmount, "Failing in Total Amount");
         }
 
@@ -137,6 +159,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
 
         sleep(3000);
         ccpOrderNumber = waitAndGetText(CCP_ORDER_NUMBER);
+        AllureCustomLogReporter.addTestStepLog(requestOrderType+" "+orderType+" order number="+ccpOrderNumber);
     }
 
     @And("open the ERP and verify all the data")
@@ -176,13 +199,4 @@ public class SfSlcSloSteps extends AbstractWebPage {
         softAssert.assertEquals(waitAndGetText(ERP_DELIVERY_TYPE), requestDeliveryType, "Failing in Delivery Type in ERP");
         softAssert.assertAll();
     }
-
-    @And("Create an shipment and upload the invoice")
-    public void create_an_shipment_and_upload_the_invoice() {
-    }
-
-    @Then("Open the CCP and verify the shipment details")
-    public void open_the_CCP_and_verify_the_shipment_details() {
-    }
-
 }

@@ -95,4 +95,7 @@ elements:
   ccpCreateOrderCTA:
     en_US:
       web: xpath=//button[contains(text(),'Confirm order')]
+  ccpPaymentNow:
+    en_US:
+      web: xpath=//div[contains(text(),'Payment due now')]/following-sibling::div
 

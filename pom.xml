@@ -26,6 +26,11 @@
         </dependency>
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
+            <artifactId>web-mobile</artifactId>
+            <version>${sauron.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.qapitol.sauron4</groupId>
             <artifactId>cucumber</artifactId>
             <version>${sauron.version}</version>
         </dependency>

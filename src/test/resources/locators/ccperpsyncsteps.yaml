@@ -1,0 +1,34 @@
+elements:
+  loginButton:
+    en_US:
+      web: //button[@id='login-cta']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+  cartPage:
+    en_US:
+      web: //div[@class='cart-icon-container full-cart']
+  ccpOrderNumber:
+    en_US:
+      web: xpath=//div[contains(text(),'Order number')]/following-sibling::div
+  ccpCreateOrderCTA:
+    en_US:
+      web: xpath=//button[contains(text(),'Confirm order')]
+  erpPiPoCheckBox:
+    en_US:
+      web: xpath=//span[contains(text(),'Verify PI/PO')]/parent::label/child::span//input
+  erpBillingAddress:
+    en_US:
+      web: xpath=//p[contains(text(),'Billing address verified')]/ancestor::label/child::span/child::input
+  erpSpoc:
+    en_US:
+      web: xpath=//div[@id='demo-simple-select']

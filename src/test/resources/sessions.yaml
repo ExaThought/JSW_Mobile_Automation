@@ -3,3 +3,8 @@
   local: true
   platform: "chrome"
   browserRunHeadless: false
+
+- name: "mobile 1"
+  local: true
+  platform: "src/test/resources/akp"
+  browserRunHeadless: false

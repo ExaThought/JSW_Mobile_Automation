@@ -4,6 +4,7 @@
   store_front: "MSME"
   device_type: "WEBSITE"
 
+
 - testCaseId: "id-002"
   cart_journey_type: "REQUIREMENTS_CART_V2"
   cart_type: "ENQUIRY_CART"
