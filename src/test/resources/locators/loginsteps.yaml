@@ -14,3 +14,6 @@ elements:
   ccpLoginCTA:
     en_US:
       web: //button[@id='login-to-continue']
+  errorMessage:
+    en_US:
+      web: //div[contains(text(),'Credentials are not valid')]

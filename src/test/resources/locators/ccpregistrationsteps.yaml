@@ -56,3 +56,12 @@ elements:
   registrationCreateAccountCTAButton:
     en_US:
       web= xpath=//button[@id='register-create']
+  registrationPopUp:
+    en_US:
+      web: xpath=//div[@class='pop-up']
+  phoneNumberErrorMessage:
+    en_US:
+      web: xpath=//div[contains(text(),'Please enter correct phone number')]
+  emailErrorMessage:
+    en_US:
+      web: xpath=//input[@id='email']/parent::div/following-sibling::div/child::div
