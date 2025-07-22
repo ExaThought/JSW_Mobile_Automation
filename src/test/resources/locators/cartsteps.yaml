@@ -1,0 +1,92 @@
+elements:
+  loginButton:
+    en_US:
+      web: //button[@id='login-cta']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+  errorMessage:
+    en_US:
+      web: //div[contains(text(),'Credentials are not valid')]
+  hrCoilE250A:
+    en_US:
+      web: //a[@title='JSW Steel Hot Rolled Coils IS 2062:2011 E250A']
+  thickness:
+    en_US:
+      web: //button[contains(text(),'2.5')]
+  width:
+    en_US:
+      web: //button[contains(text(),'1250')]
+  quantity:
+    en_US:
+      web: xpath=(//input[@id='inputQty'])[1]
+  addToCart:
+    en_US:
+      web: xpath=//div[contains(text(),'Add to cart')]/parent::button/child::div
+  viewCart:
+    en_US:
+      web: xpath=//btn[contains(text(),'View cart')]
+  submitRequirement:
+    en_US:
+      web: xpath=//button[contains(text(),'Submit requirement')]
+  deleteLineItem:
+    en_US:
+      web: xpath=(//div[@title='Delete'])[1]
+  deleteCta:
+    en_US:
+      web: xpath=//span[contains(text(),'Delete')]
+  cement:
+    en_US:
+      web: xpath=//a[contains(text(),'Cement')]//parent::div[@class='nav-active-link-jsw']
+  cementPDP:
+    en_US:
+      web: xpath=(//div[@class='card-title'])[1]
+  cementQuantity:
+    en_US:
+      web: xpath=(//input[@id="inputQty"])[2]
+  stainlessSteelPlp:
+    en_US:
+      web: xpath=//a[contains(text(),'Stainless Steel')]//parent::div[@class='nav-active-link-jsw']
+  stainlessSteelPDP:
+    en_US:
+      web: xpath=(//div[@class='card-title'])[1]
+  stainlessSteelThickness:
+    en_US:
+      web: xpath=//button[contains(text(),'3')]
+  stainlessSteelWidth:
+    en_US:
+      web: xpath=//button[contains(text(),'1250')]
+  stainlessSteelLength:
+    en_US:
+      web: xpath=//button[contains(text(),'2500')]
+  rcCheckout:
+    en_US:
+      web: xpath=//button[contains(text(),'Submit requirement')]
+  sfEmail:
+    en_US:
+      web: xpath=//input[@id='username']
+  sfPassword:
+    en_US:
+      web: xpath=//input[@id='password']
+  sfLogin:
+    en_US:
+      web: xpath=//input[@id='Login']
+  sfSearch:
+    en_US:
+      web: xpath=//button[@aria-label='Search']
+  myRequirementPage:
+    en_US:
+      web: xpath=//a[@href='/my-requirements']
+  requirementId:
+    en_US:
+      web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
+

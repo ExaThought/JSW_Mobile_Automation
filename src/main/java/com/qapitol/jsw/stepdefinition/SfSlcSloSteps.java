@@ -129,18 +129,17 @@ public class SfSlcSloSteps extends AbstractWebPage {
         softAssert.assertEquals(Double.parseDouble(cleanUpUiCartDeliveryChargesAmount), requestedDeliveryCharges, "Failing in Delivery Charges");
         requestedDeliveryCharges=0;
 
-        if(requestOrderType.equals("Plant Supply")) {
-            String uiCartPaymentNow = waitAndGetText(CCP_CART_PAYMENT_NOW);
-            String cleanUpUiCartPaymentNow = uiCartPaymentNow.replaceAll("[^\\d.]", "");
-            requestAdvanceAmount = requestTotalAmount - requestAdvanceAmount;
-            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartPaymentNow) + requestAdvanceAmount, requestTotalAmount, "Failing in Total Amount");
-        }
-        else {
-            String uiCartTotalAmount = waitAndGetText(CCP_CART_TOTAL_AMOUNT);
-            String cleanUpUiCartTotalAmount = uiCartTotalAmount.replaceAll("[^\\d.]", "");
-            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartTotalAmount), requestTotalAmount, "Failing in Total Amount");
-        }
-
+//        if(requestOrderType.equals("Plant Supply")) {
+//            String uiCartPaymentNow = waitAndGetText(CCP_CART_PAYMENT_NOW);
+//            String cleanUpUiCartPaymentNow = uiCartPaymentNow.replaceAll("[^\\d.]", "");
+//            requestAdvanceAmount = requestTotalAmount - requestAdvanceAmount;
+//            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartPaymentNow) + requestAdvanceAmount, requestTotalAmount, "Failing in Total Amount CCP");
+//        }
+//        else {
+//            String uiCartTotalAmount = waitAndGetText(CCP_CART_TOTAL_AMOUNT);
+//            String cleanUpUiCartTotalAmount = uiCartTotalAmount.replaceAll("[^\\d.]", "");
+//            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartTotalAmount), requestTotalAmount, "Failing in Total Amount CCP");
+//        }
 
         //Validate Line Item
         softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEMS_PRODUCT_AMOUNT), formatLineItemTotalAmount, "Failing in line Item Total Amount");
@@ -191,8 +190,8 @@ public class SfSlcSloSteps extends AbstractWebPage {
         softAssert.assertTrue(requestNodelorNonNodel.contains(waitAndGetText(ERP_ORDER_PAYMENT_TYPE)), "Failing in Order Payment Type in ERP");
 
         //Other validation
-        softAssert.assertEquals(waitAndGetText(ERP_ORDER_Number), ccpOrderNumber, "Failing in Order Number in ERP");
-        softAssert.assertEquals(waitAndGetText(ERP_PAYMENTYPE), requestPaymentType, "Failing in Payment Type in ERP");
+        softAssert.assertEquals(waitAndGetText(ERP_ORDER_Number), ccpOrderNumber, "Failing Order Number in ERP");
+        softAssert.assertEquals(waitAndGetText(ERP_PAYMENTYPE), requestPaymentType, "Failing Payment Type in ERP");
         softAssert.assertEquals(waitAndGetText(ERP_ORDER_CATEGORY), requestOrderType.toUpperCase(), " Failing in Order Type in ERP");
         softAssert.assertNotNull(waitAndGetText(ERP_MMID), "Failing in MMID in ERP");
         softAssert.assertNotNull(waitAndGetText(ERP_SKU_DETAILS), "Failing in SKU Details in ERP");

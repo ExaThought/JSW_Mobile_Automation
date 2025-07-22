@@ -1,14 +1,13 @@
 @regression @sanity @orderCreation
 Feature: Check SLC/SLO Flow
 
-  @testCaseId=id-001 @dataFile="sfslcslo.yaml"
+ @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry order
     When Request and create an cashAndCarry distributer cart
     And Open the CCP website and login "testnewurl@yopmail.com" and "Jsw@2025"
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
-
 
   @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry Advance order

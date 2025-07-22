@@ -6,7 +6,6 @@ import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.testng.Assert;
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
