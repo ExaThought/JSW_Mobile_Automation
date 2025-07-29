@@ -40,7 +40,7 @@ elements:
       web: xpath=//button[contains(text(),'Submit requirement')]
   deleteLineItem:
     en_US:
-      web: xpath=(//div[@title='Delete'])[1]
+      web: xpath=(//div[contains(text(),'Delete')])[1]
   deleteCta:
     en_US:
       web: xpath=//span[contains(text(),'Delete')]
@@ -49,7 +49,7 @@ elements:
       web: xpath=//a[contains(text(),'Cement')]//parent::div[@class='nav-active-link-jsw']
   cementPDP:
     en_US:
-      web: xpath=(//div[@class='card-title'])[1]
+      web: xpath=(//div[@class='card-title'])[2]
   cementQuantity:
     en_US:
       web: xpath=(//input[@id="inputQty"])[2]
@@ -89,4 +89,24 @@ elements:
   requirementId:
     en_US:
       web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
+  mildSteel:
+    en_US:
+      web: xpath=//a[contains(text(),'Mild Steel')]
+  colourCoated:
+    en_US:
+      web: xpath=(//a[contains(text(),'Colour coated')])[2]
+  colourCoatedPdp:
+    en_US:
+      web: xpath=(//div[@class='card-title'])[1]
+  thickness(mm):
+    en_US:
+      web: xpath=(//div[contains(text(),'Thickness (mm)')]//parent::div//following-sibling::div//child::div//child::button)[1]
+  width(mm):
+    en_US:
+      web: xpath=(//div[contains(text(),'Width (mm)')]//parent::div//following-sibling::div//child::div//child::button)[1]
+  coatingGrade:
+    en_US:
+      web: xpath=(//div[contains(text(),'Coating grade - AZ (GSM)')]//parent::div//following-sibling::div//child::div//child::button)[1]
+
+
 

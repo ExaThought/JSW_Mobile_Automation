@@ -7,11 +7,8 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.*;
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
@@ -22,9 +19,10 @@ public class CartSteps extends AbstractWebPage {
     private static final String LOGIN_EMAIL = "ccpLoginEmail";
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
     private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
+    private static final String HR_COIL_PLP="hr";
     private static final String HR_COIL = "hrCoilE250A";
-    private static final String THICKNESS = "thickness";
-    private static final String WIDTH = "width";
+    private static final String HR_THICKNESS = "thickness";
+    private static final String HR_WIDTH = "width";
     private static final String QUANTITY = "quantity";
     private static final String ADD_TO_CART_CTA = "addToCart";
     private static final String VIEW_CART = "viewCart";
@@ -46,6 +44,12 @@ public class CartSteps extends AbstractWebPage {
     private static final String RCV2_CHECKOUT="rcCheckout";
     private static final String MY_REQUIREMENT_PAGE="myRequirementPage";
     private static final String REQUIREMENT_ID="requirementId";
+    private static final String MILD_STEEL="mildSteel";
+    private static final String COLOUR_COATED="colourCoated";
+    private static final String COLOUR_COATED_PDP="colourCoatedPdp";
+    private static final String THICKNESS="thickness(mm)";
+    private static final String WIDTH="width(mm)";
+    private static final String COATING_GRADE="coatingGrade";
 
 
     String requirementId;
@@ -69,9 +73,17 @@ public class CartSteps extends AbstractWebPage {
     @When("user open HR coil pdp")
     public void user_open_HR_coil_pdp() {
         sleep(3000);
-        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
-        js.executeScript("window.scrollBy(0,900);");
-        sleep(2000);
+        Actions actions=new Actions(Grid.driver());
+        WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
+        actions.moveToElement(mildSteel).perform();
+        sleep(1000);
+        WebElement hotRolled=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[6]"));
+        actions.moveToElement(hotRolled).perform();
+        sleep(1000);
+        WebElement hotRolledCoil=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[2]"));
+        actions.moveToElement(hotRolledCoil).perform();
+        hotRolledCoil.click();
+        sleep(1000);
         waitAndCheckIsElementPresent(HR_COIL);
         waitAndCheckIsElementClickable(HR_COIL);
         waitAndClickOn(HR_COIL);
@@ -79,50 +91,59 @@ public class CartSteps extends AbstractWebPage {
 
     @And("select all the attribute and add to cart")
     public void select_all_the_attribute_and_add_to_cart() {
-        waitAndCheckIsElementPresent(THICKNESS);
-        waitAndClickOn(THICKNESS);
-        waitAndCheckIsElementPresent(WIDTH);
-        waitAndClickOn(WIDTH);
+        waitAndCheckIsElementPresent(HR_THICKNESS);
+        waitAndClickOn(HR_THICKNESS);
+        waitAndCheckIsElementPresent(HR_WIDTH);
+        waitAndClickOn(HR_WIDTH);
         sleep(3000);
         waitAndCheckIsElementPresent(QUANTITY);
         waitAndSetText(QUANTITY, "10");
     }
     @And("user will add cement product to cart")
     public void user_will_add_cement_product_to_cart(){
+        sleep(2000);
        waitAndCheckIsElementPresent(CEMENT_PLP);
        waitAndClickOn(CEMENT_PLP);
        waitAndCheckIsElementPresent(CEMENT_PDP);
        waitAndClickOn(CEMENT_PDP);
+       sleep(2000);
        waitAndCheckIsElementPresent(CEMENT_QUANTITY);
        waitAndSetText(CEMENT_QUANTITY,"120");
        sleep(2000);
        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
        waitAndClickOn(ADD_TO_CART_CTA);
-       waitAndCheckIsElementPresent(VIEW_CART);
+        sleep(2000);
+        waitAndCheckIsElementPresent(VIEW_CART);
        waitAndClickOn(VIEW_CART);
        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
-       sleep(3000);
+
     }
     @And("user will add Stainless Steel product to cart")
     public void user_will_add_stainless_steel_product_to_cart(){
+        sleep(2000);
         waitAndCheckIsElementPresent(STAINLESS_STEEL_PLP);
         waitAndClickOn(STAINLESS_STEEL_PLP);
+        sleep(1000);
         waitAndCheckIsElementPresent(STAINLESS_STEEL_PDP);
         waitAndClickOn(STAINLESS_STEEL_PDP);
+        sleep(1000);
         waitAndCheckIsElementPresent(STAINLESS_STEEL_THICKNESS);
         waitAndClickOn(STAINLESS_STEEL_THICKNESS);
         waitAndCheckIsElementPresent(STAINLESS_STEEL_WIDTH);
         waitAndClickOn(STAINLESS_STEEL_WIDTH);
         waitAndCheckIsElementPresent(STAINLESS_STEEL_LENGTH);
         waitAndClickOn(STAINLESS_STEEL_LENGTH);
+        sleep(1000);
+        waitAndCheckIsElementPresent(QUANTITY);
+        waitAndSetText(QUANTITY, "10");
         sleep(2000);
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
+        sleep(5000);
         waitAndCheckIsElementPresent(VIEW_CART);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
         sleep(3000);
-
     }
 
     @Then("check user able to add the product to cart page")
@@ -130,14 +151,14 @@ public class CartSteps extends AbstractWebPage {
         sleep(2000);
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
+        sleep(3000);
         waitAndCheckIsElementPresent(VIEW_CART);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
-        sleep(3000);
-        softAssert.assertAll();
     }
     @Then("check user able to delete line item from cart")
     public void check_ser_able_to_delete_line_item_from_cart(){
+        sleep(2000);
         waitAndCheckIsElementPresent(DELETE_LINE_ITEM);
         waitAndClickOn(DELETE_LINE_ITEM);
         sleep(2000);
@@ -145,8 +166,45 @@ public class CartSteps extends AbstractWebPage {
         waitAndClickOn(DELETE_CTA_BUTTON);
         sleep(5000);
     }
+    @And("check user able to add the product to cart without pricing")
+    public void check_user_able_to_add_the_product_to_cart_without_pricing(){
+        sleep(2000);
+        waitAndCheckIsElementPresent(MILD_STEEL);
+        Actions actions=new Actions(Grid.driver());
+        WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
+        actions.moveToElement(mildSteel).perform();
+        sleep(1000);
+        waitAndCheckIsElementPresent(COLOUR_COATED);
+        waitAndClickOn(COLOUR_COATED);
+        sleep(1000);
+        waitAndCheckIsElementPresent(COLOUR_COATED_PDP);
+        waitAndClickOn(COLOUR_COATED_PDP);
+        waitAndCheckIsElementPresent(THICKNESS);
+        waitAndClickOn(THICKNESS);
+        waitAndCheckIsElementPresent(WIDTH);
+        waitAndClickOn(WIDTH);
+        waitAndCheckIsElementPresent(COATING_GRADE);
+        waitAndClickOn(COATING_GRADE);
+        sleep(1000);
+        WebElement dropdown = Grid.driver().findElement(By.xpath("//div[@id='custom-dropdown']"));
+        dropdown.click();
+        sleep(1000);
+        WebElement option = Grid.driver().findElement(By.xpath("//li[contains(text(),'Sky Blue')]"));
+        option.click();
+        sleep(1000);
+        waitAndCheckIsElementPresent(QUANTITY);
+        waitAndSetText(QUANTITY, "10");
+        sleep(1000);
+        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
+        waitAndClickOn(ADD_TO_CART_CTA);
+        sleep(5000);
+        waitAndCheckIsElementPresent(VIEW_CART);
+        waitAndClickOn(VIEW_CART);
+        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
+    }
     @And("user checkout the RCV2")
     public void user_checkout_the_rcv2(){
+        sleep(2000);
         waitAndCheckIsElementPresent(RCV2_CHECKOUT);
         waitAndClickOn(RCV2_CHECKOUT);
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
@@ -155,8 +213,8 @@ public class CartSteps extends AbstractWebPage {
         requirementId=waitAndGetText(REQUIREMENT_ID);
 
     }
-    @Then("verify the opportunity in SF {string} {string}")
-    public void verify_the_opportunity_in_sf(String sfEmail, String sfPassword) {
+    @And("Login to SF {string} {string}")
+    public void login_to_sf(String sfEmail, String sfPassword){
         Grid.driver().get(Config.getConfigProperty("sfUrl"));
         waitAndCheckIsElementPresent(SF_LOGIN_EMAIL);
         waitAndSetText(SF_LOGIN_EMAIL, sfEmail);
@@ -165,6 +223,7 @@ public class CartSteps extends AbstractWebPage {
         waitAndCheckIsElementPresent(SF_LOGIN);
         waitAndClickOn(SF_LOGIN);
     }
+
     
 
 

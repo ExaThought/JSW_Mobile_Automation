@@ -2,4 +2,4 @@
 - name: "ccp"
   local: true
   platform: "chrome"
-  browserRunHeadless: true
+  browserRunHeadless: false
