@@ -10,12 +10,11 @@ import com.qapitol.sauron.data.Data;
 
 
 
-
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import static com.qapitol.jsw.utils.CustomUtills.*;
+import static java.util.Objects.nonNull;
 
 public class CtSlcSlocreationImpl extends BaseApiImpl {
     private String addressId;
@@ -25,7 +24,7 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
     public static double requestedDeliveryCharges=0;
     public static double requestedCashBack=0;
     public static double requestProductPrice=0;
-    public static double requestAdvanaceAmount=0;
+    public static double requestAdvanceAmount;
     public static double requestTotalAmount=0;
     public static double requestProductTaxes=0;
     public static double lineItemAmount=0;
@@ -39,6 +38,7 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
     public static String requestNodelorNonNodel;
     public static String requestDeliveryType;
     public static double requestLineAmount=0;
+
 
     public CtSlcSloRes getSlcSloResponse(String orderType) throws IOException {
         try {
@@ -57,7 +57,18 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
             requestPayload.setSalesforceOpportunityId(opportunityId);
             requestPayload.setCustomerId(customerId);
 
+            if(nonNull(Data.get().get("orderType")))
+                requestPayload.setOrderType((String)Data.get().get("orderType"));
+            if(nonNull(Data.get().get("isDirect")))
+                requestPayload.setIsDirect((boolean)Data.get().get("isDirect"));
+            if(nonNull(Data.get().get("advancePayment")))
+                requestPayload.setAdvancePayment((Double)Data.get().get("advancePayment"));
+            if(nonNull(Data.get().get("advancePercentage")))
+                requestPayload.setAdvancePercentage((Double)Data.get().get("advancePercentage"));
+
+
             //Request API
+            System.out.println(requestPayload);
             RequestApi requestApi = ccpUrl().create(RequestApi.class);
             CtSlcSloRes responseBody = requestApi.requestCtCashAndCarrySlcSlo(requestPayload);
 
@@ -99,12 +110,12 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
             //Requested Total Amount
             requestTotalAmount=requestProductPrice+requestProductTaxes+requestedDeliveryCharges;
 
-            requestPaymentType=requestPayload.getOrderPaymentType();
+            requestPaymentType=requestPayload.getOrderPaymentType(); //JSW Steel
             requestNodelorNonNodel=requestPayload.getPayTo();
             requestOrderType=requestPayload.getOrderType();
             requestDeliveryType=requestPayload.getDeliveryType();
             if (requestPayload.getAdvancePayment() != null) {
-                requestAdvanaceAmount=requestPayload.getAdvancePayment();
+                requestAdvanceAmount =requestPayload.getAdvancePayment();
             }
 
 

@@ -1,6 +1,7 @@
 package com.qapitol.jsw.apitest.apis;
 
 
+import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
 import com.qapitol.jsw.apitest.pojos.order.centralCartUpdateItemQuantityRequest.CentralCartUpdateLineItemReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCartDeleteApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiResponse.CentralCartDeleteApiRes;
@@ -11,11 +12,15 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartRcAddToCart.CentralCartRcA
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSizeReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeResponse.CentralCartSizeRes;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSlcAddToCartRequest.CentralCartSlcAddToCartReq;
-import com.qapitol.jsw.apitest.pojos.order.ctCashAndCarryAdvRequestPayload.CtSlcSloCashCarryAdvReqPayload;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload.CtSlcSloRequestPayload;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
 import com.qapitol.jsw.apitest.pojos.order.jswServiceRcv2Request.Rcv2Req;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
+import com.qapitol.jsw.apitest.pojos.order.rcv2AddToCartRequestPayload.Rcv2AddToCartRequest;
+import com.qapitol.jsw.apitest.pojos.order.rcv2DeleteLineItemRequestPayload.DeleteLineItemRequest;
+import com.qapitol.jsw.apitest.pojos.order.rcv2Response.Rcv2Response;
+import com.qapitol.jsw.apitest.pojos.order.updateLineItemRequestPayload.UpdateLineItemPayload;
+
 
 import javax.ws.rs.*;
 
@@ -71,4 +76,33 @@ public interface RequestApi {
     @Produces(APPLICATION_JSON)
     CtSlcSloRes requestCtCashAndCarrySlcSlo(CtSlcSloRequestPayload requestBody);
 
+    @POST
+    @Path("v2/cart/add")
+    @Produces(APPLICATION_JSON)
+    Rcv2Response rcv2AddToCartRequest(Rcv2AddToCartRequest requestBody);
+
+    @POST
+    @Path("v2/cart/delete-items")
+    @Produces(APPLICATION_JSON)
+    Rcv2Response rcv2DeleteLineItem(DeleteLineItemRequest requestBody);
+
+    @POST
+    @Path("v2/cart/update-line-item")
+    @Produces(APPLICATION_JSON)
+    Rcv2Response rcv2UpdateLineItem(UpdateLineItemPayload requestBody);
+
+    @GET
+    @Path("v2/cart/get")
+    @Produces(APPLICATION_JSON)
+    Rcv2Response rcv2GetCart();
+
+    @GET
+    @Path("v2/cart/size")
+    @Produces(APPLICATION_JSON)
+    Rcv2CartSize rcv2CartSize();
+
+    @GET
+    @Path("v2/cart/delete")
+    @Produces(APPLICATION_JSON)
+    Rcv2Response rcv2DeleteCart();
 }

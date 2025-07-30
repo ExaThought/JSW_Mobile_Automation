@@ -1,0 +1,43 @@
+{
+  "customerDetails": {
+    "customerId": "8a58c3d9-3add-446f-b519-3f6e5f4d7636"
+  },
+  "cartIdentifier": {
+    "cartType": "enquiry_v2",
+    "cartJourneyType": "REQUIREMENTS_CART_V2"
+  },
+  "lineItems": [
+    {
+      "productKey": "JSL-HRAPCF-310S-N1",
+      "variantKey": "JSL-HRAPCF-310S-N1-5-1250",
+      "sku": "JSL stainless steel HRAP 310S N1 finish coils - 5 - 1250",
+      "source": "PDP",
+      "variantMMId": "1009-11182-10000000",
+      "productMMId": "1009-11182",
+      "productTypeKey": "stainless_steel_hot_rolled_coil",
+      "attributeData": {
+        "productAttributes": [
+          {
+            "key": "THICKNESS_MM",
+            "value": 5
+          },
+          {
+            "key": "WIDTH_MM",
+            "value": 1250
+          }
+        ],
+        "additionalAttributes": null,
+        "customAttributes": [
+          {
+            "key": "QUANTITY",
+            "value": "10"
+          }
+        ],
+        "attributesMeta": [
+          "THICKNESS_MM",
+          "WIDTH_MM"
+        ]
+      }
+    }
+  ]
+}

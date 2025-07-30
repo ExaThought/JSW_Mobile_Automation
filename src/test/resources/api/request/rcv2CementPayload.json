@@ -1,0 +1,31 @@
+{
+  "customerDetails": {
+    "customerId": "8a58c3d9-3add-446f-b519-3f6e5f4d7636"
+  },
+  "cartIdentifier": {
+    "cartType": "enquiry_v2",
+    "cartJourneyType": "REQUIREMENTS_CART_V2"
+  },
+  "lineItems": [
+    {
+      "productKey": "JSW-POWER-PRO-CEMENT",
+      "variantKey": "JSW-POWER-PRO-CEMENT-MASTER",
+      "sku": "JSW Power Pro Cement - Master",
+      "source": "PDP",
+      "variantMMId": "1020-11199",
+      "productMMId": "1020-11199",
+      "productTypeKey": "cement",
+      "attributeData": {
+        "productAttributes": [],
+        "additionalAttributes": null,
+        "customAttributes": [
+          {
+            "key": "NUMBER_OF_BAGS",
+            "value": "1234"
+          }
+        ],
+        "attributesMeta": []
+      }
+    }
+  ]
+}

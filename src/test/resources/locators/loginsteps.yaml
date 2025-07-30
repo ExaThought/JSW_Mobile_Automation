@@ -1,0 +1,19 @@
+elements:
+  loginButton:
+    en_US:
+      web: //button[@id='login-cta']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+  errorMessage:
+    en_US:
+      web: //div[contains(text(),'Credentials are not valid')]

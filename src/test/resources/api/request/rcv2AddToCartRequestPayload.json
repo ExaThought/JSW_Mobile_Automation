@@ -1,0 +1,43 @@
+{
+  "customerDetails": {
+    "customerId": "b3cec22e-627a-487b-b006-5f24c3b2cfe1"
+  },
+  "cartIdentifier": {
+    "cartType": "enquiry_v2",
+    "cartJourneyType": "REQUIREMENTS_CART_V2"
+  },
+  "lineItems": [
+    {
+      "productKey": "2062_2011-E250A-04",
+      "variantKey": "HRCF-2062_2011-E250A-2.5-1250",
+      "sku": "Hot Rolled Coils IS 2062:2011 E250A - 2.5 - 1250",
+      "source": "PDP",
+      "variantMMId": "1001-10001-10001067",
+      "productMMId": "1001-10001",
+      "productTypeKey": "steel_hr_coil",
+      "attributeData": {
+        "productAttributes": [
+          {
+            "key": "THICKNESS_MM",
+            "value": 2.5
+          },
+          {
+            "key": "WIDTH_MM",
+            "value": 1250
+          }
+        ],
+        "additionalAttributes": null,
+        "customAttributes": [
+          {
+            "key": "QUANTITY",
+            "value": "50"
+          }
+        ],
+        "attributesMeta": [
+          "THICKNESS_MM",
+          "WIDTH_MM"
+        ]
+      }
+    }
+  ]
+}

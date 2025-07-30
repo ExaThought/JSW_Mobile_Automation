@@ -1,0 +1,43 @@
+{
+  "customerDetails": {
+    "customerId": "8a58c3d9-3add-446f-b519-3f6e5f4d7636"
+  },
+  "cartIdentifier": {
+    "cartType": "enquiry_v2",
+    "cartJourneyType": "REQUIREMENTS_CART_V2"
+  },
+  "lineItems": [
+    {
+      "productKey": "JSW-NEOSTEEL-FE550D-TMT",
+      "variantKey": "JSW-NEOSTEEL-FE550D-TMT-10-STRAIGHT",
+      "sku": "JSW Neosteel Fe550D TMT Rebar - 10 - Straight",
+      "source": "PDP",
+      "variantMMId": "1019-10052-10000889",
+      "productMMId": "1019-10052",
+      "productTypeKey": "steel_TMT",
+      "attributeData": {
+        "productAttributes": [
+          {
+            "key": "DIAMETER_MM",
+            "value": 10
+          },
+          {
+            "key": "TMT_FORM",
+            "value": "Straight"
+          }
+        ],
+        "additionalAttributes": null,
+        "customAttributes": [
+          {
+            "key": "QUANTITY",
+            "value": "50"
+          }
+        ],
+        "attributesMeta": [
+          "DIAMETER_MM",
+          "TMT_FORM"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+elements:
+  ccpRegistration:
+    en_US:
+      web: xpath=//button[@id='register-button']
+  userName:
+    en_US:
+      web: xpath=//input[@id='fullName']
+  phoneNumber:
+    en_US:
+      web: xpath=//input[@id='mobile']
+  gstn:
+    en_US:
+      web: xpath=//input[@id='gstin']
+  email:
+    en_US:
+      web: xpath=//input[@id='email']
+  ccpRegistrationCheckbox:
+    en_US:
+      web: xpath=//input[@id='terms']
+  terms:
+    en_US:
+      web: xpath=//label[@for='terms']//a
+  registrationTitle:
+    en_US:
+      web: xpath=//div[@class='d-none d-lg-block s-pb-12']/child::div[1]
+  registrationSubTitle:
+    en_US:
+      web: xpath=//div[@class='d-none d-lg-block s-pb-12']/child::div[2]
+  registrationLogin:
+    en_US:
+      web: xpath=//div[@class='d-flex flex-column justify-content-start align-items-center s-p-20']/child::div[2]
+  loginPage:
+    en_US:
+      web: xpath=//div[@class='login-title-container s-pb-24 s-px-0']/child::div[1]
+  registrationCtaButton:
+    en_US:
+      web: xpath=//button[@id='signin-register']
+  registrationJswLogo:
+    en_US:
+      web: xpath=//div[@class='jsw-regis-logo']
+  registrationDescription:
+    en_US:
+      web: xpath=//div[@class='typography-h1 typography-font-bold typography-text-white']
+  registrationCloserButton:
+    en_US:
+      web: xpath=//button[@aria-label='Close']
+  registrationNextButton:
+    en_US:
+      web: xpath=//button[@id='register-next']
+  registrationSetPassword:
+    en_US:
+      web: xpath=//input[@id='password']
+  registrationConfirmPassword:
+    en_US:
+      web: xpath=//input[@id='confirmPassword']
+  registrationCreateAccountCTAButton:
+    en_US:
+      web= xpath=//button[@id='register-create']
+  registrationPopUp:
+    en_US:
+      web: xpath=//div[@class='pop-up']
+  phoneNumberErrorMessage:
+    en_US:
+      web: xpath=//div[contains(text(),'Please enter correct phone number')]
+  emailErrorMessage:
+    en_US:
+      web: xpath=//input[@id='email']/parent::div/following-sibling::div/child::div
