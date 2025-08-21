@@ -2,7 +2,7 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.CcpErpSyncImpl;
 import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
-import com.qapitol.sauron.common.configuration.Config;
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.When;
@@ -44,7 +44,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
 
         this.userName=userName;
         this.password=password;
-        Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
@@ -67,12 +67,12 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     @And("logs into ERP and opens the order details page")
     public void logs_into_erp_and_opens_the_order_details_page(){
         //Open the ERP
-        Grid.driver().get(Config.getConfigProperty("ErpLoginAuth"));
+        Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
         Grid.driver().manage().window().maximize();
         sleep(5000);
 
         //Open the Order in ERP
-        Grid.driver().get(Config.getConfigProperty("omsUrl") + "order-list/" + ccpOrderNumber);
+        Grid.driver().get(ConfigUtil.resolve("omsUrl") + "order-list/" + ccpOrderNumber);
     }
     @And("confirms the order in ERP and verify in CCP")
     public void confirms_the_order_in_erp_and_verify_in_ccp() throws IOException, InterruptedException {
@@ -82,7 +82,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         Grid.driver().navigate().refresh();
 
         //Login to CCP and check order status
-        Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         sleep(2000);
         waitAndCheckIsElementPresent(CCP_MY_ORDER_PAGE);
@@ -97,6 +97,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         waitAndCheckIsElementPresent(ORDER_CONFIRMATION);
         String orderStatus= waitAndGetText(ORDER_CONFIRMATION);
         Assert.assertEquals(orderStatus,"Your order is confirmed","Failing in order confirm status");
+        sleep(5000);
 
     }
     @When("create cash and carry cart advance from SF")

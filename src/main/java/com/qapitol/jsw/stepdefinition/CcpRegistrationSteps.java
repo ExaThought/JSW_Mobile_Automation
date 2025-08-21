@@ -1,7 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
-import com.qapitol.jsw.utils.ConfigResolver;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -10,7 +9,6 @@ import io.cucumber.java.en.When;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.Sleeper;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -186,13 +184,6 @@ public class CcpRegistrationSteps extends AbstractWebPage {
         softAssert.assertNotNull(CCP_REGISTRATION_NEXT_BUTTON);
 
     }
-
-     @When("user click")
-    public void user_click(){
-         System.out.println(ConfigResolver.resolve("ccpPortalUrl"));
-        Grid.driver().get(ConfigResolver.resolve("ccpPortalUrl"));
-
-     }
 
 
 

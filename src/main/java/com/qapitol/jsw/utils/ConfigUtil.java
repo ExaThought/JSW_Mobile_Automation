@@ -2,7 +2,7 @@ package com.qapitol.jsw.utils;
 
 import com.qapitol.sauron.common.configuration.Config;
 
-public class ConfigResolver {
+public class ConfigUtil {
 
     public static String resolve(String key) {
         String rawValue = Config.getConfigProperty(key);

@@ -4,7 +4,7 @@ Feature: Check Add-To-Cart
   Background:
     When user open the portal and login with valid credentials "testautomation01@yopmail.com" "Jsw@2025"
 
-    @sanity @addToCart @checkout
+     @addToCart @checkout
   Scenario: check PDP validation and Add-to-cart
       When user open HR coil pdp
       And select all the attribute and add to cart

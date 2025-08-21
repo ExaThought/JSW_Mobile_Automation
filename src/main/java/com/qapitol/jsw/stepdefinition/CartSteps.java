@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -58,7 +59,8 @@ public class CartSteps extends AbstractWebPage {
 
     @When("user open the portal and login with valid credentials {string} {string}")
     public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) {
-        Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        ConfigUtil.resolveOrThrow("ccpPortalUrl");
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
