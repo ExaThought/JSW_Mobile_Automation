@@ -1,4 +1,4 @@
-@regression @rcv2Api
+@regressionApi @rcv2Api
 Feature: Check RCV2 Cart Api
 
   @testCaseId=id-001 @dataFile="rcv2.yaml"

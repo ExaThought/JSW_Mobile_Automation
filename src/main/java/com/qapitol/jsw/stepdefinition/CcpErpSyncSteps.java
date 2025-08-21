@@ -1,11 +1,17 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.apitest.apis.impl.CcpErpSyncImpl;
 import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.And;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
+import org.testng.Assert;
+
 
 import java.io.IOException;
 
@@ -19,15 +25,16 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     public static final String CART_PAGE = "cartPage";
     public static final String CCP_ORDER_NUMBER = "ccpOrderNumber";
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
-    public static final String ERP_PI_PO_CHECKBOX="erpPiPoCheckBox";
-    public static final String ERP_BILLING_ADDRESS_CHECKBOX="erpBillingAddress";
-    public static final String ERP_SPOC="erpSpoc";
+    public static final String CCP_MY_ORDER_PAGE="ccpMyOrderPage";
+    public static final String ORDER_CONFIRMATION ="orderConfirmStatus";
 
 
     String ccpOrderNumber;
+    String userName;
+    String password;
 
-    @When("the user creates an cart from SF")
-    public void the_user_creates_an_cart_from_SF() throws IOException {
+    @When("create cash and carry cart from SF")
+    public void create_cash_and_carry_cart_from_sf() throws IOException {
         CtSlcSlocreationImpl ctSlcSloCreation=new CtSlcSlocreationImpl();
         String orderType="CT_SLC_SLO_CASH_AND_CARRY";
         ctSlcSloCreation.getSlcSloResponse(orderType);
@@ -35,6 +42,8 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     @And("login to ccp and create an order {string} and {string}")
     public void login_to_ccp_and_create_an_order(String userName, String password){
 
+        this.userName=userName;
+        this.password=password;
         Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
@@ -63,15 +72,38 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         sleep(5000);
 
         //Open the Order in ERP
-        ccpOrderNumber = ccpOrderNumber;
         Grid.driver().get(Config.getConfigProperty("omsUrl") + "order-list/" + ccpOrderNumber);
     }
-    @And("confirms the order")
-    public void confirms_the_order(){
-     waitAndCheckIsElementVisible(ERP_PI_PO_CHECKBOX);
-     waitAndClickOn(ERP_PI_PO_CHECKBOX);
-     waitAndCheckIsElementVisible(ERP_BILLING_ADDRESS_CHECKBOX);
-     waitAndClickOn(ERP_BILLING_ADDRESS_CHECKBOX);
+    @And("confirms the order in ERP and verify in CCP")
+    public void confirms_the_order_in_erp_and_verify_in_ccp() throws IOException, InterruptedException {
+        CcpErpSyncImpl ccpErpSync=new CcpErpSyncImpl();
+        String orderConfirmStatus=ccpErpSync.getOrderConfirmation(ccpOrderNumber);
+        Assert.assertEquals(orderConfirmStatus,"Confirmed");
+        Grid.driver().navigate().refresh();
+
+        //Login to CCP and check order status
+        Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
+        Grid.driver().manage().window().maximize();
+        sleep(2000);
+        waitAndCheckIsElementPresent(CCP_MY_ORDER_PAGE);
+        waitAndClickOn(CCP_MY_ORDER_PAGE);
+        sleep(2000);
+        JavascriptExecutor js=(JavascriptExecutor)Grid.driver();
+        js.executeScript("window.scrollBy(0,500)");
+        WebElement orderSummaryLink=Grid.driver().findElement(By.xpath("//span[contains(text(),'"+ccpOrderNumber+"')]//parent::div//following-sibling::a"));
+        sleep(2000);
+        orderSummaryLink.click();
+        sleep(2000);
+        waitAndCheckIsElementPresent(ORDER_CONFIRMATION);
+        String orderStatus= waitAndGetText(ORDER_CONFIRMATION);
+        Assert.assertEquals(orderStatus,"Your order is confirmed","Failing in order confirm status");
+
+    }
+    @When("create cash and carry cart advance from SF")
+    public void create_cash_and_carry_cart_advance_from_sf() throws IOException {
+        CtSlcSlocreationImpl ctSlcSloCreation=new CtSlcSlocreationImpl();
+        String orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
+        ctSlcSloCreation.getSlcSloResponse(orderType);
     }
 
 }

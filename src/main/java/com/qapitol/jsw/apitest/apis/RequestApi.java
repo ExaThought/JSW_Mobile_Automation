@@ -1,6 +1,8 @@
 package com.qapitol.jsw.apitest.apis;
 
 
+import com.qapitol.jsw.apitest.pojos.order.orderConfirm.OrderConfirmReqPayload.OrderConfirmation;
+import com.qapitol.jsw.apitest.pojos.order.orderConfirm.orderConfirmResPayload.OrderConfirmationRes;
 import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
 import com.qapitol.jsw.apitest.pojos.order.centralCartUpdateItemQuantityRequest.CentralCartUpdateLineItemReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCartDeleteApiReq;
@@ -105,4 +107,9 @@ public interface RequestApi {
     @Path("v2/cart/delete")
     @Produces(APPLICATION_JSON)
     Rcv2Response rcv2DeleteCart();
+
+    @PUT
+    @Path("joms/api/external/v1/order/order-update")
+    @Produces(APPLICATION_JSON)
+    OrderConfirmationRes orderConfirmRequest(OrderConfirmation requestBody);
 }

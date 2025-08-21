@@ -1,4 +1,4 @@
-@regression @sanity @orderCreation
+@regression  @sanity @slcOrderCreation
 Feature: Check SLC/SLO Flow
 
  @testCaseId=id-001 @dataFile="sfslcslo.yaml"

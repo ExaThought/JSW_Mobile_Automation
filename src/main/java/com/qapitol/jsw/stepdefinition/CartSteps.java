@@ -50,6 +50,8 @@ public class CartSteps extends AbstractWebPage {
     private static final String THICKNESS="thickness(mm)";
     private static final String WIDTH="width(mm)";
     private static final String COATING_GRADE="coatingGrade";
+    private static final String SUCCESS_PAGE_RCV2="rcCheckoutSuccessPage";
+    private static final String CART_PAGE="cartPage";
 
 
     String requirementId;
@@ -205,26 +207,23 @@ public class CartSteps extends AbstractWebPage {
     @And("user checkout the RCV2")
     public void user_checkout_the_rcv2(){
         sleep(2000);
-        waitAndCheckIsElementPresent(RCV2_CHECKOUT);
-        waitAndClickOn(RCV2_CHECKOUT);
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         requirementId=waitAndGetText(REQUIREMENT_ID);
+        System.out.println(requirementId);
+        waitAndCheckIsElementPresent(CART_PAGE);
+        waitAndClickOn(CART_PAGE);
+        sleep(5000);
+        waitAndCheckIsElementPresent(RCV2_CHECKOUT);
+        waitAndClickOn(RCV2_CHECKOUT);
+        sleep(2000);
+        waitAndCheckIsElementPresent(SUCCESS_PAGE_RCV2);
+        waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
+        waitAndClickOn(MY_REQUIREMENT_PAGE);
+        waitAndCheckIsElementPresent(REQUIREMENT_ID);
+        requirementId=waitAndGetText(REQUIREMENT_ID);
+        System.out.println(requirementId);
 
     }
-    @And("Login to SF {string} {string}")
-    public void login_to_sf(String sfEmail, String sfPassword){
-        Grid.driver().get(Config.getConfigProperty("sfUrl"));
-        waitAndCheckIsElementPresent(SF_LOGIN_EMAIL);
-        waitAndSetText(SF_LOGIN_EMAIL, sfEmail);
-        waitAndCheckIsElementPresent(SF_LOGIN_PASSWORD);
-        waitAndSetText(SF_LOGIN_PASSWORD, sfPassword);
-        waitAndCheckIsElementPresent(SF_LOGIN);
-        waitAndClickOn(SF_LOGIN);
-    }
-
-    
-
-
 }

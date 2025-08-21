@@ -32,3 +32,9 @@ elements:
   erpSpoc:
     en_US:
       web: xpath=//div[@id='demo-simple-select']
+  ccpMyOrderPage:
+    en_US:
+      web: xpath=//a[@href='/my-orders']
+  orderConfirmStatus:
+    en_US:
+      web: xpath=//p[contains(@class, 'typography-h5')]
