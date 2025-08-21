@@ -6,6 +6,7 @@ import com.qapitol.jsw.apitest.pojos.order.orderConfirm.orderConfirmResPayload.O
 import com.qapitol.sauron.data.Data;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class CcpErpSyncImpl extends BaseApiImpl {
     public String getOrderConfirmation(String orderNumber) throws IOException {
@@ -18,6 +19,9 @@ public class CcpErpSyncImpl extends BaseApiImpl {
 
         RequestApi requestApi = getZohoOMSApiClientFactory().create(RequestApi.class);
        OrderConfirmationRes response= requestApi.orderConfirmRequest(requestBody);
+        if (response == null || Objects.isNull(response.getCurrentState())) {
+            throw new IllegalStateException("Order confirmation response is invalid for order: " + orderNumber);
+        }
       return response.getCurrentState().getOrderState();
 
     }

@@ -97,7 +97,6 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         waitAndCheckIsElementPresent(ORDER_CONFIRMATION);
         String orderStatus= waitAndGetText(ORDER_CONFIRMATION);
         Assert.assertEquals(orderStatus,"Your order is confirmed","Failing in order confirm status");
-        sleep(5000);
 
     }
     @When("create cash and carry cart advance from SF")
