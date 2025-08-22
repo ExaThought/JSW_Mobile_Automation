@@ -1,7 +1,7 @@
-@registration @regression
-Feature: Test Ccp registration
+@registration @regression @registrationRegression
+Feature: Check Ccp registration
 
-  @sanity
+  @sanity @validRegistration
   Scenario Outline:Check positive registration and validation
     When user open the website and open registration
     And user enter "<userName>" "<phoneNumber>" "<gst>" "<email>"
@@ -12,7 +12,7 @@ Feature: Test Ccp registration
     |Jayadev Gowda|8296229209|jayadev@gmail.com|29ABLFS5016N1ZK|Jsw@2025|
 
 
-    @sanity
+    @sanity @registrationValidation
   Scenario:Check negative registration and validation
     When user open the website and open registration
     And user enter phoneNumber shorter than "76857656" and longer than "86787654567876" then 10 digit

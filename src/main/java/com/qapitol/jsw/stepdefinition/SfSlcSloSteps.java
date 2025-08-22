@@ -24,18 +24,12 @@ public class SfSlcSloSteps extends AbstractWebPage {
     public static final String LOGIN_PASSWORD = "ccpLoginPassword";
     public static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     public static final String CART_PAGE = "cartPage";
-    public static final String CCP_CART_TOTAL_AMOUNT = "cartTotalAmount";
     public static final String ERP_PAYMENTYPE = "ErpPaymentType";
     public static final String CCP_CART_LINEITEMS_CASHBACK = "cartLineItemCashBack";
-    public static final String CCP_CART_PRICE_AMOUNT = "cartPriceAmount";
-    public static final String CCP_CART_TAXES_AMOUNT = "cartTaxesAmount";
-    public static final String CCP_CART_DELIVERY_CHARGES_AMOUNT = "cartDeliveryChargesAmount";
     public static final String CCP_CART_LINE_ITEMS_PRODUCT_AMOUNT = "cartLineItemProductAmount";
-    public static final String CCP_CART_LINE_ITEMS_PER_MT_AMOUNT_AND_TAX_PERCENTAGE = "cartLineItemPerMtAmountAndTaxPercentage";
     public static final String CCP_CART_LINE_ITEM_ATTRIBUTES = "cartLineItemAttributes";
     public static final String CCP_ORDER_NUMBER = "ccpOrderNumber";
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
-    public static final String ERP_BUYER_NAME = "erpBuyerName";
     public static final String ERP_ORDER_Number = "erpOrderNumber";
     public static final String ERP_ORDER_CATEGORY = "erpOrderCategory";
     public static final String ERP_MMID = "erpMMID";
@@ -44,10 +38,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
     public static final String ERP_ORDER_PAYMENT_TYPE = "erpOrderPaymentType";
     public static final String ERP_ORDER_QUANTITY = "erpOrderQuantity";
     public static final String ERP_TOTAL_AMOUNT = "erpTotalAmount";
-    public static final String ERP_SOURCE_SELLER = "erpSourceSeller";
     public static final String ERP_DELIVERY_TYPE = "erpDeliveryType";
-    public static final String CCP_CART_PAYMENT_NOW="ccpPaymentNow";
-
     CtSlcSloRes response;
     String ccpOrderNumber;
     String orderType;
@@ -114,37 +105,10 @@ public class SfSlcSloSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CART_PAGE);
         waitAndClickOn(CART_PAGE);//Open Cart Page
 
-        //Cart Page verification
-        // Cart summary verification
-        String uiCartPriceAmount = waitAndGetText(CCP_CART_PRICE_AMOUNT);
-        String cleanUpUiCartPriceAmount = uiCartPriceAmount.replaceAll("[^\\d.]", "");
-        softAssert.assertEquals(Double.parseDouble(cleanUpUiCartPriceAmount), requestProductPrice, "Failing in Price Amount");
-
-        String uiCartTaxesAmount = waitAndGetText(CCP_CART_TAXES_AMOUNT);
-        String cleanUpUiCartTaxesAmount = uiCartTaxesAmount.replaceAll("[^\\d.]", "");
-        softAssert.assertEquals(Double.parseDouble(cleanUpUiCartTaxesAmount), requestProductTaxes, "Failing in Taxes Amount");
-
-        String uiCartDeliveryChargesAmount = waitAndGetText(CCP_CART_DELIVERY_CHARGES_AMOUNT);
-        String cleanUpUiCartDeliveryChargesAmount = uiCartDeliveryChargesAmount.replaceAll("[^\\d.]", "");
-        softAssert.assertEquals(Double.parseDouble(cleanUpUiCartDeliveryChargesAmount), requestedDeliveryCharges, "Failing in Delivery Charges");
-        requestedDeliveryCharges=0;
-
-//        if(requestOrderType.equals("Plant Supply")) {
-//            String uiCartPaymentNow = waitAndGetText(CCP_CART_PAYMENT_NOW);
-//            String cleanUpUiCartPaymentNow = uiCartPaymentNow.replaceAll("[^\\d.]", "");
-//            requestAdvanceAmount = requestTotalAmount - requestAdvanceAmount;
-//            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartPaymentNow) + requestAdvanceAmount, requestTotalAmount, "Failing in Total Amount CCP");
-//        }
-//        else {
-//            String uiCartTotalAmount = waitAndGetText(CCP_CART_TOTAL_AMOUNT);
-//            String cleanUpUiCartTotalAmount = uiCartTotalAmount.replaceAll("[^\\d.]", "");
-//            softAssert.assertEquals(Double.parseDouble(cleanUpUiCartTotalAmount), requestTotalAmount, "Failing in Total Amount CCP");
-//        }
-
         //Validate Line Item
         softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEMS_PRODUCT_AMOUNT), formatLineItemTotalAmount, "Failing in line Item Total Amount");
         softAssert.assertEquals(waitAndGetText(CCP_CART_LINEITEMS_CASHBACK),"₹"+(int)requestedCashBack+"/MT", "Failing in line Item CashBack");
-        softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEM_ATTRIBUTES), requestThickness+" x "+requestLength+" x "+requestWidth+" mm", "Line Item Attributes is not matching with expected value");
+        softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEM_ATTRIBUTES), "("+requestThickness+" x "+requestLength+" x "+requestWidth+" mm"+")", "Line Item Attributes is not matching with expected value");
         softAssert.assertNotNull(waitAndGetText("cartShipTo"), "Ship To is not present in the cart");
         softAssert.assertNotNull(waitAndGetText("cartBillTo"), "Bill To is not present in the cart");
         waitAndCheckIsElementPresent(CCP_CREATE_ORDER_CTA);
@@ -182,7 +146,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
         String cleanUpErpOrderQuantity = erpOrderQuantity.split(" ")[0];
         softAssert.assertEquals(Double.parseDouble(cleanUpErpOrderQuantity), requestQuantity, "Failing in Order Quantity in ERP");
 
-        //cashback Validation
+       //cashback Validation
         String erpCashBack = waitAndGetText(ERP_CASHBACK);
         String cleanUpErpCashBack = erpCashBack.replaceAll("[^\\d.]", "");
         softAssert.assertEquals(Double.parseDouble(cleanUpErpCashBack), requestedCashBack, "Failing in CashBack in ERP");

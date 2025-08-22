@@ -2,6 +2,7 @@ package com.qapitol.jsw.apitest.apis.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.api.client.ApiClientFactory;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.data.ContextData;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public abstract class BaseApiImpl {
 
@@ -20,14 +22,14 @@ public abstract class BaseApiImpl {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected ApiClientFactory ccpUrl() {
-        return ApiClientFactory.getInstance(Config.getConfigProperty("ccpUrl"));
+        return ApiClientFactory.getInstance(ConfigUtil.resolve("ccpUrl"));
     }
     protected ApiClientFactory centralCartCcpUrl() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
     }
 
     protected ApiClientFactory getZohoOMSApiClientFactory() {
-        return ApiClientFactory.getInstance(Config.getConfigProperty("omsUrl"));
+        return ApiClientFactory.getInstance(Objects.requireNonNull(ConfigUtil.resolve("omsUrl")));
     }
 
     protected ApiClientFactory getZohoAPIClientFactory() {

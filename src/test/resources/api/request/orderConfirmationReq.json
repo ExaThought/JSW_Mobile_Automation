@@ -1,0 +1,17 @@
+{
+  "orderNumber": "JOO-PJ34GN8HQ",
+  "orderStatus": "Confirmed",
+  "opsSpoc": "Deepak",
+  "childOrders": [
+    {
+      "sellerOrderNumber": "JOO-JOPL-2427-PJ34GN8HQ",
+      "updatedStatus": "Confirmed"
+    }
+  ],
+  "isVerifiedPO": true,
+  "isVerifiedSO": false,
+  "isGstDetailsVerified": true,
+  "sendCustomerEmail": false,
+  "sendSellerEmail": false,
+  "sellerEmailAdditionalText": ""
+}

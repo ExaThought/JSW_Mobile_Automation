@@ -1,11 +1,14 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
@@ -20,7 +23,7 @@ public class LoginSteps extends AbstractWebPage {
 
     @When("user open the CCP portal")
     public void user_open_the_ccp_portal(){
-        Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
