@@ -128,7 +128,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
     @When("Request and create an cashAndCarry distributor order")
     public void request_and_create_an_cashAndCarry_distributor_order() throws IOException {
         ctSlcSlocreation = new CtSlcSlocreationImpl();
-        orderType="CT_SLC_CASH_AND_CARRY";
+        orderType="CT_SLC_SLO_CASH_AND_CARRY";
         response = ctSlcSlocreation.getSlcSloResponse(orderType);
         ccpOrderNumber=String.valueOf(response.getOrderNumber());
     }

@@ -1,7 +1,7 @@
 @regression  @sanity @sloOrderCreation
 Feature: Check SLO Flow
 
-  @testCaseId=id-004 @dataFile="sfslcslo.yaml" @test
+  @testCaseId=id-004 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry order
     When Request and create an cashAndCarry distributor order
     And open the ERP and verify all the data
