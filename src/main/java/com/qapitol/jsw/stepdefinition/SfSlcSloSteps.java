@@ -3,6 +3,7 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -84,7 +85,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
     @And("Open the CCP website and login {string} and {string}")
     public void open_the_CCP_website_and_login(String username, String password) {
 
-        Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
@@ -124,17 +125,59 @@ public class SfSlcSloSteps extends AbstractWebPage {
         ccpOrderNumber = waitAndGetText(CCP_ORDER_NUMBER);
         AllureCustomLogReporter.addTestStepLog(requestOrderType+" "+orderType+" order number="+ccpOrderNumber);
     }
+    @When("Request and create an cashAndCarry distributor order")
+    public void request_and_create_an_cashAndCarry_distributor_order() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CASH_AND_CARRY";
+        response = ctSlcSlocreation.getSlcSloResponse(orderType);
+        ccpOrderNumber=String.valueOf(response.getOrderNumber());
+    }
+    @When("Request and create an cashAndCarryAdvance distributor order")
+    public void request_and_create_an_cashAndCarryAdvance_distributor_order() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
+        response = ctSlcSlocreation.getSlcSloResponse(orderType);
+        ccpOrderNumber=String.valueOf(response.getOrderNumber());
+    }
+    @When("Request and create an credit distributor order")
+    public void request_and_create_an_credit_distributor_order() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CREDIT";
+        response = ctSlcSlocreation.getSlcSloResponse(orderType);
+        ccpOrderNumber=String.valueOf(response.getOrderNumber());
+    }
+    @When("Request and create an cash and carry withAdvance direct order")
+    public void request_and_create_an_cash_and_carry_withAdvance_direct_order() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
+        response = ctSlcSlocreation.getSlcSloResponse(orderType);
+        ccpOrderNumber=String.valueOf(response.getOrderNumber());
+    }
+    @When("Request and create an cash and carry ZeroAdvance direct order")
+    public void request_and_create_an_cash_and_carry_zeroAdvance_direct_order() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
+        response = ctSlcSlocreation.getSlcSloResponse(orderType);
+        ccpOrderNumber=String.valueOf(response.getOrderNumber());
+    }
+    @When("Request and create an Credit direct order")
+    public void request_and_create_an_credit_direct_order() throws IOException {
+        ctSlcSlocreation = new CtSlcSlocreationImpl();
+        orderType="CT_SLC_CREDIT";
+        response = ctSlcSlocreation.getSlcSloResponse(orderType);
+        ccpOrderNumber=String.valueOf(response.getOrderNumber());
+    }
 
     @And("open the ERP and verify all the data")
     public void open_the_ERP_and_verify_all_the_data() {
         //Open the ERP
-        Grid.driver().get(Config.getConfigProperty("ErpLoginAuth"));
+        Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
         Grid.driver().manage().window().maximize();
         sleep(5000);
 
         //Open the Order in ERP
         ccpOrderNumber = ccpOrderNumber;
-        Grid.driver().get(Config.getConfigProperty("omsUrl") + "order-list/" + ccpOrderNumber);
+        Grid.driver().get(ConfigUtil.resolve("omsUrl") + "order-list/" + ccpOrderNumber);
 
         //Total Amount validation
         String erpTotalAmount = waitAndGetText(ERP_TOTAL_AMOUNT);
