@@ -23,6 +23,7 @@ public class LoginApiImpl implements LoginService {
         String centralCartCcpUrl=Config.getConfigProperty("centralCartCcpUrl");
         if(ccpUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
             String ACCESS_TOKEN = "access_token";
+            System.out.println(ConfigUtil.resolve("customerPortalAuthToken"));
             return Map.of(ACCESS_TOKEN, Objects.requireNonNull(ConfigUtil.resolve("customerPortalAuthToken")));
         }
         if(centralCartCcpUrl.equalsIgnoreCase(apiClientFactory.getAddress())){

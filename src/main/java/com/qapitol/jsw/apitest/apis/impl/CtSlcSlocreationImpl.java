@@ -65,10 +65,13 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
                 requestPayload.setAdvancePayment((Double)Data.get().get("advancePayment"));
             if(nonNull(Data.get().get("advancePercentage")))
                 requestPayload.setAdvancePercentage((Double)Data.get().get("advancePercentage"));
+            if (nonNull(Data.get().get("slo"))) {
+                Boolean slo= (Boolean) Data.get().get("slo");
+                requestPayload.setSlo(slo);
+            }
 
 
             //Request API
-            System.out.println(requestPayload);
             RequestApi requestApi = ccpUrl().create(RequestApi.class);
             CtSlcSloRes responseBody = requestApi.requestCtCashAndCarrySlcSlo(requestPayload);
 

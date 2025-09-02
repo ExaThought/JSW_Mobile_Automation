@@ -5,8 +5,7 @@ import com.qapitol.sauron.common.configuration.Config;
 public class ConfigUtil {
 
     public static String resolve(String key) {
-        String rawValue = Config.getConfigProperty(key);
-
+        String rawValue = Config.getConfigProperty(key); //${CCP_BASE_URL:https://one.qa.jswone.in/}
         if (rawValue == null) {
             return null;
         }
@@ -17,14 +16,13 @@ public class ConfigUtil {
 
             // Split into ENV_VAR and default
             String[] parts = content.split(":", 2);
-            String envVar = parts[0];
-            String defaultVal = parts.length > 1 ? parts[1] : null;
-
+            String secretName = parts[0];
+            String defaultValue = parts.length > 1 ? parts[1] : null;
             // First try environment variable
-            String resolved = System.getenv(envVar);
+            String secretText = System.getenv(secretName);
 
             // If not present, fallback to default
-            rawValue = resolved != null ? resolved : defaultVal;
+            rawValue = secretText != null ? secretText : defaultValue;
         }
         //  Clean up: trim spaces and strip quotes
         if (rawValue != null) {
