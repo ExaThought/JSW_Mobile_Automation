@@ -1,4 +1,4 @@
-
+@regression
 Feature: Check Add-To-Cart
 
   Background:
