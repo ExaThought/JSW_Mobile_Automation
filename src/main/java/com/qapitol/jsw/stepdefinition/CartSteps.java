@@ -1,7 +1,7 @@
 package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.ConfigUtil;
-import com.qapitol.sauron.common.configuration.Config;
+
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -9,7 +9,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.*;
+
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
@@ -58,10 +58,11 @@ public class CartSteps extends AbstractWebPage {
     String requirementId;
 
     @When("user open the portal and login with valid credentials {string} {string}")
-    public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) {
+    public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) throws Exception {
+
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
-        ConfigUtil.resolveOrThrow("ccpPortalUrl");
         Grid.driver().manage().window().maximize();
+        Grid.driver().manage().deleteAllCookies();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
@@ -213,7 +214,6 @@ public class CartSteps extends AbstractWebPage {
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         requirementId=waitAndGetText(REQUIREMENT_ID);
-        System.out.println(requirementId);
         waitAndCheckIsElementPresent(CART_PAGE);
         waitAndClickOn(CART_PAGE);
         sleep(5000);
@@ -225,7 +225,6 @@ public class CartSteps extends AbstractWebPage {
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         requirementId=waitAndGetText(REQUIREMENT_ID);
-        System.out.println(requirementId);
 
     }
 }
