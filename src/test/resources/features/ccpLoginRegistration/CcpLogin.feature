@@ -26,3 +26,12 @@ Feature: Check Login
     Then check user able to delete line item from cart
     And check user able to add the product to cart without pricing
     And user checkout the RCV2
+
+  @editCart @sanity
+  Scenario: check edit line item from cart page
+  Given user open the CCP portal
+    And enter valid email "testnewurl@yopmail.com"
+    And enter valid password "Jsw@2025"
+    When user open HR coil pdp
+    And select all the attribute and add to cart
+    Then check user able to add the product to cart page
