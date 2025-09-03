@@ -4,8 +4,9 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
-import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+
 import java.time.Duration;
 import java.util.logging.Level;
 
@@ -15,6 +16,8 @@ public  class SessionSteps extends AbstractWebPage {
     private static final String LOGIN_EMAIL = "ccpLoginEmail";
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
     private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
+    private static final String CCP_DROP_DOWN="ccpDropDown";
+    private static final String CCP_LOG_OUT="ccpLogout";
 
     @Given("Go to session {string} {string} {string}")
     public void loginAndGoToSession(String sessionName,String email,String password) throws Exception {
@@ -61,7 +64,11 @@ public  class SessionSteps extends AbstractWebPage {
         log.exiting();
     }
 
-
+    @Then("account logout")
+public void ccpLogOut(){
+        waitAndCheckIsElementClickable(3,CCP_DROP_DOWN);
+        waitAndCheckIsElementClickable(3,CCP_LOG_OUT);
+}
 
 }
 
