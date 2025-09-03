@@ -8,6 +8,7 @@ Feature: Check CCP-ERP order confirmation Sync
     And login to ccp and create an order "jayadevgowda10@yopmail.com" and "Jsw@2025"
     And logs into ERP and opens the order details page
     And confirms the order in ERP and verify in CCP
+    Then account logout
 
   @orderConfirmation @cashAndCarryAdvanceOrderConfirmation @sanity
   @testCaseId=id-002 @dataFile="ccpErpSync.yaml"
@@ -16,4 +17,5 @@ Feature: Check CCP-ERP order confirmation Sync
     And login to ccp and create an order "jayadevgowda10@yopmail.com" and "Jsw@2025"
     And logs into ERP and opens the order details page
     And confirms the order in ERP and verify in CCP
+    Then account logout
 

@@ -1,11 +1,12 @@
 @registration @regression @registrationRegression
 Feature: Check Ccp registration
 
-  @sanity @validRegistration
+   @validRegistration
   Scenario Outline:Check positive registration and validation
     When user open the website and open registration
     And user enter "<userName>" "<phoneNumber>" "<gst>" "<email>"
     And user set the "<password>" "<gst>"
+    Then account logout
 
     Examples:
     |userName|phoneNumber|email|gst|password|

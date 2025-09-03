@@ -8,6 +8,7 @@ Feature: Check SLC Flow
    And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
+   Then account logout
 
   @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry Advance order
@@ -16,6 +17,7 @@ Feature: Check SLC Flow
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
+    Then account logout
 
   @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute credit order
@@ -24,6 +26,7 @@ Feature: Check SLC Flow
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
+    Then account logout
 
   @testCaseId=id-002 @dataFile="sfslcslo.yaml"
   Scenario: Check Plant Supply (Direct) Cash and Carry WithAdvance order
@@ -32,6 +35,7 @@ Feature: Check SLC Flow
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
+    Then account logout
 
   @testCaseId=id-003 @dataFile="sfslcslo.yaml"
   Scenario: Check Plant Supply (Direct) Cash and Carry ZeroAdvance order
@@ -40,6 +44,7 @@ Feature: Check SLC Flow
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
+    Then account logout
 
    @testCaseId=id-002 @dataFile="sfslcslo.yaml"
   Scenario: Check Plant Supply (Direct) Credit order
@@ -48,3 +53,4 @@ Feature: Check SLC Flow
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
+     Then account logout
