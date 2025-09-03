@@ -46,7 +46,6 @@ public class LoginSteps extends AbstractWebPage {
     public void user_should_able_to_login(){
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login
-        sleep(5000);
     }
     @And("enter invalid email {string}")
     public void enter_invalid_email(String username){
@@ -66,13 +65,5 @@ public class LoginSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_LOGIN_ERROR_MESSAGE);
         String FrontEndErrorMessage=waitAndGetText(CCP_LOGIN_ERROR_MESSAGE);
         softAssert.assertEquals(FrontEndErrorMessage,"Credentials are not valid. Please try again");
-    }
-    @After
-    public void tearDown() {
-        // Quit driver after every scenario
-        Grid.closeAllSessions();
-        Grid.closeSession(Grid.getSessionName());
-        Grid.driver().quit();
-        Grid.driver().close();
     }
 }
