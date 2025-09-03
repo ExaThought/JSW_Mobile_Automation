@@ -231,5 +231,8 @@ public class CartSteps extends AbstractWebPage {
     public void tearDown() {
         // Quit driver after every scenario
         Grid.closeAllSessions();
+        Grid.closeSession(Grid.getSessionName());
+        Grid.driver().quit();
+        Grid.driver().close();
     }
 }
