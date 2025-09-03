@@ -65,9 +65,15 @@ public  class SessionSteps extends AbstractWebPage {
     }
 
     @Then("account logout")
-public void ccpLogOut(){
+     public void ccpLogOut(){
+        System.out.println("start");
         waitAndCheckIsElementClickable(3,CCP_DROP_DOWN);
+        waitAndClickOn(CCP_DROP_DOWN);
+        System.out.println("going on");
         waitAndCheckIsElementClickable(3,CCP_LOG_OUT);
+        waitAndClickOn(CCP_LOG_OUT);
+        System.out.println("End");
+        sleep(5000);
 }
 
 }
