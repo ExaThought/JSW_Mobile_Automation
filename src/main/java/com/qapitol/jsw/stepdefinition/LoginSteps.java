@@ -47,6 +47,7 @@ public class LoginSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login
         sleep(2000);
+        Grid.driver().quit();
     }
     @And("enter invalid email {string}")
     public void enter_invalid_email(String username){
