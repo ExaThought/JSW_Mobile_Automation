@@ -227,12 +227,4 @@ public class CartSteps extends AbstractWebPage {
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         requirementId=waitAndGetText(REQUIREMENT_ID);
     }
-    @After
-    public void tearDown() {
-        // Quit driver after every scenario
-        Grid.closeAllSessions();
-        Grid.closeSession(Grid.getSessionName());
-        Grid.driver().quit();
-        Grid.driver().close();
-    }
 }
