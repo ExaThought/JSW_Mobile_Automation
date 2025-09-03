@@ -4,15 +4,15 @@ Feature: Check SLC Flow
  @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry order
     When Request and create an cashAndCarry distributer cart
-    And Open the CCP website and login "testautomation01@yopmail.com" and "Jsw@2025"
-    And Open the cart and verify the cart details
+   Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
+   And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
 
   @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry Advance order
     When Request and create an cashAndCarryAdvance distributer cart
-    And Open the CCP website and login "testautomation01@yopmail.com" and "Jsw@2025"
+    Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the data
