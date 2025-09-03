@@ -4,6 +4,7 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import java.time.Duration;
 import java.util.logging.Level;
@@ -15,8 +16,8 @@ public  class SessionSteps extends AbstractWebPage {
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
     private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
 
-    @Given("Go to session {string}")
-    public void loginAndGoToSession(String sessionName) throws Exception {
+    @Given("Go to session {string} {string} {string}")
+    public void loginAndGoToSession(String sessionName,String email,String password) throws Exception {
         log.entering();
         if (sessionName.equalsIgnoreCase("ccp")) {
             // Switching to "zoho_creator" session present in the sessions.yaml
@@ -58,6 +59,10 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login
         log.exiting();
+    }
+    @After
+    public void delete_the_cookies(){
+        Grid.driver().manage().deleteAllCookies();
     }
 
 }

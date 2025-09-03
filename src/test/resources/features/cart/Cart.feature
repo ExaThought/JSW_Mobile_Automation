@@ -6,7 +6,7 @@ Feature: Check Add-To-Cart
 
      @addToCart @checkout @sanity
   Scenario: check PDP validation and Add-to-cart
-       Given Go to session "ccp"
+       Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
       When user open HR coil pdp
       And select all the attribute and add to cart
       Then check user able to add the product to cart page
@@ -18,14 +18,14 @@ Feature: Check Add-To-Cart
 
   @editCart @sanity
   Scenario: check edit line item from cart page
-    Given Go to session "ccp"
+    Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
       When user open HR coil pdp
       And select all the attribute and add to cart
       Then check user able to add the product to cart page
 
     @deleteLineItem @sanity
   Scenario: check delete line item in cart page
-      Given Go to session "ccp"
+      Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
     When user open HR coil pdp
     And select all the attribute and add to cart
     Then check user able to add the product to cart page
