@@ -45,6 +45,7 @@ public class LoginSteps extends AbstractWebPage {
     public void user_should_able_to_login(){
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login
+        sleep(5000);
     }
     @And("enter invalid email {string}")
     public void enter_invalid_email(String username){
