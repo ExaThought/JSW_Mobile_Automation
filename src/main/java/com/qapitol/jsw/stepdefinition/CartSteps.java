@@ -225,6 +225,7 @@ public class CartSteps extends AbstractWebPage {
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         requirementId=waitAndGetText(REQUIREMENT_ID);
+        Grid.driver().manage().deleteAllCookies();
 
     }
 }

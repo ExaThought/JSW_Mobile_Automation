@@ -5,9 +5,7 @@ import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.Given;
-
-
-
+import java.time.Duration;
 import java.util.logging.Level;
 
 public  class SessionSteps extends AbstractWebPage {
@@ -21,10 +19,11 @@ public  class SessionSteps extends AbstractWebPage {
     public void loginAndGoToSession(String sessionName) throws Exception {
         log.entering();
         if (sessionName.equalsIgnoreCase("ccp")) {
+            // Switching to "zoho_creator" session present in the sessions.yaml
             Grid.setSessionName("ccp");
             if(!Grid.getTestSession().isStarted()) {
                 log.info("Starting browser with zoho creator...");
-                initZohoSession(ConfigUtil.resolve("ccpPortalUrl"));
+                initCCPSession(ConfigUtil.resolve("ccpPortalUrl"));
                 log.info("Started browser and navigated to Zoho creator.");
             }
         } else {
@@ -33,14 +32,14 @@ public  class SessionSteps extends AbstractWebPage {
         log.info(String.format("Browser already running and switched to session named %s", sessionName));
         log.exiting();
     }
-    public void initZohoSession(String url) throws Exception {
+    public void initCCPSession(String url) {
         log.entering();
         try {
-            Grid.driver().get(url);
             Grid.driver().manage().window().maximize();
+            Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
+            Grid.driver().get(url);
             ccpLogin("testautomation01@yopmail.com", "Jsw@2025");
-
-        } catch (Exception e) {
+        }  catch (Exception e) {
             log.log(Level.FINE, "initZohoSession failed.", e);
             throw e;
         }
