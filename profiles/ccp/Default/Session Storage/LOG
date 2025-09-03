@@ -1,2 +1,3 @@
-2025/06/04-09:35:16.825 187c Creating DB D:\Project\Jsw Project\msme-fe-utaf-automation\profiles\ccp\Default\Session Storage since it was missing.
-2025/06/04-09:35:16.873 187c Reusing MANIFEST D:\Project\Jsw Project\msme-fe-utaf-automation\profiles\ccp\Default\Session Storage/MANIFEST-000001
+2025/09/03-17:24:45.301 e99fb Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp/Default/Session Storage/MANIFEST-000001
+2025/09/03-17:24:45.303 e99fb Recovering log #3
+2025/09/03-17:24:45.305 e99fb Reusing old log /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp/Default/Session Storage/000003.log 

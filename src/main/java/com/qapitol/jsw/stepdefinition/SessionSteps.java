@@ -37,6 +37,7 @@ public  class SessionSteps extends AbstractWebPage {
         log.entering();
         try {
             Grid.driver().get(url);
+            Grid.driver().manage().window().maximize();
             ccpLogin("testautomation01@yopmail.com", "Jsw@2025");
 
         } catch (Exception e) {
