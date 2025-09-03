@@ -19,11 +19,6 @@ import static com.qapitol.jsw.utils.CustomUtills.*;
 
 public class SfSlcSloSteps extends AbstractWebPage {
 
-    public static final String LOGIN_CTA_BUTTON = "loginButton";
-    public static final String LOGIN_VIA_OTP = "loginViaOtp";
-    public static final String LOGIN_EMAIL = "ccpLoginEmail";
-    public static final String LOGIN_PASSWORD = "ccpLoginPassword";
-    public static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     public static final String CART_PAGE = "cartPage";
     public static final String ERP_PAYMENTYPE = "ErpPaymentType";
     public static final String CCP_CART_LINEITEMS_CASHBACK = "cartLineItemCashBack";
@@ -82,22 +77,6 @@ public class SfSlcSloSteps extends AbstractWebPage {
         response=ctSlcSlocreation.getSlcSloResponse(orderType);
     }
 
-    @And("Open the CCP website and login {string} and {string}")
-    public void open_the_CCP_website_and_login(String username, String password) {
-
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
-        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
-        waitAndCheckIsElementVisible(LOGIN_EMAIL);
-        waitAndSetText(LOGIN_EMAIL, username); // Give you Email
-        waitAndCheckIsElementVisible(LOGIN_PASSWORD);
-        waitAndSetText(LOGIN_PASSWORD, password);// Give the password
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);// Login
-    }
 
     @And("Open the cart and verify the cart details")
     public void open_the_cart_and_verify_the_cart_details() throws InterruptedException {
