@@ -26,7 +26,7 @@ public class LoginSteps extends AbstractWebPage {
     public void user_open_the_ccp_portal(){
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
-        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
+        waitAndCheckIsElementClickable(3,LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
         waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
