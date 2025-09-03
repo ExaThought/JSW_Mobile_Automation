@@ -61,11 +61,6 @@ public  class SessionSteps extends AbstractWebPage {
         log.exiting();
     }
 
-    @After
-    public void tearDown() {
-        // Quit driver after every scenario
-        Grid.driver().quit();
-    }
 
 
 }
