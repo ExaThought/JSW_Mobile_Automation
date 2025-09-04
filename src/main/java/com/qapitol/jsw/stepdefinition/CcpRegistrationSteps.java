@@ -1,6 +1,7 @@
 package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -43,7 +44,7 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     @When("user open the website and open registration")
     public void user_open_the_website_and_open_registration_page() {
 
-        Grid.driver().get(Config.getConfigProperty("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(CCP_REGISTRATION);
         waitAndCheckIsElementPresent(CCP_REGISTRATION);

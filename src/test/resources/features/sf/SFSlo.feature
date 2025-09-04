@@ -6,7 +6,7 @@ Feature: Check SLO Flow
     When Request and create an cashAndCarry distributor order
     And open the ERP and verify all the data
 
-  @testCaseId=id-004 @dataFile="sfslcslo.yaml" @test
+  @testCaseId=id-004 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry Advance order
     When Request and create an cashAndCarryAdvance distributor order
     And open the ERP and verify all the data

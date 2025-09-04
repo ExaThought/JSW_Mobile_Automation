@@ -1,8 +1,8 @@
-@regression @cart
+@regression @cart @sanity
 Feature: Check Add-To-Cart
 
 
-  @addToCart @checkout @sanity
+  @addToCart @checkout
   Scenario: check PDP validation and Add-to-cart
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
     When user open HR coil pdp
@@ -15,7 +15,7 @@ Feature: Check Add-To-Cart
     And user checkout the RCV2
     Then account logout
 
-  @editCart @sanity
+  @editCart
   Scenario: check edit line item from cart page
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
     When user open HR coil pdp
@@ -23,7 +23,7 @@ Feature: Check Add-To-Cart
     Then check user able to add the product to cart page
     Then account logout
 
-  @deleteLineItem @sanity
+  @deleteLineItem
   Scenario: check delete line item in cart page
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
     When user open HR coil pdp
@@ -33,3 +33,11 @@ Feature: Check Add-To-Cart
     And user will add Stainless Steel product to cart
     Then check user able to delete line item from cart
     Then account logout
+
+  Scenario: check adding cement product to cart
+    Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
+    And user will add cement product to cart
+
+  Scenario: check adding Stainless Steel product to cart
+    Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
+    And user will add Stainless Steel product to cart
