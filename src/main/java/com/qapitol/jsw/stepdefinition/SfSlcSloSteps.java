@@ -161,7 +161,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
         //Total Amount validation
         String erpTotalAmount = waitAndGetText(ERP_TOTAL_AMOUNT);
         String cleanUpErpTotalAmount = erpTotalAmount.replaceAll("[^\\d.]", "");
-        softAssert.assertEquals(Double.parseDouble(cleanUpErpTotalAmount+180), requestTotalAmount, "Failing in Total Amount in ERP");
+        softAssert.assertEquals(Double.parseDouble(cleanUpErpTotalAmount), requestTotalAmount, "Failing in Total Amount in ERP");
 
         //Qauntity validation
         String erpOrderQuantity = waitAndGetText(ERP_ORDER_QUANTITY);
