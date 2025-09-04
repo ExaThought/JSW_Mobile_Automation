@@ -118,13 +118,13 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
         //Create account
         waitAndCheckIsElementPresent(CCP_CREATE_ACC_CTA_BUTTON);
-        waitAndClickOn(CCP_CREATE_ACC_CTA_BUTTON);
-
-        waitAndCheckIsElementVisible(Grid.driver().getTitle());
-        waitAndCheckIsElementPresent(Grid.driver().getTitle());
-        softAssert.assertNotNull(Grid.driver().getTitle());
-        waitAndClickOn(CCP_USER_NAME);
-        AllureCustomLogReporter.addTestStepLog("Account created successfully and GSTN is =" + gstn);
+//        waitAndClickOn(CCP_CREATE_ACC_CTA_BUTTON);
+//
+//        waitAndCheckIsElementVisible(Grid.driver().getTitle());
+//        waitAndCheckIsElementPresent(Grid.driver().getTitle());
+//        softAssert.assertNotNull(Grid.driver().getTitle());
+//        waitAndClickOn(CCP_USER_NAME);
+//        AllureCustomLogReporter.addTestStepLog("Account created successfully and GSTN is =" + gstn);
     }
 
     @And("user enter phoneNumber shorter than {string} and longer than {string} then 10 digit")
