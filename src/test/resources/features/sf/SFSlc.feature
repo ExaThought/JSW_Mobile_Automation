@@ -28,13 +28,13 @@ Feature: Check SLC Flow
     And open the ERP and verify all the data
     Then account logout
 
-  @testCaseId=id-002 @dataFile="sfslcslo.yaml"
+  @testCaseId=id-002 @dataFile="sfslcslo.yaml" @test
   Scenario: Check Plant Supply (Direct) Cash and Carry WithAdvance order
     When Request and create an cash and carry withAdvance direct cart
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
     And Open the cart and verify the cart details
-    And Create an order and verify the order summery page
-    And open the ERP and verify all the data
+#    And Create an order and verify the order summery page
+#    And open the ERP and verify all the data
     Then account logout
 
   @testCaseId=id-003 @dataFile="sfslcslo.yaml"

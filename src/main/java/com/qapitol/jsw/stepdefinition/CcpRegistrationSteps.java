@@ -40,12 +40,14 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public static final String CCP_REGISTRATION_POPUP = "registrationPopUp";
     public static final String CCP_REGISTRATION_MOBILE_ERROR_MESSAGE = "phoneNumberErrorMessage";
     public static final String CCP_REGISTRATION_EMAIL_ERROR_MESSAGE="emailErrorMessage";
+    SessionSteps sessionSteps=new SessionSteps();
 
     @When("user open the website and open registration")
     public void user_open_the_website_and_open_registration_page() {
 
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
+        sessionSteps.checkLoginPage();
         waitAndCheckIsElementVisible(CCP_REGISTRATION);
         waitAndCheckIsElementPresent(CCP_REGISTRATION);
         waitAndClickOn(CCP_REGISTRATION);

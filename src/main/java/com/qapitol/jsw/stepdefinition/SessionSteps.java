@@ -4,6 +4,7 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
+import io.cucumber.java.AfterAll;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
@@ -11,6 +12,8 @@ import org.openqa.selenium.By;
 
 import java.time.Duration;
 import java.util.logging.Level;
+
+import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
 public  class SessionSteps extends AbstractWebPage {
     private static final String LOGIN_CTA_BUTTON = "loginButton";
@@ -70,14 +73,11 @@ public  class SessionSteps extends AbstractWebPage {
 
     @Then("account logout")
      public void ccpLogOut(){
-        System.out.println("start");
         waitAndCheckIsElementClickable(3,CCP_DROP_DOWN);
         waitAndClickOn(CCP_DROP_DOWN);
-        System.out.println("going on");
         waitAndCheckIsElementClickable(3,CCP_LOG_OUT);
         waitAndClickOn(CCP_LOG_OUT);
-        System.out.println("End");
-        sleep(5000);
+        sleep(2000);
 }
 
      public void checkLoginPage(){
@@ -86,6 +86,11 @@ public  class SessionSteps extends AbstractWebPage {
             ccpLogOut();
         }
 }
+
+     @AfterAll
+    public static void result(){
+         softAssert.assertAll();
+     }
 
 }
 

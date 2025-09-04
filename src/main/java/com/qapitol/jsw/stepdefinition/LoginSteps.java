@@ -21,11 +21,13 @@ public class LoginSteps extends AbstractWebPage {
     public static final String LOGIN_PASSWORD = "ccpLoginPassword";
     public static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     public static final String CCP_LOGIN_ERROR_MESSAGE="errorMessage";
+    SessionSteps sessionSteps=new SessionSteps();
 
     @When("user open the CCP portal")
     public void user_open_the_ccp_portal(){
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
+        sessionSteps.checkLoginPage();
         waitAndCheckIsElementClickable(3,LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);

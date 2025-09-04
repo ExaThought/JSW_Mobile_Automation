@@ -27,6 +27,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
     public static final String CCP_MY_ORDER_PAGE="ccpMyOrderPage";
     public static final String ORDER_CONFIRMATION ="orderConfirmStatus";
+    SessionSteps sessionSteps=new SessionSteps();
 
 
     String ccpOrderNumber;
@@ -45,6 +46,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         this.userName=userName;
         this.password=password;
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        sessionSteps.checkLoginPage();
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
