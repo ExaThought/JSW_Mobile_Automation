@@ -87,13 +87,13 @@ public class SfSlcSloSteps extends AbstractWebPage {
 
         //Validate Line Item
         softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEMS_PRODUCT_AMOUNT), formatLineItemTotalAmount, "Failing in line Item Total Amount");
-        softAssert.assertEquals(waitAndGetText(CCP_CART_LINEITEMS_CASHBACK),"₹1"+(int)requestedCashBack+"/MT", "Failing in line Item CashBack");
+        softAssert.assertEquals(waitAndGetText(CCP_CART_LINEITEMS_CASHBACK),"₹"+(int)requestedCashBack+"/MT", "Failing in line Item CashBack");
         softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEM_ATTRIBUTES), requestThickness+" x "+requestLength+" x "+requestWidth+" mm", "Line Item Attributes is not matching with expected value");
         softAssert.assertNotNull(waitAndGetText("cartShipTo"), "Ship To is not present in the cart");
         softAssert.assertNotNull(waitAndGetText("cartBillTo"), "Bill To is not present in the cart");
         waitAndCheckIsElementPresent(CCP_CREATE_ORDER_CTA);
         waitAndCheckIsElementVisible(CCP_CREATE_ORDER_CTA);
-//        waitAndClickOn(CCP_CREATE_ORDER_CTA);
+        waitAndClickOn(CCP_CREATE_ORDER_CTA);
 
     }
 
@@ -147,8 +147,8 @@ public class SfSlcSloSteps extends AbstractWebPage {
         ccpOrderNumber=String.valueOf(response.getOrderNumber());
     }
 
-    @And("open the ERP and verify all the data")
-    public void open_the_ERP_and_verify_all_the_data() {
+    @And("open the ERP and verify all the SFSlc order data")
+    public void open_the_ERP_and_verify_all_the_SFSlc_order_data() {
         //Open the ERP
         Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
         Grid.driver().manage().window().maximize();
@@ -169,6 +169,42 @@ public class SfSlcSloSteps extends AbstractWebPage {
         softAssert.assertEquals(Double.parseDouble(cleanUpErpOrderQuantity), requestQuantity, "Failing in Order Quantity in ERP");
 
        //cashback Validation
+        String erpCashBack = waitAndGetText(ERP_CASHBACK);
+        String cleanUpErpCashBack = erpCashBack.replaceAll("[^\\d.]", "");
+        softAssert.assertEquals(Double.parseDouble(cleanUpErpCashBack), requestedCashBack, "Failing in CashBack in ERP");
+        //Nodel and Non nodel Validation
+        softAssert.assertTrue(requestNodelorNonNodel.contains(waitAndGetText(ERP_ORDER_PAYMENT_TYPE)), "Failing in Order Payment Type in ERP");
+
+        //Other validation
+        softAssert.assertEquals(waitAndGetText(ERP_ORDER_Number), ccpOrderNumber, "Failing Order Number in ERP");
+        softAssert.assertEquals(waitAndGetText(ERP_PAYMENTYPE), requestPaymentType, "Failing Payment Type in ERP");
+        softAssert.assertEquals(waitAndGetText(ERP_ORDER_CATEGORY), requestOrderType.toUpperCase(), " Failing in Order Type in ERP");
+        softAssert.assertNotNull(waitAndGetText(ERP_MMID), "Failing in MMID in ERP");
+        softAssert.assertNotNull(waitAndGetText(ERP_SKU_DETAILS), "Failing in SKU Details in ERP");
+        softAssert.assertEquals(waitAndGetText(ERP_DELIVERY_TYPE), requestDeliveryType, "Failing in Delivery Type in ERP");
+    }
+    @And("open the ERP and verify all the SFSlo order data")
+    public void open_the_erp_and_verify_all_the_SfSlo_order_data(){
+        //Open the ERP
+        Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
+        Grid.driver().manage().window().maximize();
+        sleep(5000);
+
+        //Open the Order in ERP
+        ccpOrderNumber = ccpOrderNumber;
+        Grid.driver().get(ConfigUtil.resolve("omsUrl") + "order-list/" + ccpOrderNumber);
+
+        //Total Amount validation
+        String erpTotalAmount = waitAndGetText(ERP_TOTAL_AMOUNT);
+        String cleanUpErpTotalAmount = erpTotalAmount.replaceAll("[^\\d.]", "");
+//        softAssert.assertEquals(Double.parseDouble(cleanUpErpTotalAmount), requestTotalAmount, "Failing in Total Amount in ERP");
+
+        //Qauntity validation
+        String erpOrderQuantity = waitAndGetText(ERP_ORDER_QUANTITY);
+        String cleanUpErpOrderQuantity = erpOrderQuantity.split(" ")[0];
+        softAssert.assertEquals(Double.parseDouble(cleanUpErpOrderQuantity), requestQuantity, "Failing in Order Quantity in ERP");
+
+        //cashback Validation
         String erpCashBack = waitAndGetText(ERP_CASHBACK);
         String cleanUpErpCashBack = erpCashBack.replaceAll("[^\\d.]", "");
         softAssert.assertEquals(Double.parseDouble(cleanUpErpCashBack), requestedCashBack, "Failing in CashBack in ERP");
