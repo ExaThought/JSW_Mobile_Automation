@@ -6,6 +6,8 @@ import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import org.testng.Assert;
 
 import java.time.Duration;
 import java.util.logging.Level;
@@ -74,6 +76,13 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndClickOn(CCP_LOG_OUT);
         System.out.println("End");
         sleep(5000);
+}
+     @When("check login page")
+     public void checkLoginPage(){
+        if(waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON)){
+            SessionSteps sessionSteps=new SessionSteps();
+            sessionSteps.ccpLogOut();
+        }
 }
 
 }
