@@ -6,8 +6,8 @@ import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import org.testng.Assert;
+import org.openqa.selenium.By;
+
 
 import java.time.Duration;
 import java.util.logging.Level;
@@ -21,6 +21,7 @@ public  class SessionSteps extends AbstractWebPage {
     private static final String CCP_DROP_DOWN="ccpDropDown";
     private static final String CCP_LOG_OUT="ccpLogout";
 
+
     @Given("Go to session {string} {string} {string}")
     public void loginAndGoToSession(String sessionName,String email,String password) throws Exception {
         log.entering();
@@ -29,7 +30,7 @@ public  class SessionSteps extends AbstractWebPage {
             Grid.setSessionName("ccp");
             if(!Grid.getTestSession().isStarted()) {
                 log.info("Starting browser with zoho creator...");
-                initCCPSession(ConfigUtil.resolve("ccpPortalUrl"));
+                initCCPSession(ConfigUtil.resolve("ccpPortalUrl"),email,password);
                 log.info("Started browser and navigated to Zoho creator.");
             }
         } else {
@@ -38,13 +39,14 @@ public  class SessionSteps extends AbstractWebPage {
         log.info(String.format("Browser already running and switched to session named %s", sessionName));
         log.exiting();
     }
-    public void initCCPSession(String url) {
+    public void initCCPSession(String url,String email,String password) {
         log.entering();
         try {
             Grid.driver().manage().window().maximize();
             Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
             Grid.driver().get(url);
-            ccpLogin("testautomation01@yopmail.com", "Jsw@2025");
+            checkLoginPage();
+            ccpLogin(email,password);
         }  catch (Exception e) {
             log.log(Level.FINE, "initZohoSession failed.", e);
             throw e;
@@ -77,11 +79,11 @@ public  class SessionSteps extends AbstractWebPage {
         System.out.println("End");
         sleep(5000);
 }
-     @When("check login page")
+
      public void checkLoginPage(){
-        if(waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON)){
-            SessionSteps sessionSteps=new SessionSteps();
-            sessionSteps.ccpLogOut();
+        boolean condition = Grid.driver().findElement(By.xpath("//a[contains(text(),'My orders')]")).isDisplayed();
+         if (condition){
+            ccpLogOut();
         }
 }
 
