@@ -21,10 +21,15 @@ public class LoginApiImpl implements LoginService {
         String ccpUrl = Objects.requireNonNull(ConfigUtil.resolve("ccpUrl"));
         String omsUrl = Objects.requireNonNull(ConfigUtil.resolve("omsUrl"));
         String centralCartCcpUrl=Config.getConfigProperty("centralCartCcpUrl");
+        String appBaseUrl= ConfigUtil.resolve("appBaseUrl");
         if(ccpUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
             String ACCESS_TOKEN = "access_token";
             System.out.println(ConfigUtil.resolve("customerPortalAuthToken"));
             return Map.of(ACCESS_TOKEN, Objects.requireNonNull(ConfigUtil.resolve("customerPortalAuthToken")));
+        }
+        if(appBaseUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
+            String ACCESS_TOKEN = "Authorization";
+            return Map.of(ACCESS_TOKEN, Objects.requireNonNull(ConfigUtil.resolve("appTokenUrl")));
         }
         if(centralCartCcpUrl.equalsIgnoreCase(apiClientFactory.getAddress())){
             String X_API_KEY = "X-API-KEY";

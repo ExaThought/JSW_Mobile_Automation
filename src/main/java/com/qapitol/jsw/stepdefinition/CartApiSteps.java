@@ -2,6 +2,7 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp;
+import com.qapitol.jsw.apitest.pojos.order.appTesting.AppResponse;
 import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
 import com.qapitol.jsw.apitest.pojos.order.rcv2Response.LineItem;
 import com.qapitol.jsw.apitest.pojos.order.rcv2Response.Rcv2Response;
@@ -162,6 +163,11 @@ public class CartApiSteps {
         String addToCartId=addToCartNode.path("data").path("identifier").get("id").asText();
         softAssert.assertEquals(getCartId,addToCartId);
         softAssert.assertAll();
+    }
+    @When("request and get response for app Api")
+    public void request_and_get_response_for_app_api() throws IOException {
+        AppResponse response=   cartRCV2ApiImp.getAppApiResponse();
+        System.out.println(response.getBusinessName());
     }
 
 }

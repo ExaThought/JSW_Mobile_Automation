@@ -24,6 +24,9 @@ public abstract class BaseApiImpl {
     protected ApiClientFactory ccpUrl() {
         return ApiClientFactory.getInstance(ConfigUtil.resolve("ccpUrl"));
     }
+    protected ApiClientFactory appUrl(){
+        return ApiClientFactory.getInstance(ConfigUtil.resolve("appBaseUrl"));
+    }
     protected ApiClientFactory centralCartCcpUrl() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
     }

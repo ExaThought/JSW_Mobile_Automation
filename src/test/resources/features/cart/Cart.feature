@@ -41,3 +41,4 @@ Feature: Check Add-To-Cart
   Scenario: check adding Stainless Steel product to cart
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
     And user will add Stainless Steel product to cart
+

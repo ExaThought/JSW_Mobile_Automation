@@ -45,9 +45,11 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     @When("user open the website and open registration")
     public void user_open_the_website_and_open_registration_page() {
 
+        //Open CCP portal
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         sessionSteps.checkLoginPage();
+        //click Registration
         waitAndCheckIsElementVisible(CCP_REGISTRATION);
         waitAndCheckIsElementPresent(CCP_REGISTRATION);
         waitAndClickOn(CCP_REGISTRATION);
@@ -121,13 +123,13 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
         //Create account
         waitAndCheckIsElementPresent(CCP_CREATE_ACC_CTA_BUTTON);
-//        waitAndClickOn(CCP_CREATE_ACC_CTA_BUTTON);
-//
-//        waitAndCheckIsElementVisible(Grid.driver().getTitle());
-//        waitAndCheckIsElementPresent(Grid.driver().getTitle());
-//        softAssert.assertNotNull(Grid.driver().getTitle());
-//        waitAndClickOn(CCP_USER_NAME);
-//        AllureCustomLogReporter.addTestStepLog("Account created successfully and GSTN is =" + gstn);
+        waitAndClickOn(CCP_CREATE_ACC_CTA_BUTTON);
+
+        waitAndCheckIsElementVisible(Grid.driver().getTitle());
+        waitAndCheckIsElementPresent(Grid.driver().getTitle());
+        softAssert.assertNotNull(Grid.driver().getTitle());
+        waitAndClickOn(CCP_USER_NAME);
+        AllureCustomLogReporter.addTestStepLog("Account created successfully and GSTN is =" + gstn);
     }
 
     @And("user enter phoneNumber shorter than {string} and longer than {string} then 10 digit")

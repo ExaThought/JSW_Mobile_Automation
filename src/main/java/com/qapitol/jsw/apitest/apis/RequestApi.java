@@ -1,6 +1,7 @@
 package com.qapitol.jsw.apitest.apis;
 
 
+import com.qapitol.jsw.apitest.pojos.order.appTesting.AppResponse;
 import com.qapitol.jsw.apitest.pojos.order.orderConfirm.OrderConfirmReqPayload.OrderConfirmation;
 import com.qapitol.jsw.apitest.pojos.order.orderConfirm.orderConfirmResPayload.OrderConfirmationRes;
 import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
@@ -112,4 +113,9 @@ public interface RequestApi {
     @Path("joms/api/external/v1/order/order-update")
     @Produces(APPLICATION_JSON)
     OrderConfirmationRes orderConfirmRequest(OrderConfirmation requestBody);
+
+    @GET
+    @Path("jswretail/v1/seller")
+    @Produces(APPLICATION_JSON)
+    AppResponse getAppResponse();
 }

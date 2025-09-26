@@ -3,6 +3,7 @@
   cart_type: "ENQUIRY_CART"
   customer_ID: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
 
+
 - testCaseId: "id-002"
   cart_journey_type: "REQUIREMENTS_CART_V2"
   cart_type: "ENQUIRY_CART"

@@ -113,6 +113,9 @@ elements:
   cartPage:
     en_US:
       web: xpath=//a[@class='cart']
+  Test:
+    en_US:
+      web: xpath=(//p[text()='Name must be at least 2 characters.'])[2]
 
 
 

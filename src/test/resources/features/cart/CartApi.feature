@@ -38,6 +38,10 @@ Feature: Check RCV2 Cart Api
     Then verify get cart Api
 
 
+    Scenario: testing api api
+      When request and get response for app Api
+
+
 
 
 

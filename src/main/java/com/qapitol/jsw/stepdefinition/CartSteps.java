@@ -53,6 +53,7 @@ public class CartSteps extends AbstractWebPage {
     private static final String COATING_GRADE="coatingGrade";
     private static final String SUCCESS_PAGE_RCV2="rcCheckoutSuccessPage";
     private static final String CART_PAGE="cartPage";
+    private static final String TEST_HOME="Test";
 
 
     String requirementId;
@@ -78,13 +79,17 @@ public class CartSteps extends AbstractWebPage {
     @When("user open HR coil pdp")
     public void user_open_HR_coil_pdp() {
         sleep(3000);
+        //Move the cursor to MiLd Steel
         Actions actions=new Actions(Grid.driver());
         WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
         actions.moveToElement(mildSteel).perform();
         sleep(1000);
+        //Move the cursor to Hot Rolled
         WebElement hotRolled=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[6]"));
         actions.moveToElement(hotRolled).perform();
         sleep(1000);
+
+        //Move The cursor to Hot rolled and click
         WebElement hotRolledCoil=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[2]"));
         actions.moveToElement(hotRolledCoil).perform();
         hotRolledCoil.click();
@@ -96,28 +101,36 @@ public class CartSteps extends AbstractWebPage {
 
     @And("select all the attribute and add to cart")
     public void select_all_the_attribute_and_add_to_cart() {
+        //Select Thickness
         waitAndCheckIsElementPresent(HR_THICKNESS);
         waitAndClickOn(HR_THICKNESS);
+        //Enter Width
         waitAndCheckIsElementPresent(HR_WIDTH);
         waitAndClickOn(HR_WIDTH);
         sleep(3000);
+        //Enter Quantity
         waitAndCheckIsElementPresent(QUANTITY);
         waitAndSetText(QUANTITY, "10");
     }
     @And("user will add cement product to cart")
     public void user_will_add_cement_product_to_cart(){
         sleep(2000);
+        //Open cement PLP page
        waitAndCheckIsElementPresent(CEMENT_PLP);
        waitAndClickOn(CEMENT_PLP);
+       //Open Cement PDP page
        waitAndCheckIsElementPresent(CEMENT_PDP);
        waitAndClickOn(CEMENT_PDP);
        sleep(2000);
+       //Enter Number of bags
        waitAndCheckIsElementPresent(CEMENT_QUANTITY);
        waitAndSetText(CEMENT_QUANTITY,"120");
        sleep(2000);
+       //click Add-to-cart
        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
        waitAndClickOn(ADD_TO_CART_CTA);
         sleep(2000);
+        //Click View cart
         waitAndCheckIsElementPresent(VIEW_CART);
        waitAndClickOn(VIEW_CART);
        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
@@ -126,25 +139,33 @@ public class CartSteps extends AbstractWebPage {
     @And("user will add Stainless Steel product to cart")
     public void user_will_add_stainless_steel_product_to_cart(){
         sleep(2000);
+        //Open stainless steel PLP
         waitAndCheckIsElementPresent(STAINLESS_STEEL_PLP);
         waitAndClickOn(STAINLESS_STEEL_PLP);
         sleep(1000);
+        //open stainless steel PDP
         waitAndCheckIsElementPresent(STAINLESS_STEEL_PDP);
         waitAndClickOn(STAINLESS_STEEL_PDP);
         sleep(1000);
+        //Select Thickness
         waitAndCheckIsElementPresent(STAINLESS_STEEL_THICKNESS);
         waitAndClickOn(STAINLESS_STEEL_THICKNESS);
+        //Enter Width
         waitAndCheckIsElementPresent(STAINLESS_STEEL_WIDTH);
         waitAndClickOn(STAINLESS_STEEL_WIDTH);
+        //Enter Length
         waitAndCheckIsElementPresent(STAINLESS_STEEL_LENGTH);
         waitAndClickOn(STAINLESS_STEEL_LENGTH);
         sleep(1000);
+        //Enter Quantity
         waitAndCheckIsElementPresent(QUANTITY);
         waitAndSetText(QUANTITY, "10");
         sleep(2000);
+        //Click Add-to-cart
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
         sleep(5000);
+        //Click View cart
         waitAndCheckIsElementPresent(VIEW_CART);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
@@ -164,9 +185,11 @@ public class CartSteps extends AbstractWebPage {
     @Then("check user able to delete line item from cart")
     public void check_ser_able_to_delete_line_item_from_cart(){
         sleep(2000);
+        //click delete
         waitAndCheckIsElementPresent(DELETE_LINE_ITEM);
         waitAndClickOn(DELETE_LINE_ITEM);
         sleep(2000);
+        //click delete CTA button
         waitAndCheckIsElementPresent(DELETE_CTA_BUTTON);
         waitAndClickOn(DELETE_CTA_BUTTON);
         sleep(5000);
@@ -174,20 +197,26 @@ public class CartSteps extends AbstractWebPage {
     @And("check user able to add the product to cart without pricing")
     public void check_user_able_to_add_the_product_to_cart_without_pricing(){
         sleep(2000);
+        //Move the cursor to Mild Steel
         waitAndCheckIsElementPresent(MILD_STEEL);
         Actions actions=new Actions(Grid.driver());
         WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
         actions.moveToElement(mildSteel).perform();
         sleep(1000);
+        //click to Color coated
         waitAndCheckIsElementPresent(COLOUR_COATED);
         waitAndClickOn(COLOUR_COATED);
         sleep(1000);
+        //click on color coated PDP
         waitAndCheckIsElementPresent(COLOUR_COATED_PDP);
         waitAndClickOn(COLOUR_COATED_PDP);
+        //select thickness
         waitAndCheckIsElementPresent(THICKNESS);
         waitAndClickOn(THICKNESS);
+        //Enter With
         waitAndCheckIsElementPresent(WIDTH);
         waitAndClickOn(WIDTH);
+        //Select Coated Grade
         waitAndCheckIsElementPresent(COATING_GRADE);
         waitAndClickOn(COATING_GRADE);
         sleep(1000);
@@ -197,12 +226,15 @@ public class CartSteps extends AbstractWebPage {
         WebElement option = Grid.driver().findElement(By.xpath("//li[contains(text(),'Sky Blue')]"));
         option.click();
         sleep(1000);
+        //Enter Quantity
         waitAndCheckIsElementPresent(QUANTITY);
         waitAndSetText(QUANTITY, "10");
         sleep(1000);
+        //click Add-to-cart
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
         sleep(5000);
+        //Click View cart
         waitAndCheckIsElementPresent(VIEW_CART);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
@@ -210,20 +242,27 @@ public class CartSteps extends AbstractWebPage {
     @And("user checkout the RCV2")
     public void user_checkout_the_rcv2(){
         sleep(2000);
+        //Open My requirement page
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
+        //copay the Requirement ID
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         requirementId=waitAndGetText(REQUIREMENT_ID);
+        //Open the cart page
         waitAndCheckIsElementPresent(CART_PAGE);
         waitAndClickOn(CART_PAGE);
         sleep(5000);
+        //click cart Checkout
         waitAndCheckIsElementPresent(RCV2_CHECKOUT);
         waitAndClickOn(RCV2_CHECKOUT);
         sleep(2000);
+        //check the success page
         waitAndCheckIsElementPresent(SUCCESS_PAGE_RCV2);
+        //open the requirement page
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         requirementId=waitAndGetText(REQUIREMENT_ID);
     }
+
 }

@@ -2,6 +2,7 @@ package com.qapitol.jsw.apitest.apis.impl;
 
 
 import com.qapitol.jsw.apitest.apis.RequestApi;
+import com.qapitol.jsw.apitest.pojos.order.appTesting.AppResponse;
 import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
 import com.qapitol.jsw.apitest.pojos.order.rcv2AddToCartRequestPayload.Rcv2AddToCartRequest;
 import com.qapitol.jsw.apitest.pojos.order.rcv2DeleteLineItemRequestPayload.DeleteLineItemRequest;
@@ -98,6 +99,12 @@ public class CartRCV2ApiImp extends BaseApiImpl {
         //call the API
         RequestApi requestApi=ccpUrl().create(RequestApi.class);
         return requestApi.rcv2CartSize();
+    }
+
+    public AppResponse getAppApiResponse(){
+        RequestApi requestApi=appUrl().create(RequestApi.class);
+        return requestApi.getAppResponse();
+
     }
 
 }
