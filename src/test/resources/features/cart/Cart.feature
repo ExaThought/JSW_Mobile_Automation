@@ -2,9 +2,10 @@
 Feature: Check Add-To-Cart
 
 
-  @addToCart @checkout
+  @addToCart @checkout @sanitynew
   Scenario: check PDP validation and Add-to-cart
-    Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
+    Given Go to session "ccp" "kl@hj.com" "Abinash@123"
+    Then close the payment reminder pop-up
     When user open HR coil pdp
     And select all the attribute and add to cart
     Then check user able to add the product to cart page
@@ -12,6 +13,7 @@ Feature: Check Add-To-Cart
     And user will add Stainless Steel product to cart
     Then check user able to delete line item from cart
     And check user able to add the product to cart without pricing
+    And calculate the number of line items in the cart
     And user checkout the RCV2
     Then account logout
 
