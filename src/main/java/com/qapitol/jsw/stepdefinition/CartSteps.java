@@ -59,7 +59,9 @@ public class CartSteps extends AbstractWebPage {
     private static final String TEST_HOME="Test";
     private static final String POP_UP_BTN="closePopBtn";
     private static final String ITEM_Label="itemLabel";
-
+    private static final String EDIT_BTN="editButton";
+    private static final String DONE_BTN="doneButton";
+    BaseSteps baseSteps=new BaseSteps();
 
     @When("user open the portal and login with valid credentials {string} {string}")
     public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) throws Exception {
@@ -91,9 +93,9 @@ public class CartSteps extends AbstractWebPage {
         WebElement hotRolled=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[6]"));
         actions.moveToElement(hotRolled).perform();
 //        sleep(AVG_WAIT);
-
         //Move The cursor to Hot rolled and click
         WebElement hotRolledCoil=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[2]"));
+
         actions.moveToElement(hotRolledCoil).perform();
         hotRolledCoil.click();
 //        sleep(SHORT_WAIT);
@@ -132,7 +134,7 @@ public class CartSteps extends AbstractWebPage {
        //click Add-to-cart
        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
        waitAndClickOn(ADD_TO_CART_CTA);
-//        sleep(AVG_WAIT);
+        sleep(AVG_WAIT);
         //Click View cart
         waitAndCheckIsElementPresent(VIEW_CART);
        waitAndClickOn(VIEW_CART);
@@ -299,5 +301,18 @@ public class CartSteps extends AbstractWebPage {
         int count = Integer.parseInt(countText.replaceAll("\\D+",""));
         log.info("Item Count in the cart page is-->: " + count);
         AllureCustomLogReporter.addTestStepLog("Item Count in the cart page is-->:" + count);
+        sleep(SHORT_WAIT);
+    }
+
+    @Then("validate the user is able to edit the the cart page and update the quantity or attribute")
+    public void validateTheUserIsAbleToEditTheTheCartPageA() {
+        waitAndClickOn(EDIT_BTN);
+        sleep(SHORT_WAIT);
+        //change the quantity and insert new quantity
+        baseSteps.clearAndEnterValue("//input[@class='typography-h6 typography-font-medium']","3");
+        waitAndClickOn(DONE_BTN);
+        log.info("Item edited successfully");
+        sleep(AVG_WAIT);
+
     }
 }
