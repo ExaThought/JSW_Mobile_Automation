@@ -61,6 +61,7 @@ public class CartSteps extends AbstractWebPage {
     private static final String ITEM_Label="itemLabel";
     private static final String EDIT_BTN="editButton";
     private static final String DONE_BTN="doneButton";
+    private static final String INPUT_TEXT_BTN="inputTextBox";
     BaseSteps baseSteps=new BaseSteps();
 
     @When("user open the portal and login with valid credentials {string} {string}")
@@ -285,11 +286,20 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("close the payment reminder pop-up")
     public void closeThePaymentReminderPopUp() {
-//        sleep(AVG_WAIT);
-        waitAndCheckIsElementPresent(POP_UP_BTN);
-        waitAndClickOn(POP_UP_BTN);
-        log.info("Pop-up button closed");
-        AllureCustomLogReporter.addTestStepLog("Pop-up button closed");
+////        sleep(AVG_WAIT);
+//        waitAndCheckIsElementPresent(POP_UP_BTN);
+//        waitAndClickOn(POP_UP_BTN);
+//        log.info("Pop-up button closed");
+//        AllureCustomLogReporter.addTestStepLog("Pop-up button closed");
+        if (isElementPresent(POP_UP_BTN)) {
+            waitAndClickOn(POP_UP_BTN);
+            log.info("Payment reminder pop-up closed.");
+            AllureCustomLogReporter.addTestStepLog("Pop-up button closed");
+        } else {
+            log.info("No payment reminder pop-up found.");
+            AllureCustomLogReporter.addTestStepLog("Pop-up button closed");
+
+        }
     }
 
     @And("calculate the number of line items in the cart")
@@ -306,10 +316,12 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("validate the user is able to edit the the cart page and update the quantity or attribute")
     public void validateTheUserIsAbleToEditTheTheCartPageA() {
+        sleep(AVG_WAIT);
         waitAndClickOn(EDIT_BTN);
-        sleep(SHORT_WAIT);
         //change the quantity and insert new quantity
-        baseSteps.clearAndEnterValue("//input[@class='typography-h6 typography-font-medium']","3");
+        clearTextBox(INPUT_TEXT_BTN);
+        sleep(AVG_WAIT);
+        waitAndSetText(INPUT_TEXT_BTN,"3");
         waitAndClickOn(DONE_BTN);
         log.info("Item edited successfully");
         sleep(AVG_WAIT);

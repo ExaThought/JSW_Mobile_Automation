@@ -128,6 +128,9 @@ elements:
   doneButton:
     en_US:
       web: xpath=//span[text()='Done']
+  inputTextBox:
+    en_US:
+      web: xpath=//input[@class='typography-h6 typography-font-medium']
 
 
 
