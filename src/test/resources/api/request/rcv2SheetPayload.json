@@ -1,6 +1,6 @@
 {
   "customerDetails": {
-    "customerId": "f8252d23-bd62-43d9-ae6a-02b91446cefc"
+    "customerId": "9753a7dd-274f-426c-af1b-e6de93ed393d"
   },
   "cartIdentifier": {
     "cartType": "enquiry_v2",
@@ -8,39 +8,34 @@
   },
   "lineItems": [
     {
-      "productKey": "1000-10043",
-      "variantKey": "1000-10043-2.5-1250-2500",
-      "sku": "SAIL Hot Rolled Sheet 2062:2011 E250A - 2.5 - 1250 - 2500",
+      "productKey": "1001-12164",
+      "variantKey": "1001-12164-MASTER-1.2-900",
+      "sku": "Jindal Saw NeoSteel Hot Rolled Coil M15 EN1A- 1.2 - 900",
       "source": "PDP",
-      "variantMMId": "1000-10043-10000000",
-      "productMMId": "1000-10043",
-      "productTypeKey": "steel_hr_sheets",
+      "variantMMId": "1001-12164-10000000",
+      "productMMId": "1001-12164",
+      "productTypeKey": "steel_hr_coil",
       "attributeData": {
         "productAttributes": [
           {
             "key": "THICKNESS_MM",
-            "value": 2.5
+            "value": 900
           },
           {
             "key": "WIDTH_MM",
-            "value": 1250
-          },
-          {
-            "key": "LENGTH_MM",
-            "value": 2500
+            "value": 1.2
           }
         ],
         "additionalAttributes": null,
         "customAttributes": [
           {
-            "key": "NUMBER_OF_SHEETS",
-            "value": "250"
+            "key": "QUANTITY",
+            "value": "10"
           }
         ],
         "attributesMeta": [
           "THICKNESS_MM",
-          "WIDTH_MM",
-          "LENGTH_MM"
+          "WIDTH_MM"
         ]
       }
     }

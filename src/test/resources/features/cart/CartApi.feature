@@ -12,9 +12,10 @@ Feature: Check RCV2 Cart Api
     And check for Cement product and verify the primary and secondary uom and quantity
     And check for StainlessSteel product and verify the primary and secondary uom and quantity
 
+
   @testCaseId=id-005 @dataFile="rcv2.yaml"
   Scenario: Check negative Test cases for Add-to-cart Api
-    When I send an add-to-cart request with an invalid MMID
+    When I send an add-to-cart request with an invalid quantity value
     Then the system should reject the line item and not add it to the cart
 
   @testCaseId=id-002 @dataFile="rcv2.yaml"
@@ -25,7 +26,7 @@ Feature: Check RCV2 Cart Api
     And delete complete cart
     Then check the get cart
 
-  @testCaseId=id-003 @dataFile="rcv2.yaml"
+  @testCaseId=id-003 @dataFile="rcv2.yaml" @new1
   Scenario: Check update line item Api
     When we add multi line item to cart
     And update attribute and quantity for one line item

@@ -1,10 +1,10 @@
 {
   "lineItemId" : "akjhdkjasd-sdv-dsv-dfb-sdvsdv",
   "customerDetails" : {
-    "customerId" : "23rfc0-wefswe4-dvwe33-33dvcx"
+    "customerId" : "9753a7dd-274f-426c-af1b-e6de93ed393d"
   },
   "cartIdentifier" : {
-    "cartType" : "ENQUIRY_CART",
+    "cartType" : "enquiry_v2",
     "cartJourneyType" : "REQUIREMENTS_CART_V2"
   },
   "lineItem" : {
