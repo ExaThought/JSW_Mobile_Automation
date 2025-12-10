@@ -8,7 +8,12 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
@@ -20,6 +25,8 @@ public class LoginSteps extends AbstractWebPage {
     public static final String LOGIN_PASSWORD = "ccpLoginPassword";
     public static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     public static final String CCP_LOGIN_ERROR_MESSAGE="errorMessage";
+
+
 
     @When("user open the CCP portal")
     public void user_open_the_ccp_portal(){
@@ -66,4 +73,28 @@ public class LoginSteps extends AbstractWebPage {
         softAssert.assertEquals(FrontEndErrorMessage,"Credentials are not valid. Please try again");
 
     }
+
+    @And("user click on continue button")
+    public void userClickOnContinueButton() {
+        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+        waitAndClickOn(CCP_LOGIN_CTA);// Login
+    }
+
+    @Then("continue button should be disabled")
+    public void continue_button_should_be_disabled() {
+        // Get the driver
+        WebDriver driver = Grid.driver();
+
+        // Find the continue button directly using its XPath or ID
+        WebElement continueBtn = driver.findElement(By.xpath("//button[@id='login-to-continue']"));
+        // OR using ID
+        // WebElement continueBtn = driver.findElement(By.id("login-to-continue"));
+
+        // Check if the button is enabled
+        boolean isEnabled = continueBtn.isEnabled();
+
+        // Assert that it should be disabled
+        softAssert.assertFalse(isEnabled, "Continue button is enabled but should be disabled!");
+    }
+
 }
