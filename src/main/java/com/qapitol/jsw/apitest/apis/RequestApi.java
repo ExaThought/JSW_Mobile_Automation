@@ -104,8 +104,8 @@ public interface RequestApi {
     @Produces(APPLICATION_JSON)
     Rcv2CartSize rcv2CartSize();
 
-    @GET
-    @Path("v2/cart/delete")
+    @POST
+    @Path("v2/cart/delete-items")
     @Produces(APPLICATION_JSON)
     Rcv2Response rcv2DeleteCart();
 

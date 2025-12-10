@@ -18,7 +18,7 @@ public class ProductAttribute {
     @JsonProperty("key")
     private String key;
     @JsonProperty("value")
-    private Integer value;
+    private String value;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
@@ -33,12 +33,12 @@ public class ProductAttribute {
     }
 
     @JsonProperty("value")
-    public Integer getValue() {
+    public String getValue() {
         return value;
     }
 
     @JsonProperty("value")
-    public void setValue(Integer value) {
+    public void setValue(String value) {
         this.value = value;
     }
 

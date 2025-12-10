@@ -49,7 +49,7 @@ elements:
       web: xpath=//a[contains(text(),'Cement')]//parent::div[@class='nav-active-link-jsw']
   cementPDP:
     en_US:
-      web: xpath=(//div[@class='card-title'])[2]
+      web: xpath=(//div[@class='card-title'])[3]
   cementQuantity:
     en_US:
       web: xpath=(//input[@id="inputQty"])[2]
@@ -116,6 +116,24 @@ elements:
   Test:
     en_US:
       web: xpath=(//p[text()='Name must be at least 2 characters.'])[2]
+  closePopBtn:
+    en_US:
+      web: xpath=//*[contains(@id, "payment-overdue-nudge-modal")]/button
+  itemLabel:
+    en_US:
+      web: xpath=//div[contains(text(), 'item(s)')]
+  editButton:
+    en_US:
+      web: xpath=//div[normalize-space(text())='Edit']
+  doneButton:
+    en_US:
+      web: xpath=//span[text()='Done']
+  inputTextBox:
+    en_US:
+      web: xpath=//input[@class='typography-h6 typography-font-medium']
+
+
+
 
 
 

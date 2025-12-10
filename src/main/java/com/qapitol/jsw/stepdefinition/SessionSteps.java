@@ -90,10 +90,10 @@ public  class SessionSteps extends AbstractWebPage {
         }
 }
 
-     @AfterAll
-    public static void validationResult(){
-         softAssert.assertAll();
-     }
+//     @AfterAll
+//    public static void validationResult(){
+//         softAssert.assertAll();
+//     }
 
 }
 

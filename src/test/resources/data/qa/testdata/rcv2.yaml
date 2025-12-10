@@ -1,26 +1,26 @@
 - testCaseId: "id-001"
   cart_journey_type: "REQUIREMENTS_CART_V2"
   cart_type: "ENQUIRY_CART"
-  customer_ID: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
+  customer_ID: "9753a7dd-274f-426c-af1b-e6de93ed393d"
 
 
 - testCaseId: "id-002"
   cart_journey_type: "REQUIREMENTS_CART_V2"
   cart_type: "ENQUIRY_CART"
-  customer_ID: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
+  customer_ID: "9753a7dd-274f-426c-af1b-e6de93ed393d"
 
 - testCaseId: "id-003"
   cart_journey_type: "REQUIREMENTS_CART_V2"
   cart_type: "ENQUIRY_CART"
-  customer_ID: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
+  customer_ID: "9753a7dd-274f-426c-af1b-e6de93ed393d"
 
 - testCaseId: "id-004"
   cart_journey_type: "REQUIREMENTS_CART_V2"
   cart_type: "ENQUIRY_CART"
-  customer_ID: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
+  customer_ID: "9753a7dd-274f-426c-af1b-e6de93ed393d"
 
 - testCaseId: "id-005"
   cart_journey_type: "REQUIREMENTS_CART_V2"
   cart_type: "ENQUIRY_CART"
-  customer_ID: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
+  customer_ID: "9753a7dd-274f-426c-af1b-e6de93ed393d"
   quantity_value: "0"
