@@ -13,7 +13,7 @@ import org.openqa.selenium.interactions.Actions;
 import java.util.Iterator;
 import java.util.Set;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CcpRegistrationSteps extends AbstractWebPage {
 

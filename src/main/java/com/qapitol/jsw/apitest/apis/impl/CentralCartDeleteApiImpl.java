@@ -7,7 +7,7 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiResponse.CentralC
 import java.io.IOException;
 
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CentralCartDeleteApiImpl extends BaseApiImpl {
 

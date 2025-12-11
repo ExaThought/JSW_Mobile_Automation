@@ -21,7 +21,8 @@ Feature: Check Login
   @sanity @emailLogin @emailLoginWithInvalidCredentials
   Scenario: Check login with invalid email ID and valid password.
     Given user open the CCP portal
-    When enter invalid email "sr@jsw."
+    And enter invalid email "sr@jsw."
+    Then user should not able to  proceed to login with error message
     Then continue button should be disabled
 
   @sanity @emailLogin @emailLoginWithInvalidCredentials
