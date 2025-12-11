@@ -11,7 +11,7 @@ import org.testng.Assert;
 
 import java.io.IOException;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CentralCartRcSteps {
     AddToCartRes centralCartRcResponse;

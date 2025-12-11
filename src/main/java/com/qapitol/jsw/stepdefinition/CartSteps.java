@@ -1,7 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.ConfigUtil;
-import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -9,9 +8,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.*;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
 

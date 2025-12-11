@@ -1,7 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.ConfigUtil;
-import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -10,12 +9,9 @@ import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
 public class LoginSteps extends AbstractWebPage {
 
@@ -25,6 +21,7 @@ public class LoginSteps extends AbstractWebPage {
     public static final String LOGIN_PASSWORD = "ccpLoginPassword";
     public static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     public static final String CCP_LOGIN_ERROR_MESSAGE="errorMessage";
+    public static final String CCP_INVALID_EMAIL_ERROR_MESSAGE = "invalidEmailErrorMessage";
 
 
 
@@ -74,6 +71,15 @@ public class LoginSteps extends AbstractWebPage {
 
     }
 
+    @Then("user should not able to  proceed to login with error message")
+    public void user_should_not_able_to_login_with_error_message_due_to_invalid_email(){
+        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+        waitAndCheckIsElementVisible(CCP_INVALID_EMAIL_ERROR_MESSAGE);
+        String FrontEndErrorMessage=waitAndGetText(CCP_INVALID_EMAIL_ERROR_MESSAGE);
+        softAssert.assertEquals(FrontEndErrorMessage,"You have entered a wrong email address");
+
+    }
+
     @And("user click on continue button")
     public void userClickOnContinueButton() {
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
@@ -82,19 +88,42 @@ public class LoginSteps extends AbstractWebPage {
 
     @Then("continue button should be disabled")
     public void continue_button_should_be_disabled() {
-        // Get the driver
+
+        // Fetch raw XPath from YAML (returns String)
+        String locatorValue = getLocator(CCP_LOGIN_CTA);
+
+        // Convert to Selenium By
+        By continueBtnLocator = By.xpath(locatorValue);
+
+        // Wait until visible using your framework
+        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+
+
         WebDriver driver = Grid.driver();
+        WebElement continueBtn = driver.findElement(continueBtnLocator);
 
-        // Find the continue button directly using its XPath or ID
-        WebElement continueBtn = driver.findElement(By.xpath("//button[@id='login-to-continue']"));
-        // OR using ID
-        // WebElement continueBtn = driver.findElement(By.id("login-to-continue"));
+        // Check attributes for disabled state
+        String disabledAttr = continueBtn.getAttribute("disabled");
+        String ariaDisabled = continueBtn.getAttribute("aria-disabled");
+        String classAttr = continueBtn.getAttribute("class");
 
-        // Check if the button is enabled
-        boolean isEnabled = continueBtn.isEnabled();
+        boolean attrDisabled = disabledAttr != null &&
+                (disabledAttr.equalsIgnoreCase("true") || disabledAttr.equalsIgnoreCase("disabled"));
 
-        // Assert that it should be disabled
-        softAssert.assertFalse(isEnabled, "Continue button is enabled but should be disabled!");
+        boolean ariaAttr = ariaDisabled != null &&
+                (ariaDisabled.equalsIgnoreCase("true") || ariaDisabled.equalsIgnoreCase("disabled"));
+
+        boolean classDisabled = classAttr != null &&
+                classAttr.toLowerCase().contains("disabled");
+
+        boolean finalState = !continueBtn.isEnabled() || attrDisabled || ariaAttr || classDisabled;
+
+        softAssert.assertTrue(
+                finalState,
+                "Continue button is ENABLED but EXPECTED to be DISABLED!"
+        );
     }
+
+
 
 }

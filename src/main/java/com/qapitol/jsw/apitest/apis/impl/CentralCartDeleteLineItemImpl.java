@@ -3,9 +3,8 @@ package com.qapitol.jsw.apitest.apis.impl;
 import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteLineItemRequest.CentralCartDeleteLineItemReq;
-import org.testng.Assert;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CentralCartDeleteLineItemImpl extends BaseApiImpl {
 

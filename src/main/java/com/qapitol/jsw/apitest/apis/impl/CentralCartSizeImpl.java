@@ -4,11 +4,8 @@ package com.qapitol.jsw.apitest.apis.impl;
 import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSizeReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeResponse.CentralCartSizeRes;
-import org.testng.Assert;
 
-import java.util.Optional;
-
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CentralCartSizeImpl extends BaseApiImpl {
 

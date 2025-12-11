@@ -8,7 +8,7 @@ import io.cucumber.java.en.When;
 
 import java.io.IOException;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CentralCartNegativeCaseSteps {
 

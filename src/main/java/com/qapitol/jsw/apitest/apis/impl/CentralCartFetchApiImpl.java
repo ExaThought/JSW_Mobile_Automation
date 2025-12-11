@@ -4,9 +4,8 @@ import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiRequest.CentralCartFetchApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiResponse.CentralCartFetchApiRes;
-import org.testng.Assert;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 
 public class CentralCartFetchApiImpl extends BaseApiImpl {
