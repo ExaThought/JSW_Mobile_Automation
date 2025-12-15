@@ -1,3 +1,4 @@
+@centralCart
 Feature: Check All Negative Test Cases For Central Cart
 
   @testCaseId=id-001 @dataFile="centralCartRcV2.yaml"

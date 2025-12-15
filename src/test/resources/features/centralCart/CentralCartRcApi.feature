@@ -1,4 +1,4 @@
-
+@centralCart
 Feature: Check CRUD operation for central cart RC v2 ADD-to-Cart Api
 
   @testCaseId=id-001 @dataFile="centralCartRcV2.yaml"
