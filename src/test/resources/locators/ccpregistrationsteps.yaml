@@ -1,67 +1,58 @@
 elements:
-  ccpRegistration:
+  registrationButton:
     en_US:
-      web: xpath=//button[@id='register-button']
-  userName:
+      web: //button[@id='login-cta']
+
+  registrationViaOtp:
     en_US:
-      web: xpath=//input[@id='fullName']
-  phoneNumber:
+      web: //button[@id='login-via-otp']
+
+  ccpRegistrationEmail:
     en_US:
-      web: xpath=//input[@id='mobile']
-  gstn:
+      web: //input[@id='email']
+
+
+
+  ccpRegistrationCTA:
     en_US:
-      web: xpath=//input[@id='gstin']
-  email:
+      web: //button[@id='login-to-continue']
+
+  registrationErrorMessage:
     en_US:
-      web: xpath=//input[@id='email']
-  ccpRegistrationCheckbox:
+      web:
+        - //div[contains(text(),'Credentials are not valid')]
+        - //div[contains(text(),'Credentials are not valid. Please try again')]
+
+  invalidRegistrationEmailErrorMessage:
     en_US:
-      web: xpath=//input[@id='terms']
-  terms:
+      web: //div[contains(text(),'You have entered a wrong email address')]
+
+  fullName:
     en_US:
-      web: xpath=//label[@for='terms']//a
-  registrationTitle:
+      web: //input[@id='fullName']
+
+  mobile:
     en_US:
-      web: xpath=//div[@class='d-none d-lg-block s-pb-12']/child::div[1]
-  registrationSubTitle:
+      web: //input[@id='mobile']
+
+  gstin:
     en_US:
-      web: xpath=//div[@class='d-none d-lg-block s-pb-12']/child::div[2]
-  registrationLogin:
+      web: //input[@id='gstin']
+
+  registerNext:
     en_US:
-      web: xpath=//div[@class='d-flex flex-column justify-content-start align-items-center s-p-20']/child::div[2]
-  loginPage:
+      web: //button[@id='register-next']
+
+  termsCheckbox:
     en_US:
-      web: xpath=//div[@class='login-title-container s-pb-24 s-px-0']/child::div[1]
-  registrationCtaButton:
+      web: //input[@id='terms' and @type='checkbox']
+
+  invalidPhoneNumberErrorMessage:
     en_US:
-      web: xpath=//button[@id='signin-register']
-  registrationJswLogo:
+      web: //div[contains(text(),'Please enter correct phone number')]
+
+  invalidGSTINErrorMessage:
     en_US:
-      web: xpath=//div[@class='jsw-regis-logo']
-  registrationDescription:
-    en_US:
-      web: xpath=//div[@class='typography-h1 typography-font-bold typography-text-white']
-  registrationCloserButton:
-    en_US:
-      web: xpath=//button[@aria-label='Close']
-  registrationNextButton:
-    en_US:
-      web: xpath=//button[@id='register-next']
-  registrationSetPassword:
-    en_US:
-      web: xpath=//input[@id='password']
-  registrationConfirmPassword:
-    en_US:
-      web: xpath=//input[@id='confirmPassword']
-  registrationCreateAccountCTAButton:
-    en_US:
-      web= xpath=//button[@id='register-create']
-  registrationPopUp:
-    en_US:
-      web: xpath=//div[@class='pop-up']
-  phoneNumberErrorMessage:
-    en_US:
-      web: xpath=//div[contains(text(),'Please enter correct phone number')]
-  emailErrorMessage:
-    en_US:
-      web: xpath=//input[@id='email']/parent::div/following-sibling::div/child::div
+      web: //div[contains(text(),'Please enter correct GSTIN for account registration on JSW ONE MSME')]
+
+
