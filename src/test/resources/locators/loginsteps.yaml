@@ -16,4 +16,9 @@ elements:
       web: //button[@id='login-to-continue']
   errorMessage:
     en_US:
-      web: //div[contains(text(),'Credentials are not valid')]
+      web: //div[contains(text(),'Credentials are not valid. Please try again')]
+  invalidEmailErrorMessage:
+    en_US:
+      web: //div[contains(text(),'You have entered a wrong email address')]
+
+
