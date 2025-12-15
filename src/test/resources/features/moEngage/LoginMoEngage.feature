@@ -1,3 +1,4 @@
+@regression
 Feature: check Mo-engage event for login
 
   @test
