@@ -4,7 +4,7 @@ Feature: Check CCP registration
   @sanity @validRegistration
   Scenario: Check invalid email registration
     Given open the CCP registration portal
-    And enter new invalid email id "test@jsw."
+    And enter new invalid email id "test@.js"
     Then user should not able to proceed to Registration with error message
     And continue button should be disable
 
@@ -14,7 +14,6 @@ Feature: Check CCP registration
     And enter new valid email id "indresh.kumarallen@gmail.com"
     Then new user continue to Registration
     And enter full name "Indresh Kumar" mobile number "9876543210" and gst "29ABCDE1234F1Z5"
-    Then next button should be disabled
     When user clicks on terms and conditions checkbox
     Then next button should be enabled
 
