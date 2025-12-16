@@ -116,7 +116,7 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     @Then("next button should be disabled")
     public void nextButtonShouldBeDisabled() {
-        String locatorValue = getLocator(CCP_FULL_NAME);
+        String locatorValue = getLocator(CCP_REGISTER_NEXT);
         By nextBtnLocator = By.xpath(locatorValue);
 
         waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
@@ -187,6 +187,23 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
         String msg = waitAndGetText(CCP_INVALID_GSTIN_ERROR);
         softAssert.assertEquals(msg, "Please enter correct GSTIN for account registration on JSW ONE MSME");
+    }
+
+    @And("user unchecks the terms and conditions checkbox")
+    public void userUnchecksTheTermsAndConditionsCheckbox() {
+        WebDriver driver = Grid.driver();
+
+        // Wait for checkbox to be present and clickable
+        waitAndCheckIsElementVisible(CCP_TERMS_CHECKBOX);
+        waitAndCheckIsElementClickable(CCP_TERMS_CHECKBOX);
+
+        // Find the checkbox
+        WebElement checkbox = driver.findElement(By.xpath(getLocator(CCP_TERMS_CHECKBOX)));
+
+        // Uncheck only if it is selected
+        if (checkbox.isSelected()) {
+            checkbox.click();
+        }
     }
 }
 
