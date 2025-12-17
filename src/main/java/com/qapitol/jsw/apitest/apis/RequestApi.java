@@ -1,6 +1,5 @@
 package com.qapitol.jsw.apitest.apis;
 
-
 import com.qapitol.jsw.apitest.pojos.order.orderConfirm.OrderConfirmReqPayload.OrderConfirmation;
 import com.qapitol.jsw.apitest.pojos.order.orderConfirm.orderConfirmResPayload.OrderConfirmationRes;
 import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
@@ -23,7 +22,6 @@ import com.qapitol.jsw.apitest.pojos.order.rcv2DeleteLineItemRequestPayload.Dele
 import com.qapitol.jsw.apitest.pojos.order.rcv2Response.Rcv2Response;
 import com.qapitol.jsw.apitest.pojos.order.updateLineItemRequestPayload.UpdateLineItemPayload;
 
-
 import javax.ws.rs.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -31,11 +29,10 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Consumes(APPLICATION_JSON)
 public interface RequestApi {
 
-
     @POST
     @Path("v2/cart/add")
     @Produces(APPLICATION_JSON)
-     AddToCartRes createRcViaV2API(Rcv2Req rcv2Req);
+    AddToCartRes createRcViaV2API(Rcv2Req rcv2Req);
 
     @POST
     @Path("v1/cart/delete")
@@ -61,7 +58,6 @@ public interface RequestApi {
     @Path("v1/cart/update/line-item-quantity")
     @Produces(APPLICATION_JSON)
     AddToCartRes requestUpdateLineItemApi(CentralCartUpdateLineItemReq updateLineItemRequestBody);
-
 
     @POST
     @Path("v1/cart/delete/line-items")
@@ -103,10 +99,10 @@ public interface RequestApi {
     @Produces(APPLICATION_JSON)
     Rcv2CartSize rcv2CartSize();
 
-    @GET
+    @POST
     @Path("v2/cart/delete")
     @Produces(APPLICATION_JSON)
-    Rcv2Response rcv2DeleteCart();
+    Rcv2Response rcv2DeleteCart(Rcv2AddToCartRequest requestBody);
 
     @PUT
     @Path("joms/api/external/v1/order/order-update")

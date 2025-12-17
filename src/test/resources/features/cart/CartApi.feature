@@ -1,6 +1,9 @@
 @regressionApi @rcv2Api @regression
 Feature: Check RCV2 Cart Api
 
+  Background:
+    Given delete complete cart
+
   @testCaseId=id-001 @dataFile="rcv2.yaml"
   Scenario: Check Add-to-cart Api
     When we request add to cart Api for primary Quantity MT
