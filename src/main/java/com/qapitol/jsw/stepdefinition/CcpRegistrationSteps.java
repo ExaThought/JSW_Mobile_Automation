@@ -1,214 +1,195 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.ConfigUtil;
+import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
-import static com.qapitol.jsw.utils.Hooks.softAssert;
+import java.util.Iterator;
+import java.util.Set;
+
+import static com.qapitol.jsw.utils.CustomUtills.softAssert;
 
 public class CcpRegistrationSteps extends AbstractWebPage {
 
-    // Updated registration locator names
-    public static final String REGISTRATION_CTA_BUTTON = "registrationButton";
-    public static final String REGISTRATION_VIA_OTP = "registrationViaOtp";
-    public static final String CCP_REGISTRATION_EMAIL = "ccpRegistrationEmail";
-    public static final String CCP_REGISTRATION_PASSWORD = "ccpRegistrationPassword";
-    public static final String CCP_REGISTRATION_CTA = "ccpRegistrationCTA";
-    public static final String CCP_REGISTRATION_ERROR_MESSAGE = "registrationErrorMessage";
-    public static final String CCP_INVALID_REGISTRATION_EMAIL_ERROR = "invalidRegistrationEmailErrorMessage";
-    public static final String CCP_FULL_NAME = "fullName";
-    public static final String CCP_MOBILE = "mobile";
-    public static final String CCP_GSTIN = "gstin";
-    public static final String CCP_REGISTER_NEXT = "registerNext";
-    public static final String CCP_TERMS_CHECKBOX = "termsCheckbox";
-    public static final String CCP_INVALID_PHONE_ERROR = "invalidPhoneNumberErrorMessage";
-    public static final String CCP_INVALID_GSTIN_ERROR = "invalidGSTINErrorMessage";
+    public static final String CCP_REGISTRATION = "ccpRegistration";
+    public static final String CCP_USER_NAME = "userName";
+    public static final String CCP_PHONE_NUMBER = "phoneNumber";
+    public static final String CCP_GSTN = "gstn";
+    public static final String CCP_EMAIL = "email";
+    public static final String CCP_REGISTRATION_CHECKBOX = "ccpRegistrationCheckbox";
+    public static final String CCP_REGISTRATION_TERMS = "terms";
+    public static final String CCP_REGISTRATION_TITLE = "registrationTitle";
+    public static final String CCP_REGISTRATION_SUB_TITLE = "registrationSubTitle";
+    public static final String CCP_REGISTRATION_LOGIN = "registrationLogin";
+    public static final String CCP_REGISTRATION_LOGIN_PAGE = "loginPage";
+    public static final String CCP_REGISTRATION_CTA_BUTTON = "registrationCtaButton";
+    public static final String CCP_REGISTRATION_JSW_LOGO = "registrationJswLogo";
+    public static final String CCP_REGISTRATION_DESCRIPTION = "registrationDescription";
+    public static final String CCP_REGISTRATION_CLOSE_BUTTON = "registrationCloserButton";
+    public static final String CCP_REGISTRATION_NEXT_BUTTON = "registrationNextButton";
+    public static final String CCP_REGISTRATION_SET_PASSWORD = "registrationSetPassword";
+    public static final String CCP_REGISTRATION_CONFIRM_PASSWORD = "registrationConfirmPassword";
+    public static final String CCP_CREATE_ACC_CTA_BUTTON = "registrationCreateAccountCTAButton";
+    public static final String CCP_REGISTRATION_POPUP = "registrationPopUp";
+    public static final String CCP_REGISTRATION_MOBILE_ERROR_MESSAGE = "phoneNumberErrorMessage";
+    public static final String CCP_REGISTRATION_EMAIL_ERROR_MESSAGE="emailErrorMessage";
+    SessionSteps sessionSteps=new SessionSteps();
 
+    @When("user open the website and open registration")
+    public void user_open_the_website_and_open_registration_page() {
 
-    @When("open the CCP registration portal")
-    public void user_open_the_ccp_portal() {
+        //Open CCP portal
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
-
-        waitAndCheckIsElementVisible(REGISTRATION_CTA_BUTTON);
-        waitAndClickOn(REGISTRATION_CTA_BUTTON); // click registration CTA
-
-        waitAndCheckIsElementVisible(REGISTRATION_VIA_OTP);
-        waitAndClickOn(REGISTRATION_VIA_OTP); // click Registration via OTP
-    }
-
-    @And("enter new invalid email id {string}")
-    public void enter_invalid_email(String username) {
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_EMAIL);
-        waitAndSetText(CCP_REGISTRATION_EMAIL, username);
-    }
-
-    @Then("user should not able to proceed to Registration with error message")
-    public void userShouldNotAbleToProceedToRegistrationWithErrorMessage() {
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
-        waitAndCheckIsElementVisible(CCP_INVALID_REGISTRATION_EMAIL_ERROR);
-
-        String msg = waitAndGetText(CCP_INVALID_REGISTRATION_EMAIL_ERROR);
-        softAssert.assertEquals(msg, "You have entered a wrong email address");
-    }
-
-
-    @Then("continue button should be disable")
-    public void continueButtonShouldBeDisabled() {
-
-        String locatorValue = getLocator(CCP_REGISTRATION_CTA);
-        By continueBtnLocator = By.xpath(locatorValue);
-
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
-
-        WebDriver driver = Grid.driver();
-        WebElement continueBtn = driver.findElement(continueBtnLocator);
-
-        String disabledAttr = continueBtn.getAttribute("disabled");
-        String ariaDisabled = continueBtn.getAttribute("aria-disabled");
-        String classAttr = continueBtn.getAttribute("class");
-
-        boolean attrDisabled = disabledAttr != null &&
-                (disabledAttr.equalsIgnoreCase("true") || disabledAttr.equalsIgnoreCase("disabled"));
-
-        boolean ariaAttr = ariaDisabled != null &&
-                (ariaDisabled.equalsIgnoreCase("true") || ariaDisabled.equalsIgnoreCase("disabled"));
-
-        boolean classDisabled = classAttr != null &&
-                classAttr.toLowerCase().contains("disabled");
-
-        boolean finalState = !continueBtn.isEnabled() || attrDisabled || ariaAttr || classDisabled;
-
-        softAssert.assertTrue(finalState,
-                "Continue button is ENABLED but EXPECTED to be DISABLED!");
-    }
-
-    @And("enter new valid email id {string}")
-    public void enterNewValidEmailId(String arg0) {
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_EMAIL);
-        waitAndSetText(CCP_REGISTRATION_EMAIL, arg0);
-    }
-
-    @Then("new user continue to Registration")
-    public void newUserContinueToRegistration() {
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
-        waitAndClickOn(CCP_REGISTRATION_CTA); // click on continue button
-    }
-
-    @And("enter full name {string} mobile number {string} and gst {string}")
-    public void enterFullNameMobileNumberAndGst(String fullName, String mobile, String gstin) {
-        waitAndCheckIsElementVisible(CCP_FULL_NAME);
-        waitAndSetText(CCP_FULL_NAME, fullName);
-
-        waitAndCheckIsElementVisible(CCP_MOBILE);
-        waitAndSetText(CCP_MOBILE, mobile);
-
-        waitAndCheckIsElementVisible(CCP_GSTIN);
-        waitAndSetText(CCP_GSTIN, gstin);
+        sessionSteps.checkLoginPage();
+        //click Registration
+        waitAndCheckIsElementVisible(CCP_REGISTRATION);
+        waitAndCheckIsElementPresent(CCP_REGISTRATION);
+        waitAndClickOn(CCP_REGISTRATION);
+        waitAndCheckIsElementVisible(CCP_REGISTRATION_CLOSE_BUTTON);
+        waitAndClickOn(CCP_REGISTRATION_CLOSE_BUTTON);
+        waitAndCheckIsElementVisible(CCP_REGISTRATION);
+        waitAndCheckIsElementPresent(CCP_REGISTRATION);
+        waitAndClickOn(CCP_REGISTRATION);
 
     }
 
-    @Then("next button should be disabled")
-    public void nextButtonShouldBeDisabled() {
-        String locatorValue = getLocator(CCP_REGISTER_NEXT);
-        By nextBtnLocator = By.xpath(locatorValue);
+    @And("user enter {string} {string} {string} {string}")
+    public void user_enter_userName_phoneNumber_email_gstn(String userName, String phoneNumber, String email, String gstn) {
+        waitAndCheckIsElementPresent(CCP_USER_NAME);
+        waitAndSetText(CCP_USER_NAME, userName);
+        waitAndCheckIsElementPresent(CCP_PHONE_NUMBER);
+        waitAndSetText(CCP_PHONE_NUMBER, phoneNumber);
+        waitAndCheckIsElementPresent(CCP_GSTN);
+        waitAndSetText(CCP_GSTN, gstn);
+        waitAndCheckIsElementPresent(CCP_EMAIL);
+        waitAndSetText(CCP_EMAIL, email);
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_CHECKBOX);
+        waitAndClickOn(CCP_REGISTRATION_CHECKBOX);
 
-        waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
-
-        WebDriver driver = Grid.driver();
-        WebElement nextBtn = driver.findElement(nextBtnLocator);
-
-        String disabledAttr = nextBtn.getAttribute("disabled");
-        String ariaDisabled = nextBtn.getAttribute("aria-disabled");
-        String classAttr = nextBtn.getAttribute("class");
-
-        boolean attrDisabled = disabledAttr != null &&
-                (disabledAttr.equalsIgnoreCase("true") || disabledAttr.equalsIgnoreCase("disabled"));
-
-        boolean ariaAttr = ariaDisabled != null &&
-                (ariaDisabled.equalsIgnoreCase("true") || ariaDisabled.equalsIgnoreCase("disabled"));
-
-        boolean classDisabled = classAttr != null &&
-                classAttr.toLowerCase().contains("disabled");
-
-        boolean finalState = !nextBtn.isEnabled() || attrDisabled || ariaAttr || classDisabled;
-
-        softAssert.assertTrue(finalState,
-                "Next button is ENABLED but EXPECTED to be DISABLED!");
-    }
-
-    @When("user clicks on terms and conditions checkbox")
-    public void userClicksOnTermsAndConditionsCheckbox() {
-        String locatorValue = getLocator(CCP_TERMS_CHECKBOX);
-        WebDriver driver = Grid.driver();
-        WebElement checkbox = driver.findElement(By.xpath(locatorValue));
-        if (!checkbox.isSelected()) {
-            checkbox.click();
+        //Check terms&condition, Return policy and privacy policy is re-directing to correct page when user click it.
+        for (WebElement terms : locateElements(CCP_REGISTRATION_TERMS)) {
+            Actions actions = new Actions(Grid.driver());
+            actions.keyDown(Keys.CONTROL)
+                    .click(terms)
+                    .keyUp(Keys.CONTROL)
+                    .perform();
         }
-    }
+        Set<String> window = Grid.driver().getWindowHandles();
+        Iterator<String> iterator = window.iterator();
+        String parentWindow = iterator.next();
+        while (iterator.hasNext()) {
+            String title = Grid.driver().switchTo().window(iterator.next()).getTitle();
+            System.out.println(title);
 
-    @Then("next button should be enabled")
-    public void nextButtonShouldBeEnabled() {
-        String locatorValue = getLocator(CCP_REGISTER_NEXT);
-        WebDriver driver = Grid.driver();
-        WebElement nextBtn = driver.findElement(By.xpath(locatorValue));
-
-        boolean isEnabled = nextBtn.isEnabled()
-                && !"true".equalsIgnoreCase(nextBtn.getAttribute("disabled"))
-                && !"true".equalsIgnoreCase(nextBtn.getAttribute("aria-disabled"))
-                && (nextBtn.getAttribute("class") == null || !nextBtn.getAttribute("class").toLowerCase().contains("disabled"));
-
-        softAssert.assertTrue(isEnabled,
-                "Next button is DISABLED but EXPECTED to be ENABLED!");
-    }
-
-
-    // Step for invalid phone number error validation
-    @Then("user should not able to proceed with phone number error")
-    public void userShouldNotAbleToProceedWithPhoneError() {
-        waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
-        waitAndCheckIsElementVisible(CCP_INVALID_PHONE_ERROR);
-
-        String msg = waitAndGetText(CCP_INVALID_PHONE_ERROR);
-        softAssert.assertEquals(msg, "Please enter correct phone number");
-    }
-
-    // Step for invalid GSTIN error validation
-    @Then("user should not able to proceed with GSTIN error")
-    public void userShouldNotAbleToProceedWithGSTINError() {
-        waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
-        waitAndCheckIsElementVisible(CCP_INVALID_GSTIN_ERROR);
-
-        String msg = waitAndGetText(CCP_INVALID_GSTIN_ERROR);
-        softAssert.assertEquals(msg, "Please enter correct GSTIN for account registration on JSW ONE MSME");
-    }
-
-    @And("user unchecks the terms and conditions checkbox")
-    public void userUnchecksTheTermsAndConditionsCheckbox() {
-        WebDriver driver = Grid.driver();
-
-        // Wait for checkbox to be present and clickable
-        waitAndCheckIsElementVisible(CCP_TERMS_CHECKBOX);
-        waitAndCheckIsElementClickable(CCP_TERMS_CHECKBOX);
-
-        // Find the checkbox
-        WebElement checkbox = driver.findElement(By.xpath(getLocator(CCP_TERMS_CHECKBOX)));
-
-        // Uncheck only if it is selected
-        if (checkbox.isSelected()) {
-            checkbox.click();
         }
+        Grid.driver().switchTo().window(parentWindow);
+
+        //Test Registration Login button
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_LOGIN);
+        waitAndClickOn(CCP_REGISTRATION_LOGIN);
+        softAssert.assertEquals(waitAndGetText(CCP_REGISTRATION_LOGIN_PAGE), "Login", "Failing in registration for re-directing to login");
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_CTA_BUTTON);
+        waitAndClickOn(CCP_REGISTRATION_CTA_BUTTON);
+
+        //Test Jsw Logo
+        softAssert.assertNotNull(waitAndGetText(CCP_REGISTRATION_JSW_LOGO), "JSW Logo is missing in Registration page");
+
+        //Check Title and description
+        softAssert.assertEquals(waitAndGetText(CCP_REGISTRATION_TITLE), "Register Now", "Registration title is failing");
+        softAssert.assertEquals(waitAndGetText(CCP_REGISTRATION_SUB_TITLE), "Create your JSW One MSME account", "Failing is sub title registration");
+        softAssert.assertEquals(waitAndGetText(CCP_REGISTRATION_DESCRIPTION), "Your one-stop digital marketplace for all your industrial needs", "Registration description is not matching");
+
+        //Open the password page
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_NEXT_BUTTON);
+        waitAndClickOn(CCP_REGISTRATION_NEXT_BUTTON);
     }
+
+    @And("user set the {string} {string}")
+    public void user_set_the_password(String password, String gstn) {
+        //Set The password
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_SET_PASSWORD);
+        waitAndSetText(CCP_REGISTRATION_SET_PASSWORD, password);
+
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_CONFIRM_PASSWORD);
+        waitAndSetText(CCP_REGISTRATION_CONFIRM_PASSWORD, password);
+
+        //Create account
+        waitAndCheckIsElementPresent(CCP_CREATE_ACC_CTA_BUTTON);
+        waitAndClickOn(CCP_CREATE_ACC_CTA_BUTTON);
+
+        waitAndCheckIsElementVisible(Grid.driver().getTitle());
+        waitAndCheckIsElementPresent(Grid.driver().getTitle());
+        softAssert.assertNotNull(Grid.driver().getTitle());
+        waitAndClickOn(CCP_USER_NAME);
+        AllureCustomLogReporter.addTestStepLog("Account created successfully and GSTN is =" + gstn);
+    }
+
+    @And("user enter phoneNumber shorter than {string} and longer than {string} then 10 digit")
+    public void user_enter_phoneNumber_lesser_and_more_then_10_digit(String shorterPhoneNumber, String longerPhoneNumber) {
+        waitAndCheckIsElementPresent(CCP_PHONE_NUMBER);
+        waitAndSetText(CCP_PHONE_NUMBER, shorterPhoneNumber);
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_MOBILE_ERROR_MESSAGE);
+        String FrontEndMobileErrorMessage = waitAndGetText(CCP_REGISTRATION_MOBILE_ERROR_MESSAGE);
+        softAssert.assertEquals(FrontEndMobileErrorMessage, "Please enter correct phone number", "Failing in mobile registration validation");
+
+    }
+
+    @And("user enter invalid email {string}")
+    public void user_enter_invalid_email(String invalidEmail){
+        waitAndCheckIsElementPresent(CCP_EMAIL);
+        waitAndSetText(CCP_EMAIL, invalidEmail);
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_EMAIL_ERROR_MESSAGE);
+        String FrontEndEmailErrorMessage = waitAndGetText(CCP_REGISTRATION_EMAIL_ERROR_MESSAGE);
+        softAssert.assertEquals(FrontEndEmailErrorMessage, "Please enter correct email address", "Failing in Email registration validation");
+
+    }
+    @And("user enter invalid UserName {string}")
+    public void user_enter_invalid_userName(String invalidUserName){
+        waitAndCheckIsElementPresent(CCP_USER_NAME);
+        waitAndSetText(CCP_USER_NAME, invalidUserName);
+        softAssert.assertAll();
+    }
+
+    @And("user do not give data for mandatory field {string} {string} {string} {string}")
+    public void user_not_give_data_for_mandatory_field(String userName, String phoneNumber,String email,String gstn){
+
+       //Check Without filling all mandatory field CTA button should not disable
+        waitAndCheckIsElementVisible(CCP_REGISTRATION_CLOSE_BUTTON);
+        waitAndClickOn(CCP_REGISTRATION_CLOSE_BUTTON);
+        waitAndCheckIsElementVisible(CCP_REGISTRATION);
+        waitAndCheckIsElementPresent(CCP_REGISTRATION);
+        waitAndClickOn(CCP_REGISTRATION);
+
+        waitAndCheckIsElementPresent(CCP_USER_NAME);
+        waitAndSetText(CCP_USER_NAME, userName);
+        softAssert.assertNull(waitAndGetText(CCP_REGISTRATION_NEXT_BUTTON));
+
+        waitAndCheckIsElementPresent(CCP_PHONE_NUMBER);
+        waitAndSetText(CCP_PHONE_NUMBER, phoneNumber);
+        softAssert.assertNull(waitAndGetText(CCP_REGISTRATION_NEXT_BUTTON));
+
+        waitAndCheckIsElementPresent(CCP_GSTN);
+        waitAndSetText(CCP_GSTN, gstn);
+        softAssert.assertNull(waitAndGetText(CCP_REGISTRATION_NEXT_BUTTON));
+
+        waitAndCheckIsElementPresent(CCP_EMAIL);
+        waitAndSetText(CCP_EMAIL, email);
+        softAssert.assertNull(waitAndGetText(CCP_REGISTRATION_NEXT_BUTTON));
+
+        waitAndCheckIsElementPresent(CCP_REGISTRATION_CHECKBOX);
+        waitAndClickOn(CCP_REGISTRATION_CHECKBOX);
+        softAssert.assertNotNull(CCP_REGISTRATION_NEXT_BUTTON);
+
+    }
+
+
+
 }
-
-
-
-
-
-
