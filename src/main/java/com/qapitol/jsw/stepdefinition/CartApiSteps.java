@@ -13,6 +13,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 import org.testng.Assert;
 
 
@@ -21,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+
 import static com.qapitol.sauron.web.WebActionListener.log;
 
 public class CartApiSteps {

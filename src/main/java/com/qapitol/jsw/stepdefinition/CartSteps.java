@@ -14,7 +14,7 @@ import org.testng.Assert;
 
 
 import static com.qapitol.jsw.stepdefinition.BaseSteps.*;
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
 
@@ -84,7 +84,6 @@ public class CartSteps extends AbstractWebPage {
 
     @When("user open HR coil pdp")
     public void userOpenHRCoilPdp() {
-//        sleep(AVG_WAIT);
         //Move the cursor to MiLd Steel
         Actions actions=new Actions(Grid.driver());
         WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
@@ -93,7 +92,7 @@ public class CartSteps extends AbstractWebPage {
         //Move the cursor to Hot Rolled
         WebElement hotRolled=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[6]"));
         actions.moveToElement(hotRolled).perform();
-//        sleep(AVG_WAIT);
+        sleep(AVG_WAIT);
         //Move The cursor to Hot rolled and click
         WebElement hotRolledCoil=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[2]"));
 
@@ -286,12 +285,8 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("close the payment reminder pop-up")
     public void closeThePaymentReminderPopUp() {
-////        sleep(AVG_WAIT);
-//        waitAndCheckIsElementPresent(POP_UP_BTN);
-//        waitAndClickOn(POP_UP_BTN);
-//        log.info("Pop-up button closed");
-//        AllureCustomLogReporter.addTestStepLog("Pop-up button closed");
         if (isElementPresent(POP_UP_BTN)) {
+            waitAndCheckIsElementClickable(POP_UP_BTN);
             waitAndClickOn(POP_UP_BTN);
             log.info("Payment reminder pop-up closed.");
             AllureCustomLogReporter.addTestStepLog("Pop-up button closed");

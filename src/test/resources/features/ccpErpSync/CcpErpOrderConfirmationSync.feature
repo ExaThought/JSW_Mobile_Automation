@@ -6,6 +6,7 @@ Feature: Check CCP-ERP order confirmation Sync
   Scenario: Verify Order Confirmation for cash and carry.
     When create cash and carry cart from SF
     And login to ccp and create an order "jayadevgowda10@yopmail.com" and "Jsw@2025"
+    Then close the payment reminder pop-up
     And logs into ERP and opens the order details page
     And confirms the order in ERP and verify in CCP
     Then account logout
@@ -15,6 +16,7 @@ Feature: Check CCP-ERP order confirmation Sync
   Scenario: Verify Order Confirmation for cash and carry Advance.
     When create cash and carry cart advance from SF
     And login to ccp and create an order "jayadevgowda10@yopmail.com" and "Jsw@2025"
+    Then close the payment reminder pop-up
     And logs into ERP and opens the order details page
     And confirms the order in ERP and verify in CCP
     Then account logout
