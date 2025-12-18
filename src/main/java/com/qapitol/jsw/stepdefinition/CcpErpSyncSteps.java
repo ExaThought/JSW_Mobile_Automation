@@ -52,6 +52,8 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
         waitAndSetText(LOGIN_EMAIL, userName); // Give you Email
+        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+        waitAndClickOn(CCP_LOGIN_CTA);
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
         waitAndSetText(LOGIN_PASSWORD, password);// Give the password
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
