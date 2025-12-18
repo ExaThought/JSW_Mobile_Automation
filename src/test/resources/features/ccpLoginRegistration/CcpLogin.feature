@@ -32,6 +32,3 @@ Feature: Check Login
     And user click on continue button
     And enter invalid password "Jsw@2029"
     Then user should not able to login with error message
-
-
-

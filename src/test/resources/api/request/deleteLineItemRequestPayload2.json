@@ -1,0 +1,12 @@
+{
+  "customerDetails": {
+    "customerId": "9753a7dd-274f-426c-af1b-e6de93ed393d"
+  },
+  "cartIdentifier": {
+    "cartType": "enquiry_v2",
+    "cartJourneyType": "REQUIREMENTS_CART_V2"
+  },
+  "lineItemIdList": [
+    "94df45df-c1f2-4f98-96ea-454271c1ea59"
+  ]
+}

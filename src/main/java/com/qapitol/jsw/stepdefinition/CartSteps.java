@@ -1,6 +1,8 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.ConfigUtil;
+
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -8,7 +10,10 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
+import org.testng.Assert;
 
+
+import static com.qapitol.jsw.stepdefinition.BaseSteps.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
@@ -51,15 +56,20 @@ public class CartSteps extends AbstractWebPage {
     private static final String COATING_GRADE="coatingGrade";
     private static final String SUCCESS_PAGE_RCV2="rcCheckoutSuccessPage";
     private static final String CART_PAGE="cartPage";
-
-
-    String requirementId;
+    private static final String TEST_HOME="Test";
+    private static final String POP_UP_BTN="closePopBtn";
+    private static final String ITEM_Label="itemLabel";
+    private static final String EDIT_BTN="editButton";
+    private static final String DONE_BTN="doneButton";
+    private static final String INPUT_TEXT_BTN="inputTextBox";
+    BaseSteps baseSteps=new BaseSteps();
 
     @When("user open the portal and login with valid credentials {string} {string}")
-    public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) {
+    public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) throws Exception {
+
         Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
-        ConfigUtil.resolveOrThrow("ccpPortalUrl");
         Grid.driver().manage().window().maximize();
+        Grid.driver().manage().deleteAllCookies();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
@@ -73,157 +83,243 @@ public class CartSteps extends AbstractWebPage {
     }
 
     @When("user open HR coil pdp")
-    public void user_open_HR_coil_pdp() {
-        sleep(3000);
+    public void userOpenHRCoilPdp() {
+        //Move the cursor to MiLd Steel
         Actions actions=new Actions(Grid.driver());
         WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
         actions.moveToElement(mildSteel).perform();
-        sleep(1000);
+        sleep(AVG_WAIT);
+        //Move the cursor to Hot Rolled
         WebElement hotRolled=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[6]"));
         actions.moveToElement(hotRolled).perform();
-        sleep(1000);
+        sleep(AVG_WAIT);
+        //Move The cursor to Hot rolled and click
         WebElement hotRolledCoil=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[2]"));
+
         actions.moveToElement(hotRolledCoil).perform();
         hotRolledCoil.click();
-        sleep(1000);
+//        sleep(SHORT_WAIT);
         waitAndCheckIsElementPresent(HR_COIL);
         waitAndCheckIsElementClickable(HR_COIL);
         waitAndClickOn(HR_COIL);
     }
 
     @And("select all the attribute and add to cart")
-    public void select_all_the_attribute_and_add_to_cart() {
+    public void selectAllTheAttributeAndAddToCart() {
+        //Select Thickness
         waitAndCheckIsElementPresent(HR_THICKNESS);
         waitAndClickOn(HR_THICKNESS);
+        //Enter Width
         waitAndCheckIsElementPresent(HR_WIDTH);
         waitAndClickOn(HR_WIDTH);
-        sleep(3000);
+        sleep(AVG_WAIT);
+        //Enter Quantity
         waitAndCheckIsElementPresent(QUANTITY);
         waitAndSetText(QUANTITY, "10");
     }
     @And("user will add cement product to cart")
-    public void user_will_add_cement_product_to_cart(){
-        sleep(2000);
+    public void userWillAddCementProductToCart(){
+//        sleep(AVG_WAIT);
+        //Open cement PLP page
        waitAndCheckIsElementPresent(CEMENT_PLP);
        waitAndClickOn(CEMENT_PLP);
+       //Open Cement PDP page
        waitAndCheckIsElementPresent(CEMENT_PDP);
        waitAndClickOn(CEMENT_PDP);
-       sleep(2000);
+       sleep(AVG_WAIT);
+       //Enter Number of bags
        waitAndCheckIsElementPresent(CEMENT_QUANTITY);
        waitAndSetText(CEMENT_QUANTITY,"120");
-       sleep(2000);
+       sleep(AVG_WAIT);
+       //click Add-to-cart
        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
        waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(2000);
+        sleep(AVG_WAIT);
+        //Click View cart
         waitAndCheckIsElementPresent(VIEW_CART);
        waitAndClickOn(VIEW_CART);
        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
 
     }
     @And("user will add Stainless Steel product to cart")
-    public void user_will_add_stainless_steel_product_to_cart(){
-        sleep(2000);
+    public void userWillAddStainlessSteelProductToCart(){
+//        sleep(AVG_WAIT);
+        //Open stainless steel PLP
         waitAndCheckIsElementPresent(STAINLESS_STEEL_PLP);
         waitAndClickOn(STAINLESS_STEEL_PLP);
-        sleep(1000);
+        sleep(SHORT_WAIT);
+        //open stainless steel PDP
         waitAndCheckIsElementPresent(STAINLESS_STEEL_PDP);
         waitAndClickOn(STAINLESS_STEEL_PDP);
-        sleep(1000);
+//        sleep(SHORT_WAIT);
+        //Select Thickness
         waitAndCheckIsElementPresent(STAINLESS_STEEL_THICKNESS);
         waitAndClickOn(STAINLESS_STEEL_THICKNESS);
+        //Enter Width
         waitAndCheckIsElementPresent(STAINLESS_STEEL_WIDTH);
         waitAndClickOn(STAINLESS_STEEL_WIDTH);
+        //Enter Length
         waitAndCheckIsElementPresent(STAINLESS_STEEL_LENGTH);
         waitAndClickOn(STAINLESS_STEEL_LENGTH);
-        sleep(1000);
+        sleep(SHORT_WAIT);
+        //Enter Quantity
         waitAndCheckIsElementPresent(QUANTITY);
         waitAndSetText(QUANTITY, "10");
-        sleep(2000);
+        sleep(AVG_WAIT);
+        //Click Add-to-cart
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(5000);
+        sleep(LONG_WAIT);
+        //Click View cart
         waitAndCheckIsElementPresent(VIEW_CART);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
-        sleep(3000);
+//        sleep(AVG_WAIT);
     }
 
     @Then("check user able to add the product to cart page")
-    public void check_user_able_to_add_the_product_to_cart_page() {
-        sleep(2000);
+    public void checkUserAbleToAddTheProductToCartPage() {
+        sleep(AVG_WAIT);
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(3000);
+        sleep(AVG_WAIT);
         waitAndCheckIsElementPresent(VIEW_CART);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
     }
     @Then("check user able to delete line item from cart")
-    public void check_ser_able_to_delete_line_item_from_cart(){
-        sleep(2000);
+    public void checkUserAbleToDeleteLineItemFromCart(){
+//        sleep(AVG_WAIT);
+        //click delete
         waitAndCheckIsElementPresent(DELETE_LINE_ITEM);
         waitAndClickOn(DELETE_LINE_ITEM);
-        sleep(2000);
+//        sleep(AVG_WAIT);
+        //click delete CTA button
         waitAndCheckIsElementPresent(DELETE_CTA_BUTTON);
         waitAndClickOn(DELETE_CTA_BUTTON);
-        sleep(5000);
+        log.info("Item deleted successfully");
+//        sleep(LONG_WAIT);
     }
     @And("check user able to add the product to cart without pricing")
-    public void check_user_able_to_add_the_product_to_cart_without_pricing(){
-        sleep(2000);
+    public void checkUserAbleToAddTheProductToCartWithoutPricing(){
+        sleep(AVG_WAIT);
+        //Move the cursor to Mild Steel
         waitAndCheckIsElementPresent(MILD_STEEL);
         Actions actions=new Actions(Grid.driver());
         WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
         actions.moveToElement(mildSteel).perform();
-        sleep(1000);
+//        sleep(SHORT_WAIT);
+        //click to Color coated
         waitAndCheckIsElementPresent(COLOUR_COATED);
         waitAndClickOn(COLOUR_COATED);
-        sleep(1000);
+//        sleep(SHORT_WAIT);
+        //click on color coated PDP
         waitAndCheckIsElementPresent(COLOUR_COATED_PDP);
         waitAndClickOn(COLOUR_COATED_PDP);
+        //select thickness
         waitAndCheckIsElementPresent(THICKNESS);
         waitAndClickOn(THICKNESS);
+        //Enter With
         waitAndCheckIsElementPresent(WIDTH);
         waitAndClickOn(WIDTH);
+        //Select Coated Grade
         waitAndCheckIsElementPresent(COATING_GRADE);
         waitAndClickOn(COATING_GRADE);
-        sleep(1000);
+        sleep(SHORT_WAIT);
         WebElement dropdown = Grid.driver().findElement(By.xpath("//div[@id='custom-dropdown']"));
         dropdown.click();
-        sleep(1000);
+        sleep(SHORT_WAIT);
         WebElement option = Grid.driver().findElement(By.xpath("//li[contains(text(),'Sky Blue')]"));
         option.click();
-        sleep(1000);
+        sleep(SHORT_WAIT);
+        //Enter Quantity
         waitAndCheckIsElementPresent(QUANTITY);
         waitAndSetText(QUANTITY, "10");
-        sleep(1000);
+        sleep(SHORT_WAIT);
+        //click Add-to-cart
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(5000);
+        sleep(LONG_WAIT);
+        //Click View cart
         waitAndCheckIsElementPresent(VIEW_CART);
+//        sleep(AVG_WAIT);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
     }
     @And("user checkout the RCV2")
-    public void user_checkout_the_rcv2(){
-        sleep(2000);
+    public void userCheckoutTheRcv2(){
+//        sleep(AVG_WAIT);
+        //Open My requirement page
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
+        //copay the Requirement ID
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
-        requirementId=waitAndGetText(REQUIREMENT_ID);
-        System.out.println(requirementId);
+        String oldeRquirementId=waitAndGetText(REQUIREMENT_ID);
+        //Open the cart page
         waitAndCheckIsElementPresent(CART_PAGE);
         waitAndClickOn(CART_PAGE);
-        sleep(5000);
+        sleep(LONG_WAIT);
+        //click cart Checkout
         waitAndCheckIsElementPresent(RCV2_CHECKOUT);
         waitAndClickOn(RCV2_CHECKOUT);
-        sleep(2000);
+//        sleep(AVG_WAIT);
+        //check the success page
         waitAndCheckIsElementPresent(SUCCESS_PAGE_RCV2);
+        //open the requirement page
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
-        requirementId=waitAndGetText(REQUIREMENT_ID);
-        System.out.println(requirementId);
+        String neweRquirementId=waitAndGetText(REQUIREMENT_ID);
+        log.info("Old Requirement id"+oldeRquirementId);
+        log.info("New Requirement id"+neweRquirementId);
+        AllureCustomLogReporter.addTestStepLog("Old Requirement id "+oldeRquirementId + "New Requirement id"+ neweRquirementId);
+        if (oldeRquirementId.equalsIgnoreCase(neweRquirementId)) {
+            log.info("Requirement ID is same. New Requirement not created.");
+            AllureCustomLogReporter.addTestStepLog("Requirement ID is same. New Requirement not created.");
+            Assert.fail("Requirement ID is same as old one — new requirement not created.");
+        } else {
+            log.info("New Requirement ID created successfully. ID: " + neweRquirementId);
+            AllureCustomLogReporter.addTestStepLog("New Requirement ID created successfully. ID: " + neweRquirementId);
+        }
+    }
+
+    @Then("close the payment reminder pop-up")
+    public void closeThePaymentReminderPopUp() {
+        if (isElementPresent(POP_UP_BTN)) {
+            waitAndCheckIsElementClickable(POP_UP_BTN);
+            waitAndClickOn(POP_UP_BTN);
+            log.info("Payment reminder pop-up closed.");
+            AllureCustomLogReporter.addTestStepLog("Pop-up button closed");
+        } else {
+            log.info("No payment reminder pop-up found.");
+            AllureCustomLogReporter.addTestStepLog("Pop-up button closed");
+
+        }
+    }
+
+    @And("calculate the number of line items in the cart")
+    public void calculateTheNumberOfLineItemsInTheCart() {
+//        sleep(AVG_WAIT);
+        waitAndCheckIsElementPresent(ITEM_Label);
+        WebElement itemCount=Grid.driver().findElement(By.xpath("//div[contains(text(), 'item(s)')]"));
+        String countText = itemCount.getText();
+        int count = Integer.parseInt(countText.replaceAll("\\D+",""));
+        log.info("Item Count in the cart page is-->: " + count);
+        AllureCustomLogReporter.addTestStepLog("Item Count in the cart page is-->:" + count);
+        sleep(SHORT_WAIT);
+    }
+
+    @Then("validate the user is able to edit the the cart page and update the quantity or attribute")
+    public void validateTheUserIsAbleToEditTheTheCartPageA() {
+        sleep(AVG_WAIT);
+        waitAndClickOn(EDIT_BTN);
+        //change the quantity and insert new quantity
+        clearTextBox(INPUT_TEXT_BTN);
+        sleep(AVG_WAIT);
+        waitAndSetText(INPUT_TEXT_BTN,"3");
+        waitAndClickOn(DONE_BTN);
+        log.info("Item edited successfully");
+        sleep(AVG_WAIT);
 
     }
 }

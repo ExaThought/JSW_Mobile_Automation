@@ -10,9 +10,9 @@
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
     <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
-    <parameter name="cucumber.filter.tags" value="@regression"/>
+    <parameter name="cucumber.filter.tags" value="@login "/>
     <parameter name="cucumber.publish.quiet" value="true"/>
-    <parameter name="executionTimeout" value="30000"/>
+    <parameter name="executionTimeout" value="10000"/>
     <parameter name="cucumber.plugin"
                value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
     <classes>
