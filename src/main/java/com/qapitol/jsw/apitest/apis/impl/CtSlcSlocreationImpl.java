@@ -68,7 +68,6 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
 
 
             //Request API
-            System.out.println(requestPayload);
             RequestApi requestApi = ccpUrl().create(RequestApi.class);
             CtSlcSloRes responseBody = requestApi.requestCtCashAndCarrySlcSlo(requestPayload);
 
