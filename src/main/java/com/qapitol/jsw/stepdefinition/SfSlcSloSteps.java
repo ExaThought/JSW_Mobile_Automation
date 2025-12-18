@@ -14,7 +14,7 @@ import io.cucumber.java.en.When;
 import java.io.IOException;
 
 import static com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl.*;
-import static com.qapitol.jsw.utils.CustomUtills.*;
+import static com.qapitol.jsw.utils.Hooks.*;
 
 
 public class SfSlcSloSteps extends AbstractWebPage {
