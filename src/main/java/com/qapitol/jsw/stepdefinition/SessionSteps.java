@@ -15,8 +15,6 @@ import org.openqa.selenium.By;
 import java.time.Duration;
 import java.util.logging.Level;
 
-import static com.qapitol.jsw.utils.CustomUtills.softAssert;
-
 
 public  class SessionSteps extends AbstractWebPage {
     private static final String LOGIN_CTA_BUTTON = "loginButton";
@@ -67,6 +65,8 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
         waitAndSetText(LOGIN_EMAIL, emailId); // Give you Email
+        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+        waitAndClickOn(CCP_LOGIN_CTA);
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
         waitAndSetText(LOGIN_PASSWORD, pass);// Give the password
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
@@ -89,11 +89,6 @@ public  class SessionSteps extends AbstractWebPage {
             ccpLogOut();
         }
 }
-
-//     @AfterAll
-//    public static void validationResult(){
-//         softAssert.assertAll();
-//     }
 
 }
 
