@@ -19,10 +19,11 @@ elements:
       web: //div[contains(text(),'Credentials are not valid')]
   hrCoilE250A:
     en_US:
-      web: //a[@title='JSW Steel Hot Rolled Coils IS 2062:2011 E250A']
+      web: //a[@title='TATA Hot Rolled Coil 2062:2011 E350A']
+
   thickness:
     en_US:
-      web: //button[contains(text(),'2.5')]
+      web: //button[contains(text(),'4')]
   width:
     en_US:
       web: //button[contains(text(),'1250')]
@@ -113,6 +114,9 @@ elements:
   cartPage:
     en_US:
       web: xpath=//a[@class='cart']
+  ccpHomePagePaymentDueCloseButton:
+    en_US:
+      web: //button[@aria-label='Close' and contains(@class,'close')]
 
 
 

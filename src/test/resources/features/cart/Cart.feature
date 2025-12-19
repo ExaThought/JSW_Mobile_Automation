@@ -1,8 +1,9 @@
-@regression
+@regression @testw
 Feature: Check Add-To-Cart
 
   Background:
     When user open the portal and login with valid credentials "testautomation01@yopmail.com" "Jsw@2025"
+
 
      @addToCart @checkout
   Scenario: check PDP validation and Add-to-cart
