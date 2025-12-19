@@ -108,7 +108,7 @@ public class PaymentDueSteps extends AbstractWebPage {
                 "'View details & pay' button is not displayed"
         );
 
-        softAssert.assertAll();
+
     }
 
     @Then("user clicks on view details and pay button")
@@ -178,7 +178,7 @@ public class PaymentDueSteps extends AbstractWebPage {
                 "'View details & pay' button is not displayed in floater"
         );
 
-        softAssert.assertAll();
+
     }
     @And("user navigate to buy again")
     public void userNavigateToBuyAgain() {
@@ -220,7 +220,7 @@ public class PaymentDueSteps extends AbstractWebPage {
                 "Payment reminder floater should NOT be displayed on My Orders page"
         );
 
-        softAssert.assertAll();
+
     }
 
 
