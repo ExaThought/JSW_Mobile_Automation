@@ -63,7 +63,7 @@ public class CartSteps extends AbstractWebPage {
     @When("user open the portal and login with valid credentials {string} {string}")
     public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) {
         // Open CCP portal
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
 
         // Click Login CTA
