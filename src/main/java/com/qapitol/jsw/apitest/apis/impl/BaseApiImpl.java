@@ -22,17 +22,17 @@ public abstract class BaseApiImpl {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected ApiClientFactory ccpUrl() {
-        return ApiClientFactory.getInstance(ConfigUtil.resolve("ccpUrl"));
+        return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("ccpUrl"));
     }
     protected ApiClientFactory appUrl(){
-        return ApiClientFactory.getInstance(ConfigUtil.resolve("appBaseUrl"));
+        return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("appBaseUrl"));
     }
     protected ApiClientFactory centralCartCcpUrl() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
     }
 
     protected ApiClientFactory getZohoOMSApiClientFactory() {
-        return ApiClientFactory.getInstance(Objects.requireNonNull(ConfigUtil.resolve("omsUrl")));
+        return ApiClientFactory.getInstance(Objects.requireNonNull(ConfigUtil.getSecretValue("omsUrl")));
     }
 
     protected ApiClientFactory getZohoAPIClientFactory() {

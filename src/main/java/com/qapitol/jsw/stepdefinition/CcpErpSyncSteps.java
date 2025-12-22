@@ -46,7 +46,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
 
         this.userName=userName;
         this.password=password;
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         sessionSteps.checkLoginPage();
         Grid.driver().manage().window().maximize();
         // click on login CTA button
@@ -78,12 +78,12 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     @And("logs into ERP and opens the order details page")
     public void logs_into_erp_and_opens_the_order_details_page(){
         //Open the ERP
-        Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ErpLoginAuth"));
         Grid.driver().manage().window().maximize();
         sleep(5000);
 
         //Open the Order in ERP
-        Grid.driver().get(ConfigUtil.resolve("omsUrl") + "order-list/" + ccpOrderNumber);
+        Grid.driver().get(ConfigUtil.getSecretValue("omsUrl") + "order-list/" + ccpOrderNumber);
     }
     @And("confirms the order in ERP and verify in CCP")
     public void confirms_the_order_in_erp_and_verify_in_ccp() throws IOException, InterruptedException {
@@ -93,7 +93,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         Grid.driver().navigate().refresh();
 
         //Login to CCP and check order status
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         sleep(2000);
         waitAndCheckIsElementPresent(CCP_MY_ORDER_PAGE);

@@ -1,7 +1,6 @@
 @regression @cart @sanity
 Feature: Check Add-To-Cart
 
-
   @addToCart @checkout
   Scenario: check PDP validation and Add-to-cart
     Given Go to session "ccp" "kl@hj.com" "Abinash@123"

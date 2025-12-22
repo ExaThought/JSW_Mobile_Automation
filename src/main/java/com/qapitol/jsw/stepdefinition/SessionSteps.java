@@ -5,7 +5,6 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
-import io.cucumber.java.AfterAll;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
@@ -34,7 +33,7 @@ public  class SessionSteps extends AbstractWebPage {
             Grid.setSessionName("ccp");
             if(!Grid.getTestSession().isStarted()) {
                 log.info("Starting browser with zoho creator...");
-                initCCPSession(ConfigUtil.resolve("ccpPortalUrl"),email,password);
+                initCCPSession(ConfigUtil.getSecretValue("ccpPortalUrl"),email,password);
                 log.info("Started browser and navigated to Zoho creator.");
             }
         } else {

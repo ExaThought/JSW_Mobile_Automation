@@ -67,7 +67,7 @@ public class CartSteps extends AbstractWebPage {
     @When("user open the portal and login with valid credentials {string} {string}")
     public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) throws Exception {
 
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         Grid.driver().manage().deleteAllCookies();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
@@ -88,15 +88,15 @@ public class CartSteps extends AbstractWebPage {
         Actions actions=new Actions(Grid.driver());
         WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
         actions.moveToElement(mildSteel).perform();
-        sleep(AVG_WAIT);
+        sleep(2000);
         //Move the cursor to Hot Rolled
-        WebElement hotRolled=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[6]"));
+        WebElement hotRolled=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[4]"));
         actions.moveToElement(hotRolled).perform();
-        sleep(AVG_WAIT);
+        sleep(2000);
         //Move The cursor to Hot rolled and click
-        WebElement hotRolledCoil=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[2]"));
-
+        WebElement hotRolledCoil=Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[1]"));
         actions.moveToElement(hotRolledCoil).perform();
+        sleep(2000);
         hotRolledCoil.click();
 //        sleep(SHORT_WAIT);
         waitAndCheckIsElementPresent(HR_COIL);
