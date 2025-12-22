@@ -1,4 +1,4 @@
-@paymentdue @regression
+@paymentDue @regression
 Feature: Check payment due pop up and payment due floater pop up
 
   @sanity @emailLogin @emailLoginWithValidCredentials @test01
