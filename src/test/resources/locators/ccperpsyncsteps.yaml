@@ -38,3 +38,6 @@ elements:
   orderConfirmStatus:
     en_US:
       web: xpath=//p[contains(@class, 'typography-h5')]
+  continueToLoginButton:
+    en_US:
+      web: //button[@id='login-to-continue']

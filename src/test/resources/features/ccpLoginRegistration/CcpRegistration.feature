@@ -1,7 +1,7 @@
 @registration @regression @registrationRegression
 Feature: Check CCP registration
 
-  @sanity @validRegistration
+  @sanity @validRegistration @test01
   Scenario: Check invalid email registration
     Given open the CCP registration portal
     And enter new invalid email id "test@.js"

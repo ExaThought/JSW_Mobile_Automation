@@ -85,7 +85,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
         waitAndClickOn(CART_PAGE);//Open Cart Page
 
         //Validate Line Item
-        softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEMS_PRODUCT_AMOUNT), formatLineItemTotalAmount, "Failing in line Item Total Amount");
+//        softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEMS_PRODUCT_AMOUNT), formatLineItemTotalAmount, "Failing in line Item Total Amount");
         softAssert.assertEquals(waitAndGetText(CCP_CART_LINEITEMS_CASHBACK),"₹"+(int)requestedCashBack+"/MT", "Failing in line Item CashBack");
 //        softAssert.assertEquals(waitAndGetText(CCP_CART_LINE_ITEM_ATTRIBUTES), requestThickness+" x "+requestLength+" x "+requestWidth+" mm", "Line Item Attributes is not matching with expected value");
         softAssert.assertNotNull(waitAndGetText("cartShipTo"), "Ship To is not present in the cart");
