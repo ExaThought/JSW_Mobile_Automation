@@ -1,4 +1,4 @@
-@registration @regression @registrationRegression @test01
+@registration @regression @registrationRegression
 Feature: Check CCP registration
 
   @sanity @validRegistration

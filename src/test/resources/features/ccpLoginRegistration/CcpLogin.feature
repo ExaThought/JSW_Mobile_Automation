@@ -1,4 +1,4 @@
-@login @regression @loginRegression @test01
+@login @regression @loginRegression
 Feature: Check Login
 
   @sanity @emailLogin @emailLoginWithValidCredentials @test01

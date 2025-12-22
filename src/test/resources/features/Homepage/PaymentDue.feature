@@ -1,7 +1,7 @@
-@paymentDue @regression @test01
+@paymentDue @regression
 Feature: Check payment due pop up and payment due floater pop up
 
-  @sanity @emailLogin @emailLoginWithValidCredentials @test01
+  @sanity @emailLogin @emailLoginWithValidCredentials
   Scenario: Check and validate payment due pop up after login
     Given user open the CCP Webportal
     And enter user email "testnewurl@yopmail.com"
