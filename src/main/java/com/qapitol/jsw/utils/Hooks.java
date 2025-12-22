@@ -17,9 +17,6 @@ public class Hooks {
         System.out.println("=== BEFORE SCENARIO START ===");
         // Initialize a new SoftAssert object before every scenario
         softAssert = new SoftAssert();
-        Grid.driver().navigate().refresh();
-        Grid.driver().manage().deleteAllCookies();
-        Grid.driver().navigate().refresh();
 
     }
 
@@ -28,6 +25,8 @@ public class Hooks {
         System.out.println("=== AFTER SCENARIO END ===");
 
         // Assert all soft assertions at the end of each scenario
+        Grid.driver().manage().deleteAllCookies();
+        Grid.driver().navigate().refresh();
         softAssert.assertAll();
     }
 }
