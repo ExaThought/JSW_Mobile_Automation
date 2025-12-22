@@ -1,4 +1,4 @@
-@ccpErpSyncRegression @regression
+@ccpErpSyncRegression
 Feature: Check CCP-ERP order confirmation Sync
 
   @orderConfirmation @cashAndCarryOrderConfirmation
@@ -13,7 +13,7 @@ Feature: Check CCP-ERP order confirmation Sync
     Then account logout
 
   @orderConfirmation @cashAndCarryAdvanceOrderConfirmation @sanity
-  @testCaseId=id-002 @dataFile="ccpErpSync.yaml"
+  @testCaseId=id-002 @dataFile="ccpErpSync.yaml" @regression
   Scenario: Verify Order Confirmation for cash and carry Advance.
     When create cash and carry cart advance from SF
     And login to ccp and create an order "jayadevgowda10@yopmail.com" and "Jsw@2025"
