@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import org.testng.asserts.SoftAssert;
@@ -16,6 +17,9 @@ public class Hooks {
         System.out.println("=== BEFORE SCENARIO START ===");
         // Initialize a new SoftAssert object before every scenario
         softAssert = new SoftAssert();
+        Grid.driver().navigate().refresh();
+        Grid.driver().manage().deleteAllCookies();
+        Grid.driver().navigate().refresh();
 
     }
 
