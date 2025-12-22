@@ -1,7 +1,7 @@
 @login @regression @loginRegression
 Feature: Check Login
 
-  @sanity @emailLogin @emailLoginWithValidCredentials
+  @sanity @emailLogin @emailLoginWithValidCredentials @test01
   Scenario: Check Login with valid email ID and password
     Given user open the CCP portal
     And enter valid email "testnewurl@yopmail.com"

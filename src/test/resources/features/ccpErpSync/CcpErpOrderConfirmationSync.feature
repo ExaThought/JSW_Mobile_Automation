@@ -2,7 +2,7 @@
 Feature: Check CCP-ERP order confirmation Sync
 
   @orderConfirmation @cashAndCarryOrderConfirmation
-  @testCaseId=id-001 @dataFile="ccpErpSync.yaml"
+  @testCaseId=id-001 @dataFile="ccpErpSync.yaml" @test01
   Scenario: Verify Order Confirmation for cash and carry.
     When create cash and carry cart from SF
     And login to ccp and create an order "jayadevgowda10@yopmail.com" and "Jsw@2025"
