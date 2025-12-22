@@ -1,0 +1,77 @@
+elements:
+  ccpHomePageLoginButton:
+    en_US:
+      web: //button[@id='login-cta']
+
+  ccpHomePageLoginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+
+  ccpHomePageLoginEmail:
+    en_US:
+      web: //input[@id='email']
+
+  ccpHomePageLoginPassword:
+    en_US:
+      web: //input[@id='password']
+
+  ccpHomePageLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+
+  ccpHomePagePaymentDuePopup:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal') and @role='dialog']
+
+  ccpHomePagePaymentDueTitle:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal')]//h5//div[normalize-space()='Payment reminder']
+
+  ccpHomePagePaymentDueAmount:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal')]//div[contains(text(),'₹')]
+
+  ccpHomePagePaymentDueViewDetailsButton:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal')]//button[.//span[normalize-space()='View details & pay']]
+
+  ccpLedgerPaymentDueSection:
+    en_US:
+      web: //div[contains(@class,'payment-due-notification')]
+
+  ccpLedgerPaymentDueAmount:
+    en_US:
+      web: //p[contains(@class,'payment-due-amount') and (contains(text(),'₹') or contains(text(),'Rs.'))]
+
+  ccpLedgerPayNowButton:
+    en_US:
+      web: //div[contains(@class,'payment-due-notification')]//button[.//span[normalize-space()='Pay now']]
+  ccpHomePagePaymentDueCloseButton:
+    en_US:
+      web: //button[@aria-label='Close' and contains(@class,'close')]
+  ccpHomePageMyRequirementsLink:
+    en_US:
+      web: //a[contains(@href,'/my-requirements') and contains(@class,'links')]
+  ccpHomePagePaymentDueFloater:
+    en_US:
+      web: //p[contains(@class,'floater-label') and contains(text(),'Payments due now')]/ancestor::div[contains(@class,'floater')]
+
+  ccpHomePagePaymentDueFloaterAmount:
+    en_US:
+      web: //p[contains(@class,'floater-amount') and (contains(text(),'₹') or contains(text(),'Rs.'))]
+
+  ccpHomePagePaymentDueFloaterViewDetailsButton:
+    en_US:
+      web: //button[contains(@class,'floater-btn') and contains(text(),'View details & pay')]
+
+  ccpHomePageBuyAgainLink:
+    en_US:
+      web: //a[contains(@href,'/buy-again') and contains(@class,'links')]
+  ccpHomePageCartLink:
+    en_US:
+      web: //div[contains(@class,'cart-icon-container')]
+
+  ccpHomePageMyOrdersLink:
+    en_US:
+      web: //a[contains(@href,'/my-orders') and contains(@class,'links')]
+

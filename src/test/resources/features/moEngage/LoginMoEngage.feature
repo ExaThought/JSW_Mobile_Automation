@@ -1,7 +1,6 @@
-@regression
+
 Feature: check Mo-engage event for login
 
-  @test
   Scenario: Capture Mo-engage event for login
     When User open the website
     And click login with Email

@@ -4,9 +4,8 @@ import com.qapitol.sauron.common.configuration.Config;
 
 public class ConfigUtil {
 
-    public static String resolve(String key) {
+    public static String getSecretValue(String key) {
         String rawValue = Config.getConfigProperty(key);
-
         if (rawValue == null) {
             return null;
         }
@@ -17,14 +16,13 @@ public class ConfigUtil {
 
             // Split into ENV_VAR and default
             String[] parts = content.split(":", 2);
-            String envVar = parts[0];
-            String defaultVal = parts.length > 1 ? parts[1] : null;
-
+            String secretName = parts[0];
+            String defaultValue = parts.length > 1 ? parts[1] : null;
             // First try environment variable
-            String resolved = System.getenv(envVar);
+            String secretText = System.getenv(secretName);
 
             // If not present, fallback to default
-            rawValue = resolved != null ? resolved : defaultVal;
+            rawValue = secretText != null ? secretText : defaultValue;
         }
         //  Clean up: trim spaces and strip quotes
         if (rawValue != null) {
@@ -41,7 +39,7 @@ public class ConfigUtil {
      * Resolves the value for the given key, but throws an exception if nothing is found.
      */
     public static String resolveOrThrow(String key) {
-        String value = resolve(key);
+        String value = getSecretValue(key);
         if (value == null || value.isEmpty()) {
             throw new IllegalStateException(" Missing configuration for key: " + key);
         }

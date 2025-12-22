@@ -27,7 +27,7 @@ public class LoginSteps extends AbstractWebPage {
 
     @When("user open the CCP portal")
     public void user_open_the_ccp_portal(){
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button

@@ -1,0 +1,22 @@
+elements:
+  loginButton:
+    en_US:
+      web: //button[@id='login-cta']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+  ccpDropDown:
+    en_US:
+      web: xpath=(//img[@class="header-arrow-down" ])[1]
+  ccpLogout:
+    en_US:
+      web: xpath=//section[@class='drop-body header-custom-width']//div[contains(text(),'Logout')]

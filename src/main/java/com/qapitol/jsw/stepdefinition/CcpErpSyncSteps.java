@@ -27,6 +27,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
     public static final String CCP_MY_ORDER_PAGE="ccpMyOrderPage";
     public static final String ORDER_CONFIRMATION ="orderConfirmStatus";
+    SessionSteps sessionSteps=new SessionSteps();
 
 
     String ccpOrderNumber;
@@ -35,6 +36,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
 
     @When("create cash and carry cart from SF")
     public void create_cash_and_carry_cart_from_sf() throws IOException {
+        //Create SLC
         CtSlcSlocreationImpl ctSlcSloCreation=new CtSlcSlocreationImpl();
         String orderType="CT_SLC_SLO_CASH_AND_CARRY";
         ctSlcSloCreation.getSlcSloResponse(orderType);
@@ -44,35 +46,44 @@ public class CcpErpSyncSteps extends AbstractWebPage {
 
         this.userName=userName;
         this.password=password;
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
+        sessionSteps.checkLoginPage();
         Grid.driver().manage().window().maximize();
+        // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
+        waitAndClickOn(LOGIN_CTA_BUTTON);
+        //Click on Login with OTP
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
+        waitAndClickOn(LOGIN_VIA_OTP);
+        // Give Email
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
-        waitAndSetText(LOGIN_EMAIL, userName); // Give you Email
+        waitAndSetText(LOGIN_EMAIL, userName);
+        // Give password
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
-        waitAndSetText(LOGIN_PASSWORD, password);// Give the password
+        waitAndSetText(LOGIN_PASSWORD, password);
+        // Login
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);// Login
+        waitAndClickOn(CCP_LOGIN_CTA);
+        //open cart page
         waitAndCheckIsElementVisible(CART_PAGE);
         waitAndClickOn(CART_PAGE);
+        //confirm order CTA
         waitAndCheckIsElementPresent(CCP_CREATE_ORDER_CTA);
         waitAndCheckIsElementVisible(CCP_CREATE_ORDER_CTA);
         waitAndClickOn(CCP_CREATE_ORDER_CTA);
         sleep(3000);
+        //Copy order number
         ccpOrderNumber = waitAndGetText(CCP_ORDER_NUMBER);
     }
     @And("logs into ERP and opens the order details page")
     public void logs_into_erp_and_opens_the_order_details_page(){
         //Open the ERP
-        Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ErpLoginAuth"));
         Grid.driver().manage().window().maximize();
         sleep(5000);
 
         //Open the Order in ERP
-        Grid.driver().get(ConfigUtil.resolve("omsUrl") + "order-list/" + ccpOrderNumber);
+        Grid.driver().get(ConfigUtil.getSecretValue("omsUrl") + "order-list/" + ccpOrderNumber);
     }
     @And("confirms the order in ERP and verify in CCP")
     public void confirms_the_order_in_erp_and_verify_in_ccp() throws IOException, InterruptedException {
@@ -82,7 +93,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         Grid.driver().navigate().refresh();
 
         //Login to CCP and check order status
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
         sleep(2000);
         waitAndCheckIsElementPresent(CCP_MY_ORDER_PAGE);
@@ -101,6 +112,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     }
     @When("create cash and carry cart advance from SF")
     public void create_cash_and_carry_cart_advance_from_sf() throws IOException {
+        //create SLC
         CtSlcSlocreationImpl ctSlcSloCreation=new CtSlcSlocreationImpl();
         String orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
         ctSlcSloCreation.getSlcSloResponse(orderType);

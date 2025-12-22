@@ -33,7 +33,7 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     @When("open the CCP registration portal")
     public void user_open_the_ccp_portal() {
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
 
         waitAndCheckIsElementVisible(REGISTRATION_CTA_BUTTON);

@@ -73,6 +73,8 @@ public class CtSlcSloRequestPayload {
     private String remarks;
     @JsonProperty("ratesValidity")
     private String ratesValidity;
+    @JsonProperty("priority")
+    private String priority;
     @JsonProperty("priceType")
     private String priceType;
     @JsonProperty("poDetails")
@@ -217,6 +219,42 @@ public class CtSlcSloRequestPayload {
     @JsonProperty("ratesValidity")
     public String getRatesValidity() {
         return ratesValidity;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public Boolean getPBDistributor() {
+        return isPBDistributor;
+    }
+
+    public void setPBDistributor(Boolean PBDistributor) {
+        isPBDistributor = PBDistributor;
+    }
+
+    public Boolean getDirect() {
+        return isDirect;
+    }
+
+    public void setDirect(Boolean direct) {
+        isDirect = direct;
+    }
+
+    public Boolean getBillingAddressValidated() {
+        return isBillingAddressValidated;
+    }
+
+    public void setBillingAddressValidated(Boolean billingAddressValidated) {
+        isBillingAddressValidated = billingAddressValidated;
+    }
+
+    public void setAdditionalProperties(Map<String, Object> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
     @JsonProperty("ratesValidity")
@@ -517,6 +555,10 @@ public class CtSlcSloRequestPayload {
         sb.append("ratesValidity");
         sb.append('=');
         sb.append(((this.ratesValidity == null)?"<null>":this.ratesValidity));
+        sb.append(',');
+        sb.append("priority");
+        sb.append('=');
+        sb.append(((this.priority == null)?"<null>":this.priority));
         sb.append(',');
         sb.append("priceType");
         sb.append('=');
