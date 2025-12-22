@@ -70,6 +70,7 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndSetText(LOGIN_PASSWORD, pass);// Give the password
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login
+        sleep(2000);
         log.exiting();
     }
 
