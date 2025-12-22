@@ -40,7 +40,7 @@ public class PaymentDueSteps extends AbstractWebPage {
     @When("user open the CCP Webportal")
     public void user_open_the_ccp_web_portal() {
 
-        Grid.driver().get(ConfigUtil.resolve("ccpPortalUrl"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         Grid.driver().manage().window().maximize();
 
         waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_BUTTON);
