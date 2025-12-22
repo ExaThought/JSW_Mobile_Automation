@@ -1,7 +1,7 @@
 @regression  @sanity @slcOrderCreation
 Feature: Check SLC Flow
 
- @testCaseId=id-001 @dataFile="sfslcslo.yaml" @test01
+ @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute cash and carry order
     When Request and create an cashAndCarry distributer cart
    Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"

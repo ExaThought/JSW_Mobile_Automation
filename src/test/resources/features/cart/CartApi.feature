@@ -1,4 +1,4 @@
-@regressionApi @rcv2Api @regression
+@regressionApi @rcv2Api
 Feature: Check RCV2 Cart Api
 
   Background:

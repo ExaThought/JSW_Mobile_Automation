@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import org.testng.asserts.SoftAssert;
@@ -24,6 +25,8 @@ public class Hooks {
         System.out.println("=== AFTER SCENARIO END ===");
 
         // Assert all soft assertions at the end of each scenario
+        Grid.driver().manage().deleteAllCookies();
+        Grid.driver().navigate().refresh();
         softAssert.assertAll();
     }
 }
