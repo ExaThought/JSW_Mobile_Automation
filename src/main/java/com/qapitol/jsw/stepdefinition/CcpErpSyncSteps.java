@@ -27,6 +27,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
     public static final String CCP_MY_ORDER_PAGE="ccpMyOrderPage";
     public static final String ORDER_CONFIRMATION ="orderConfirmStatus";
+    private final String CONTINUE_BUTTON = "continueToLoginButton";
     SessionSteps sessionSteps=new SessionSteps();
 
 
@@ -58,12 +59,18 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         // Give Email
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
         waitAndSetText(LOGIN_EMAIL, userName);
+        // Click on continue button
+        waitAndCheckIsElementVisible(CONTINUE_BUTTON);
+        waitAndClickOn(CONTINUE_BUTTON);
         // Give password
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
         waitAndSetText(LOGIN_PASSWORD, password);
         // Login
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);
+    }
+    @And("open the cart page and create order")
+    public void open_the_cart_page_and_create_order(){
         //open cart page
         waitAndCheckIsElementVisible(CART_PAGE);
         waitAndClickOn(CART_PAGE);

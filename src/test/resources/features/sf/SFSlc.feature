@@ -5,7 +5,7 @@ Feature: Check SLC Flow
   Scenario: Check Distribute cash and carry order
     When Request and create an cashAndCarry distributer cart
    Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
-   Then close the payment reminder pop-up
+   Then user close payment due pop up
    And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the SFSlc order data
@@ -14,7 +14,7 @@ Feature: Check SLC Flow
   Scenario: Check Distribute cash and carry Advance order
     When Request and create an cashAndCarryAdvance distributer cart
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
-    Then close the payment reminder pop-up
+    Then user close payment due pop up
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the SFSlc order data
@@ -23,7 +23,7 @@ Feature: Check SLC Flow
   Scenario: Check Distribute credit order
     When Request and create an credit distributer cart
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
-    Then close the payment reminder pop-up
+    Then user close payment due pop up
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the SFSlc order data
@@ -32,7 +32,7 @@ Feature: Check SLC Flow
   Scenario: Check Plant Supply (Direct) Cash and Carry WithAdvance order
     When Request and create an cash and carry withAdvance direct cart
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
-    Then close the payment reminder pop-up
+    Then user close payment due pop up
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the SFSlc order data
@@ -41,7 +41,7 @@ Feature: Check SLC Flow
   Scenario: Check Plant Supply (Direct) Cash and Carry ZeroAdvance order
     When Request and create an cash and carry ZeroAdvance direct cart
     Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
-    Then close the payment reminder pop-up
+    Then user close payment due pop up
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the SFSlc order data
@@ -50,7 +50,7 @@ Feature: Check SLC Flow
   Scenario: Check Plant Supply (Direct) Credit order
     When Request and create an Credit direct cart
      Given Go to session "ccp" "testautomation01@yopmail.com" "Jsw@2025"
-     Then close the payment reminder pop-up
+     Then user close payment due pop up
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     And open the ERP and verify all the SFSlc order data

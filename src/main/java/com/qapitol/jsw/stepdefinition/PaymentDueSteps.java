@@ -149,8 +149,16 @@ public class PaymentDueSteps extends AbstractWebPage {
     public void userClosePaymentDuePopUp() {
 
         // Wait for the close button and click it
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-        waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+        try{
+
+            waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+            waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+            waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+        }
+        catch (Exception e){
+            System.out.println("No Payment due pop up to close");
+
+        }
     }
     @And("user navigate to my reqirement")
     public void userNavigateToMyRequirement() {
