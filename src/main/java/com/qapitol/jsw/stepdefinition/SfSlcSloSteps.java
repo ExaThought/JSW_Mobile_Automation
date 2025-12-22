@@ -4,7 +4,6 @@ import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.ConfigUtil;
-import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -150,13 +149,13 @@ public class SfSlcSloSteps extends AbstractWebPage {
     @And("open the ERP and verify all the SFSlc order data")
     public void open_the_ERP_and_verify_all_the_SFSlc_order_data() {
         //Open the ERP
-        Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ErpLoginAuth"));
         Grid.driver().manage().window().maximize();
         sleep(5000);
 
         //Open the Order in ERP
         ccpOrderNumber = ccpOrderNumber;
-        Grid.driver().get(ConfigUtil.resolve("omsUrl") + "order-list/" + ccpOrderNumber);
+        Grid.driver().get(ConfigUtil.getSecretValue("omsUrl") + "order-list/" + ccpOrderNumber);
 
         //Total Amount validation
         String erpTotalAmount = waitAndGetText(ERP_TOTAL_AMOUNT);
@@ -186,13 +185,13 @@ public class SfSlcSloSteps extends AbstractWebPage {
     @And("open the ERP and verify all the SFSlo order data")
     public void open_the_erp_and_verify_all_the_SfSlo_order_data(){
         //Open the ERP
-        Grid.driver().get(ConfigUtil.resolve("ErpLoginAuth"));
+        Grid.driver().get(ConfigUtil.getSecretValue("ErpLoginAuth"));
         Grid.driver().manage().window().maximize();
         sleep(5000);
 
         //Open the Order in ERP
         ccpOrderNumber = ccpOrderNumber;
-        Grid.driver().get(ConfigUtil.resolve("omsUrl") + "order-list/" + ccpOrderNumber);
+        Grid.driver().get(ConfigUtil.getSecretValue("omsUrl") + "order-list/" + ccpOrderNumber);
 
         //Total Amount validation
         String erpTotalAmount = waitAndGetText(ERP_TOTAL_AMOUNT);

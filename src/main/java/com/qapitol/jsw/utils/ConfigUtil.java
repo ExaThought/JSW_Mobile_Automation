@@ -4,8 +4,8 @@ import com.qapitol.sauron.common.configuration.Config;
 
 public class ConfigUtil {
 
-    public static String resolve(String key) {
-        String rawValue = Config.getConfigProperty(key); //${CCP_BASE_URL:https://one.qa.jswone.in/}
+    public static String getSecretValue(String key) {
+        String rawValue = Config.getConfigProperty(key);
         if (rawValue == null) {
             return null;
         }
@@ -39,7 +39,7 @@ public class ConfigUtil {
      * Resolves the value for the given key, but throws an exception if nothing is found.
      */
     public static String resolveOrThrow(String key) {
-        String value = resolve(key);
+        String value = getSecretValue(key);
         if (value == null || value.isEmpty()) {
             throw new IllegalStateException(" Missing configuration for key: " + key);
         }
