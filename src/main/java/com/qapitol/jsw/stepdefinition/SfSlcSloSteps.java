@@ -181,6 +181,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
         softAssert.assertNotNull(waitAndGetText(ERP_MMID), "Failing in MMID in ERP");
         softAssert.assertNotNull(waitAndGetText(ERP_SKU_DETAILS), "Failing in SKU Details in ERP");
         softAssert.assertEquals(waitAndGetText(ERP_DELIVERY_TYPE), requestDeliveryType, "Failing in Delivery Type in ERP");
+        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
     }
     @And("open the ERP and verify all the SFSlo order data")
     public void open_the_erp_and_verify_all_the_SfSlo_order_data(){

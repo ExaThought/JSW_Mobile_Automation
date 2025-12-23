@@ -10,6 +10,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import static com.qapitol.jsw.stepdefinition.CartSteps.CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 
