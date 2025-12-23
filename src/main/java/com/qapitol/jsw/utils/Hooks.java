@@ -25,7 +25,17 @@ public class Hooks {
     @After
     public void afterScenario() {
         System.out.println("=== AFTER SCENARIO END ===");
-        // Assert all soft assertions at the end of each scenario
-        softAssert.assertAll();
+        try {
+            // Assert all soft assertions
+            if (softAssert != null) {
+                softAssert.assertAll();
+            }
+        } finally {
+            // ALWAYS clean up browser (even if assertion fails)
+            if (Grid.driver() != null) {
+                Grid.driver().manage().deleteAllCookies();
+                Grid.driver().quit();
+            }
+        }
     }
 }
