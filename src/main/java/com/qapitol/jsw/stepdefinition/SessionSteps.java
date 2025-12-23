@@ -75,7 +75,7 @@ public  class SessionSteps extends AbstractWebPage {
     }
 
     @Then("account logout")
-     public void ccpLogOut(){
+     public  void ccpLogOut(){
         waitAndCheckIsElementClickable(3,CCP_DROP_DOWN);
         waitAndClickOn(CCP_DROP_DOWN);
         waitAndCheckIsElementClickable(3,CCP_LOG_OUT);

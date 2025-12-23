@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.jsw.stepdefinition.SessionSteps;
 import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -11,6 +12,7 @@ public class Hooks {
 
     // Make SoftAssert static so it can be accessed globally
     public static SoftAssert softAssert;
+    SessionSteps sessionSteps = new SessionSteps();
 
     @Before
     public void beforeScenario() {
@@ -23,10 +25,9 @@ public class Hooks {
     @After
     public void afterScenario() {
         System.out.println("=== AFTER SCENARIO END ===");
-
         // Assert all soft assertions at the end of each scenario
-        Grid.driver().manage().deleteAllCookies();
-        Grid.driver().navigate().refresh();
         softAssert.assertAll();
+
+        Grid.driver().quit();
     }
 }

@@ -8,7 +8,6 @@ Feature: 02_Check Login
     And user click on continue button
     And enter valid password "Jsw@2025"
     Then user should able to login
-    Then account logout
 
    @sanity @emailLogin @emailLoginWithInvalidCredentials
   Scenario: Check Login with Invalid email ID and password
