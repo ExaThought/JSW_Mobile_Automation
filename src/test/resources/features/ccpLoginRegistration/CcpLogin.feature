@@ -1,13 +1,14 @@
-@login @regression @loginRegression @test01
-Feature: 02_Check Login
+@login @regression @loginRegression
+Feature: Check Login
 
-  @sanity @emailLogin @emailLoginWithValidCredentials
+  @sanity @emailLogin @emailLoginWithValidCredentials @test02
   Scenario: Check Login with valid email ID and password
     Given user open the CCP portal
     And enter valid email "testnewurl@yopmail.com"
     And user click on continue button
     And enter valid password "Jsw@2025"
     Then user should able to login
+    Then user close payment due pop up
 
    @sanity @emailLogin @emailLoginWithInvalidCredentials
   Scenario: Check Login with Invalid email ID and password

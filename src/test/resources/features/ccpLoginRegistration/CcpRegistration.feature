@@ -1,5 +1,5 @@
 @registration @regression @registrationRegression
-Feature: 01_Check CCP registration
+Feature: Check CCP registration
 
   @sanity @validRegistration
   Scenario: Check invalid email registration

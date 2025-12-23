@@ -1,4 +1,4 @@
-@regression @test01
+@regression
 Feature: Check Add-To-Cart
 
   Background:

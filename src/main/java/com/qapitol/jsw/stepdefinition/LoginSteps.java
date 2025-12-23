@@ -50,15 +50,6 @@ public class LoginSteps extends AbstractWebPage {
     public void user_should_able_to_login(){
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login
-        try {
-            waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-        } catch (Exception e) {
-            log.info("No Payment Due Popup displayed for given user. Please do check manually.");
-            System.out.println("No Payment Due Popup displayed for given user. Please do check manually.");
-        }
-
     }
     @And("enter invalid email {string}")
     public void enter_invalid_email(String username){

@@ -21,7 +21,7 @@ public  class SessionSteps extends AbstractWebPage {
     private static final String LOGIN_EMAIL = "ccpLoginEmail";
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
     private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
-    private static final String CCP_DROP_DOWN="ccpDropDown";
+    public static final String CCP_DROP_DOWN="ccpDropDown";
     private static final String CCP_LOG_OUT="ccpLogout";
 
 
@@ -76,8 +76,10 @@ public  class SessionSteps extends AbstractWebPage {
 
     @Then("account logout")
      public  void ccpLogOut(){
+        waitAndCheckIsElementVisible(CCP_DROP_DOWN);
         waitAndCheckIsElementClickable(3,CCP_DROP_DOWN);
         waitAndClickOn(CCP_DROP_DOWN);
+        waitAndCheckIsElementVisible(CCP_LOG_OUT);
         waitAndCheckIsElementClickable(3,CCP_LOG_OUT);
         waitAndClickOn(CCP_LOG_OUT);
         sleep(2000);

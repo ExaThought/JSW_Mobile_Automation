@@ -5,8 +5,11 @@ import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.Before;
+import lombok.extern.java.Log;
 import org.testng.asserts.SoftAssert;
 
+import static com.qapitol.jsw.stepdefinition.SessionSteps.CCP_DROP_DOWN;
+import static com.qapitol.sauron.web.WebActionListener.log;
 
 
 public class Hooks {
@@ -33,7 +36,12 @@ public class Hooks {
         e.printStackTrace();
         }
         finally {
-            sessionSteps.ccpLogOut();
+            try {
+                sessionSteps.ccpLogOut();
+            } catch (Exception e) {
+                log.info("No log out is found");
+            }
+
         }
 
     }
