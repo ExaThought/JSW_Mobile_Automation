@@ -22,19 +22,23 @@ public class Hooks {
 
     }
 
-    @After
+    @After(order =0)
     public void afterScenario() {
         System.out.println("=== AFTER SCENARIO END ===");
-        try {
-            // Assert all soft assertions
-            if (softAssert != null) {
-                softAssert.assertAll();
-            }
-        } finally {
-            // ALWAYS clean up browser (even if assertion fails)
-            if (Grid.driver() != null) {
+        // Assert all soft assertions at the end of each scenario
+        softAssert.assertAll();
+
+    }
+    @After(order = 100)
+    public void afterScenarioCleanup() {
+        System.out.println("=== AFTER SCENARIO CLEANUP ===");
+
+        if (Grid.driver() != null) {
+            try {
                 Grid.driver().manage().deleteAllCookies();
                 Grid.driver().quit();
+            } catch (Exception e) {
+                System.out.println("Driver already closed.");
             }
         }
     }
