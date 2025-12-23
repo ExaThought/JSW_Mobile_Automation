@@ -27,7 +27,5 @@ public class Hooks {
         System.out.println("=== AFTER SCENARIO END ===");
         // Assert all soft assertions at the end of each scenario
         softAssert.assertAll();
-
-        Grid.driver().quit();
     }
 }
