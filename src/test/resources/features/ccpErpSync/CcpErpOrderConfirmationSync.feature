@@ -10,7 +10,6 @@ Feature: Check CCP-ERP order confirmation Sync
     And open the cart page and create order
     And logs into ERP and opens the order details page
     And confirms the order in ERP and verify in CCP
-    Then account logout
 
   @orderConfirmation @cashAndCarryAdvanceOrderConfirmation @sanity
   @testCaseId=id-002 @dataFile="ccpErpSync.yaml" @regression
@@ -21,7 +20,7 @@ Feature: Check CCP-ERP order confirmation Sync
     And open the cart page and create order
     And logs into ERP and opens the order details page
     And confirms the order in ERP and verify in CCP
-    Then account logout
+
 
 
 
