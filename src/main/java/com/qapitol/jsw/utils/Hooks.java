@@ -25,21 +25,16 @@ public class Hooks {
 
     @After
     public void afterScenario() {
+        try{
         System.out.println("=== AFTER SCENARIO END ===");
         // Assert all soft assertions at the end of each scenario
         softAssert.assertAll();
-
-    }
-    @AfterAll
-    public static void afterScenarioCleanup() {
-        System.out.println("=== AFTER ALL SCENARIOS: DRIVER QUIT ===");
-
-        if (Grid.driver() != null) {
-            try {
-                Grid.driver().quit();
-            } catch (Exception e) {
-                System.out.println("Driver already closed.");
-            }
+    } catch (RuntimeException e) {
+        e.printStackTrace();
         }
+        finally {
+            sessionSteps.ccpLogOut();
+        }
+
     }
 }
