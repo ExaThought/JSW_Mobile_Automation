@@ -31,7 +31,7 @@ public class Hooks {
 
     }
     @AfterAll
-    public void afterScenarioCleanup() {
+    public static void afterScenarioCleanup() {
         System.out.println("=== AFTER ALL SCENARIOS: DRIVER QUIT ===");
 
         if (Grid.driver() != null) {
