@@ -1,5 +1,5 @@
-@login @regression @loginRegression
-Feature: Check Login
+@login @regression @loginRegression @test01
+Feature: 02_Check Login
 
   @sanity @emailLogin @emailLoginWithValidCredentials @test01
   Scenario: Check Login with valid email ID and password
