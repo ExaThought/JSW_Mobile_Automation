@@ -182,12 +182,22 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     // Step for invalid GSTIN error validation
     @Then("user should not able to proceed with GSTIN error")
     public void userShouldNotAbleToProceedWithGSTINError() {
+        // Wait for NEXT button to be visible before any click
         waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
+
+        //click anywhere write code
+        waitAndClickOn(CCP_REGISTER_NEXT);
+
+        // Wait for the error message
         waitAndCheckIsElementVisible(CCP_INVALID_GSTIN_ERROR);
 
+        // Get error message text
         String msg = waitAndGetText(CCP_INVALID_GSTIN_ERROR);
+
+        // Assert the error message
         softAssert.assertEquals(msg, "Please enter correct GSTIN for account registration on JSW ONE MSME");
     }
+
 
     @And("user unchecks the terms and conditions checkbox")
     public void userUnchecksTheTermsAndConditionsCheckbox() {
