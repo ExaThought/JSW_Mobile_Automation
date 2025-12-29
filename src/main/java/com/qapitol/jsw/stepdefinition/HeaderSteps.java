@@ -16,7 +16,7 @@ public class HeaderSteps extends AbstractWebPage {
     @When("user open the msite")
     public void user_open_the_msite() throws InterruptedException {
 
-        // ✅ Use the EXISTING Appium driver from Grid
+        // Use the EXISTING Appium driver from Grid
         AppiumDriver driver = (AppiumDriver) Grid.driver();
 
         // Open MSite
