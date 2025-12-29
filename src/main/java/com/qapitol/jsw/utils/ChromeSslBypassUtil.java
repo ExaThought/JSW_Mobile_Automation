@@ -29,11 +29,11 @@ public class ChromeSslBypassUtil {
             wait.until(ExpectedConditions.elementToBeClickable(PROCEED_LINK))
                     .click();
 
-            System.out.println("✅ SSL warning bypassed on Android Chrome");
+            System.out.println("SSL warning bypassed on Android Chrome");
 
         } catch (Exception e) {
             // No SSL warning page
-            System.out.println("ℹ️ No SSL warning detected");
+            System.out.println("No SSL warning detected");
         }
     }
 }
