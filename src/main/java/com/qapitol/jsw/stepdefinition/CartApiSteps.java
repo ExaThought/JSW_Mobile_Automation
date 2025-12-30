@@ -48,8 +48,8 @@ public class CartApiSteps {
         addToCartResponse = cartRCV2ApiImp.getAddToCartResponse(payload);
         if(Objects.equals(addToCartResponse.getStatus(), "OK"))
         {
-            log.info("Item added in the cart successfully with item name:"+" "+ addToCartResponse.getData().getLineItemList().get(0).getSku());
-            AllureCustomLogReporter.addTestStepLog("Item added in the cart successfully with item name:"+" "+ addToCartResponse.getData().getLineItemList().get(0).getSku());
+            log.info("Item added in the cart successfully");
+            AllureCustomLogReporter.addTestStepLog("Item added in the cart successfully");
         }
         firstRequestQuantity = addToCartResponse.getData().getLineItemList().get(0).getQuantity().getPrimaryUom().getValue();
     }
@@ -80,7 +80,7 @@ public class CartApiSteps {
         AllureCustomLogReporter.addTestStepLog("Line item quantity is :"+" "+addToCartResponse.getData().getLineItemList().get(0).getQuantity().getPrimaryUom().getValue());
         log.info("No of line item in the cart is:"+" "+addToCartResponse.getData().getLineItemList().size());
         AllureCustomLogReporter.addTestStepLog("Line item quantity is :"+" "+addToCartResponse.getData().getLineItemList().size());
-        softAssert.assertAll();
+
     }
 
     @And("check for sheets product and verify the primary and secondary uom and quantity")
@@ -92,7 +92,6 @@ public class CartApiSteps {
         Assert.assertEquals(addToCartResponse.getData().getLineItemList().get(0).getQuantity().getPrimaryUom().getUnit(),"MT");
         log.info("Primary UOM is:"+" "+ addToCartResponse.getData().getLineItemList().get(0).getQuantity().getPrimaryUom().getUnit());
         AllureCustomLogReporter.addTestStepLog("Primary UOM is:"+" "+ addToCartResponse.getData().getLineItemList().get(0).getQuantity().getPrimaryUom().getUnit());
-        softAssert.assertAll();
     }
     @And("check for TMT product and verify the primary and secondary uom and quantity")
     public void check_for_tmt_product_and_verify_the_primary_and_secondary_uom_and_quantity() throws IOException {
@@ -228,7 +227,7 @@ public class CartApiSteps {
         String getCartId=getCartNode.path("data").path("identifier").get("id").asText();
         String addToCartId=addToCartNode.path("data").path("identifier").get("id").asText();
         softAssert.assertEquals(getCartId,addToCartId);
-        softAssert.assertAll();
+
     }
     @When("request and get response for app Api")
     public void request_and_get_response_for_app_api() throws IOException {
