@@ -33,3 +33,12 @@ Feature: Check Login
     And user click on continue button
     And enter invalid password "Jsw@2029"
     Then user should not able to login with error message
+
+    @loginAndLogout
+  Scenario: Check CCP Login and Logout functionality
+    Given user open the CCP portal
+    And enter valid email "testnewurl@yopmail.com"
+    And user click on continue button
+    And enter valid password "Jsw@2025"
+    Then user should able to login
+    Then user close payment due pop up

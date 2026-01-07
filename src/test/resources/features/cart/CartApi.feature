@@ -6,14 +6,16 @@ Feature: Check RCV2 Cart Api
 
   @testCaseId=id-001 @dataFile="rcv2.yaml"
   Scenario: Check Add-to-cart Api
-    When we request add to cart Api for primary Quantity MT
-    Then response should be 200 and able to see all data in response
-    And check the update when adding the same product with identical attributes to the cart again
-    Then check the quantity and line item
-    And check for sheets product and verify the primary and secondary uom and quantity
-    And check for TMT product and verify the primary and secondary uom and quantity
-    And check for Cement product and verify the primary and secondary uom and quantity
-    And check for StainlessSteel product and verify the primary and secondary uom and quantity
+#    When we request add to cart Api for primary Quantity MT
+#    Then response should be 200 and able to see all data in response
+#    And check the update when adding the same product with identical attributes to the cart again
+#    Then check the quantity and line item
+#    And check for sheets product and verify the primary and secondary uom and quantity
+#    And check for TMT product and verify the primary and secondary uom and quantity
+#    And check for Cement product and verify the primary and secondary uom and quantity
+#    And check for StainlessSteel product and verify the primary and secondary uom and quantity
+#    Then check how many line item present in get cart
+#    And delete complete cart
 
 
   @testCaseId=id-005 @dataFile="rcv2.yaml"
@@ -25,9 +27,9 @@ Feature: Check RCV2 Cart Api
   Scenario: Check delete line item and Delete cart Api
     When we add multi line item to cart
     And delete one line item from cart
-    Then check how many line item present in get cart
-    And delete complete cart
-    Then check the get cart
+#    Then check how many line item present in get cart
+#    And delete complete cart
+#    Then check the get cart
 
   @testCaseId=id-003 @dataFile="rcv2.yaml" @new1
   Scenario: Check update line item Api

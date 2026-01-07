@@ -1,0 +1,19 @@
+elements:
+  homePageRegistrationButton:
+    en_US:
+      web: xpath=//button[@class='btn cta-btn primary']//span[contains(text(),'Register')]
+  registrationPageMessage:
+    en_US:
+      web: xpath=(//div[contains(text(),'Create your JSW One MSME account')])[1]
+  activeOrders:
+    en_US:
+      web: xpath=//div[contains(text(),'Active orders')]
+  loginRegistrationPage:
+    en_US:
+      web: xpath=//div[contains(text(),'Login or Register')]
+  myRequirements:
+    en_US:
+      web: xpath=//a[contains(text(),'My requirements')]
+  myOrders:
+    en_US:
+      web: xpath=//a[contains(text(),'My orders')]

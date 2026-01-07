@@ -228,7 +228,6 @@ public class CartSteps extends AbstractWebPage {
         sleep(2000);
         waitAndCheckIsElementPresent(DELETE_CTA_BUTTON);
         waitAndClickOn(DELETE_CTA_BUTTON);
-        sleep(5000);
     }
     @And("check user able to add the product to cart without pricing")
     public void check_user_able_to_add_the_product_to_cart_without_pricing(){
@@ -247,6 +246,7 @@ public class CartSteps extends AbstractWebPage {
         waitAndClickOn(THICKNESS);
         waitAndCheckIsElementPresent(WIDTH);
         waitAndClickOn(WIDTH);
+        sleep(2000);
         waitAndCheckIsElementPresent(COATING_GRADE);
         waitAndClickOn(COATING_GRADE);
         sleep(1000);
