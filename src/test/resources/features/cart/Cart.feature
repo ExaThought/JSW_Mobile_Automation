@@ -1,3 +1,4 @@
+@regression
 Feature: Check Add-To-Cart
 
   Background:
@@ -7,16 +8,11 @@ Feature: Check Add-To-Cart
 
   @addToCart @checkout
   Scenario: check PDP validation and Add-to-cart
-      When user open HR coil pdp
-      And select all the attribute and add to cart
-      Then check user able to add the product to cart page
-      And user will add cement product to cart
 #      And user will add Stainless Steel product to cart
-      Then check user able to delete line item from cart
-      And check user able to add the product to cart without pricing
-      And user checkout the RCV2
+    Then check user able to delete line item from cart
+    And user checkout the RCV2
 
-  @test01
+  @HRSheet
   Scenario: Verify HR Sheet Product Add to Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
@@ -27,6 +23,7 @@ Feature: Check Add-To-Cart
     And click view cart
     Then Delete the line item from cart
 
+  @HRCoil
   Scenario: verify HR Coil Product Add to Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
@@ -37,6 +34,7 @@ Feature: Check Add-To-Cart
     And click view cart
     Then Delete the line item from cart
 
+  @CRCoil
   Scenario: Verify CR Coil Product Add to Cart
     When move the mouse to Mild steel category
     And move to Cold rolled category
@@ -46,4 +44,35 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then Delete the line item from cart
+
+  @CRSheet
+  Scenario: Verify CR Sheet Product Add to Cart
+    When move the mouse to Mild steel category
+    And move to Cold rolled category
+    And click on CR Sheet product
+    And open CR Sheet pdp
+    And select all the CR Sheet attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
+  @Cement
+  Scenario: Verify Cement Product Add to Cart
+    When click on Cement product
+    And open Cement pdp
+    And select all the Cement attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
+    @ColourCoated
+  Scenario: Verify Colour Coated Sheet Product Add to Cart
+    When move the mouse to Mild steel category
+    And click to Colour Coated category
+    And open Colour Coated pdp
+    And select all the Colour Coated Sheet attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
 

@@ -12,4 +12,7 @@ public class CategoryPages {
     public static String addToCart="//button[contains(., 'Add to Cart')]";
     public static String coldRolledCategory="(//a[contains(text(),'Cold rolled')])[4]";
     public static String coldRolledCoilsSubCategory ="(//a[contains(text(),'Cold rolled coils')])[1]";
+    public static String coldRolledSheetsSubCategory="(//a[contains(text(),'Cold rolled sheets')])[1]";
+    public static String coatingGrade="(//div[contains(text(),'Coating grade - AZ (GSM)')]//parent::div//following-sibling::div//child::div//child::button)[1]";
 }
+

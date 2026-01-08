@@ -8,18 +8,12 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.*;
 import static com.qapitol.jsw.utils.CustomUtil.scrollingToViewAndClickUsingJS;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
-    private static final String HR_COIL_PLP="hr";
-    private static final String HR_COIL = "hrCoilE250A";
     private static final String THICKNESS = "thickness";
     private static final String QUANTITY = "quantity";
     private static final String ADD_TO_CART_CTA = "addToCart";
@@ -52,83 +46,6 @@ public class CartSteps extends AbstractWebPage {
     Actions actions=new Actions(Grid.driver());
     String requirementId;
 
-    @When("user open HR coil pdp")
-    public void user_open_HR_coil_pdp() {
-        sleep(3000);
-        Actions actions = new Actions(Grid.driver());
-        WebElement mildSteel = Grid.driver().findElement(By.xpath("//a[contains(., 'Mild Steel')]"));
-        actions.moveToElement(mildSteel).perform();
-        sleep(1000);
-        WebElement hotRolled = Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[4]"));
-        actions.moveToElement(hotRolled).perform();
-        sleep(1000);
-        WebElement hotRolledCoil = Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[1]"));
-        actions.moveToElement(hotRolledCoil).perform();
-        hotRolledCoil.click();
-        sleep(1000);
-        waitAndCheckIsElementPresent(HR_COIL);
-        waitAndCheckIsElementClickable(HR_COIL);
-
-        // Scroll into view to avoid sticky navbar overlay
-        WebElement hrCoilElement = Grid.driver().findElement(By.xpath("//a[@title='TATA Hot Rolled Coil 2062:2011 E350A']"));
-        ((JavascriptExecutor) Grid.driver()).executeScript("arguments[0].scrollIntoView({block: 'center'});", hrCoilElement);
-
-
-        // Then click
-        waitAndClickOn(HR_COIL);
-    }
-
-
-    @And("select all the attribute and add to cart")
-    public void select_all_the_attribute_and_add_to_cart() {
-        waitAndCheckIsElementPresent(THICKNESS);
-        waitAndClickOn(THICKNESS);
-
-        waitAndCheckIsElementPresent(WIDTH);
-
-        // Find the width button element explicitly
-        WebElement widthButton = Grid.driver().findElement(By.xpath("//button[contains(text(),'1250')]"));
-
-        // Scroll into view and scroll up a bit to avoid sticky footer overlap
-        ((JavascriptExecutor) Grid.driver()).executeScript("arguments[0].scrollIntoView(true); window.scrollBy(0, -150);", widthButton);
-
-        // Wait until clickable (explicit wait)
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(30));
-        widthButton = wait.until(ExpectedConditions.elementToBeClickable(widthButton));
-
-        // Try clicking the width button safely
-        try {
-            widthButton.click();
-        } catch (ElementClickInterceptedException e) {
-            // If intercepted, fallback to JS click
-            ((JavascriptExecutor) Grid.driver()).executeScript("arguments[0].click();", widthButton);
-        }
-
-        sleep(3000);
-
-        waitAndCheckIsElementPresent(QUANTITY);
-        waitAndSetText(QUANTITY, "10");
-    }
-
-    @And("user will add cement product to cart")
-    public void user_will_add_cement_product_to_cart(){
-        sleep(2000);
-       waitAndCheckIsElementPresent(CEMENT_PLP);
-       waitAndClickOn(CEMENT_PLP);
-       waitAndCheckIsElementPresent(CEMENT_PDP);
-       waitAndClickOn(CEMENT_PDP);
-       sleep(2000);
-       waitAndCheckIsElementPresent(CEMENT_QUANTITY);
-       waitAndSetText(CEMENT_QUANTITY,"120");
-       sleep(2000);
-       waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
-       waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(2000);
-        waitAndCheckIsElementPresent(VIEW_CART);
-       waitAndClickOn(VIEW_CART);
-       softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
-
-    }
     @And("user will add Stainless Steel product to cart")
     public void user_will_add_stainless_steel_product_to_cart(){
         sleep(2000);
@@ -157,62 +74,14 @@ public class CartSteps extends AbstractWebPage {
         sleep(3000);
     }
 
-    @Then("check user able to add the product to cart page")
-    public void check_user_able_to_add_the_product_to_cart_page() {
-        sleep(2000);
-        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
-        waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(3000);
-        waitAndCheckIsElementPresent(VIEW_CART);
-        waitAndClickOn(VIEW_CART);
-        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
-    }
     @Then("check user able to delete line item from cart")
     public void check_ser_able_to_delete_line_item_from_cart(){
-        sleep(2000);
         waitAndCheckIsElementPresent(DELETE_LINE_ITEM);
         waitAndClickOn(DELETE_LINE_ITEM);
-        sleep(2000);
         waitAndCheckIsElementPresent(DELETE_CTA_BUTTON);
         waitAndClickOn(DELETE_CTA_BUTTON);
     }
-    @And("check user able to add the product to cart without pricing")
-    public void check_user_able_to_add_the_product_to_cart_without_pricing(){
-        sleep(2000);
-        waitAndCheckIsElementPresent(MILD_STEEL);
-        Actions actions=new Actions(Grid.driver());
-        WebElement mildSteel=Grid.driver().findElement(By.xpath("//a[contains(text(),'Mild Steel')]"));
-        actions.moveToElement(mildSteel).perform();
-        sleep(1000);
-        waitAndCheckIsElementPresent(COLOUR_COATED);
-        waitAndClickOn(COLOUR_COATED);
-        sleep(1000);
-        waitAndCheckIsElementPresent(COLOUR_COATED_PDP);
-        waitAndClickOn(COLOUR_COATED_PDP);
-        waitAndCheckIsElementPresent(THICKNESS);
-        waitAndClickOn(THICKNESS);
-        waitAndCheckIsElementPresent(WIDTH);
-        waitAndClickOn(WIDTH);
-        sleep(2000);
-        waitAndCheckIsElementPresent(COATING_GRADE);
-        waitAndClickOn(COATING_GRADE);
-        sleep(1000);
-        WebElement dropdown = Grid.driver().findElement(By.xpath("//div[@id='custom-dropdown']"));
-        dropdown.click();
-        sleep(1000);
-        WebElement option = Grid.driver().findElement(By.xpath("//li[contains(text(),'Sky Blue')]"));
-        option.click();
-        sleep(1000);
-        waitAndCheckIsElementPresent(QUANTITY);
-        waitAndSetText(QUANTITY, "10");
-        sleep(1000);
-        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
-        waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(5000);
-        waitAndCheckIsElementPresent(VIEW_CART);
-        waitAndClickOn(VIEW_CART);
-        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
-    }
+
     @And("user checkout the RCV2")
     public void user_checkout_the_rcv2(){
         sleep(2000);
@@ -318,6 +187,7 @@ public class CartSteps extends AbstractWebPage {
     public void clickViewCart() {
         waitAndCheckIsElementClickable(VIEW_CART);
         waitAndClickOn(VIEW_CART);
+        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
     }
 
     @Then("Delete the line item from cart")
@@ -360,7 +230,87 @@ public class CartSteps extends AbstractWebPage {
         waitAndSetText(QUANTITY, "50");
     }
 
+    @And("click on CR Sheet product")
+    public void clickOnCRSheetProduct() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledSheetsSubCategory))).click().perform();
+    }
 
+    @And("open CR Sheet pdp")
+    public void openCRSheetPdp() {
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
 
+    @And("select all the CR Sheet attribute")
+    public void selectAllTheCRSheetAttribute() {
+        waitAndCheckIsElementClickable(THICKNESS);
+        waitAndClickOn(THICKNESS, "2");
+
+        waitAndCheckIsElementClickable(WIDTH);
+        waitAndClickOn(WIDTH, "1");
+
+        WebElement locator = Grid.driver().findElement(By.xpath(length));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(LENGTH);
+        waitAndClickOn(LENGTH, "1");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "100");
+    }
+
+    @When("click on Cement product")
+    public void clickOnCementProduct() {
+        waitAndCheckIsElementClickable(CEMENT_PLP);
+        waitAndClickOn(CEMENT_PLP);
+    }
+    @And("open Cement pdp")
+    public void openCementPdp() {
+        waitAndCheckIsElementClickable(CEMENT_PDP);
+        waitAndClickOn(CEMENT_PDP);
+    }
+
+    @And("select all the Cement attribute")
+    public void selectAllTheCementAttribute() {
+        waitAndCheckIsElementClickable(CEMENT_QUANTITY);
+        waitAndSetText(CEMENT_QUANTITY, "200");
+    }
+
+    @And("click to Colour Coated category")
+    public void clickToColourCoatedCategory() {
+        waitAndCheckIsElementPresent(COLOUR_COATED);
+        waitAndClickOn(COLOUR_COATED);
+    }
+
+    @And("open Colour Coated pdp")
+    public void openColourCoatedPdp() {
+        waitAndCheckIsElementClickable(COLOUR_COATED_PDP);
+        waitAndClickOn(COLOUR_COATED_PDP);
+    }
+
+    @And("select all the Colour Coated Sheet attribute")
+    public void selectAllTheColourCoatedSheetAttribute() {
+        waitAndCheckIsElementPresent(THICKNESS);
+        waitAndClickOn(THICKNESS, "2");
+
+        waitAndCheckIsElementPresent(WIDTH);
+        waitAndClickOn(WIDTH, "1");
+
+        WebElement locator=Grid.driver().findElement(By.xpath(coatingGrade));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementPresent(COATING_GRADE);
+        waitAndClickOn(COATING_GRADE,"1");
+
+        WebElement dropdown = Grid.driver().findElement(By.xpath("//div[@id='custom-dropdown']"));
+        dropdown.click();
+
+        WebElement option = Grid.driver().findElement(By.xpath("//li[contains(text(),'Sky Blue')]"));
+        option.click();
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "100");
+    }
 
 }

@@ -70,7 +70,7 @@ elements:
       web: xpath=(//div[contains(text(),"Width (mm)")]//parent::div//following-sibling::div//child::div//child::button)[{0}]
   coatingGrade:
     en_US:
-      web: xpath=(//div[contains(text(),'Coating grade - AZ (GSM)')]//parent::div//following-sibling::div//child::div//child::button)[1]
+      web: xpath=(//div[contains(text(),"Coating grade - AZ (GSM)")]//parent::div//following-sibling::div//child::div//child::button)[{0}]
   rcCheckoutSuccessPage:
     en_US:
       web: xpath=//div[@class='rc-subimitted h-100 d-flex justify-content-center align-items-center flex-column']//following-sibling::div[contains(text(),'submitted')]
