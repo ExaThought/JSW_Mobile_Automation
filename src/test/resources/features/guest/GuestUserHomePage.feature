@@ -46,5 +46,9 @@
       Given user open the CCP portal as guest user
       Then You tube video should be displayed in home page and able to play
 
+    Scenario: Check blog's in Guest user home page
+      Given user open the CCP portal as guest user
+      Then Blogs section should be displayed in home page and user able to open any blog
+
 
 

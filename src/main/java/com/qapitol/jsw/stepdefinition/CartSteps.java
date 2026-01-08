@@ -1,6 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
-import com.qapitol.jsw.utils.ConfigUtil;
+
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -8,25 +8,19 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+import static com.qapitol.jsw.pageFactory.CategoryPages.*;
+import static com.qapitol.jsw.utils.CustomUtil.scrollingToViewAndClickUsingJS;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
-
-    private static final String LOGIN_CTA_BUTTON = "loginButton";
-    private static final String LOGIN_VIA_OTP = "loginViaOtp";
-    private static final String LOGIN_EMAIL = "ccpLoginEmail";
-    private static final String LOGIN_PASSWORD = "ccpLoginPassword";
-    private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     private static final String HR_COIL_PLP="hr";
     private static final String HR_COIL = "hrCoilE250A";
-    private static final String HR_THICKNESS = "thickness";
-    private static final String HR_WIDTH = "width";
+    private static final String THICKNESS = "thickness";
     private static final String QUANTITY = "quantity";
     private static final String ADD_TO_CART_CTA = "addToCart";
     private static final String VIEW_CART = "viewCart";
@@ -41,84 +35,37 @@ public class CartSteps extends AbstractWebPage {
     private static final String STAINLESS_STEEL_THICKNESS="stainlessSteelThickness";
     private static final String STAINLESS_STEEL_WIDTH="stainlessSteelWidth";
     private static final String STAINLESS_STEEL_LENGTH="stainlessSteelLength";
-    private static final String SF_LOGIN_EMAIL="sfEmail";
-    private static final String SF_LOGIN_PASSWORD="sfPassword";
-    private static final String SF_LOGIN="sfLogin";
-    private static final String SF_SEARCH="sfSearch";
     private static final String RCV2_CHECKOUT="rcCheckout";
     private static final String MY_REQUIREMENT_PAGE="myRequirementPage";
     private static final String REQUIREMENT_ID="requirementId";
     private static final String MILD_STEEL="mildSteel";
     private static final String COLOUR_COATED="colourCoated";
     private static final String COLOUR_COATED_PDP="colourCoatedPdp";
-    private static final String THICKNESS="thickness(mm)";
     private static final String WIDTH="width(mm)";
     private static final String COATING_GRADE="coatingGrade";
     private static final String SUCCESS_PAGE_RCV2="rcCheckoutSuccessPage";
     private static final String CART_PAGE="cartPage";
-    public static final String CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON = "ccpHomePagePaymentDueCloseButton";
+    private static final String PLP_FIRST_PRODUCT="plpFirstProduct";
+    private static final String LENGTH="length";
 
 
+    Actions actions=new Actions(Grid.driver());
     String requirementId;
 
-    @When("user open the portal and login with valid credentials {string} {string}")
-    public void user_open_the_portal_and_login_with_valid_credentials(String username, String password) {
-        // Open CCP portal
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-
-        // Click Login CTA
-        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        waitAndClickOn(LOGIN_CTA_BUTTON);
-
-        // Select Login via Email (instead of OTP)
-        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP);
-
-        // Enter Email
-        waitAndCheckIsElementVisible(LOGIN_EMAIL);
-        waitAndSetText(LOGIN_EMAIL, username);
-
-        // Click Continue (after email)
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);
-
-        // Enter Password
-        waitAndCheckIsElementVisible(LOGIN_PASSWORD);
-        waitAndSetText(LOGIN_PASSWORD, password);
-
-        // Final Login Click
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);
-
-        try {
-            waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-        } catch (Exception e) {
-            log.info("No Payment Due Popup displayed for given user. Please do check manually.");
-            System.out.println("No Payment Due Popup displayed for given user. Please do check manually.");
-        }
-
-    }
     @When("user open HR coil pdp")
     public void user_open_HR_coil_pdp() {
         sleep(3000);
         Actions actions = new Actions(Grid.driver());
-
         WebElement mildSteel = Grid.driver().findElement(By.xpath("//a[contains(., 'Mild Steel')]"));
         actions.moveToElement(mildSteel).perform();
         sleep(1000);
-
         WebElement hotRolled = Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled')])[4]"));
         actions.moveToElement(hotRolled).perform();
         sleep(1000);
-
         WebElement hotRolledCoil = Grid.driver().findElement(By.xpath("(//a[contains(text(),'Hot rolled coils')])[1]"));
         actions.moveToElement(hotRolledCoil).perform();
         hotRolledCoil.click();
         sleep(1000);
-
         waitAndCheckIsElementPresent(HR_COIL);
         waitAndCheckIsElementClickable(HR_COIL);
 
@@ -134,10 +81,10 @@ public class CartSteps extends AbstractWebPage {
 
     @And("select all the attribute and add to cart")
     public void select_all_the_attribute_and_add_to_cart() {
-        waitAndCheckIsElementPresent(HR_THICKNESS);
-        waitAndClickOn(HR_THICKNESS);
+        waitAndCheckIsElementPresent(THICKNESS);
+        waitAndClickOn(THICKNESS);
 
-        waitAndCheckIsElementPresent(HR_WIDTH);
+        waitAndCheckIsElementPresent(WIDTH);
 
         // Find the width button element explicitly
         WebElement widthButton = Grid.driver().findElement(By.xpath("//button[contains(text(),'1250')]"));
@@ -288,4 +235,132 @@ public class CartSteps extends AbstractWebPage {
         System.out.println(requirementId);
 
     }
+
+    @When("move the mouse to Mild steel category")
+    public void moveTheMouseToMildSteelCategory() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(mildSteelCategory))).perform();
+    }
+
+    @And("move to Hot rolled category")
+    public void moveToHotRolledCategory() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(hotRolledCategory))).perform();
+    }
+
+    @And("click on HR Sheet product")
+    public void clickOnHRSheetProduct() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(hotRolledSheetsSubCategory))).click().perform();
+    }
+
+    @And("click on HR Coil product")
+    public void clickOnHRCoilProduct() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(hotRolledCoilsSubCategory))).click().perform();
+    }
+
+    @And("open HR Coil pdp")
+    public void openHRCoilPdp() {
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the HR Coil attribute")
+    public void selectAllTheHrCoilAttribute() {
+        waitAndCheckIsElementClickable(THICKNESS);
+        waitAndClickOn(THICKNESS,"2");
+
+        waitAndCheckIsElementClickable(WIDTH);
+        waitAndClickOn(WIDTH,"2");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "50");
+
+    }
+
+    @And("open HR Sheet pdp")
+    public void openHRSheetPdp() {
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the HR Sheet attribute")
+    public void selectAllTheHrAttribute() {
+        waitAndCheckIsElementClickable(THICKNESS);
+        waitAndClickOn(THICKNESS,"2");
+
+        waitAndCheckIsElementClickable(WIDTH);
+        waitAndClickOn(WIDTH,"1");
+
+        WebElement locator=Grid.driver().findElement(By.xpath(length));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(LENGTH);
+        waitAndClickOn(LENGTH,"1");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "100");
+
+    }
+
+    @And("add to cart")
+    public void addToCart() {
+        sleep(1000);
+        waitAndCheckIsElementClickable(ADD_TO_CART_CTA);
+        waitAndClickOn(ADD_TO_CART_CTA);
+    }
+
+    @And("click view cart")
+    public void clickViewCart() {
+        waitAndCheckIsElementClickable(VIEW_CART);
+        waitAndClickOn(VIEW_CART);
+    }
+
+    @Then("Delete the line item from cart")
+    public void deleteTheLineItemFromCart() {
+        waitAndCheckIsElementClickable(DELETE_LINE_ITEM);
+        waitAndClickOn(DELETE_LINE_ITEM);
+        waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
+        waitAndClickOn(DELETE_CTA_BUTTON);
+    }
+
+    @And("move to Cold rolled category")
+    public void moveToColdRolledCategory() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCategory))).perform();
+    }
+
+    @And("click on CR Coil product")
+    public void clickOnCRCoilProduct() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCoilsSubCategory))).click().perform();
+    }
+
+    @And("open CR Coil pdp")
+    public void openCRCoilPdp() {
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the CR Coil attribute")
+    public void selectAllTheCRCoilAttribute() {
+        waitAndCheckIsElementClickable(THICKNESS);
+        waitAndClickOn(THICKNESS, "2");
+
+        waitAndCheckIsElementClickable(WIDTH);
+        waitAndClickOn(WIDTH, "2");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "50");
+    }
+
+
+
+
 }

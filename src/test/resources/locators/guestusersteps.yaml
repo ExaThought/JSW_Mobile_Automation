@@ -17,3 +17,18 @@ elements:
   myOrders:
     en_US:
       web: xpath=//a[contains(text(),'My orders')]
+  youtube:
+    wn_US:
+      web: xpath=//img[@alt="JSW One video"]
+  verifyYoutubeVideo:
+    en_US:
+      web: xpath=//iframe[contains(@src,'youtube.com')]
+  blogsArticles:
+    en_US:
+      web: xpath=//h1[contains(text(),'Browse articles & blogs')]/following-sibling::div/child::div
+  blogsArticleViewAll:
+    en_US:
+      web: xpath=//h1[contains(text(),'Browse articles & blogs')]/following-sibling::div/child::a
+  blogsPageVerification:
+    en_US:
+      web: xpath=(//div[text()='Featured articles'])[1]

@@ -16,26 +16,14 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class ForgetPasswordSteps  extends AbstractWebPage {
 
-    public static final String LOGIN_CTA_BUTTON = "loginButton";
     public static final String LOGIN_VIA_OTP = "loginViaOtp";
     public static final String LOGIN_EMAIL = "ccpLoginEmail";
-    public static final String LOGIN_PASSWORD = "ccpLoginPassword";
     public static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     public static final String CCP_LOGIN_ERROR_MESSAGE = "errorMessage";
     public static final String CCP_INVALID_EMAIL_ERROR_MESSAGE = "invalidEmailErrorMessage";
     public static final String FORGOT_PASSWORD_LINK = "forgotPasswordLink";
     public static final String FORGOT_PASSWORD_SUCCESS_MSG = "forgetPasswordSuccessMessage";
 
-
-    @When("user open the CCP portal website")
-    public void user_open_the_ccp_portal_web() {
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
-        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
-    }
 
     @And("enter invalid email id {string}")
     public void enterInvalidEmailId(String arg0) {

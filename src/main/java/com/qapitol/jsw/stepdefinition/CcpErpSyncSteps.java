@@ -48,7 +48,6 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         this.userName=userName;
         this.password=password;
         Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        sessionSteps.checkLoginPage();
         Grid.driver().manage().window().maximize();
         // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
