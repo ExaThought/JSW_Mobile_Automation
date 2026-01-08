@@ -3,7 +3,6 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -21,6 +20,11 @@ public class GuestUserSteps extends AbstractWebPage {
     private final String LOGIN_REGISTER_PAGE="loginRegistrationPage";
     private final String MY_REQUIREMENT="myRequirements";
     private final String MY_ORDERS="myOrders";
+    private final String YOUTUBE_VIDEO="youtube";
+    private final String YOUTUBE_VERIFICATION="verifyYoutubeVideo";
+    private final String BLOGS_SECTION="blogsArticles";
+    private final String BLOGS_VIEW_ALL="blogsArticleViewAll";
+    private final String BLOGS_PAGE_VERIFICATION="blogsPageVerification";
 
 
     String pageName;
@@ -66,13 +70,33 @@ public class GuestUserSteps extends AbstractWebPage {
     public void userShouldNotAbleToSeeSection(String sectionName) {
         if(sectionName.equalsIgnoreCase("My Requirements")){
             softAssert.assertFalse(isElementPresent(MY_REQUIREMENT),sectionName+" section is displayed for Guest User");
-        }else if(sectionName.equalsIgnoreCase("My Orders")){
+        }
+        else if(sectionName.equalsIgnoreCase("My Orders")){
             softAssert.assertFalse(isElementPresent(MY_ORDERS),sectionName+" section is displayed for Guest User");
         }
     }
 
     @Then("You tube video should be displayed in home page and able to play")
     public void youTubeVideoShouldBeDisplayedInHomePageAndAbleToPlay() {
+        sleep(1000);
+        JavascriptExecutor js = Grid.driver();
+        WebElement youtubeFrame = Grid.driver().findElement(By.xpath("//img[@alt='JSW One video']"));
+        js.executeScript("arguments[0].scrollIntoView(true);", youtubeFrame);
+        js.executeScript("arguments[0].click();", youtubeFrame);
+        sleep(1000);
+        softAssert.assertTrue(isElementPresent(YOUTUBE_VERIFICATION),"You tube video is not played on clicking the video thumbnail");
+    }
 
+    @Then("Blogs section should be displayed in home page and user able to open any blog")
+    public void blogsSectionShouldBeDisplayedInHomePageAndUserAbleToOpenAnyBlog() {
+        sleep(1000);
+        JavascriptExecutor js = Grid.driver();
+        WebElement blogSection = Grid.driver().findElement(By.xpath("//h1[contains(text(),'Browse articles & blogs')]"));
+        js.executeScript("arguments[0].scrollIntoView(true);", blogSection);
+        softAssert.assertTrue(blogSection.isDisplayed(),"Blogs section is not displayed in home page for Guest User");
+        softAssert.assertTrue(isElementPresent(BLOGS_SECTION),"Blogs section content is not displayed in home page for Guest User");
+        sleep(1000);
+        waitAndClickOn(BLOGS_VIEW_ALL);
+        softAssert.assertTrue(isElementPresent(BLOGS_PAGE_VERIFICATION),"User is not navigated to Blogs page on clicking View All in Blogs section");
     }
 }

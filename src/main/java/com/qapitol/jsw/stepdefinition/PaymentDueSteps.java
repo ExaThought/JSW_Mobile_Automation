@@ -12,11 +12,6 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 public class PaymentDueSteps extends AbstractWebPage {
 
     // ===== CCP HOME PAGE ELEMENT KEYS =====
-    public static final String CCP_HOME_PAGE_LOGIN_BUTTON = "ccpHomePageLoginButton";
-    public static final String CCP_HOME_PAGE_LOGIN_VIA_OTP = "ccpHomePageLoginViaOtp";
-    public static final String CCP_HOME_PAGE_LOGIN_EMAIL = "ccpHomePageLoginEmail";
-    public static final String CCP_HOME_PAGE_LOGIN_PASSWORD = "ccpHomePageLoginPassword";
-    public static final String CCP_HOME_PAGE_LOGIN_CTA = "ccpHomePageLoginCTA";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_POPUP = "ccpHomePagePaymentDuePopup";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_TITLE = "ccpHomePagePaymentDueTitle";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_AMOUNT = "ccpHomePagePaymentDueAmount";
@@ -34,47 +29,6 @@ public class PaymentDueSteps extends AbstractWebPage {
     public static final String CCP_HOME_PAGE_BUY_AGAIN_LINK = "ccpHomePageBuyAgainLink";
     public static final String CCP_HOME_PAGE_CART_LINK = "ccpHomePageCartLink";
 
-
-
-
-    @When("user open the CCP Webportal")
-    public void user_open_the_ccp_web_portal() {
-
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_BUTTON);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_BUTTON);
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_VIA_OTP);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_VIA_OTP);
-    }
-
-    @And("enter user email {string}")
-    public void enterUserEmail(String arg0) {
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_EMAIL);
-        waitAndSetText(CCP_HOME_PAGE_LOGIN_EMAIL, arg0);
-    }
-
-    @And("user click on continue")
-    public void userClickOnContinue() {
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_CTA);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_CTA);
-    }
-
-    @And("user enter valid password {string}")
-    public void userEnterValidPassword(String arg0) {
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_PASSWORD);
-        waitAndSetText(CCP_HOME_PAGE_LOGIN_PASSWORD, arg0);
-    }
-
-    @Then("user successfully login to ccp portal")
-    public void userSuccessfullyLoginToCcpPortal() {
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_CTA);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_CTA);
-    }
 
     @Then("user verify payment due pop up")
     public void userVerifyPaymentDuePopUp() {

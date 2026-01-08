@@ -5,6 +5,7 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
@@ -25,15 +26,15 @@ public  class SessionSteps extends AbstractWebPage {
     private static final String CCP_LOG_OUT="ccpLogout";
 
 
-    @Given("Go to session {string} {string} {string}")
-    public void loginAndGoToSession(String sessionName,String email,String password) throws Exception {
+    @Given("Go to session {string}")
+    public void loginAndGoToSession(String sessionName) throws Exception {
         log.entering();
         if (sessionName.equalsIgnoreCase("ccp")) {
             // Switching to "zoho_creator" session present in the sessions.yaml
             Grid.setSessionName("ccp");
             if(!Grid.getTestSession().isStarted()) {
                 log.info("Starting browser with zoho creator...");
-                initCCPSession(ConfigUtil.getSecretValue("ccpPortalUrl"),email,password);
+                initCCPSession(ConfigUtil.getSecretValue("ccpPortalUrl"));
                 log.info("Started browser and navigated to Zoho creator.");
             }
         } else {
@@ -42,20 +43,20 @@ public  class SessionSteps extends AbstractWebPage {
         log.info(String.format("Browser already running and switched to session named %s", sessionName));
         log.exiting();
     }
-    public void initCCPSession(String url,String email,String password) {
+    public void initCCPSession(String url) {
         log.entering();
         try {
             Grid.driver().manage().window().maximize();
-            Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
+            Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             Grid.driver().get(url);
-            checkLoginPage();
-            ccpLogin(email,password);
+            defocusSearchOverlay();
         }  catch (Exception e) {
             log.log(Level.FINE, "initZohoSession failed.", e);
             throw e;
         }
         log.exiting();
     }
+    @And("ccp login with {string} and {string}")
     public void ccpLogin(String emailId, String pass) {
         log.entering(emailId, pass);
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
@@ -69,8 +70,7 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
         waitAndSetText(LOGIN_PASSWORD, pass);// Give the password
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);// Login
-        sleep(2000);
+        waitAndClickOn(CCP_LOGIN_CTA);// Login to continue
         log.exiting();
     }
 
@@ -82,15 +82,14 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_LOG_OUT);
         waitAndCheckIsElementClickable(3,CCP_LOG_OUT);
         waitAndClickOn(CCP_LOG_OUT);
-        sleep(2000);
 }
 
-     public void checkLoginPage(){
-        boolean condition = Grid.driver().findElement(By.xpath("//a[contains(text(),'My orders')]")).isDisplayed();
-         if (condition){
-            ccpLogOut();
+    public void defocusSearchOverlay() {
+        try {
+            Grid.driver().findElement(By.tagName("body")).click();
+        } catch (Exception ignored) {
         }
-}
+    }
 
 }
 

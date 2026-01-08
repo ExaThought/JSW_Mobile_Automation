@@ -15,8 +15,6 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 public class CcpRegistrationSteps extends AbstractWebPage {
 
     // Updated registration locator names
-    public static final String REGISTRATION_CTA_BUTTON = "registrationButton";
-    public static final String REGISTRATION_VIA_OTP = "registrationViaOtp";
     public static final String CCP_REGISTRATION_EMAIL = "ccpRegistrationEmail";
     public static final String CCP_REGISTRATION_PASSWORD = "ccpRegistrationPassword";
     public static final String CCP_REGISTRATION_CTA = "ccpRegistrationCTA";
@@ -30,18 +28,6 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public static final String CCP_INVALID_PHONE_ERROR = "invalidPhoneNumberErrorMessage";
     public static final String CCP_INVALID_GSTIN_ERROR = "invalidGSTINErrorMessage";
 
-
-    @When("open the CCP registration portal")
-    public void user_open_the_ccp_portal() {
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-
-        waitAndCheckIsElementVisible(REGISTRATION_CTA_BUTTON);
-        waitAndClickOn(REGISTRATION_CTA_BUTTON); // click registration CTA
-
-        waitAndCheckIsElementVisible(REGISTRATION_VIA_OTP);
-        waitAndClickOn(REGISTRATION_VIA_OTP); // click Registration via OTP
-    }
 
     @And("enter new invalid email id {string}")
     public void enter_invalid_email(String username) {

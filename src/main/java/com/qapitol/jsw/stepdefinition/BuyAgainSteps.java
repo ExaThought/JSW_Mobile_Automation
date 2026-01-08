@@ -18,9 +18,6 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class BuyAgainSteps extends AbstractWebPage {
 
-    // ===== ELEMENT KEYS =====
-    public static final String CCP_HOME_PAGE_LOGIN_BUTTON = "ccpHomePageLoginButton";
-    public static final String CCP_HOME_PAGE_LOGIN_VIA_OTP = "ccpHomePageLoginViaOtp";
     public static final String CCP_HOME_PAGE_BUY_AGAIN_LINK = "ccpHomePageBuyAgainLink";
     public static final String CCP_HOME_PAGE_ORDERS_BUTTON = "ccpHomePageOrdersButton";
     public static final String CCP_MY_ORDERS_PAGE_TITLE = "ccpMyOrdersPageTitle";
@@ -29,67 +26,14 @@ public class BuyAgainSteps extends AbstractWebPage {
     public static final String CCP_BUY_AGAIN_CHECKBOX = "ccpBuyAgainCheckbox";
     public static final String CCP_BUY_AGAIN_ADD_TO_CART_BUTTON = "ccpBuyAgainAddToCartButton";
     public static final String CCP_BUY_AGAIN_ADD_TO_CART_COUNT = "ccpBuyAgainAddToCartCount";
-
-    public static final String CCP_HOME_PAGE_MATERIAL_TRACKING_BUTTON =
-            "ccpHomePageMaterialTrackingButton";
-
-    public static final String CCP_MATERIAL_TRACKING_PAGE_TITLE =
-            "ccpMaterialTrackingPageTitle";
-
-
-
+    public static final String CCP_HOME_PAGE_MATERIAL_TRACKING_BUTTON = "ccpHomePageMaterialTrackingButton";
+    public static final String CCP_MATERIAL_TRACKING_PAGE_TITLE = "ccpMaterialTrackingPageTitle";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON = "ccpHomePagePaymentDueCloseButton";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_FLOATER = "ccpHomePagePaymentDueFloater";
-    public static final String CCP_HOME_PAGE_PAYMENT_DUE_FLOATER_VIEW_DETAILS_BUTTON =
-            "ccpHomePagePaymentDueFloaterViewDetailsButton";
-
-    // ===== LOGIN ELEMENTS =====
-    public static final String CCP_LOGIN_EMAIL = "ccpHomePageLoginEmail";
-    public static final String CCP_LOGIN_PASSWORD = "ccpHomePageLoginPassword";
-    public static final String CCP_LOGIN_CTA = "ccpHomePageLoginCTA";
+    public static final String CCP_HOME_PAGE_PAYMENT_DUE_FLOATER_VIEW_DETAILS_BUTTON = "ccpHomePagePaymentDueFloaterViewDetailsButton";
 
     // ================= STEPS =================
 
-    @When("user open the CCP portal and login with valid credentials {string} {string}")
-    public void userOpenTheCCPPortalAndLoginWithValidCredentials(String username, String password) {
-
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-
-        defocusSearchOverlay();
-
-        // Click Login CTA
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_BUTTON);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_BUTTON);
-
-        // Login via Email
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_VIA_OTP);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_VIA_OTP);
-
-        // Enter Email
-        waitAndCheckIsElementVisible(CCP_LOGIN_EMAIL);
-        waitAndSetText(CCP_LOGIN_EMAIL, username);
-
-        // Continue
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);
-
-        // Enter Password
-        waitAndCheckIsElementVisible(CCP_LOGIN_PASSWORD);
-        waitAndSetText(CCP_LOGIN_PASSWORD, password);
-
-        // Final Login
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);
-
-        // Close Payment Due popup if present
-        try {
-            waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-        } catch (Exception e) {
-            log.info("No Payment Due Popup displayed for given user.");
-        }
-    }
 
     @And("user close the payment due pop up")
     public void userClosePaymentDuePopUp() {
@@ -124,12 +68,6 @@ public class BuyAgainSteps extends AbstractWebPage {
         );
 
         softAssert.assertAll();
-    }
-    public void defocusSearchOverlay() {
-        try {
-            Grid.driver().findElement(By.tagName("body")).click();
-        } catch (Exception ignored) {
-        }
     }
 
     @And("user navigate to order button")
