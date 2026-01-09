@@ -1,0 +1,16 @@
+elements:
+  jswLogo:
+    en_US:
+      web: xpath=//img[@alt='JSW Logo']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  helpIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'rounded-lg') and contains(@class,'items-center')]
+  loginButton:
+    en_US:
+      web: xpath=//div[contains(@class,'cursor-pointer')]//div[contains(@class,'rounded-full')][1]
+  helpPage:
+    en_US:
+      web: xpath=//h2[contains(text(),'Help') and contains(text(),'support')]
