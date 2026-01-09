@@ -1,5 +1,10 @@
 @footer
-Feature: Check footer elements on home page
+Feature: Verify footer elements and navigation on home page
+
+  Background:
+    Given user open the msite
+    Then the home page should load successfully
+    And the CCP logo should be visible
 
   # -------------------- Buy Online Section --------------------
   Scenario: Verify Buy Online section links in footer
@@ -33,21 +38,21 @@ Feature: Check footer elements on home page
 
   # -------------------- Footer Navigation --------------------
   Scenario Outline: Verify footer link navigation
+    Given the footer link "<linkName>" should be visible
     When the user clicks on the footer link "<linkName>"
     Then the user should be redirected to the corresponding page
 
-
     Examples:
-      | linkName             |
-      | Mild steel           |
-      | Structural Steel     |
-      | TMT                  |
-      | Cement               |
-      | About us             |
-      | Blogs                |
-      | Site map             |
-      | JSW One TMT          |
-      | Help support         |
-      | Terms & conditions   |
-      | Privacy policy       |
-      | Return Policy        |
+      | linkName           |
+      | Mild steel         |
+      | Structural Steel   |
+      | TMT                |
+      | Cement             |
+      | About us           |
+      | Blogs              |
+      | Site map           |
+      | JSW One TMT        |
+      | Help support       |
+      | Terms & conditions |
+      | Privacy policy     |
+      | Return Policy      |

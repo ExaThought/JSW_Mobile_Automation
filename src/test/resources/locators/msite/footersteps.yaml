@@ -13,7 +13,7 @@ elements:
 
   policySection:
     en_US:
-      web: "xpath=//*[contains(normalize-space(text()),'Policy')]"
+      web: "xpath=//p[contains(normalize-space(text()),'Policy')]"
 
   mildSteelLink:
     en_US:
@@ -21,15 +21,27 @@ elements:
 
   structuralSteelLink:
     en_US:
-      web: "xpath=//*[contains(normalize-space(text()),'Structural Steel')]"
+      web: "xpath=//a[contains(normalize-space(text()),'Structural Steel')]"
 
   tmtLink:
     en_US:
-      web: "xpath=//*[contains(normalize-space(text()),'TMT')]"
+      web: "xpath=//a[contains(@class, 'flex') and 
+   contains(@class, 'items-center') and 
+   contains(@class, 'gap-[10px]') and 
+   contains(@class, 'text-xs') and 
+   contains(@class, 'font-normal') and 
+   contains(@class, 'text-supporting-black') and 
+   normalize-space(text())='TMT']"
 
   cementLink:
     en_US:
-      web: "xpath=//*[contains(normalize-space(text()),'Cement')]"
+      web: "xpath=//a[contains(@class, 'flex') and 
+   contains(@class, 'items-center') and 
+   contains(@class, 'gap-[10px]') and 
+   contains(@class, 'text-xs') and 
+   contains(@class, 'font-normal') and 
+   contains(@class, 'text-supporting-black') and 
+   normalize-space(text())='Cement']"
 
   aboutUsLink:
     en_US:
@@ -53,7 +65,13 @@ elements:
 
   supportEmail:
     en_US:
-      web: "xpath=//*[contains(text(),'@')]"
+      web: "xpath=///a[contains(@class, 'flex') and 
+   contains(@class, 'items-center') and 
+   contains(@class, 'gap-[10px]') and 
+   contains(@class, 'text-xs') and 
+   contains(@class, 'font-normal') and 
+   contains(@class, 'text-supporting-black') and 
+   starts-with(@href, 'mailto:support@jswonemsme.com')]"
 
   helpSupportLink:
     en_US:
