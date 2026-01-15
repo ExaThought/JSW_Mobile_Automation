@@ -50,14 +50,14 @@ Feature: validate Address
     Then validate customer added address "jsw test"
     Then account logout
 
-  @sanity
+  @sanity @ad
   Scenario: Check and validate  Delete  Address for customer
     And user clicks on Testacco user menu
     And user clicks on Profile option
     And user clicks on Addresses tab
     Then customer navigate company name jsw test address
     Then customer clicks delete for jsw test address
-    Then customer clicks delete for jsw test address
+    Then customer clicks proceed button for delete jsw test address
     Then validate customer added address "jsw test" is not visible
     Then account logout
 
