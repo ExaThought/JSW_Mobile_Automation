@@ -7,7 +7,7 @@ elements:
       web: //button[@id='login-via-otp']
   helpIcon:
     en_US:
-      web: xpath=//div[contains(@class,'rounded-lg') and contains(@class,'items-center')]
+      web: xpath=//*[name()='svg' and contains(@class,'text-palette-supporting-gray-title')]/parent::*
   loginButton:
     en_US:
       web: xpath=//div[contains(@class,'cursor-pointer')]//div[contains(@class,'rounded-full')][1]

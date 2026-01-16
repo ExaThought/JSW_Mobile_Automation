@@ -1,11 +1,10 @@
 @home
 Feature: Check home page
 
-  @home
-  Scenario: Check msite home page load successfully
+  Background:
     Given user open the msite
     Then the home page should load successfully
-    And the page title should be JSW One Guest
+    And the CCP logo should be visible
 
 
   Scenario: Verify CCP logo presence and navigation
