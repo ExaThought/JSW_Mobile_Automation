@@ -24,6 +24,8 @@ public  class SessionSteps extends AbstractWebPage {
     private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
     public static final String CCP_DROP_DOWN="ccpDropDown";
     private static final String CCP_LOG_OUT="ccpLogout";
+    private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
+
 
 
     @Given("Go to session {string}")
@@ -59,6 +61,7 @@ public  class SessionSteps extends AbstractWebPage {
     @And("ccp login with {string} and {string}")
     public void ccpLogin(String emailId, String pass) {
         log.entering(emailId, pass);
+        waitForSearchOverlayToDisappear();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
@@ -90,6 +93,21 @@ public  class SessionSteps extends AbstractWebPage {
         } catch (Exception ignored) {
         }
     }
+    public void waitForSearchOverlayToDisappear() {
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
+                    .until(driver -> {
+                        try {
+                            return driver.findElements(SEARCH_OVERLAY).isEmpty()
+                                    || !driver.findElement(SEARCH_OVERLAY).isDisplayed();
+                        } catch (Exception e) {
+                            return true; // overlay not present in DOM
+                        }
+                    });
+        } catch (Exception ignored) {
+        }
+    }
+
 
 }
 
