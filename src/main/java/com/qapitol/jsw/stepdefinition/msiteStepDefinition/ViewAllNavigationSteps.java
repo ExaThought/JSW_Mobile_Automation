@@ -71,7 +71,6 @@ public class ViewAllNavigationSteps extends AbstractWebPage {
                         " | PLP Heading: " + plpHeading +
                         " | Current URL: " + currentUrl
         );
-        System.out.println("Current URL after redirection: " + currentUrl);
     }
 
     @Then("the PLP heading should match {string}")
@@ -107,7 +106,6 @@ public class ViewAllNavigationSteps extends AbstractWebPage {
 
     /** Expected URL slug for validation */
     private String getExpectedSlug(String category) {
-        System.out.println("slug"+category.toLowerCase().replace(" ", "-"));
         return category.toLowerCase().replace(" ", "-");
     }
 
