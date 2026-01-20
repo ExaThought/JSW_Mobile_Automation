@@ -41,6 +41,13 @@ public class CartSteps extends AbstractWebPage {
     private static final String CART_PAGE="cartPage";
     private static final String PLP_FIRST_PRODUCT="plpFirstProduct";
     private static final String LENGTH="length";
+    private static final String DIAMETER="diameter";
+    private static final String TMT="tmt";
+    private static final String FORM="form";
+    private static final String LEG_LENGTH="legLength";
+    private static final String FLANGE_WIDTH="flangeWidth";
+    private static final String WEB_DEPTH="webDepth";
+    private static final String SECTION_WEIGHT="sectionalWeight";
 
 
     Actions actions=new Actions(Grid.driver());
@@ -312,5 +319,158 @@ public class CartSteps extends AbstractWebPage {
         waitAndCheckIsElementClickable(QUANTITY);
         waitAndSetText(QUANTITY, "100");
     }
+
+    @And("click on Wire product")
+    public void clickOnWireProduct(){
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(wireCategory))).click().perform();
+    }
+
+    @And("open Wire pdp")
+    public void openWirePdp(){
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the Wire attribute")
+    public void selectAllTheWireAttribute() {
+        waitAndCheckIsElementClickable(DIAMETER);
+        waitAndClickOn(DIAMETER, "1");
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "50");
+    }
+
+    @When("click on TMT product")
+    public void clickOnTMTProduct() {
+        waitAndCheckIsElementClickable(TMT);
+        waitAndClickOn(TMT);
+    }
+
+    @And("open TMT Rebar pdp")
+    public void openTMTRebarPdp() {
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the TMT Rebar attribute")
+    public void selectAllTheTMTRebarAttribute() {
+        waitAndCheckIsElementClickable(DIAMETER);
+        waitAndClickOn(DIAMETER, "1");
+
+        waitAndCheckIsElementClickable(FORM);
+        waitAndClickOn(FORM, "1");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "100");
+    }
+
+    @When("move the mouse to Structural category")
+    public void moveTheMouseToStructuralCategory() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(structuralSteelCategory))).perform();
+    }
+
+    @And("click on Angles product")
+    public void clickOnAnglesProduct() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(anglesSubCategory))).click().perform();
+    }
+
+    @And("open Angles pdp")
+    public void openAnglesPdp() {
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the Angles attribute")
+    public void selectAllTheAnglesAttribute() {
+     waitAndCheckIsElementClickable(LEG_LENGTH);
+        waitAndClickOn(LEG_LENGTH, "1");
+
+        waitAndCheckIsElementClickable(THICKNESS);
+        waitAndClickOn(THICKNESS, "1");
+
+        WebElement locator=Grid.driver().findElement(By.xpath(length));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(LENGTH);
+        waitAndClickOn(LENGTH, "1");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "50");
+
+    }
+
+    @And("click on Channels product")
+    public void clickOnChannelsProduct() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(channelsSubCategory))).click().perform();
+    }
+
+    @And("open Channels pdp")
+    public void openChannelsPdp() {
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the Channels attribute")
+    public void selectAllTheChannelsAttribute() {
+        waitAndCheckIsElementClickable(FLANGE_WIDTH);
+        waitAndClickOn(FLANGE_WIDTH,"1");
+
+        waitAndCheckIsElementClickable(WEB_DEPTH);
+        waitAndClickOn(WEB_DEPTH, "1");
+
+        waitAndCheckIsElementClickable(SECTION_WEIGHT);
+        waitAndClickOn(SECTION_WEIGHT, "1");
+
+        WebElement locator=Grid.driver().findElement(By.xpath(length));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(LENGTH);
+        waitAndClickOn(LENGTH, "1");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "50");
+    }
+
+    @And("click on Beams & Columns product")
+    public void clickOnBeamsColumnsProduct() {
+        //Reading locator from page factory
+        actions.moveToElement(Grid.driver().findElement(By.xpath(beamsAndColumnsSubCategory))).click().perform();
+    }
+
+    @And("open Beams & Columns pdp")
+    public void openBeamsColumnsPdp() {
+        WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT);
+    }
+
+    @And("select all the Beams & Columns attribute")
+    public void selectAllTheBeamsColumnsAttribute() {
+        waitAndCheckIsElementClickable(FLANGE_WIDTH);
+        waitAndClickOn(FLANGE_WIDTH,"1");
+
+        waitAndCheckIsElementClickable(WEB_DEPTH);
+        waitAndClickOn(WEB_DEPTH, "1");
+
+        waitAndCheckIsElementClickable(SECTION_WEIGHT);
+        waitAndClickOn(SECTION_WEIGHT, "1");
+
+        WebElement locator=Grid.driver().findElement(By.xpath(length));
+        scrollingToViewAndClickUsingJS(locator);
+        waitAndCheckIsElementClickable(LENGTH);
+        waitAndClickOn(LENGTH, "1");
+
+        waitAndCheckIsElementClickable(QUANTITY);
+        waitAndSetText(QUANTITY, "50");
+    }
+
 
 }

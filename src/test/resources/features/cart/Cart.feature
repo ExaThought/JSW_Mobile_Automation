@@ -1,15 +1,15 @@
-@regression
+@regression @AddToCart
 Feature: Check Add-To-Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
+    And ccp login with "jayadev.yl@jsw.in" and "Jsw@2025"
     And user close payment due pop up
 
-  @addToCart @checkout
-  Scenario: check PDP validation and Add-to-cart
-#      And user will add Stainless Steel product to cart
-    Then check user able to delete line item from cart
+#  @addToCart @checkout
+#  Scenario: check PDP validation and Add-to-cart
+##      And user will add Stainless Steel product to cart
+#    Then check user able to delete line item from cart
     And user checkout the RCV2
 
   @HRSheet
@@ -74,5 +74,57 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then Delete the line item from cart
+
+  @Wire
+  Scenario: Verify wire product add to cart
+    When move the mouse to Mild steel category
+    And click on Wire product
+    And open Wire pdp
+    And select all the Wire attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
+  @TMT
+  Scenario: Verify TMT product add to cart
+    When click on TMT product
+    And open TMT Rebar pdp
+    And select all the TMT Rebar attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
+
+  @Angles
+  Scenario: Verify Angles product add to cart
+    When move the mouse to Structural category
+    And click on Angles product
+    And open Angles pdp
+    And select all the Angles attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
+  @Channels
+  Scenario: Verify Channels product add to cart
+    When move the mouse to Structural category
+    And click on Channels product
+    And open Channels pdp
+    And select all the Channels attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
+  @BeamsAndColumns
+  Scenario: Verify Beams & Columns product add to cart
+    When move the mouse to Structural category
+    And click on Beams & Columns product
+    And open Beams & Columns pdp
+    And select all the Beams & Columns attribute
+    And add to cart
+    And click view cart
+    Then Delete the line item from cart
+
+
 
 

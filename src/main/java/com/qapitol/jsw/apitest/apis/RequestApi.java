@@ -4,6 +4,7 @@ package com.qapitol.jsw.apitest.apis;
 import com.qapitol.jsw.apitest.pojos.order.appTesting.AppResponse;
 import com.qapitol.jsw.apitest.pojos.order.orderConfirm.OrderConfirmReqPayload.OrderConfirmation;
 import com.qapitol.jsw.apitest.pojos.order.orderConfirm.orderConfirmResPayload.OrderConfirmationRes;
+import com.qapitol.jsw.apitest.pojos.order.paymentDue.PaymentDueResponse;
 import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
 import com.qapitol.jsw.apitest.pojos.order.centralCartUpdateItemQuantityRequest.CentralCartUpdateLineItemReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCartDeleteApiReq;
@@ -118,4 +119,12 @@ public interface RequestApi {
     @Path("jswretail/v1/seller")
     @Produces(APPLICATION_JSON)
     AppResponse getAppResponse();
+
+    @GET
+    @Path("joms/api/internal/v1/customer-balance-and-due-summary/{gstNumber}")
+    @Produces(APPLICATION_JSON)
+    PaymentDueResponse paymentDueRequest(@PathParam("gstNumber") String gstNumber,
+                                         @QueryParam("entityName") String entityName,
+                                         @QueryParam("dueInDays") int dueInDays,
+                                         @QueryParam("dueLater") boolean dueLater);
 }

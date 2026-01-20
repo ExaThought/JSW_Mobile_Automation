@@ -14,5 +14,10 @@ public class CategoryPages {
     public static String coldRolledCoilsSubCategory ="(//a[contains(text(),'Cold rolled coils')])[1]";
     public static String coldRolledSheetsSubCategory="(//a[contains(text(),'Cold rolled sheets')])[1]";
     public static String coatingGrade="(//div[contains(text(),'Coating grade - AZ (GSM)')]//parent::div//following-sibling::div//child::div//child::button)[1]";
+    public static String wireCategory="(//a[contains(text(),'Wire rods')])[2]";
+    public static String structuralSteelCategory="//div[@class='nav-active-link-jsw']/child::a[contains(text(),'Structural Steel')]";
+    public static String anglesSubCategory="(//a[contains(text(),'Angles')])[2]";
+    public static String channelsSubCategory="(//a[contains(text(),'Channels')])[2]";
+    public static String beamsAndColumnsSubCategory="(//a[contains(text(),'Beams and Columns')])[2]";
 }
 
