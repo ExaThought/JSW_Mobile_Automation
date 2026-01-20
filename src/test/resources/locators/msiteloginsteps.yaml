@@ -1,0 +1,21 @@
+elements:
+  loginButton:
+    en_US:
+      web: xpath=//div[contains(@class,'cursor-pointer')]//div[contains(@class,'rounded-full')][1]
+  loginNowButton:
+    en_US:
+      web: xpath=//button[normalize-space()='Login now']
+  emailTextBox:
+    en_US:
+      web: xpath=//div[@class='field-placeholder typography-h6 typography-font-regular']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+
+
