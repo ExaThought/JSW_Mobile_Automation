@@ -1,35 +1,38 @@
-@login
+@mlogin
 Feature: Check Login
 
 
-  @test
-  Scenario: Check Login with valid email ID and password
+  Background:
     Given user open the msite
     Then the home page should load successfully
     And the CCP logo should be visible
-    When  user waits for login button
-    And enter valid email for msite"testnewurl@yopmail.com"
-    And user click on continue button on msite
-    And enter valid password for msite "Jsw@2025"
-    Then user should able to login
+    When user clicks on login button
 
 
-  Scenario: Check Login with Invalid email ID and password
-    And enter invalid email "testnewurl@yopmail.com"
-    And user click on continue button
-    And enter invalid password "Jsw@2029"
-    Then user should not able to login with error message
+  Scenario: Check Login with valid email ID and password
+    And user enters email "testautomation01@yopmail.com"
+    When user submits login
+    And user enters password "Jsw@2025"
+    When user clicks on proceed to login
+    Then user should be logged in successfully via email
 
 
+  Scenario: Login with valid email and password
+    And user enters email "testnewurl@yopmail.com"
+    When user submits login
+    And user enters password "Jsw@2025"
+    When user clicks on proceed to login
+    Then login error message should be displayed
 
-  Scenario: Check login with invalid email ID and valid password.
-    And enter invalid email "sr@.js"
-    Then user should not able to  proceed to login with error message
-    Then continue button should be disabled
 
+  Scenario: Login with valid email and invalid password
+    And user enters email "v_nirmal.kumar@jsw.in"
+    When user submits login
+    And user enters password "Jsw@2029"
+    When user clicks on proceed to login
+    Then login error message should be displayed
 
-  Scenario: Check Login with valid email ID and Invalid password
-    And enter valid email "v_nirmal.kumar@jsw.in"
-    And user click on continue button
-    And enter invalid password "Jsw@2029"
-    Then user should not able to login with error message
+  Scenario: Login with invalid email
+    And user enters email "sr@.js"
+    Then invalid email error message should be displayed
+    And continue button should be disabled on msite
