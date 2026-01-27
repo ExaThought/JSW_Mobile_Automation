@@ -16,26 +16,25 @@ import org.testng.asserts.SoftAssert;
 
 import java.time.Duration;
 
-
+import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 
 public class msiteloginSteps extends AbstractWebPage {
 
     private final LoginSteps ls = new LoginSteps();
 
-    public static final String LOGIN_BUTTON = "loginButton";
+    private static final String LOGIN_BUTTON = "loginButton";
     private static final String LOGIN_CTA = "loginIcon";
-    public static final String LOGIN_VIA_OTP = "loginViaOtp";
-    public static final String PROCEED_TO_LOGIN = "loginToContinue";
-    public static final String EMAIL_TAB = "emailInput";
-    public static final String LOGIN_PASSWORD = "ccpLoginPassword";
-    public static final String CONTINUE_BUTTON = "continueButton";
-    public static final String EMAIL_INPUT = "emailInput";
-    public static final String LOGIN_TO_CONTINUE = "loginToContinue";
-    public static final String PROFILE_ICON = "profileIcon";
-    public static final String CCP_LOGIN_ERROR_MESSAGE="errorMessage";
-    public static final String CCP_INVALID_EMAIL_ERROR_MESSAGE = "invalidEmailErrorMessage";
-   SoftAssert softAssert = new SoftAssert();
+    private static final String LOGIN_VIA_OTP = "loginViaOtp";
+    private static final String PROCEED_TO_LOGIN = "loginToContinue";
+    private static final String EMAIL_TAB = "emailInput";
+    private static final String LOGIN_PASSWORD = "ccpLoginPassword";
+    private static final String CONTINUE_BUTTON = "continueButton";
+    private static final String EMAIL_INPUT = "emailInput";
+    private static final String LOGIN_TO_CONTINUE = "loginToContinue";
+    private static final String PROFILE_ICON = "profileIcon";
+    private static final String CCP_LOGIN_ERROR_MESSAGE="errorMessage";
+    private static final String CCP_INVALID_EMAIL_ERROR_MESSAGE = "invalidEmailErrorMessage";
 
     LocatorReader locatorReader = new LocatorReader("locators/msiteloginsteps.yaml");
 
@@ -59,7 +58,7 @@ public class msiteloginSteps extends AbstractWebPage {
 
        // waitAndCheckIsElementVisible(EMAIL_INPUT);
         waitAndSetText(EMAIL_INPUT, email);
-        System.out.println("entered");
+
     }
 
     public void clickUsingActions(String xpath) {
@@ -90,7 +89,6 @@ public class msiteloginSteps extends AbstractWebPage {
     @And("user enters password {string}")
     public void enter_password(String password) {
         if(password == null || password.isEmpty()){
-            System.out.println("Skipping password entry as password is empty");
             return; // skip this step
         }
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
@@ -107,7 +105,7 @@ public class msiteloginSteps extends AbstractWebPage {
                 msg,
                 "Credentials are not valid. Please try again"
         );
-        softAssert.assertAll();
+
     }
 
 
@@ -120,7 +118,7 @@ public class msiteloginSteps extends AbstractWebPage {
                 msg,
                 "You have entered a wrong email address"
         );
-        softAssert.assertAll();
+
     }
 
     // ---------- CONTINUE BUTTON STATE ----------
@@ -149,22 +147,15 @@ public class msiteloginSteps extends AbstractWebPage {
                 isDisabled,
                 "Continue button is ENABLED but expected to be DISABLED"
         );
-
-        softAssert.assertAll();
     }
-
-
 
     @Then("user should be logged in successfully via email")
     public void verify_login_success() {
         waitAndCheckIsElementVisible(PROFILE_ICON);
-
-        SoftAssert softAssert = new SoftAssert();
-
         softAssert.assertTrue(
                 Grid.driver().getCurrentUrl().contains("/profile"),
                 "User not navigated to profile page after email login"
         );
-        softAssert.assertAll();
+
     }
 }

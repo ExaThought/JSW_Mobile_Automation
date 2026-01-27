@@ -80,15 +80,12 @@ public class FooterSteps extends AbstractWebPage {
                     Thread.sleep(500);
 
                     element.click();
-                    System.out.println("Clicked element: " + yamlKey);
                     return;
                 }
             } catch (Exception ignored) {}
             try { Thread.sleep(500); } catch (InterruptedException ignored) {}
             attempts++;
         }
-
-        System.err.println("Element not found or not clickable: " + yamlKey);
     }
 
 
@@ -128,7 +125,6 @@ public class FooterSteps extends AbstractWebPage {
     public void the_user_clicks_on_the_footer_link(String linkName) throws InterruptedException {
         String yamlKey = getFooterYamlKey(linkName);
         scrollToElementAndClick(yamlKey);
-        System.out.println("Clicked on footer link: " + linkName);
     }
 
     // ------------------- Verification -------------------
@@ -136,6 +132,5 @@ public class FooterSteps extends AbstractWebPage {
     public void the_user_should_be_redirected_to_the_corresponding_page() {
         String currentUrl = Grid.driver().getCurrentUrl();
         Assert.assertTrue(currentUrl.startsWith("http"), "Footer navigation redirection failed");
-        System.out.println("Current URL: " + currentUrl);
     }
 }
