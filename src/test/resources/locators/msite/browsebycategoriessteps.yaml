@@ -1,0 +1,36 @@
+elements:
+  mildSteelCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='Mild Steel']]
+
+  structuralSteelCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='Structural Steel']]
+
+  tmtCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='TMT']]
+
+  cementCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='Cement']]
+
+  coatedSteelCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='Coated']]
+
+  msColdRolledCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='MS Cold Rolled']]
+
+  msHotRolledCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='MS Hot Rolled']]
+
+  bitumenCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='Bitumen']]
+
+  ssHotRolledCategory:
+    en_US:
+      web: xpath=//a[.//img[@alt='SS Hot Rolled']]

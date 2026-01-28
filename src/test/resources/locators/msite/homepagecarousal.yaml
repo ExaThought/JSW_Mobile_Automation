@@ -1,0 +1,6 @@
+elements:
+  firstCarouselSlidesXpath:
+    en_US:
+      web: "(//div[@role='region' and @aria-roledescription='carousel'])[1]//div[@role='group']//img"
+
+

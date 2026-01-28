@@ -1,0 +1,32 @@
+elements:
+  searchBar:
+    en_US:
+      web: xpath=//button[contains(@class,'inline-flex') and @data-slot='button']
+
+  searchInput:
+    en_US:
+      web: xpath=//input[@data-slot='input' and @type='text']
+
+  searchSuggestions:
+    en_US:
+      web: xpath=//ul[contains(@class,'suggestion')]/li
+
+  searchResults:
+    en_US:
+      web: xpath=//div[contains(@class,'search-results')]
+
+  productCard:
+    en_US:
+      web: xpath=//a[starts-with(@href, '/product-detail/')]
+
+  productName:
+    en_US:
+      web: xpath=//a[starts-with(@href,'/product-detail/')]//p[contains(@class,'font-semibold')]
+
+  productImage:
+    en_US:
+      web: xpath=//a[starts-with(@href,'/product-detail/')]//img[contains(@class,'object-contain')]
+
+  viewAllButton:
+    en_US:
+      web: xpath=//a[contains(@href,'/query')]
