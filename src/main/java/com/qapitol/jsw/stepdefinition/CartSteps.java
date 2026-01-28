@@ -20,6 +20,7 @@ public class CartSteps extends AbstractWebPage {
     private static final String VIEW_CART = "viewCart";
     private static final String SUBMIT_REQUIREMENT="submitRequirement";
     private static final String DELETE_LINE_ITEM="deleteLineItem";
+    private static final String EDIT_LINE_ITEM="editLineItem";
     private static final String DELETE_CTA_BUTTON="deleteCta";
     private static final String CEMENT_PLP="cement";
     private static final String CEMENT_PDP="cementPDP";
@@ -48,6 +49,14 @@ public class CartSteps extends AbstractWebPage {
     private static final String FLANGE_WIDTH="flangeWidth";
     private static final String WEB_DEPTH="webDepth";
     private static final String SECTION_WEIGHT="sectionalWeight";
+    private static final String EDIT_QUANTITY="editQuantity";
+    private static final String SAVE_EDIT="editSave";
+    private static final String EDIT_WIDTH_DROPDOWN="editWidthDropdown";
+    private static final String EDIT_THICKNESS_DROPDOWN="editThicknessDropdown";
+    private static final String EDIT_LENGTH_DROPDOWN="editLengthDropdown";
+    private static final String EDIT_WIDTH="editWidth";
+    private static final String EDIT_THICKNESS="editThickness";
+    private static final String EDIT_LENGTH="editLength";
 
 
     Actions actions=new Actions(Grid.driver());
@@ -136,12 +145,11 @@ public class CartSteps extends AbstractWebPage {
         actions.moveToElement(Grid.driver().findElement(By.xpath(hotRolledCoilsSubCategory))).click().perform();
     }
 
-    @And("open HR Coil pdp")
-    public void openHRCoilPdp() {
+    @And("open HR Coil plp {string} product")
+    public void openHRCoilPdp(String product) {
         WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
-        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,product);
     }
 
     @And("select all the HR Coil attribute")
@@ -157,12 +165,12 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
-    @And("open HR Sheet pdp")
-    public void openHRSheetPdp() {
+    @And("open HR Sheet plp {string} product")
+    public void openHRSheetPdp(String product ) {
         WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
         waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,product);
     }
 
     @And("select all the HR Sheet attribute")
@@ -199,10 +207,11 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("Delete the line item from cart")
     public void deleteTheLineItemFromCart() {
-        waitAndCheckIsElementClickable(DELETE_LINE_ITEM);
         waitAndClickOn(DELETE_LINE_ITEM);
-        waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
-        waitAndClickOn(DELETE_CTA_BUTTON);
+        if (isElementPresent(DELETE_CTA_BUTTON)) {
+            waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
+            waitAndClickOn(DELETE_CTA_BUTTON);
+        }
     }
 
     @And("move to Cold rolled category")
@@ -221,8 +230,7 @@ public class CartSteps extends AbstractWebPage {
     public void openCRCoilPdp() {
         WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
-        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,"1");
     }
 
     @And("select all the CR Coil attribute")
@@ -247,8 +255,7 @@ public class CartSteps extends AbstractWebPage {
     public void openCRSheetPdp() {
         WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
-        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,"1");
     }
 
     @And("select all the CR Sheet attribute")
@@ -276,7 +283,7 @@ public class CartSteps extends AbstractWebPage {
     @And("open Cement pdp")
     public void openCementPdp() {
         waitAndCheckIsElementClickable(CEMENT_PDP);
-        waitAndClickOn(CEMENT_PDP);
+        waitAndClickOn(CEMENT_PDP,"1");
     }
 
     @And("select all the Cement attribute")
@@ -294,7 +301,7 @@ public class CartSteps extends AbstractWebPage {
     @And("open Colour Coated pdp")
     public void openColourCoatedPdp() {
         waitAndCheckIsElementClickable(COLOUR_COATED_PDP);
-        waitAndClickOn(COLOUR_COATED_PDP);
+        waitAndClickOn(COLOUR_COATED_PDP,"1");
     }
 
     @And("select all the Colour Coated Sheet attribute")
@@ -331,7 +338,7 @@ public class CartSteps extends AbstractWebPage {
         WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
         waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,"1");
     }
 
     @And("select all the Wire attribute")
@@ -350,8 +357,10 @@ public class CartSteps extends AbstractWebPage {
 
     @And("open TMT Rebar pdp")
     public void openTMTRebarPdp() {
+        WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
+        scrollingToViewAndClickUsingJS(locator);
         waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,"4");
     }
 
     @And("select all the TMT Rebar attribute")
@@ -383,7 +392,7 @@ public class CartSteps extends AbstractWebPage {
         WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
         waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,"1");
     }
 
     @And("select all the Angles attribute")
@@ -414,8 +423,7 @@ public class CartSteps extends AbstractWebPage {
     public void openChannelsPdp() {
         WebElement locator=Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
-        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,"1");
     }
 
     @And("select all the Channels attribute")
@@ -448,8 +456,7 @@ public class CartSteps extends AbstractWebPage {
     public void openBeamsColumnsPdp() {
         WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
-        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-        waitAndClickOn(PLP_FIRST_PRODUCT);
+        waitAndClickOn(PLP_FIRST_PRODUCT,"1");
     }
 
     @And("select all the Beams & Columns attribute")
@@ -472,5 +479,42 @@ public class CartSteps extends AbstractWebPage {
         waitAndSetText(QUANTITY, "50");
     }
 
+    @And("click edit")
+    public void clickEdit() {
+        waitAndCheckIsElementClickable(EDIT_LINE_ITEM);
+        waitAndClickOn(EDIT_LINE_ITEM);
+        sleep(1000);
+    }
+
+    @And("edit Quantity")
+    public void editQuantity() {
+        sleep(500);
+        clearTextBox(EDIT_QUANTITY);
+        waitAndSetText(EDIT_QUANTITY, "75");
+    }
+
+    @And("Save edit changes")
+    public void saveEditChanges() {
+        waitAndCheckIsElementClickable(SAVE_EDIT);
+        waitAndClickOn(SAVE_EDIT);
+    }
+
+    @And("update Thickness to {string} dropdown")
+    public void updateThickness(String updateThickness) {
+        waitAndClickOn(EDIT_THICKNESS_DROPDOWN);
+        waitAndClickOn(EDIT_THICKNESS, updateThickness);
+    }
+
+    @And("update Width to {string} dropdown")
+    public void updateWidth(String updateWidth) {
+        waitAndClickOn(EDIT_WIDTH_DROPDOWN);
+        waitAndClickOn(EDIT_WIDTH, updateWidth);
+    }
+
+    @And("update Length to {string} dropdown")
+    public void updateLength(String updateLength) {
+        waitAndClickOn(EDIT_LENGTH_DROPDOWN);
+        waitAndClickOn(EDIT_LENGTH, updateLength);
+    }
 
 }

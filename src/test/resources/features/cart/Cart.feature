@@ -3,24 +3,30 @@ Feature: Check Add-To-Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "jayadev.yl@jsw.in" and "Jsw@2025"
+    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
     And user close payment due pop up
 
 #  @addToCart @checkout
 #  Scenario: check PDP validation and Add-to-cart
-##      And user will add Stainless Steel product to cart
+#    And user will add Stainless Steel product to cart
 #    Then check user able to delete line item from cart
-    And user checkout the RCV2
+#    And user checkout the RCV2
 
   @HRSheet
   Scenario: Verify HR Sheet Product Add to Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Sheet product
-    And open HR Sheet pdp
+    And open HR Sheet plp "3" product
     And select all the HR Sheet attribute
     And add to cart
     And click view cart
+    And click edit
+    And update Thickness to "3" dropdown
+    And update Width to "2" dropdown
+    And update Length to "1" dropdown
+    And edit Quantity
+    And Save edit changes
     Then Delete the line item from cart
 
   @HRCoil
@@ -28,10 +34,14 @@ Feature: Check Add-To-Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Coil product
-    And open HR Coil pdp
+    And open HR Coil plp "2" product
     And select all the HR Coil attribute
     And add to cart
     And click view cart
+    And click edit
+    And update Thickness to "3" dropdown
+    And update Width to "2" dropdown
+    And edit Quantity
     Then Delete the line item from cart
 
   @CRCoil
@@ -43,6 +53,10 @@ Feature: Check Add-To-Cart
     And select all the CR Coil attribute
     And add to cart
     And click view cart
+    And click edit
+    And update Thickness to "3" dropdown
+    And update Width to "2" dropdown
+    And edit Quantity
     Then Delete the line item from cart
 
   @CRSheet
@@ -54,6 +68,12 @@ Feature: Check Add-To-Cart
     And select all the CR Sheet attribute
     And add to cart
     And click view cart
+    And click edit
+    And update Thickness to "3" dropdown
+    And update Width to "2" dropdown
+    And update Length to "1" dropdown
+    And edit Quantity
+    And Save edit changes
     Then Delete the line item from cart
 
   @Cement
@@ -63,6 +83,9 @@ Feature: Check Add-To-Cart
     And select all the Cement attribute
     And add to cart
     And click view cart
+    And click edit
+    And edit Quantity
+    And Save edit changes
     Then Delete the line item from cart
 
     @ColourCoated

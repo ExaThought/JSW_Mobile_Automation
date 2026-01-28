@@ -20,6 +20,9 @@ elements:
   deleteLineItem:
     en_US:
       web: xpath=(//div[contains(text(),'Delete')])[1]
+  editLineItem:
+    en_US:
+      web: xpath=(//div[contains(text(),'Edit')])[1]
   deleteCta:
     en_US:
       web: xpath=//span[contains(text(),'Delete')]
@@ -58,7 +61,7 @@ elements:
       web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
   mildSteel:
     en_US:
-      web: xpath=//a[contains(text(),'Mild Steel')]
+      web: xpath=//a[contains(text(),'Mild steels')]
   colourCoated:
     en_US:
       web: xpath=(//a[contains(text(),'Colour coated')])[2]
@@ -79,7 +82,7 @@ elements:
       web: xpath=//a[@class='cart']
   plpFirstProduct:
     en_US:
-      web: xpath= (//span[contains(text(),'Brand:')])[1]
+      web: xpath= (//span[contains(text(),"Brand:")])[{0}]
   thickness:
     en_US:
       web: xpath=//div[contains(text(),"Thickness (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
@@ -107,5 +110,29 @@ elements:
   sectionalWeight:
     en_US:
       web: xpath=//div[contains(text(),"Sectional weight (kg/m)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  editQuantity:
+    en_US:
+      web: xpath=//div[contains(text(),'Enter quantity')]/following-sibling::div/child::input
+  editSave:
+    en_US:
+      web: xpath=//span[contains(text(),'Done')]
+  editWidthDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Width (mm)')]/following-sibling::input
+  editThicknessDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Thickness (mm)')]/following-sibling::input
+  editLengthDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Length (mm)')]/following-sibling::input
+  editWidth:
+    en_US:
+      web: xpath=//div[contains(text(),"Width (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  editThickness:
+    en_US:
+      web: xpath=//div[contains(text(),"Thickness (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  editLength:
+    en_US:
+      web: xpath=//div[contains(text(),"Length (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
 
 
