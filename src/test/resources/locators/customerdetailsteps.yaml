@@ -1,0 +1,26 @@
+elements:
+
+  # ================= USER MENU =================
+
+  ccpUserMenuTestacco:
+    en_US:
+      web: //span[contains(normalize-space(),'Testauto')]
+
+  ccpUserMenuProfileOption:
+    en_US:
+      web: //a[contains(@class,'user-dropdown-item') and normalize-space()='Profile']
+
+
+  # ================= PROFILE DETAILS =================
+
+  profileNameValue:
+    en_US:
+      web: //div[normalize-space()='Name']/following-sibling::div
+
+  profilePhoneValue:
+    en_US:
+      web: //div[normalize-space()='Phone number']/following-sibling::div
+
+  profileEmailValue:
+    en_US:
+      web: //div[normalize-space()='Email address']/following-sibling::div
