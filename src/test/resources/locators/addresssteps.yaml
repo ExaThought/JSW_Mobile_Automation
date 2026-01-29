@@ -22,7 +22,7 @@ elements:
     en_US:
       web: //a[@role='tab' and contains(@class,'active') and normalize-space()='Addresses']
 
-  # ================= ADD ADDRESS =================
+  # ================= ADD ADDRESS FORM =================
 
   ccpAddAddressButton:
     en_US:
@@ -51,17 +51,19 @@ elements:
     en_US:
       web: //button[@id='save-change' and normalize-space()='Save changes']
 
-  # ================= SAVED ADDRESS (DYNAMIC) =================
+  # ================= SAVED ADDRESS VALIDATION (Dynamic) =================
 
   ccpSavedAddressCompanyNameDynamic:
     en_US:
-      web: //div[contains(@class,'display-company-name') and normalize-space()='${companyName}']
+      web: //div[contains(@class,'display-company-name')
+        and normalize-space()='${companyName}']
 
   # ================= EDIT ADDRESS =================
 
   ccpEditButtonForSavedAddress:
     en_US:
-      web: //div[contains(@class,'display-company-name') and normalize-space()='${companyName}']
+      web: //div[contains(@class,'display-company-name')
+        and normalize-space()='${companyName}']
         /ancestor::div[contains(@class,'address-list-item')]
         //div[normalize-space()='Edit']
 
@@ -69,7 +71,8 @@ elements:
 
   ccpDeleteButtonForSavedAddress:
     en_US:
-      web: //div[contains(@class,'display-company-name') and normalize-space()='${companyName}']
+      web: //div[contains(@class,'display-company-name')
+        and normalize-space()='${companyName}']
         /ancestor::div[contains(@class,'address')]
         //img[contains(@class,'delete-icon')]
 
@@ -79,6 +82,13 @@ elements:
     en_US:
       web: //button[normalize-space()='Proceed'
         and contains(@class,'primary-outline-btn')]
+
+  ccpDeleteAddressCancelButton:
+    en_US:
+      web: //button[normalize-space()='Cancel'
+        and contains(@class,'primary-btn')]
+
+  # ================= ERROR MESSAGE =================
 
   ccpCompanyNameErrorMessage:
     en_US:
