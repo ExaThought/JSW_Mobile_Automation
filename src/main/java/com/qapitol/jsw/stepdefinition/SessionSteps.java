@@ -52,6 +52,7 @@ public  class SessionSteps extends AbstractWebPage {
             Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             Grid.driver().get(url);
             defocusSearchOverlay();
+            sleep(5000);
         }  catch (Exception e) {
             log.log(Level.FINE, "initZohoSession failed.", e);
             throw e;

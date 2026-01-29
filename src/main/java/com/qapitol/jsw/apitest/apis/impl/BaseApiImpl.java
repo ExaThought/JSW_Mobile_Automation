@@ -30,9 +30,8 @@ public abstract class BaseApiImpl {
     protected ApiClientFactory centralCartCcpUrl() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
     }
-
-    protected ApiClientFactory getZohoOMSApiClientFactory() {
-        return ApiClientFactory.getInstance(Objects.requireNonNull(ConfigUtil.getSecretValue("omsUrl")));
+    protected ApiClientFactory getOmsUrl() {
+        return ApiClientFactory.getInstance(Objects.requireNonNull(ConfigUtil.getSecretValue("omsBaseUrl")));
     }
 
     protected ApiClientFactory getZohoAPIClientFactory() {

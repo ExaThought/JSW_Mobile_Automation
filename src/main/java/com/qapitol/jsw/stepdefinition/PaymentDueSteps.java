@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -102,31 +103,31 @@ public class PaymentDueSteps extends AbstractWebPage {
     @And("user close payment due pop up")
     public void userClosePaymentDuePopUp() {
 
+        ApiUtils paymentDueResponse=new ApiUtils();
+        double paymentDue=paymentDueResponse.getPaymentDueResponse().getData().getTotalDueAmount();
+        if(paymentDue!=0.0){
         // Wait for the close button and click it
         try{
-
-            waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+            //Check payment due is present for given account
+                waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+                waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+                waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
         }
         catch (Exception e){
             System.out.println("No Payment due pop up to close");
 
         }
+        }
     }
     @And("user navigate to my reqirement")
     public void userNavigateToMyRequirement() {
-
         // Wait for the link to be visible and click
         waitAndCheckIsElementVisible(CCP_HOME_PAGE_MY_REQUIREMENTS_LINK);
         waitAndClickOn(CCP_HOME_PAGE_MY_REQUIREMENTS_LINK);
-
-
     }
 
     @Then("verify payment due floater pop up")
     public void verifyPaymentDuePopUp() {
-
         // Wait for floater
         waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_FLOATER);
 
@@ -139,8 +140,6 @@ public class PaymentDueSteps extends AbstractWebPage {
                 isElementPresent(CCP_HOME_PAGE_PAYMENT_DUE_FLOATER_VIEW_DETAILS_BUTTON),
                 "'View details & pay' button is not displayed in floater"
         );
-
-
     }
     @And("user navigate to buy again")
     public void userNavigateToBuyAgain() {
