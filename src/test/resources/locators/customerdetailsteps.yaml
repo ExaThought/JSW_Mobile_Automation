@@ -15,12 +15,31 @@ elements:
 
   profileNameValue:
     en_US:
-      web: //div[normalize-space()='Name']/following-sibling::div
+      web: //div[normalize-space()='Name']/following-sibling::div[1]
 
   profilePhoneValue:
     en_US:
-      web: //div[normalize-space()='Phone number']/following-sibling::div
+      web: //div[normalize-space()='Phone number']/following-sibling::div[1]
 
   profileEmailValue:
     en_US:
-      web: //div[normalize-space()='Email address']/following-sibling::div
+      web: //div[normalize-space()='Email address']/following-sibling::div[1]
+
+
+  # ================= COMPANY DETAILS =================
+
+  companyNameValue:
+    en_US:
+      web: (//div[normalize-space()='Name']/following-sibling::div[1])[2]
+
+  companyAddressValue:
+    en_US:
+      web: //div[normalize-space()='Address']/following-sibling::div[1]
+
+  companyGSTINValue:
+    en_US:
+      web: //div[normalize-space()='GSTIN']/following-sibling::div[1]
+
+  companyPANValue:
+    en_US:
+      web: //div[normalize-space()='PAN']/following-sibling::div[1]
