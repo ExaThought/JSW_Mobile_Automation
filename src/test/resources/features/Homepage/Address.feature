@@ -11,7 +11,7 @@ Feature: validate Address
     And user clicks on Testacco user menu
     And user clicks on Profile option
     And user clicks on Addresses tab
-    Then verify Addresses tab is opened
+    Then customer navigate company name jsw test address
     Then account logout
   @sanity
   Scenario: Check and validate  add Address for customer
