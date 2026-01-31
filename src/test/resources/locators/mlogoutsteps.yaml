@@ -1,0 +1,17 @@
+elements:
+  profileIcon:
+    en_US:
+      web: xpath=//p[normalize-space()='Account']
+
+  logoutButton:
+    en_US:
+      web: //p[@class='text-sm font-medium text-palette-supporting-gray-title' and text()='Logout']
+
+  continuetoLogout:
+    en_US:
+      web: //button[contains(text(),'Yes, logout')]
+
+  loginButton:
+    en_US:
+      web: xpath=//button[contains(text(),'Login')]
+
