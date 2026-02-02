@@ -1,4 +1,4 @@
-@regression @AddToCart
+@AddToCart
 Feature: Check Add-To-Cart
 
   Background:
@@ -138,15 +138,17 @@ Feature: Check Add-To-Cart
     And click view cart
     Then Delete the line item from cart
 
-  @BeamsAndColumns
-  Scenario: Verify Beams & Columns product add to cart
-    When move the mouse to Structural category
-    And click on Beams & Columns product
-    And open Beams & Columns pdp
-    And select all the Beams & Columns attribute
-    And add to cart
-    And click view cart
-    Then Delete the line item from cart
+    #Product not available currently
+#  @BeamsAndColumns
+#  Scenario: Verify Beams & Columns product add to cart
+#    When move the mouse to Structural category
+#    And click on Beams & Columns product
+#    And open Beams & Columns pdp
+#    And select all the Beams & Columns attribute
+#    And add to cart
+#    And click view cart
+#    Then Delete the line item from cart
+
 
 
 

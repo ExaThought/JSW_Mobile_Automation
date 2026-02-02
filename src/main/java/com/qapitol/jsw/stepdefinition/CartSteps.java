@@ -511,8 +511,15 @@ public class CartSteps extends AbstractWebPage {
         waitAndClickOn(EDIT_WIDTH, updateWidth);
     }
 
+//    @And("update Length to {string} dropdown")
+//    public void updateLength(String updateLength) {
+//        waitAndClickOn(EDIT_LENGTH_DROPDOWN);
+//        waitAndClickOn(EDIT_LENGTH, updateLength);
+//    }
     @And("update Length to {string} dropdown")
     public void updateLength(String updateLength) {
+        WebElement locator=Grid.driver().findElement(By.xpath("//div[@id='custom-dropdown']"));
+        scrollingToViewAndClickUsingJS(locator);
         waitAndClickOn(EDIT_LENGTH_DROPDOWN);
         waitAndClickOn(EDIT_LENGTH, updateLength);
     }

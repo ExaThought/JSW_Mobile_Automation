@@ -1,7 +1,6 @@
 @mlogin
 Feature: Check Login
 
-
   Background:
     Given user open the msite
     Then the home page should load successfully
