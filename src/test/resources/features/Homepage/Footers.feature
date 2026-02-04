@@ -32,7 +32,6 @@ Feature: Validate Footer links and navigation
     And the footer link "Privacy policy" should be visible for web
     And the footer link "Return Policy" should be visible for web
 
-  @t
   Scenario Outline: Verify footer link navigation
     Given the footer link "<linkName>" should be visible for web
     When the user clicks on the footer link "<linkName>" for web

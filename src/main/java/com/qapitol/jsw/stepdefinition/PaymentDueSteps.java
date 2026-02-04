@@ -109,6 +109,7 @@ public class PaymentDueSteps extends AbstractWebPage {
         // Wait for the close button and click it
         try{
             //Check payment due is present for given account
+                System.out.println("Customer as payment due");
                 waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
                 waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
                 waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
@@ -117,6 +118,9 @@ public class PaymentDueSteps extends AbstractWebPage {
             System.out.println("No Payment due pop up to close");
 
         }
+        }
+        else {
+            System.out.println("No Payment due pop up to close");
         }
     }
     @And("user navigate to my reqirement")

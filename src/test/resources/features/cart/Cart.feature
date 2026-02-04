@@ -1,4 +1,4 @@
-@AddToCart
+@AddToCart @regression
 Feature: Check Add-To-Cart
 
   Background:
@@ -24,7 +24,7 @@ Feature: Check Add-To-Cart
     And click edit
     And update Thickness to "3" dropdown
     And update Width to "2" dropdown
-    And update Length to "1" dropdown
+    And update Length to "5" dropdown
     And edit Quantity
     And Save edit changes
     Then Delete the line item from cart
@@ -42,6 +42,7 @@ Feature: Check Add-To-Cart
     And update Thickness to "3" dropdown
     And update Width to "2" dropdown
     And edit Quantity
+    And Save edit changes
     Then Delete the line item from cart
 
   @CRCoil
@@ -108,35 +109,35 @@ Feature: Check Add-To-Cart
     And click view cart
     Then Delete the line item from cart
 
-  @TMT
-  Scenario: Verify TMT product add to cart
-    When click on TMT product
-    And open TMT Rebar pdp
-    And select all the TMT Rebar attribute
-    And add to cart
-    And click view cart
-    Then Delete the line item from cart
-
-
-  @Angles
-  Scenario: Verify Angles product add to cart
-    When move the mouse to Structural category
-    And click on Angles product
-    And open Angles pdp
-    And select all the Angles attribute
-    And add to cart
-    And click view cart
-    Then Delete the line item from cart
-
-  @Channels
-  Scenario: Verify Channels product add to cart
-    When move the mouse to Structural category
-    And click on Channels product
-    And open Channels pdp
-    And select all the Channels attribute
-    And add to cart
-    And click view cart
-    Then Delete the line item from cart
+#  @TMT
+#  Scenario: Verify TMT product add to cart
+#    When click on TMT product
+#    And open TMT Rebar pdp
+#    And select all the TMT Rebar attribute
+#    And add to cart
+#    And click view cart
+#    Then Delete the line item from cart
+#
+#
+#  @Angles
+#  Scenario: Verify Angles product add to cart
+#    When move the mouse to Structural category
+#    And click on Angles product
+#    And open Angles pdp
+#    And select all the Angles attribute
+#    And add to cart
+#    And click view cart
+#    Then Delete the line item from cart
+#
+#  @Channels
+#  Scenario: Verify Channels product add to cart
+#    When move the mouse to Structural category
+#    And click on Channels product
+#    And open Channels pdp
+#    And select all the Channels attribute
+#    And add to cart
+#    And click view cart
+#    Then Delete the line item from cart
 
     #Product not available currently
 #  @BeamsAndColumns

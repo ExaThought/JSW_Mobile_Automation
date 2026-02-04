@@ -52,7 +52,7 @@ public  class SessionSteps extends AbstractWebPage {
             Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             Grid.driver().get(url);
             defocusSearchOverlay();
-            sleep(5000);
+            sleep(2000);
         }  catch (Exception e) {
             log.log(Level.FINE, "initZohoSession failed.", e);
             throw e;
@@ -62,7 +62,7 @@ public  class SessionSteps extends AbstractWebPage {
     @And("ccp login with {string} and {string}")
     public void ccpLogin(String emailId, String pass) {
         log.entering(emailId, pass);
-        waitForSearchOverlayToDisappear();
+//        waitForSearchOverlayToDisappear();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);

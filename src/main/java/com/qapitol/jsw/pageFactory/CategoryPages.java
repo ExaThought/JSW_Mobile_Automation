@@ -19,5 +19,6 @@ public class CategoryPages {
     public static String anglesSubCategory="(//a[contains(text(),'Angles')])[2]";
     public static String channelsSubCategory="(//a[contains(text(),'Channels')])[3]";
     public static String beamsAndColumnsSubCategory="(//a[contains(text(),'Beams and columns')])[2]";
+    public static String deleteCartLineItem="(//div[contains(text(),'Delete')])[1]";
 }
 

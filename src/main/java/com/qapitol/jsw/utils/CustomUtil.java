@@ -2,7 +2,10 @@ package com.qapitol.jsw.utils;
 
 import com.qapitol.sauron.core.Grid;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 
 import java.util.logging.Level;
@@ -18,4 +21,10 @@ public class CustomUtil {
             logger.log(Level.FINEST, "clickUsingJS", e);
         }
     }
+
+    public static void waits(WebElement locator, WebDriver driver) {
+        WebDriverWait wait=new WebDriverWait(driver,java.time.Duration.ofSeconds(10));
+       wait.until(ExpectedConditions.elementToBeClickable(locator));
+    }
+
 }

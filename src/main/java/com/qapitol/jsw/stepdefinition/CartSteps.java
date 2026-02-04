@@ -11,6 +11,7 @@ import org.openqa.selenium.interactions.Actions;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.*;
 import static com.qapitol.jsw.utils.CustomUtil.scrollingToViewAndClickUsingJS;
+import static com.qapitol.jsw.utils.CustomUtil.waits;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
@@ -124,6 +125,7 @@ public class CartSteps extends AbstractWebPage {
     @When("move the mouse to Mild steel category")
     public void moveTheMouseToMildSteelCategory() {
         //Reading locator from page factory
+        sleep(1000);
         actions.moveToElement(Grid.driver().findElement(By.xpath(mildSteelCategory))).perform();
     }
 
@@ -207,6 +209,7 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("Delete the line item from cart")
     public void deleteTheLineItemFromCart() {
+        sleep(2000);
         waitAndClickOn(DELETE_LINE_ITEM);
         if (isElementPresent(DELETE_CTA_BUTTON)) {
             waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
@@ -518,8 +521,8 @@ public class CartSteps extends AbstractWebPage {
 //    }
     @And("update Length to {string} dropdown")
     public void updateLength(String updateLength) {
-        WebElement locator=Grid.driver().findElement(By.xpath("//div[@id='custom-dropdown']"));
-        scrollingToViewAndClickUsingJS(locator);
+//        WebElement locator=Grid.driver().findElement(By.xpath("//div[@id='custom-dropdown']"));
+//        scrollingToViewAndClickUsingJS(locator);
         waitAndClickOn(EDIT_LENGTH_DROPDOWN);
         waitAndClickOn(EDIT_LENGTH, updateLength);
     }
