@@ -1,116 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.qapitol.sample</groupId>
-    <artifactId>webbdd</artifactId>
     <version>4.0.5-SNAPSHOT</version>
+    <artifactId>webbdd</artifactId>
     <packaging>jar</packaging>
     <name>webbdd</name>
 
-    <!-- ================= PROPERTIES ================= -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!-- Java -->
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-
-        <!-- Test -->
+        <maven.compiler.source>18</maven.compiler.source>
+        <maven.compiler.target>18</maven.compiler.target>
         <suiteXmlFile>testng_bdd.xml</suiteXmlFile>
-
-        <!-- Versions -->
         <sauron.version>4.0.6-SNAPSHOT</sauron.version>
         <aspectjrt.version>1.9.22</aspectjrt.version>
     </properties>
 
-    <!-- ================= DEPENDENCIES ================= -->
     <dependencies>
-
-        <!-- Sauron Framework -->
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>web</artifactId>
             <version>${sauron.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>web-mobile</artifactId>
             <version>${sauron.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>cucumber</artifactId>
             <version>${sauron.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>api</artifactId>
             <version>${sauron.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.qapitol.jsw</groupId>
             <artifactId>order-api</artifactId>
             <version>4.0.6-SNAPSHOT</version>
         </dependency>
-
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>report-allure</artifactId>
             <version>${sauron.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>data</artifactId>
             <version>${sauron.version}</version>
         </dependency>
-
-        <!-- Utilities -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.26.3</version>
         </dependency>
-
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20231013</version>
         </dependency>
-
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.24</version>
+            <version>42.2.24</version> <!-- Use the latest version available -->
         </dependency>
-
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
             <version>3.0.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>7.0.5.Final</version>
         </dependency>
-
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.11.0</version>
+            <version>4.11.0</version> <!-- or latest stable version -->
         </dependency>
 
+        <!-- OkHttp (used internally by Retrofit) -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
@@ -123,52 +98,130 @@
             <version>2.1.5</version>
         </dependency>
 
-        <!-- Jackson -->
+        <!-- Jackson Core -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.17.2</version>
         </dependency>
 
+        <!-- Jackson Databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.17.2</version>
         </dependency>
 
+        <!-- Jackson Annotations (required by databind) -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>2.17.2</version>
         </dependency>
 
+        <!-- Rest Assured common utilities -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>5.5.0</version>
         </dependency>
 
+
     </dependencies>
-
-    <!-- ================= BUILD ================= -->
     <build>
-
+        <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+            <plugins>
+                <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <filesets>
+                            <fileset>
+                                <directory>${user.dir}/allure-results</directory>
+                                <followSymlinks>false</followSymlinks>
+                            </fileset>
+                        </filesets>
+                    </configuration>
+                </plugin>
+                <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.1</version>
+                    <configuration>
+                        <suiteXmlFiles>
+                            <suiteXmlFile>src/test/resources/${suiteXmlFile}</suiteXmlFile>
+                        </suiteXmlFiles>
+                        <argLine>
+                            -javaagent:"${settings.localRepository}"/org/aspectj/aspectjweaver/${aspectjrt.version}/aspectjweaver-${aspectjrt.version}.jar
+                        </argLine>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
+                <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.7.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+                    <version>1.2.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
-
-            <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
-
-            <!-- Surefire -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.jsonschema2pojo</groupId>
+                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/test/resources/api_responses</sourceDirectory>
+                    <targetPackage>com.qapitol.jsw.apitest.pojo</targetPackage>
+                    <outputDirectory>${project.basedir}/target/generated-sources</outputDirectory>
+                    <sourceType>json</sourceType>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.1</version>
                 <configuration>
@@ -180,44 +233,15 @@
                     </argLine>
                 </configuration>
             </plugin>
-
-            <!-- JSON → POJO -->
-            <plugin>
-                <groupId>org.jsonschema2pojo</groupId>
-                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <id>generate</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirectory>
-                                ${project.basedir}/src/test/resources/api_responses
-                            </sourceDirectory>
-                            <targetPackage>com.qapitol.jsw.apitest.pojo</targetPackage>
-                            <outputDirectory>
-                                ${project.build.directory}/generated-sources
-                            </outputDirectory>
-                            <sourceType>json</sourceType>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Allure Maven Plugin -->
-            <plugin>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-maven</artifactId>
-                <version>2.12.0</version>
-            </plugin>
-
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>3.1.1</version>
+            </extension>
+        </extensions>
     </build>
-
-    <!-- ================= REPOSITORIES ================= -->
     <repositories>
         <repository>
             <id>sauron-snapshot</id>
@@ -228,5 +252,4 @@
             <url>https://master.jswone.in/repository/sauron-release/</url>
         </repository>
     </repositories>
-
 </project>
