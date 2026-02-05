@@ -8,6 +8,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
+import static com.qapitol.jsw.utils.ApiUtils.getCustomerDetails;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class PaymentDueSteps extends AbstractWebPage {
@@ -102,6 +103,10 @@ public class PaymentDueSteps extends AbstractWebPage {
     }
     @And("user close payment due pop up")
     public void userClosePaymentDuePopUp() {
+
+        //Get Customer GSTN
+//        SessionSteps sessionStep=new SessionSteps();
+//        String customerGSTN=sessionStep.getCustomerDetail();
 
         ApiUtils paymentDueResponse=new ApiUtils();
         double paymentDue=paymentDueResponse.getPaymentDueResponse().getData().getTotalDueAmount();
