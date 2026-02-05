@@ -53,6 +53,13 @@ public  class SessionSteps extends AbstractWebPage {
             Grid.driver().get(url);
             defocusSearchOverlay();
             sleep(2000);
+            //Logout the user incase already logged for jenkin's run
+            if (!isElementPresent(LOGIN_CTA_BUTTON)) {
+                PaymentDueSteps paymentDueSteps = new PaymentDueSteps();
+                paymentDueSteps.userClosePaymentDuePopUp();
+                log.info("CCP User is already logged in, logging out to continue with fresh login");
+                ccpLogOut();
+            }
         }  catch (Exception e) {
             log.log(Level.FINE, "initZohoSession failed.", e);
             throw e;
