@@ -1,4 +1,4 @@
-@address @regression
+@address
 Feature: validate Address
 
   Background:
