@@ -1,0 +1,72 @@
+elements:
+  buyOnlineSection:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Buy online')]
+
+  msmeSection:
+    en_US:
+      web: xpath=//p[contains(text(),'JSW One MSME')]
+
+  supportSection:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Support')]
+
+  policySection:
+    en_US:
+      web: xpath=//p[contains(normalize-space(text()),'Policy')]
+
+  mildSteelLink:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Mild steel')]
+
+  structuralSteelLink:
+    en_US:
+      web: xpath=//a[contains(normalize-space(text()),'Structural Steel')]
+
+  tmtLink:
+    en_US:
+      web: xpath=//a[contains(@class,'flex') and contains(@class,'items-center') and contains(@class,'gap-[10px]') and contains(@class,'text-xs') and contains(@class,'font-normal') and contains(@class,'text-supporting-black') and normalize-space(text())='TMT']
+
+  cementLink:
+    en_US:
+      web: xpath=//a[contains(@class,'flex') and contains(@class,'items-center') and contains(@class,'gap-[10px]') and contains(@class,'text-xs') and contains(@class,'font-normal') and contains(@class,'text-supporting-black') and normalize-space(text())='Cement']
+
+  aboutUsLink:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'About us')]
+
+  blogsLink:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Blogs')]
+
+  siteMapLink:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Site map')]
+
+  jswOneTmtLink:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'JSW One TMT')]
+
+  supportPhone:
+    en_US:
+      web: xpath=//*[contains(text(),'+91')]
+
+  supportEmail:
+    en_US:
+      web: xpath=//a[contains(@class,'flex') and contains(@class,'items-center') and contains(@class,'gap-[10px]') and contains(@class,'text-xs') and contains(@class,'font-normal') and contains(@class,'text-supporting-black') and starts-with(@href,'mailto:support@jswonemsme.com')]
+
+  helpSupportLink:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Help & support')]
+
+  termsAndConditions:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Terms & conditions')]
+
+  privacyPolicy:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Privacy policy')]
+
+  returnPolicy:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Return Policy')]

@@ -1,0 +1,779 @@
+{
+  "id": "8a58c3d9-3add-446f-b519-3f6e5f4d7636",
+  "firstName": "TestNewURLUserCustomer ",
+  "userEmail": "testnewurl@yopmail.com",
+  "phoneNumber": "6545678765",
+  "lastName": "",
+  "companyName": "TURBO ENERGY PRIVATE LIMITED",
+  "razorPayName": "JSW ONE PLATFORMS LIMITED",
+  "razorPayVaAccountNumber": "1112220057850296",
+  "razorPayIFSC": "RAZR0000001",
+  "defaultShippingAddressId": "aN5EGSRU",
+  "defaultBillingAddressId": "KLskFhTv",
+  "addresses": [
+    {
+      "id": "KLskFhTv",
+      "key": "shippingType_2026-01-29T16:55:41.353839",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "110001",
+      "city": "RAJA ANNAMALAIPURAM",
+      "region": "NEW DELHI",
+      "state": "DELHI",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "STONE ACRE, 67, CHAMIERS ROAD, R.A. PURAM",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "7GDeBHJS",
+      "key": "primaryAddress",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "600028",
+      "city": "RAJA ANNAMALAIPURAM",
+      "region": "CHENNAI",
+      "state": "TAMIL NADU",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "STONE ACRE, 67, CHAMIERS ROAD, R.A. PURAM",
+          "createdAt": "29-09-24 22:58",
+          "modifiedAt": "29-09-24 22:58",
+          "isPrimaryAddress": true
+        }
+      }
+    },
+    {
+      "id": "zqtnWuBV",
+      "key": "shippingType_2024-10-01T10:38:33.405354",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "560004",
+      "city": "Bangalore",
+      "region": "BENGALURU URBAN",
+      "state": "KARNATAKA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "Turbo energy Private Limited",
+          "isPrimaryAddress": false
+        }
+      }
+    },
+    {
+      "id": "ORYGM_g5",
+      "key": "shippingTypeEZjVntXW",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "632505",
+      "city": "",
+      "region": "Vellore",
+      "state": "Tamil Nadu",
+      "country": "IN",
+      "company": null,
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "312 1A, Kaverippakkam Road, Pulivalam Village",
+          "createdAt": "29-09-24 22:58",
+          "modifiedAt": "29-09-24 22:58"
+        }
+      }
+    },
+    {
+      "id": "Z85FHbq2",
+      "key": "shippingTypeBKXslrvb",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "602105",
+      "city": "",
+      "region": "Kancheepuram",
+      "state": "Tamil Nadu",
+      "country": "IN",
+      "company": null,
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "BHANDARI WARE HOUSE A, Survey no 455/1, 455/2C, PERAMMBAKKAM ROAD, MANNUR VILLAGE, SRIPERUMBUDUR, KANCHIPURAM",
+          "createdAt": "29-09-24 22:58",
+          "modifiedAt": "29-09-24 22:58"
+        }
+      }
+    },
+    {
+      "id": "aN5EGSRU",
+      "key": "shippingType_2024-11-28T09:13:54.055300",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "421302",
+      "city": "Thane",
+      "region": "THANE",
+      "state": "MAHARASHTRA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "13703730",
+          "isPrimaryAddress": true,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "H1BDXWmI",
+      "key": "shippingType_2024-10-09T06:17:47.406605",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "382355",
+      "city": "Reg. Office: EPS - Building no. 49A, Block 49, Zone 04, Gyan Marg, GIFT City, Gandhinagar-382355.",
+      "region": "GANDHINAGAR",
+      "state": "GUJARAT",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "Reg. Office: EPS - Building no. 49A, Block 49, Zone 04, Gyan Marg, GIFT City, Gandhinagar-382355.",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "MJzOTd3a",
+      "key": "shippingType_2024-10-14T11:19:40.105601",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "400093",
+      "city": "Mumbai",
+      "region": "PALGHAR",
+      "state": "MAHARASHTRA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "JSW Grand Palladium",
+          "isPrimaryAddress": false
+        }
+      }
+    },
+    {
+      "id": "bcV5CbiT",
+      "key": "shippingType_2024-10-14T11:21:02.171510",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "713334",
+      "city": "Asansol",
+      "region": "PASCHIM BARDHAMAN",
+      "state": "WEST BENGAL",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "Agarwal Complex, Vasai",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "CGLVI25Z",
+      "key": "shippingType_2024-12-04T06:41:27.268542",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "751009",
+      "city": "Bhubaneswar",
+      "region": "KHORDHA",
+      "state": "ODISHA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "Rajhans Dream Complex",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "VbnDKJq7",
+      "key": "shippingType_2024-10-14T11:28:54.420595",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "123456",
+      "city": "Mumbai",
+      "region": "",
+      "state": "MAHARASHTRA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "Bandra Kurla Complex",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "52cesRFI",
+      "key": "shippingType_2024-10-15T06:23:07.074163",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "560022",
+      "city": "Bangalore ",
+      "region": "BENGALURU URBAN",
+      "state": "KARNATAKA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "BIT chawl",
+          "isPrimaryAddress": false
+        }
+      }
+    },
+    {
+      "id": "7DAgf7NP",
+      "key": "shippingType_2024-10-23T11:21:21.891619",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "560004",
+      "city": "Bengaluru South",
+      "region": "BENGALURU URBAN",
+      "state": "KARNATAKA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "Banglorejaydev",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "sbkX5kL5",
+      "key": "shippingTypejbi8ZDAC",
+      "title": null,
+      "salutation": null,
+      "firstName": "Jayadev",
+      "lastName": "Gowda",
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "571402",
+      "city": "Mandya ",
+      "region": "MANDYA",
+      "state": "KARNATAKA",
+      "country": "IN",
+      "company": "Test",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": "8287827890",
+      "email": "Test@gmail.com",
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine2": "Main road",
+          "streetLine1": "603th room ",
+          "isPrimaryAddress": false
+        }
+      }
+    },
+    {
+      "id": "p_5_o8Je",
+      "key": "shippingType_2025-04-09T11:47:28.207890",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "571402",
+      "city": "Mandya",
+      "region": "MANDYA",
+      "state": "KARNATAKA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "TestTest",
+          "isPrimaryAddress": false
+        }
+      }
+    },
+    {
+      "id": "PVjWj7eu",
+      "key": "shippingType1jVwEoij",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "571402",
+      "city": "Mandya",
+      "region": "MANDYA",
+      "state": "KARNATAKA",
+      "country": "IN",
+      "company": "Test",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "Test",
+          "isPrimaryAddress": true
+        }
+      }
+    },
+    {
+      "id": "QQOh5fQ3",
+      "key": "shippingType_2026-02-04T04:00:45.228126",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "411033",
+      "city": "pune",
+      "region": "PUNE",
+      "state": "MAHARASHTRA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "ROAD, KILPAUK, jhsakjdhkajdhkjahddddddddddddddddddaksdhkahsdkhaksdhhhhhhhhhhhhhkajshkhdjhddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeerrrrrrrrrttttttttttttttttteeeeeeeeeeeeerrrrrrrrrrrrrrrreeeeeeeeeeeeeeENDS_HERE",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "kr3CmLDT",
+      "key": "shippingType_2026-02-04T04:47:20.102338",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "411033",
+      "city": "pune",
+      "region": "PUNE",
+      "state": "MAHARASHTRA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "ROAD, KILPAUK, jhsakjdhkajdhkjahddddddddddddddddddaksdhkahsdkhaksdhhhhhhhhhhhhhkajshkhdjhddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeerrrrrrrrrttttttttttttttttteeeeeeeeeeeeerrrrrrrrrrrrrrrreeeeeeeeeeeeeeENDS_HERE",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    },
+    {
+      "id": "iuqsgSDc",
+      "key": "shippingType_2026-02-04T04:47:20.825474",
+      "title": null,
+      "salutation": null,
+      "firstName": null,
+      "lastName": null,
+      "streetName": null,
+      "streetNumber": null,
+      "additionalStreetInfo": null,
+      "postalCode": "411033",
+      "city": "pune",
+      "region": "PUNE",
+      "state": "MAHARASHTRA",
+      "country": "IN",
+      "company": "TURBO ENERGY PRIVATE LIMITED",
+      "department": null,
+      "building": null,
+      "apartment": null,
+      "pOBox": null,
+      "phone": null,
+      "mobile": null,
+      "email": null,
+      "fax": null,
+      "additionalAddressInfo": null,
+      "externalId": null,
+      "custom": {
+        "type": {
+          "id": "c8d8419f-fb5d-4a04-a08a-4c61b35b3964",
+          "obj": null,
+          "typeId": "type"
+        },
+        "fields": {
+          "streetLine1": "ROAD, KILPAUK, jhsakjdhkajdhkjahddddddddddddddddddaksdhkahsdkhaksdhhhhhhhhhhhhhkajshkhdjhddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeerrrrrrrrrttttttttttttttttteeeeeeeeeeeeerrrrrrrrrrrrrrrreeeeeeeeeeeeeeENDS_HERE",
+          "isPrimaryAddress": false,
+          "modifiedBy": "sf",
+          "shipToParty": "false"
+        }
+      }
+    }
+  ],
+  "salesClassification": "nonsuccess",
+  "sfAccountId": "001Ik0000058EueIAE",
+  "gstIn": "33AAACT2916R1Z2",
+  "erpOrderCreationEnabled": true,
+  "erpBackwardFlowEnabled": true,
+  "erpEnableUsers": [],
+  "zohoFlagEnabled": true,
+  "zohoEnableUsers": [],
+  "gtmDate": "31-01-2025",
+  "creditFlag": false,
+  "isDirectCustomer": true,
+  "isEligibleSellerCredit": false,
+  "isLedgerEnable": true,
+  "allowLinkTDC": true,
+  "isCentralCartSloEnabled": false,
+  "isCentralCartStoEnabled": false,
+  "isCentralCartRcEnabled": false
+}

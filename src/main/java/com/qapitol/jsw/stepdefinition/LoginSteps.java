@@ -36,6 +36,10 @@ public class LoginSteps extends AbstractWebPage {
     }
     @And("enter valid email {string}")
     public void enter_valid_email(String username){
+        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
+        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
+        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
+        waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
         waitAndSetText(LOGIN_EMAIL, username); // Give you Email
 
@@ -52,6 +56,10 @@ public class LoginSteps extends AbstractWebPage {
     }
     @And("enter invalid email {string}")
     public void enter_invalid_email(String username){
+        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
+        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
+        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
+        waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
         waitAndSetText(LOGIN_EMAIL, username); // Give you Email
 

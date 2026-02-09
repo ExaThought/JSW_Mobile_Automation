@@ -1,0 +1,16 @@
+elements:
+  msHotRolledViewAll:
+    en_US:
+      web: //h2[normalize-space()='MS Hot rolled']/following-sibling::button[normalize-space()='View all']
+
+  msHotRolledPLP:
+    en_US:
+      web: //h1[normalize-space()='MS Hot rolled']
+
+  cementViewAll:
+    en_US:
+      web: //section[.//h2[normalize-space()='Cement']]//a[normalize-space()='View All']
+
+  plpHeading:
+    en_US:
+      web: "//h1"

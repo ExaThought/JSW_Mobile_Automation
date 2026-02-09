@@ -1,0 +1,35 @@
+elements:
+  # -------- SEARCH --------
+  searchInput:
+    en_US:
+      web: //input[@id='SearchText']
+
+  searchPlaceholder:
+    en_US:
+      web: //span[contains(@class,'static-text') and text()='Search']
+
+  rotatingPlaceholder:
+    en_US:
+      web: //span[contains(@class,'rotating-text')]
+
+  # Updated suggestions XPath: wait for container, then its <li>
+  searchSuggestions:
+    en_US:
+      web: //div[@id='popup_recent']//li
+
+  # -------- PRODUCTS --------
+  productCard:
+    en_US:
+      web: //a[contains(@href,'/product-detail')]
+
+  productName:
+    en_US:
+      web: .//p[contains(@class,'typography')]
+
+  productImage:
+    en_US:
+      web: .//img
+
+  viewAllButton:
+    en_US:
+      web: //a[contains(@href,'/query')]

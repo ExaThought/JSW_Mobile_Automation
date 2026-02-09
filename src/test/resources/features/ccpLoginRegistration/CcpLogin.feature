@@ -4,7 +4,7 @@ Feature: Check Login
   Background:
     Given Go to session "ccp"
 
-  @sanity @emailLogin @emailLoginWithValidCredentials @test02
+  @sanity @emailLogin @emailLoginWithValidCredentials
   Scenario: Check Login with valid email ID and password
     And enter valid email "testnewurl@yopmail.com"
     And user click on continue button
