@@ -79,10 +79,10 @@ public class SearchSteps extends AbstractWebPage {
 
         if (resultType.equalsIgnoreCase("invalid")) {
             Assert.assertTrue(products.isEmpty(),
-                    "❌ Products found for invalid search");
+                    "Products found for invalid search");
         } else {
             Assert.assertTrue(!products.isEmpty(),
-                    "❌ No products found for valid search");
+                    "No products found for valid search");
         }
     }
 
@@ -99,7 +99,7 @@ public class SearchSteps extends AbstractWebPage {
         String actualValue = searchInput.getAttribute("value");
 
         Assert.assertEquals(actualValue, expectedKeyword,
-                "❌ Search keyword not retained");
+                "Search keyword not retained");
     }
 
     // ---------------- AUTO SUGGESTIONS ----------------
@@ -119,7 +119,7 @@ public class SearchSteps extends AbstractWebPage {
                 Grid.driver().findElements(By.xpath(suggestionXpath));
 
         Assert.assertTrue(suggestions.size() > 0,
-                "❌ Auto suggestion list is empty");
+                "Auto suggestion list is empty");
     }
 
     // ---------------- PRODUCT CARD VALIDATION ----------------
@@ -145,18 +145,18 @@ public class SearchSteps extends AbstractWebPage {
                 Grid.driver().findElements(By.xpath(cardXpath));
 
         Assert.assertTrue(!cards.isEmpty(),
-                "❌ No product cards found");
+                "No product cards found");
 
         for (WebElement card : cards) {
 
             Assert.assertTrue(
                     card.findElements(By.xpath(nameXpath)).size() > 0,
-                    "❌ Product name missing"
+                    "Product name missing"
             );
 
             Assert.assertTrue(
                     card.findElements(By.xpath(imageXpath)).size() > 0,
-                    "❌ Product image missing"
+                    "Product image missing"
             );
         }
     }
@@ -173,7 +173,7 @@ public class SearchSteps extends AbstractWebPage {
 
         Assert.assertTrue(
                 Grid.driver().getCurrentUrl().contains("/product-detail"),
-                "❌ Not navigated to PDP page"
+                "Not navigated to PDP page"
         );
     }
 
@@ -192,7 +192,7 @@ public class SearchSteps extends AbstractWebPage {
 
         Assert.assertTrue(
                 Grid.driver().getCurrentUrl().contains("/query"),
-                "❌ Not navigated to PLP page"
+                "Not navigated to PLP page"
         );
     }
 }

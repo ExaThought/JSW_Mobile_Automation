@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.apitest.pojos.order.customerDetails.CustomerDetailsResponse;
 import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
@@ -7,6 +8,7 @@ import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.qameta.allure.Allure;
 
 import static com.qapitol.jsw.utils.ApiUtils.getCustomerDetails;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
@@ -99,35 +101,36 @@ public class PaymentDueSteps extends AbstractWebPage {
                 "'Pay now' button is not displayed on Payment Due page"
         );
 
-        softAssert.assertAll();
     }
+
     @And("user close payment due pop up")
     public void userClosePaymentDuePopUp() {
 
         //Get Customer GSTN
-//        SessionSteps sessionStep=new SessionSteps();
-//        String customerGSTN=sessionStep.getCustomerDetail();
+        SessionSteps sessionStep = new SessionSteps();
+        String customerGSTN = sessionStep.getCustomerDetail().getGstIn();
 
-        ApiUtils paymentDueResponse=new ApiUtils();
-        double paymentDue=paymentDueResponse.getPaymentDueResponse().getData().getTotalDueAmount();
-        if(paymentDue!=0.0){
-        // Wait for the close button and click it
-        try{
-            //Check payment due is present for given account
-                System.out.println("Customer as payment due");
+        ApiUtils paymentDueResponse = new ApiUtils();
+        double paymentDue = paymentDueResponse.getPaymentDueResponse(customerGSTN).getData().getTotalDueAmount();
+        if (paymentDue != 0.0) {
+            // Wait for the close button and click it
+            try {
+                //Check payment due is present for given account
                 waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
                 waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
                 waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-        }
-        catch (Exception e){
-            System.out.println("No Payment due pop up to close");
-
-        }
-        }
-        else {
-            System.out.println("No Payment due pop up to close");
+            } catch (Exception e) {
+                log.info("payment due pop up is not closed for customer with payment due:" + customerGSTN);
+                Allure.addAttachment("Payment Due Pop Up Not Closed", "Payment due pop up is not closed for customer with payment due:" + customerGSTN);
+            }
+        } else {
+            if (isElementPresent(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON)) {
+                log.info("payment due pop up is present for customer with no payment due:" + customerGSTN);
+                Allure.addAttachment("Payment Due Pop Up Present", "Payment due pop up is present for customer with no payment due:" + customerGSTN);
+            }
         }
     }
+
     @And("user navigate to my reqirement")
     public void userNavigateToMyRequirement() {
         // Wait for the link to be visible and click
@@ -147,9 +150,9 @@ public class PaymentDueSteps extends AbstractWebPage {
 
         softAssert.assertTrue(
                 isElementPresent(CCP_HOME_PAGE_PAYMENT_DUE_FLOATER_VIEW_DETAILS_BUTTON),
-                "'View details & pay' button is not displayed in floater"
-        );
+                "'View details & pay' button is not displayed in floater");
     }
+
     @And("user navigate to buy again")
     public void userNavigateToBuyAgain() {
 
@@ -157,6 +160,7 @@ public class PaymentDueSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_HOME_PAGE_BUY_AGAIN_LINK);
         waitAndClickOn(CCP_HOME_PAGE_BUY_AGAIN_LINK);
     }
+
     @And("user navigate to cart details")
     public void userNavigateToCart() {
 
@@ -192,7 +196,6 @@ public class PaymentDueSteps extends AbstractWebPage {
 
 
     }
-
 
 
 }

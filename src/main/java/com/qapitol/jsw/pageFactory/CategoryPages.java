@@ -1,6 +1,8 @@
 package com.qapitol.jsw.pageFactory;
 
 
+import org.openqa.selenium.By;
+
 public class CategoryPages {
 
     public static String mildSteelCategory="(//a[contains(., 'Mild Steel')])[1]";
@@ -20,5 +22,7 @@ public class CategoryPages {
     public static String channelsSubCategory="(//a[contains(text(),'Channels')])[3]";
     public static String beamsAndColumnsSubCategory="(//a[contains(text(),'Beams and columns')])[2]";
     public static String deleteCartLineItem="(//div[contains(text(),'Delete')])[1]";
+    public static String coatedSteel="(//a[contains(text(),'Coated Steel')])[2]";
+    public static By editEnterQuantity=By.xpath("//div[contains(text(),'Enter quantity')]");
 }
 

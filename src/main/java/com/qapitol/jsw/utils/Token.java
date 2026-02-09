@@ -1,8 +1,7 @@
 package com.qapitol.jsw.utils;
 
 import com.qapitol.jsw.apitest.apis.impl.BaseApiImpl;
-import com.qapitol.jsw.apitest.pojo.CcpTokenRequestPayload;
-import com.qapitol.sauron.data.Data;
+
 
 import static io.restassured.RestAssured.*;
 
@@ -22,12 +21,13 @@ public class Token extends BaseApiImpl {
         baseURI=ConfigUtil.getSecretValue("ccpPortalUrl");
         String storeKey="msme";
 
-        String requestPayload="{"
-                + "email:" + email + ","
-                + "phoneNumber:null,"
-                + "password:" + password + ","
-                + "storeKey:" + storeKey
+        String requestPayload = "{"
+                + "\"email\":\"" + email + "\","
+                + "\"phoneNumber\":null,"
+                + "\"password\":\"" + password + "\","
+                + "\"storeKey\":\"" + storeKey + "\""
                 + "}";
+
 
         return given().log().all().body(requestPayload).header("content-type","application/json")
                 .when().log().all().post(ConfigUtil.getSecretValue("ccpTokenUrl"))

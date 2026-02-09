@@ -2,6 +2,7 @@ package com.qapitol.jsw.stepdefinition;
 
 
 
+import com.qapitol.jsw.apitest.pojos.order.customerDetails.CustomerDetailsResponse;
 import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
@@ -41,9 +42,9 @@ public  class SessionSteps extends AbstractWebPage {
             // Switching to "zoho_creator" session present in the sessions.yaml
             Grid.setSessionName("ccp");
             if(!Grid.getTestSession().isStarted()) {
-                log.info("Starting browser with zoho creator...");
+                log.info("Starting browser with CCP...");
                 initCCPSession(ConfigUtil.getSecretValue("ccpPortalUrl"));
-                log.info("Started browser and navigated to Zoho creator.");
+                log.info("Started browser and navigated to CCP portal.");
             }
         } else {
             throw new RuntimeException("No session name given. Please provide a valid session name specified in the sessions yaml file.");
@@ -127,7 +128,7 @@ public  class SessionSteps extends AbstractWebPage {
         }
     }
 
-    public String getCustomerDetail(){
+    public CustomerDetailsResponse getCustomerDetail(){
         return ApiUtils.getCustomerDetails(userEmail,userPassword);
     }
 
