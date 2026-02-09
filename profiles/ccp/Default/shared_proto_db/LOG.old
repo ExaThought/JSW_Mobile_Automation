@@ -1,3 +1,8 @@
-2025/09/08-15:09:51.641 558b8 Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp/Default/shared_proto_db/MANIFEST-000001
-2025/09/08-15:09:51.642 558b8 Recovering log #3
-2025/09/08-15:09:51.644 558b8 Reusing old log /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp/Default/shared_proto_db/000003.log 
+2025/12/23-16:10:45.387 52e15c Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp/Default/shared_proto_db/MANIFEST-000001
+2025/12/23-16:10:45.387 52e15c Recovering log #3
+2025/12/23-16:10:45.399 52e15c Level-0 table #3: started
+2025/12/23-16:10:45.416 52e15c Level-0 table #3: 99485 bytes OK
+2025/12/23-16:10:45.416 52e15c Recovering log #4
+2025/12/23-16:10:45.420 52e15c Reusing old log /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp/Default/shared_proto_db/000004.log 
+2025/12/23-16:10:45.434 52e15c Delete type=0 #3
+2025/12/23-16:10:45.434 52e15c Delete type=2 #5

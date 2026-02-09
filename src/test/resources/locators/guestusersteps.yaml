@@ -1,0 +1,34 @@
+elements:
+  homePageRegistrationButton:
+    en_US:
+      web: xpath=//button[@class='btn cta-btn primary']//span[contains(text(),'Register')]
+  registrationPageMessage:
+    en_US:
+      web: xpath=(//div[contains(text(),'Create your JSW One MSME account')])[1]
+  activeOrders:
+    en_US:
+      web: xpath=//div[contains(text(),'Active orders')]
+  loginRegistrationPage:
+    en_US:
+      web: xpath=//div[contains(text(),'Login or Register')]
+  myRequirements:
+    en_US:
+      web: xpath=//a[contains(text(),'My requirements')]
+  myOrders:
+    en_US:
+      web: xpath=//a[contains(text(),'My orders')]
+  youtube:
+    wn_US:
+      web: xpath=//img[@alt="JSW One video"]
+  verifyYoutubeVideo:
+    en_US:
+      web: xpath=//iframe[contains(@src,'youtube.com')]
+  blogsArticles:
+    en_US:
+      web: xpath=//h1[contains(text(),'Browse articles & blogs')]/following-sibling::div/child::div
+  blogsArticleViewAll:
+    en_US:
+      web: xpath=//h1[contains(text(),'Browse articles & blogs')]/following-sibling::div/child::a
+  blogsPageVerification:
+    en_US:
+      web: xpath=(//div[text()='Featured articles'])[1]

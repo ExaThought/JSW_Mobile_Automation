@@ -1,22 +1,21 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.apitest.pojos.order.customerDetails.CustomerDetailsResponse;
+import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.qameta.allure.Allure;
 
+import static com.qapitol.jsw.utils.ApiUtils.getCustomerDetails;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class PaymentDueSteps extends AbstractWebPage {
 
     // ===== CCP HOME PAGE ELEMENT KEYS =====
-    public static final String CCP_HOME_PAGE_LOGIN_BUTTON = "ccpHomePageLoginButton";
-    public static final String CCP_HOME_PAGE_LOGIN_VIA_OTP = "ccpHomePageLoginViaOtp";
-    public static final String CCP_HOME_PAGE_LOGIN_EMAIL = "ccpHomePageLoginEmail";
-    public static final String CCP_HOME_PAGE_LOGIN_PASSWORD = "ccpHomePageLoginPassword";
-    public static final String CCP_HOME_PAGE_LOGIN_CTA = "ccpHomePageLoginCTA";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_POPUP = "ccpHomePagePaymentDuePopup";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_TITLE = "ccpHomePagePaymentDueTitle";
     public static final String CCP_HOME_PAGE_PAYMENT_DUE_AMOUNT = "ccpHomePagePaymentDueAmount";
@@ -34,47 +33,6 @@ public class PaymentDueSteps extends AbstractWebPage {
     public static final String CCP_HOME_PAGE_BUY_AGAIN_LINK = "ccpHomePageBuyAgainLink";
     public static final String CCP_HOME_PAGE_CART_LINK = "ccpHomePageCartLink";
 
-
-
-
-    @When("user open the CCP Webportal")
-    public void user_open_the_ccp_web_portal() {
-
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_BUTTON);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_BUTTON);
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_VIA_OTP);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_VIA_OTP);
-    }
-
-    @And("enter user email {string}")
-    public void enterUserEmail(String arg0) {
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_EMAIL);
-        waitAndSetText(CCP_HOME_PAGE_LOGIN_EMAIL, arg0);
-    }
-
-    @And("user click on continue")
-    public void userClickOnContinue() {
-
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_CTA);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_CTA);
-    }
-
-    @And("user enter valid password {string}")
-    public void userEnterValidPassword(String arg0) {
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_PASSWORD);
-        waitAndSetText(CCP_HOME_PAGE_LOGIN_PASSWORD, arg0);
-    }
-
-    @Then("user successfully login to ccp portal")
-    public void userSuccessfullyLoginToCcpPortal() {
-        waitAndCheckIsElementVisible(CCP_HOME_PAGE_LOGIN_CTA);
-        waitAndClickOn(CCP_HOME_PAGE_LOGIN_CTA);
-    }
 
     @Then("user verify payment due pop up")
     public void userVerifyPaymentDuePopUp() {
@@ -143,36 +101,45 @@ public class PaymentDueSteps extends AbstractWebPage {
                 "'Pay now' button is not displayed on Payment Due page"
         );
 
-        softAssert.assertAll();
     }
+
     @And("user close payment due pop up")
     public void userClosePaymentDuePopUp() {
 
-        // Wait for the close button and click it
-        try{
+        //Get Customer GSTN
+        SessionSteps sessionStep = new SessionSteps();
+        String customerGSTN = sessionStep.getCustomerDetail().getGstIn();
 
-            waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-            waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
-        }
-        catch (Exception e){
-            System.out.println("No Payment due pop up to close");
-
+        ApiUtils paymentDueResponse = new ApiUtils();
+        double paymentDue = paymentDueResponse.getPaymentDueResponse(customerGSTN).getData().getTotalDueAmount();
+        if (paymentDue != 0.0) {
+            // Wait for the close button and click it
+            try {
+                //Check payment due is present for given account
+                waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+                waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+                waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+            } catch (Exception e) {
+                log.info("payment due pop up is not closed for customer with payment due:" + customerGSTN);
+                Allure.addAttachment("Payment Due Pop Up Not Closed", "Payment due pop up is not closed for customer with payment due:" + customerGSTN);
+            }
+        } else {
+            if (isElementPresent(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON)) {
+                log.info("payment due pop up is present for customer with no payment due:" + customerGSTN);
+                Allure.addAttachment("Payment Due Pop Up Present", "Payment due pop up is present for customer with no payment due:" + customerGSTN);
+            }
         }
     }
+
     @And("user navigate to my reqirement")
     public void userNavigateToMyRequirement() {
-
         // Wait for the link to be visible and click
         waitAndCheckIsElementVisible(CCP_HOME_PAGE_MY_REQUIREMENTS_LINK);
         waitAndClickOn(CCP_HOME_PAGE_MY_REQUIREMENTS_LINK);
-
-
     }
 
     @Then("verify payment due floater pop up")
     public void verifyPaymentDuePopUp() {
-
         // Wait for floater
         waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_FLOATER);
 
@@ -183,11 +150,9 @@ public class PaymentDueSteps extends AbstractWebPage {
 
         softAssert.assertTrue(
                 isElementPresent(CCP_HOME_PAGE_PAYMENT_DUE_FLOATER_VIEW_DETAILS_BUTTON),
-                "'View details & pay' button is not displayed in floater"
-        );
-
-
+                "'View details & pay' button is not displayed in floater");
     }
+
     @And("user navigate to buy again")
     public void userNavigateToBuyAgain() {
 
@@ -195,6 +160,7 @@ public class PaymentDueSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_HOME_PAGE_BUY_AGAIN_LINK);
         waitAndClickOn(CCP_HOME_PAGE_BUY_AGAIN_LINK);
     }
+
     @And("user navigate to cart details")
     public void userNavigateToCart() {
 
@@ -230,7 +196,6 @@ public class PaymentDueSteps extends AbstractWebPage {
 
 
     }
-
 
 
 }

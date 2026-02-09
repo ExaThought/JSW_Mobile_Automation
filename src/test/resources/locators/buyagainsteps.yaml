@@ -1,0 +1,114 @@
+pageTitle: {}
+
+elements:
+
+  # ================= LOGIN =================
+
+  ccpHomePageLoginButton:
+    en_US:
+      web: //button[@id='login-cta']
+
+  ccpHomePageLoginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+
+  ccpHomePageLoginEmail:
+    en_US:
+      web: //input[@id='email']
+
+  ccpHomePageLoginPassword:
+    en_US:
+      web: //input[@id='password']
+
+  ccpHomePageLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+
+  # ================= PAYMENT DUE POPUP =================
+
+  ccpHomePagePaymentDuePopup:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal') and @role='dialog']
+
+  ccpHomePagePaymentDueTitle:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal')]//h5//div[normalize-space()='Payment reminder']
+
+  ccpHomePagePaymentDueAmount:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal')]//div[contains(text(),'₹')]
+
+  ccpHomePagePaymentDueViewDetailsButton:
+    en_US:
+      web: //div[contains(@id,'payment-overdue-nudge-modal')]//button[.//span[normalize-space()='View details & pay']]
+
+  ccpHomePagePaymentDueCloseButton:
+    en_US:
+      web: //button[@aria-label='Close' and contains(@class,'close')]
+
+  # ================= FLOATERS =================
+
+  ccpHomePagePaymentDueFloater:
+    en_US:
+      web: //p[contains(@class,'floater-label') and contains(text(),'Payments due now')]/ancestor::div[contains(@class,'floater')]
+
+  ccpHomePagePaymentDueFloaterViewDetailsButton:
+    en_US:
+      web: //button[contains(@class,'floater-btn') and contains(text(),'View details & pay')]
+
+  # ================= NAVIGATION =================
+
+  ccpHomePageBuyAgainLink:
+    en_US:
+      web: //a[normalize-space()='Buy again']
+
+
+
+  ccpSearchOverlay:
+    en_US:
+      web: //div[contains(@class,'search-overlay')]
+  # ================= ORDERS =================
+
+  ccpHomePageOrdersButton:
+    en_US:
+      web: //div[normalize-space()='Orders']
+
+  ccpMyOrdersPageTitle:
+    en_US:
+      web: //p[normalize-space()='My orders']
+
+  ccpHomePageLedgerButton:
+    en_US:
+      web: //div[normalize-space()='Ledger']/ancestor::div[contains(@class,'show-widget-boxes')]
+
+
+
+  ccpLedgerPageTitle:
+    en_US:
+      web: //div[normalize-space()='Usable ledger balance']
+
+  # ================= MATERIAL TRACKING =================
+
+  ccpHomePageMaterialTrackingButton:
+    en_US:
+      web: //div[normalize-space()='Track Materials']
+
+  ccpMaterialTrackingPageTitle:
+    en_US:
+      web: //div[normalize-space()='Active and recent orders']
+
+
+  # ================= BUY AGAIN =================
+
+  ccpBuyAgainCheckbox:
+    en_US:
+      web: //input[@id='buyAgainSelection']
+
+  ccpBuyAgainAddToCartButton:
+    en_US:
+      web: //btn[contains(normalize-space(),'Add to cart')]
+
+  ccpBuyAgainAddToCartCount:
+    en_US:
+      web: //btn[contains(normalize-space(),'Add to cart') and contains(text(),'(')]
+

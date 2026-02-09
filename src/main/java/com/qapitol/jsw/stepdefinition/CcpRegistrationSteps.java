@@ -10,13 +10,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+
+import java.time.Duration;
+
+
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CcpRegistrationSteps extends AbstractWebPage {
 
     // Updated registration locator names
-    public static final String REGISTRATION_CTA_BUTTON = "registrationButton";
-    public static final String REGISTRATION_VIA_OTP = "registrationViaOtp";
     public static final String CCP_REGISTRATION_EMAIL = "ccpRegistrationEmail";
     public static final String CCP_REGISTRATION_PASSWORD = "ccpRegistrationPassword";
     public static final String CCP_REGISTRATION_CTA = "ccpRegistrationCTA";
@@ -29,21 +31,35 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public static final String CCP_TERMS_CHECKBOX = "termsCheckbox";
     public static final String CCP_INVALID_PHONE_ERROR = "invalidPhoneNumberErrorMessage";
     public static final String CCP_INVALID_GSTIN_ERROR = "invalidGSTINErrorMessage";
+    public static final String CCP_ReGISTER_CTA = "registrationButton";
+    public static final String CCP_ReGISTER_vIA_OTP = "registrationViaOtp";
+    private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
 
 
-    @When("open the CCP registration portal")
-    public void user_open_the_ccp_portal() {
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-
-        waitAndCheckIsElementVisible(REGISTRATION_CTA_BUTTON);
-        waitAndClickOn(REGISTRATION_CTA_BUTTON); // click registration CTA
-
-        waitAndCheckIsElementVisible(REGISTRATION_VIA_OTP);
-        waitAndClickOn(REGISTRATION_VIA_OTP); // click Registration via OTP
+    @And("user open the CCP web portal")
+    public void user_open_the_ccp_web_portal() {
+        waitForSearchOverlayToDisappear();
+        waitAndCheckIsElementClickable(CCP_ReGISTER_CTA);
+        waitAndClickOn(CCP_ReGISTER_CTA); // click on login CTA button
+        waitAndCheckIsElementClickable(CCP_ReGISTER_vIA_OTP);
+        waitAndClickOn(CCP_ReGISTER_vIA_OTP); //Click on Login with OTP}
     }
-
+    public void waitForSearchOverlayToDisappear() {
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
+                    .until(driver -> {
+                        try {
+                            return driver.findElements(SEARCH_OVERLAY).isEmpty()
+                                    || !driver.findElement(SEARCH_OVERLAY).isDisplayed();
+                        } catch (Exception e) {
+                            return true; // overlay not present in DOM
+                        }
+                    });
+        } catch (Exception ignored) {
+        }
+    }
     @And("enter new invalid email id {string}")
+
     public void enter_invalid_email(String username) {
         waitAndCheckIsElementVisible(CCP_REGISTRATION_EMAIL);
         waitAndSetText(CCP_REGISTRATION_EMAIL, username);
@@ -182,12 +198,22 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     // Step for invalid GSTIN error validation
     @Then("user should not able to proceed with GSTIN error")
     public void userShouldNotAbleToProceedWithGSTINError() {
+        // Wait for NEXT button to be visible before any click
         waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
+
+        //click anywhere write code
+        waitAndClickOn(CCP_REGISTER_NEXT);
+
+        // Wait for the error message
         waitAndCheckIsElementVisible(CCP_INVALID_GSTIN_ERROR);
 
+        // Get error message text
         String msg = waitAndGetText(CCP_INVALID_GSTIN_ERROR);
+
+        // Assert the error message
         softAssert.assertEquals(msg, "Please enter correct GSTIN for account registration on JSW ONE MSME");
     }
+
 
     @And("user unchecks the terms and conditions checkbox")
     public void userUnchecksTheTermsAndConditionsCheckbox() {
