@@ -31,6 +31,8 @@ public class ActiveOrderSteps extends AbstractWebPage {
     private static final String DELIVERED_ORDER_TAB = "deliveredOrderTab";
     private static final String CANCELLED_ORDER_TAB = "cancelledOrderTab";
     private static final String ALL_ORDER_TAB = "allOrderTab";
+    private static final String MY_ORDERS_TAB = "myOrdersTab";
+
     SessionSteps sessionSteps=new SessionSteps();
     String ccpOrderNumber;
 
@@ -62,6 +64,15 @@ public class ActiveOrderSteps extends AbstractWebPage {
         System.out.println(ccpOrderNumber);
 
     }
+    @And("user clicks on My orders tab")
+    public void user_clicks_on_my_orders_tab() {
+
+        waitAndCheckIsElementVisible(MY_ORDERS_TAB);
+        waitAndClickOn(MY_ORDERS_TAB);
+
+        System.out.println("Clicked on My Orders tab");
+    }
+
     @And("user clicks on Active order tab")
     public void user_clicks_on_active_order_tab() {
 

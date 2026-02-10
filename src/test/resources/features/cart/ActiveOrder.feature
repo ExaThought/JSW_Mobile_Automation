@@ -8,6 +8,9 @@ Feature: Check CCP order creation from sf to ccp
     And ccp login with "jayadevgowda10@yopmail.com" and "Jsw@2025"
     Then user close payment due pop up
     And open the cart page and create an order
+    And user clicks on My orders tab
+    And user clicks on Active order tab
+    Then verify created order number is present in active orders
 
 
 
@@ -22,7 +25,7 @@ Feature: Check CCP order creation from sf to ccp
   Scenario: Verify Order Confirmation from ccp and copy order number
     Given Go to session "ccp"
     And ccp login with "jayadevgowda10@yopmail.com" and "Jsw@2025"
-    And user navigate to order button
+    And user clicks on My orders tab
     And user clicks on Active order tab
     Then verify created order number is present in active orders
 

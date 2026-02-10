@@ -64,4 +64,8 @@ elements:
   allOrderTab:
     en_US:
       web: //button[normalize-space()='All']
+  myOrdersTab:
+    en_US:
+      web: //a[contains(@class,'links') and normalize-space()='My orders']
+
 
