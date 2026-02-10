@@ -2,6 +2,8 @@ package com.qapitol.jsw.stepdefinition;
 
 
 import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
+import com.qapitol.jsw.pageFactory.CategoryPages;
+import com.qapitol.jsw.utils.CustomUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.Then;
@@ -26,18 +28,10 @@ public class ActiveOrderSteps extends AbstractWebPage {
     public static final String CART_PAGE = "cartPage";
     public static final String CCP_ORDER_NUMBER = "ccpOrderNumber";
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
-    public static final String CCP_MY_ORDER_PAGE="ccpMyOrderPage";
-    public static final String ORDER_CONFIRMATION ="orderConfirmStatus";
-    private final String CONTINUE_BUTTON = "continueToLoginButton";
     private static final String DELIVERED_ORDER_TAB = "deliveredOrderTab";
     private static final String CANCELLED_ORDER_TAB = "cancelledOrderTab";
     private static final String ALL_ORDER_TAB = "allOrderTab";
-
-
-
     SessionSteps sessionSteps=new SessionSteps();
-
-
     String ccpOrderNumber;
 
     @When("create cash and carry cart from SF for active order")
@@ -53,36 +47,20 @@ public class ActiveOrderSteps extends AbstractWebPage {
         //open cart page
         waitAndCheckIsElementVisible(CART_PAGE);
         waitAndClickOn(CART_PAGE);
+        sleep(2000);
+        WebElement locater=Grid.driver().findElement(CategoryPages.CONFIRM_ORDER_BTN);
         //confirm order CTA
+        CustomUtil.scrollingToViewAndClickUsingJS(locater);
+        sleep(2000);
+        waitAndCheckIsElementPresent(CCP_CREATE_ORDER_CTA);
+        waitAndCheckIsElementVisible(CCP_CREATE_ORDER_CTA);
 
-        // Wait properly for Confirm Order button
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
-
-        WebElement confirmBtn = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.xpath("//button[contains(text(),'Confirm order')]")
-                )
-        );
-
-        // Scroll above sticky navbar
-        ((JavascriptExecutor) Grid.driver()).executeScript(
-                "arguments[0].scrollIntoView(true); window.scrollBy(0,-200);",
-                confirmBtn
-        );
-
-        try {
-            confirmBtn.click();
-        } catch (Exception e) {
-            // JS fallback (avoids intercept)
-            ((JavascriptExecutor) Grid.driver()).executeScript(
-                    "arguments[0].click();",
-                    confirmBtn
-            );
-        }
-
+        waitAndClickOn(CCP_CREATE_ORDER_CTA);
         sleep(3000);
         //Copy order number
         ccpOrderNumber = waitAndGetText(CCP_ORDER_NUMBER);
+        System.out.println(ccpOrderNumber);
+
     }
     @And("user clicks on Active order tab")
     public void user_clicks_on_active_order_tab() {
@@ -109,25 +87,23 @@ public class ActiveOrderSteps extends AbstractWebPage {
 
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20));
 
-        By orderNumberLocator = By.xpath(
-                "//span[normalize-space()='Order number:']/following-sibling::span"
+        // Wait for the element to be visible and store in variable
+        WebElement activeOrderNumberElement = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(CategoryPages.ACTIVE_ORDER_NUMBER)
         );
 
-        String activeOrderNumber = wait.until(driver -> {
-            try {
-                String text = driver.findElement(orderNumberLocator).getText().trim();
-                return text.isEmpty() ? null : text;
-            } catch (StaleElementReferenceException e) {
-                return null; // retry automatically
-            }
-        });
+        // Get the text and trim
+        String activeOrderNumberText = activeOrderNumberElement.getText().trim();
 
+        // Debug prints
         System.out.println("Created Order Number: " + ccpOrderNumber);
-        System.out.println("Active Page Order Number: " + activeOrderNumber);
+        System.out.println("Active Page Order Number: " + activeOrderNumberText);
 
-        Assert.assertEquals(activeOrderNumber, ccpOrderNumber,
+        // Assert that the order number matches
+        Assert.assertEquals(activeOrderNumberText, ccpOrderNumber,
                 "Order number does not match in Active Orders page");
     }
+
 
     @When("user navigates to Delivered orders page")
     public void the_user_navigates_to_delivered_orders_page() {
