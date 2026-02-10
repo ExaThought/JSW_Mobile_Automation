@@ -81,7 +81,7 @@ public class ActiveOrderSteps extends AbstractWebPage {
 
     }
 
-    @Then("verify payment details persent on page after navigation")
+    @Then("verify payment details present on page after navigation")
     public void verify_order_placed_text_is_present() {
 
         waitAndCheckIsElementVisible("orderPlacedText");
