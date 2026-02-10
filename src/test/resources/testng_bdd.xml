@@ -3,8 +3,7 @@
 <suite verbose="1" name="Jsw automation" data-provider-thread-count="1" annotations="JDK">
   <parameter name="data.env" value="qa"/>
   <parameter name="data.testId" value="testCaseId"/>
-  <parameter name="api.retry
-  .count" value="3"/>
+  <parameter name="api.retry.count" value="3"/>
   <parameter name="enableSessionsKeepAlive" value="true"/>
   <test name="Jsw application">
     <parameter name="sessions" value="sessions.yaml"/>

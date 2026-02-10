@@ -93,6 +93,8 @@ public class CartSteps extends AbstractWebPage {
     static String pdpDiameter;
     static String pdpForm;
     static String updatedDiameter;
+    static String pdpCoatingGrade;
+    static String pdpSpangleType;
 
     @And("user will add Stainless Steel product to cart")
     public void user_will_add_stainless_steel_product_to_cart() {
@@ -628,63 +630,92 @@ public class CartSteps extends AbstractWebPage {
     @And("select thickness {string} width {string} length {string} coating grade {string} spangle type {string} quantity {string} for Colour Coated Sheet")
     public void selectAllTheColourCoatedSheetAttribute(String thickness, String width, String length, String coatingGrade, String spangleType, String quantity) {
         try {
-            waitAndClickOn(ATTRIBUTE, thickness);
-            pdpThickness = thickness;
-            log.fine("Thickness value " + thickness + "mm is selected for Colour Coated Sheet");
-        } catch (Exception e) {
-            try {
+            if (isElementPresent(ATTRIBUTE,thickness)) {
+                waitAndClickOn(ATTRIBUTE, thickness);
+                pdpThickness = thickness;
+                log.fine("Thickness value " + thickness + "mm is selected for Colour Coated Sheet");
+            }
+            else {
                 log.info("Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
                 Allure.addAttachment("Thickness value not available", "Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                waitAndCheckIsElementPresent(THICKNESS);
+                waitAndCheckIsElementClickable(THICKNESS);
                 waitAndClickOn(THICKNESS, "2");
-            } catch (Exception ex) {
-                throw new RuntimeException("Failed to click Colour Coated Sheet thickness", ex);
+                pdpThickness = waitAndGetText(THICKNESS, "2");
             }
-        }
-        try {
-            waitAndClickOn(ATTRIBUTE, width);
-            pdpWidth = width;
-            log.info("Width value " + width + "mm is selected for Colour Coated Sheet");
         } catch (Exception e) {
-            try {
+                throw new RuntimeException("Failed to click Colour Coated Sheet thickness", e);
+        }
+
+
+        try {
+            if (isElementPresent(ATTRIBUTE,width)) {
+                waitAndClickOn(ATTRIBUTE, width);
+                pdpWidth = width;
+                log.info("Width value " + width + "mm is selected for Colour Coated Sheet");
+            }
+            else{
                 log.info("Width value " + width + "mm is not available for selection, selecting available width value");
                 Allure.addAttachment("Width value not available", "Width value " + width + "mm is not available for selection, selecting available width value");
-                waitAndCheckIsElementPresent(WIDTH);
+                waitAndCheckIsElementClickable(WIDTH);
                 waitAndClickOn(WIDTH, "1");
-            } catch (Exception ex) {
-                throw new RuntimeException("Failed to click Colour Coated Sheet Width", ex);
+                pdpWidth = waitAndGetText(WIDTH, "1");
             }
-        }
+        } catch (Exception e) {
+                throw new RuntimeException("Failed to click Colour Coated Sheet Width", e);
+            }
+
+
         WebElement locator = Grid.driver().findElement(By.xpath(CategoryPages.length));
         scrollingToViewAndClickUsingJS(locator);
         try {
-            waitAndClickOn(ATTRIBUTE, length);
-            pdpLength = length;
-            log.info("Length value " + length + "mm is selected for Colour Coated Sheet");
-        } catch (Exception e) {
-            try {
+            if (isElementPresent(ATTRIBUTE,length)) {
+                waitAndClickOn(ATTRIBUTE, length);
+                pdpLength = length;
+                log.info("Length value " + length + "mm is selected for Colour Coated Sheet");
+            }
+            else {
                 log.info("Length value " + length + "mm is not available for selection, selecting available length value");
                 Allure.addAttachment("Length value not available", "Length value " + length + "mm is not available for selection, selecting available length value");
-                waitAndCheckIsElementPresent(LENGTH);
+                waitAndCheckIsElementClickable(LENGTH);
                 waitAndClickOn(LENGTH, "1");
-            } catch (Exception ex) {
-                throw new RuntimeException("Failed to click Colour Coated Sheet Length", ex);
+                pdpLength = waitAndGetText(LENGTH, "1");
             }
-        }
+        } catch (Exception e) {
+                throw new RuntimeException("Failed to click Colour Coated Sheet Length", e);
+            }
+
 
         try {
-            waitAndClickOn(ATTRIBUTE, coatingGrade);
-            log.info("Coating Grade value " + coatingGrade + " is selected for Colour Coated Sheet");
-        } catch (Exception e) {
-            try {
+            if(isElementPresent(ATTRIBUTE,coatingGrade)) {
+                waitAndClickOn(ATTRIBUTE, coatingGrade);
+                log.info("Coating Grade value " + coatingGrade + " is selected for Colour Coated Sheet");
+                pdpCoatingGrade = coatingGrade;
+            }
+            else {
                 log.info("Coating Grade value " + coatingGrade + " is not available for selection, selecting available coating grade value");
                 Allure.addAttachment("Coating Grade value not available", "Coating Grade value " + coatingGrade + " is not available for selection, selecting available coating grade value");
-                waitAndCheckIsElementPresent(COATING_GRADE);
                 waitAndClickOn(COATING_GRADE, "1");
-            } catch (Exception ex) {
-                throw new RuntimeException("Failed to click Colour Coated Sheet Coating Grade", ex);
             }
+        } catch (Exception e) {
+                throw new RuntimeException("Failed to click Colour Coated Sheet Coating Grade", e);
+            }
+
+        try{
+            if(isElementPresent(ATTRIBUTE,spangleType)) {
+                waitAndClickOn(ATTRIBUTE, spangleType);
+                log.info("Spangle Type value " + spangleType + " is selected for Colour Coated Sheet");
+                pdpSpangleType = spangleType;
+            }
+            else {
+                log.info("Spangle Type value " + spangleType + " is not available for selection, selecting available spangle type value");
+                Allure.addAttachment("Spangle Type value not available", "Spangle Type value " + spangleType + " is not available for selection, selecting available spangle type value");
+//                waitAndClickOn(SPANGLE_TYPE, "1");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to click Colour Coated Sheet Spangle Type", e);
         }
+
+
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
@@ -693,6 +724,10 @@ public class CartSteps extends AbstractWebPage {
         } catch (Exception e) {
             throw new RuntimeException("Failed to enter Quantity for Colour Coated Sheet", e);
         }
+
+
+        System.out.println("Selected attributes for Colour Coated Sheet: Thickness-" + pdpThickness + "mm, Width-" + pdpWidth + "mm, Length-" + pdpLength + "mm, Coating Grade-" + pdpCoatingGrade + ", Spangle Type-" + pdpSpangleType + ", Quantity-" + pdpQuantity);
+
     }
 
     @And("click on Wire product")
@@ -1076,5 +1111,7 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertEquals(cartPageQuantity,"Qty: "+updatedQuantity+" MT","Quantity is not updated for TMT");
 
     }
+
+
 
 }
