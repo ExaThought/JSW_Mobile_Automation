@@ -12,23 +12,12 @@ Feature: Check CCP order creation from sf to ccp
     And user clicks on Active order tab
     Then verify created order number is present in active orders
 
-
-
   Scenario: Verify navigation of active order details page
     Given Go to session "ccp"
     And ccp login with "jayadevgowda10@yopmail.com" and "Jsw@2025"
     And user navigate to order button
     And user clicks on Active order tab
     Then verify payment details persent on page after navigation
-
-
-  Scenario: Verify Order Confirmation from ccp and copy order number
-    Given Go to session "ccp"
-    And ccp login with "jayadevgowda10@yopmail.com" and "Jsw@2025"
-    And user clicks on My orders tab
-    And user clicks on Active order tab
-    Then verify created order number is present in active orders
-
 
   Scenario: Verify navigation for delivered page for order
     Given Go to session "ccp"
