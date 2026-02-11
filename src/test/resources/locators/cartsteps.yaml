@@ -152,6 +152,12 @@ elements:
   cartPageAttributeValue:
     en_US:
       web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[1]
+  cartPageSpangleTypeValue:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[2]
+  cartPageCoatingGradeValue:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[3]
   editCartPageEnterQuantity:
     en_US:
       web: xpath=//div[contains(text(),'Enter quantity')]
