@@ -109,6 +109,9 @@ Feature: Check Add-To-Cart
     And select thickness "2" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
     And add to cart
     And click view cart
+    Then verify the Attribute values for Coated Steel Sheet in cart page
+    And click edit
+    And Save edit changes
     Then Delete the line item from cart
 
 #  @ColourCoated
@@ -121,14 +124,20 @@ Feature: Check Add-To-Cart
 #    And click view cart
 #    Then Delete the line item from cart
 
-  @Wire
+  @Wire @test01
   Scenario: Verify wire product add to cart
     When move the mouse to Mild steel category
     And click on Wire product
     And open Wire pdp
-    And select all the Wire attribute
+    And select diameter "10" quantity "50" for Wire
     And add to cart
     And click view cart
+    Then verify the Attribute values for Wire in cart page
+    And click edit
+    And update Diameter to "12"
+    And update Quantity "75"
+    And Save edit changes
+    And verify the updated Attribute values for Wire in cart page
     Then Delete the line item from cart
 
   @TMT
