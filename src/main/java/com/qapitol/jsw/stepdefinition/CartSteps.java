@@ -297,6 +297,8 @@ public class CartSteps extends AbstractWebPage {
 
     @And("select thickness {string} width {string} length {string} quantity {string} for HR Sheet")
     public void selectAllTheHrAttribute(String thickness, String width, String length, String quantity) {
+
+        //Select HR Sheet thickness
         try {
             if (isElementPresent(ATTRIBUTE, thickness)) {
                 waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
@@ -314,6 +316,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click hot rolled sheet thickness", e);
         }
 
+        //Select HR Sheet width
         try {
             if (isElementPresent(ATTRIBUTE, width)) {
                 waitAndCheckIsElementClickable(ATTRIBUTE, width);
@@ -331,6 +334,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click hot rolled sheet width", e);
         }
 
+        //Scroll to length attribute and select length
         WebElement locator = Grid.driver().findElement(By.xpath(CategoryPages.length));
         scrollingToViewAndClickUsingJS(locator);
         try {
@@ -350,6 +354,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click hot rolled sheet length", e);
         }
 
+        //Enter quantity for HR Sheet
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
@@ -363,6 +368,8 @@ public class CartSteps extends AbstractWebPage {
 
     @And("add to cart")
     public void addToCart() {
+
+        //Copy PDP produuct Name
         try {
             pdpProductName = waitAndGetText(PDP_PRODUCT_NAME);
             log.info("Product name " + pdpProductName + " is fetched from PDP");
@@ -373,6 +380,8 @@ public class CartSteps extends AbstractWebPage {
         } catch (Exception e) {
             log.info("Failed to get product name from PDP");
         }
+
+        //Click Add-to-cart button
         try {
             sleep(1000);
             waitAndCheckIsElementClickable(ADD_TO_CART_CTA);
@@ -385,7 +394,10 @@ public class CartSteps extends AbstractWebPage {
 
     @And("click view cart")
     public void clickViewCart() {
+
+        //Click View Cart
         try {
+            waitAndCheckIsElementClickable(VIEW_CART);
             waitAndClickOn(VIEW_CART);
             log.info("Clicked on view cart button");
         } catch (Exception e) {
@@ -396,15 +408,17 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("verify the Attribute values for Cement in cart page")
     public void verifyTheAttributeValuesForCementInCartPage() {
+        //Verify product name in cart page for cement
         softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
-        //Verify the quantity in cart page
+        //Verify the quantity in cart page for cement
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " bags", "Quantity in cart page is not matching with selected quantity in PDP or quantity is not displayed in cart page");
     }
 
     @Then("verify the Attribute values for HR Sheet in cart page")
     public void verifyTheAttributeValuesForHRSheetInCartPage() {
+
         cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " x " + pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
@@ -415,35 +429,47 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("Delete the line item from cart")
     public void deleteTheLineItemFromCart() {
-        waitAndClickOn(DELETE_LINE_ITEM);
-        if (isElementPresent(DELETE_CTA_BUTTON)) {
-            waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
-            waitAndClickOn(DELETE_CTA_BUTTON);
+
+        //Delete the line item from cart
+        try {
+            waitAndClickOn(DELETE_LINE_ITEM);
+            if (isElementPresent(DELETE_CTA_BUTTON)) {
+                waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
+                waitAndClickOn(DELETE_CTA_BUTTON);
+                log.info("Deleted successfully the line item from cart");
+            }
+        }
+        catch (Exception e){
+            log.info("Failed to delete line item from cart");
+            throw new RuntimeException("Failed to delete line item from cart", e);
         }
     }
 
     @And("move to Cold rolled category")
     public void moveToColdRolledCategory() {
-        //Reading locator from page factory
+        //Move mouse to Cold rolled category
         actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCategory))).perform();
     }
 
     @And("click on CR Coil product")
     public void clickOnCRCoilProduct() {
-        //Reading locator from page factory
+        //Move mouse to Cold rolled coil sub category and click on it
         actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCoilsSubCategory))).click().perform();
     }
 
-    @And("open CR Coil pdp")
-    public void openCRCoilPdp() {
+    @And("open CR Coil pdp {string} product")
+    public void openCRCoilPdp(String product) {
+        //Scroll and click on it to open CR Coil PDP
         WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
-        waitAndClickOn(PLP_FIRST_PRODUCT, "1");
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT,product);
+        waitAndClickOn(PLP_FIRST_PRODUCT, product);
     }
 
     @And("select thickness {string} width {string} quantity {string} for CR Coil")
     public void selectAllTheCRCoilAttribute(String thickness, String width, String quantity) {
 
+        //Select thickness for CR Coil
         try {
             if (isElementPresent(ATTRIBUTE, thickness)) {
                 waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
@@ -462,6 +488,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click cold rolled coil thickness", e);
         }
 
+        //Select width for CR Coil
         try {
             if (isElementPresent(ATTRIBUTE, width)) {
                 waitAndCheckIsElementClickable(ATTRIBUTE, width);
@@ -480,6 +507,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click cold rolled coil width", e);
         }
 
+        //Enter quantity for CR Coil
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, "50");
@@ -497,20 +525,23 @@ public class CartSteps extends AbstractWebPage {
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
 
+        //verify cart attribute value for CR Coil
         cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
 
+        //verify product name in cart page for CR Coil
         softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
     }
 
     @And("verify the updated Attribute values for CR coil in cart page")
     public void verifyTheUpdatedAttributeValuesForCRCoilinCartPage() {
-        //verify quantity in cart page
+        //verify updated quantity in cart page
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
 
+        //verify updated cart attribute value for CR Coil
         afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertEquals(afterUpdateCartAttributeValue, updatedThickness + " x " + updatedWidth + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
 
@@ -630,10 +661,11 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("open Cement pdp")
-    public void openCementPdp() {
+    @And("open Cement pdp {string} product")
+    public void openCementPdp(String product) {
         try {
-            waitAndClickOn(CEMENT_PDP, "1");
+            waitAndCheckIsElementClickable(CEMENT_PDP,product);
+            waitAndClickOn(CEMENT_PDP, product);
         } catch (Exception e) {
             log.info("Failed to open PDP cement page");
             throw new RuntimeException("Failed to open PDP cement page", e);
@@ -675,11 +707,11 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("open Coated steel sheet pdp")
-    public void openCoatedSteelSheetPDP() {
+    @And("open Coated steel sheet pdp {string} product")
+    public void openCoatedSteelSheetPDP(String product) {
         try {
             sleep(3000);
-            waitAndClickOn(PLP_FIRST_PRODUCT, "1");
+            waitAndClickOn(PLP_FIRST_PRODUCT, product);
             log.info("Clicked on first product of Coated steel sheet category");
         } catch (Exception e) {
             throw new RuntimeException("Failed to click on first product of Coated steel sheet category", e);
@@ -821,6 +853,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("select diameter {string} quantity {string} for Wire")
     public void selectAllTheWireAttribute(String diameter, String quantity) {
+        //Select diameter for Wire
         try {
             if (isElementPresent(ATTRIBUTE, diameter)) {
                 waitAndClickOn(ATTRIBUTE, diameter);
@@ -837,6 +870,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click diameter in Wire PDP page", e);
         }
 
+        //Enter quantity for Wire
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
@@ -899,6 +933,8 @@ public class CartSteps extends AbstractWebPage {
 
     @And("select diameter {string} form {string} quantity {string} for TMT")
     public void selectAllTheTMTRebarAttribute(String diameter, String form, String quantity) {
+
+        //Select diameter for TMT
         try {
             if (isElementPresent(ATTRIBUTE, diameter)) {
                 waitAndClickOn(ATTRIBUTE, diameter);
@@ -914,6 +950,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to select TMT diameter", e);
         }
 
+        //Select form for TMT
         try {
             if (isElementPresent(ATTRIBUTE, form)) {
                 waitAndClickOn(ATTRIBUTE, form);
@@ -930,6 +967,7 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click form in TMT PDP page", e);
         }
 
+        //Enter quantity for TMT
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);

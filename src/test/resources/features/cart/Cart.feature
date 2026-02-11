@@ -54,7 +54,7 @@ Feature: Check Add-To-Cart
     When move the mouse to Mild steel category
     And move to Cold rolled category
     And click on CR Coil product
-    And open CR Coil pdp
+    And open CR Coil pdp "1" product
     And select thickness "2" width "1250" quantity "50" for CR Coil
     And add to cart
     And click view cart
@@ -89,7 +89,7 @@ Feature: Check Add-To-Cart
   @Cement
   Scenario: Verify Cement Product Add to Cart
     When click on Cement product
-    And open Cement pdp
+    And open Cement pdp "1" product
     And enter quantity "250" for Cement
     And add to cart
     And click view cart
@@ -105,7 +105,7 @@ Feature: Check Add-To-Cart
     When move the mouse to Mild steel category
     And click to Coated steel category
     And click on Coated steel sheet product
-    And open Coated steel sheet pdp
+    And open Coated steel sheet pdp "1" product
     And select thickness "2" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
     And add to cart
     And click view cart
@@ -124,7 +124,7 @@ Feature: Check Add-To-Cart
 #    And click view cart
 #    Then Delete the line item from cart
 
-  @Wire @test01
+  @Wire
   Scenario: Verify wire product add to cart
     When move the mouse to Mild steel category
     And click on Wire product
@@ -143,14 +143,14 @@ Feature: Check Add-To-Cart
   @TMT
   Scenario: Verify TMT product add to cart
     When click on TMT product
-    And click on TMT plp "1" product
+    And click on TMT plp "3" product
     And select diameter "10" form "Straight" quantity "50" for TMT
     And add to cart
     And click view cart
     Then verify the Attribute values for TMT in cart page
     And click edit
-    And update Diameter to "12"
-    And update Form to "U-Bend"
+    And update Diameter to "8"
+    And update Form to "Straight"
     And update Quantity "75"
     And Save edit changes
     And verify the updated Attribute values for TMT in cart page
