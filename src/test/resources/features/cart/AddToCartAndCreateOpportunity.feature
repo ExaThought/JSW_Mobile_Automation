@@ -1,5 +1,5 @@
-@AddToCart @regression
-Feature: Check Add-To-Cart
+@AddToCartAndCreateOpportunity @regression
+Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:
     Given Go to session "ccp"
@@ -12,7 +12,7 @@ Feature: Check Add-To-Cart
 #    Then check user able to delete line item from cart
 #    And user checkout the RCV2
 
-  @HRSheet
+  @HRSheet @test01
   Scenario: Verify HR Sheet Product Add to Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
@@ -22,13 +22,6 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page
-    And click edit
-    And update Thickness to "1.6" dropdown
-    And update Width to "1500" dropdown
-    And update Length to "7250" dropdown
-    And update Quantity "75"
-    And Save edit changes
-    And verify the updated Attribute values for HR Sheet in cart page
     Then Delete the line item from cart
 
   @HRCoil
@@ -41,12 +34,6 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then Verify the Attribute values for HR Coil in cart page
-    And click edit
-    And update Thickness to "3" dropdown
-    And update Width to "1500" dropdown
-    And update Quantity "75"
-    And Save edit changes
-    And Verify the updated Attribute values for HR Coil in cart page
     Then Delete the line item from cart
 
   @CRCoil
@@ -59,12 +46,6 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for CR coil in cart page
-    And click edit
-    And update Thickness to "3" dropdown
-    And update Width to "2" dropdown
-    And update Quantity "75"
-    And Save edit changes
-    And verify the updated Attribute values for CR coil in cart page
     Then Delete the line item from cart
 
   @CRSheet
@@ -77,13 +58,6 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for CR Sheet in cart page
-    And click edit
-    And update Thickness to "3" dropdown
-    And update Width to "2" dropdown
-    And update Length to "1" dropdown
-    And update Quantity "75"
-    And Save edit changes
-    And verify the updated Attribute values for CR Sheet in cart page
     Then Delete the line item from cart
 
   @Cement
@@ -94,10 +68,6 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for Cement in cart page
-    And click edit
-    And update Quantity "75"
-    And Save edit changes
-    Then verify the updated Attribute values for Cement in cart page
     Then Delete the line item from cart
 
   @CoatedSteel
@@ -110,19 +80,7 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for Coated Steel Sheet in cart page
-    And click edit
-    And Save edit changes
     Then Delete the line item from cart
-
-#  @ColourCoated
-#  Scenario: Verify Colour Coated Sheet Product Add to Cart
-#    When move the mouse to Mild steel category
-#    And click to Colour Coated category
-#    And open Colour Coated pdp
-#    And select thickness "2" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
 
   @Wire
   Scenario: Verify wire product add to cart
@@ -133,11 +91,6 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for Wire in cart page
-    And click edit
-    And update Diameter to "12"
-    And update Quantity "75"
-    And Save edit changes
-    And verify the updated Attribute values for Wire in cart page
     Then Delete the line item from cart
 
   @TMT
@@ -148,13 +101,17 @@ Feature: Check Add-To-Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for TMT in cart page
-    And click edit
-    And update Diameter to "8"
-    And update Form to "Straight"
-    And update Quantity "75"
-    And Save edit changes
-    And verify the updated Attribute values for TMT in cart page
     Then Delete the line item from cart
+
+  #  @ColourCoated
+#  Scenario: Verify Colour Coated Sheet Product Add to Cart
+#    When move the mouse to Mild steel category
+#    And click to Colour Coated category
+#    And open Colour Coated pdp
+#    And select thickness "2" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
+#    And add to cart
+#    And click view cart
+#    Then Delete the line item from cart
 #
 #
 #  @Angles

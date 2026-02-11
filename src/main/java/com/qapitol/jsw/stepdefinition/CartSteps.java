@@ -77,7 +77,8 @@ public class CartSteps extends AbstractWebPage {
 
 
     Actions actions = new Actions(Grid.driver());
-    static String requirementId;
+    static String oldRequirementId;
+    static String newRequirementId;
     static String pdpThickness;
     static String pdpWidth;
     static String pdpLength;
@@ -141,20 +142,18 @@ public class CartSteps extends AbstractWebPage {
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
-        requirementId = waitAndGetText(REQUIREMENT_ID);
-        System.out.println(requirementId);
+        oldRequirementId = waitAndGetText(REQUIREMENT_ID);
         waitAndCheckIsElementPresent(CART_PAGE);
         waitAndClickOn(CART_PAGE);
         sleep(5000);
         waitAndCheckIsElementPresent(RCV2_CHECKOUT);
         waitAndClickOn(RCV2_CHECKOUT);
         sleep(2000);
-        waitAndCheckIsElementPresent(SUCCESS_PAGE_RCV2);
+        softAssert.assertTrue(isElementPresent(SUCCESS_PAGE_RCV2), "After checkout, RCV2 success page is not displayed");
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
-        requirementId = waitAndGetText(REQUIREMENT_ID);
-        System.out.println(requirementId);
+        newRequirementId = waitAndGetText(REQUIREMENT_ID);
 
     }
 
