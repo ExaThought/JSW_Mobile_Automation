@@ -1,4 +1,4 @@
-@mlogin
+@mlogin @msanity
 Feature: Check Login
 
   Background:
@@ -14,6 +14,8 @@ Feature: Check Login
     And user enters password "Jsw@2025"
     When user clicks on proceed to login
     Then user should be logged in successfully via email
+
+
 
 
   Scenario: Login with valid email and password

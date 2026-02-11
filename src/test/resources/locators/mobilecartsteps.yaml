@@ -1,0 +1,239 @@
+elements:
+  errorMessage:
+    en_US:
+      web: //div[contains(text(),'Credentials are not valid')]
+  hrCoilE250A:
+    en_US:
+      web: //a[@title='TATA Hot Rolled Coil 2062:2011 E350A']
+  quantity:
+    en_US:
+      web: xpath=(//input[@id='inputQty'])[1]
+  addToCart:
+    en_US:
+      web: xpath=//div[contains(text(),'Add to cart')]/parent::button/child::div
+  viewCart:
+    en_US:
+      web: xpath=//btn[contains(text(),'View cart')]
+  submitRequirement:
+    en_US:
+      web: xpath=//button[contains(text(),'Submit requirement')]
+  deleteLineItem:
+    en_US:
+      web: xpath=(//div[contains(text(),'Delete')])[1]
+  editLineItem:
+    en_US:
+      web: xpath=(//div[contains(text(),'Edit')])[1]
+  deleteCta:
+    en_US:
+      web: xpath=//span[contains(text(),'Delete')]
+  cement:
+    en_US:
+      web: xpath=//a[contains(text(),'Cement')]//parent::div[@class='nav-active-link-jsw']
+  cementPDP:
+    en_US:
+      web: xpath=(//div[@class='card-title'])[2]
+  cementQuantity:
+    en_US:
+      web: xpath=(//input[@id="inputQty"])[2]
+  stainlessSteelPlp:
+    en_US:
+      web: xpath=//a[contains(text(),'Stainless Steel')]//parent::div[@class='nav-active-link-jsw']
+  stainlessSteelPDP:
+    en_US:
+      web: xpath=(//div[@class='card-title'])[1]
+  stainlessSteelThickness:
+    en_US:
+      web: xpath=//button[contains(text(),'3')]
+  stainlessSteelWidth:
+    en_US:
+      web: xpath=//button[contains(text(),'1250')]
+  stainlessSteelLength:
+    en_US:
+      web: xpath=//button[contains(text(),'2500')]
+  rcCheckout:
+    en_US:
+      web: xpath=//button[contains(text(),'Submit requirement')]
+  myRequirementPage:
+    en_US:
+      web: xpath=//a[@href='/my-requirements']
+  requirementId:
+    en_US:
+      web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
+  mildSteel:
+    en_US:
+      web: xpath=(//a[contains(., 'Mild Steel')])[1]
+  colourCoated:
+    en_US:
+      web: xpath=(//a[contains(text(),'Colour coated')])[2]
+  coatedSteel:
+    en_US:
+      web: xpath=(//a[contains(text(),'Coated Steel')])[2]
+  colourCoatedPdp:
+    en_US:
+      web: xpath=(//a[contains(text(),'Sheets')])[1]
+  width(mm):
+    en_US:
+      web: xpath=(//div[contains(text(),"Width (mm)")]//parent::div//following-sibling::div//child::div//child::button)[{0}]
+  coatingGrade:
+    en_US:
+      web: xpath=(//div[contains(text(),"Coating grade - AZ (GSM)")]//parent::div//following-sibling::div//child::div//child::button)[{0}]
+  rcCheckoutSuccessPage:
+    en_US:
+      web: xpath=//div[@class='rc-subimitted h-100 d-flex justify-content-center align-items-center flex-column']//following-sibling::div[contains(text(),'submitted')]
+  cartPage:
+    en_US:
+      web: xpath=//a[@class='cart']
+  plpFirstProduct:
+    en_US:
+      web: xpath= (//span[contains(text(),"Brand:")])[{0}]
+  attributeValue:
+    en_US:
+      web: xpath=//button[normalize-space()="{0}"]
+  thickness:
+    en_US:
+      web: xpath=//div[contains(text(),"Thickness (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  length:
+    en_US:
+      web: xpath=//div[contains(text(),"Length (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  diameter:
+    en_US:
+      web: xpath=//div[contains(text(),"Diameter (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  tmt:
+    en_US:
+      web: xpath=//a[contains(text(),'TMT')]//parent::div[@class='nav-active-link-jsw']
+  form:
+    en_US:
+      web: xpath=//div[contains(text(),"Form")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  legLength:
+    en_US:
+      web: xpath=//div[contains(text(),"Leg length (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  flangeWidth:
+    en_US:
+      web: xpath=//div[contains(text(),"Flange width (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  webDepth:
+    en_US:
+      web: xpath=//div[contains(text(),"Web depth (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  sectionalWeight:
+    en_US:
+      web: xpath=//div[contains(text(),"Sectional weight (kg/m)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  editQuantity:
+    en_US:
+      web: xpath=//div[contains(text(),'Enter quantity')]/following-sibling::div/child::input
+  editSave:
+    en_US:
+      web: xpath=//span[contains(text(),'Done')]
+  editWidthDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Width (mm)')]/following-sibling::input
+  editThicknessDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Thickness (mm)')]/following-sibling::input
+  editLengthDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Length (mm)')]/following-sibling::input
+  editWidth:
+    en_US:
+      web: xpath=//div[contains(text(),"Width (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  editThickness:
+    en_US:
+      web: xpath=//div[contains(text(),"Thickness (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  editLength:
+    en_US:
+      web: xpath=//div[contains(text(),"Length (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  pdpProductName:
+    en_US:
+      web: xpath=(//span[contains(text(),'Brand:')]/parent::div/parent::div/child::h1)[2]
+  galvanizedSheet:
+    en_US:
+      web: xpath=(//a[contains(text(),'Galvanized sheets')])
+  updateAttribute:
+    en_US:
+      web: xpath=//div[@class='card-body']/child::div[contains(text(),"{0}")]
+  cartPageAttributeValue:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[1]
+  editCartPageEnterQuantity:
+    en_US:
+      web: xpath=//div[contains(text(),'Enter quantity')]
+  cartPageProductName:
+    en_US:
+      web: xpath=//div[contains(text(),"{0}")]
+  cartPageQuantity:
+    en_US:
+      web: xpath=//div[contains(normalize-space(),'Qty:')]
+  editDiameterDropdown:
+    en_US:
+      web: xpath=//div[normalize-space()='Diameter (mm)']/following-sibling::input
+  editFormDropdown:
+    en_US:
+      web: xpath=//div[normalize-space()='Form']/following-sibling::input
+  catalogueMenu:
+    en_US:
+      web: xpath=//span[normalize-space()='Catalogue']
+
+  mshotrolledCategory:
+    en_US:
+      web: xpath=//h3[contains(normalize-space(),'MS Hot rolled')]
+
+  hrSheet:
+    en_US:
+      web: xpath=(//a[.//div[contains(normalize-space(),'JSW Steel Hot Rolled Sheet')]])[1]
+
+  mthickness:
+    en_US:
+      web: xpath=//div[normalize-space()='Thickness (mm)']
+
+  priceDetails:
+    en_US:
+      web: xpath=(//div[normalize-space()='Price details'])[2]
+
+  mobaddTocart:
+    en_US:
+      web: xpath=//div[@id='mob-add-to-cart']
+
+  mviewCart:
+    en_US:
+      web: xpath=//div[normalize-space()='View cart']
+
+  getpricenow:
+    en_US:
+      web: xpath=//span[normalize-space()='Get price now']
+
+  hrcoil:
+      en_US:
+        web: xpath=//img[@alt='JSW Steel Hot Rolled Coils IS 2062:2011 E250A']
+
+
+  coldrolledcoil:
+        en_US:
+            web: xpath=//h3[normalize-space()='MS Cold rolled']
+  cementCategory:
+        en_US:
+            web: xpath=//h3[text()='Cement']
+
+  coatedSteelCategory:
+        en_US:
+            web: xpath=//h3[text()='Coated Steel']
+
+  wireRodsCategory:
+        en_US:
+            web: xpath=//h3[text()='Wire rods']
+
+  crCoil:
+        en_US:
+            web: xpath=(//a[contains(@class,'prod-plpimage1name') and contains(text(),'Cold Rolled Coils')])[1]
+
+  crSheet:
+        en_US:
+            web: xpath=(//a[contains(@class,'prod-plpimage1name') and contains(text(),'Cold Rolled Sheets')])[1]
+
+
+
+
+
+
+
+
+
+
+
