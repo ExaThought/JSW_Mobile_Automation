@@ -3,6 +3,7 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.pageFactory.CategoryPages;
 import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
+import com.qapitol.sauron.mobile.pages.AbstractMobilePage;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -35,7 +36,7 @@ import static com.qapitol.jsw.pageFactory.CategoryPages.wireCategory;
 import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
-public class mobilecartsteps extends AbstractWebPage {
+public class mobilecartsteps extends AbstractMobilePage {
     private static final String THICKNESS = "thickness";
     private static final String QUANTITY = "quantity";
     private static final String ADD_TO_CART_CTA = "addToCart";
@@ -63,7 +64,7 @@ public class mobilecartsteps extends AbstractWebPage {
     private static final String SUCCESS_PAGE_RCV2 = "rcCheckoutSuccessPage";
     private static final String CART_PAGE = "cartPage";
     private static final String PLP_FIRST_PRODUCT = "plpFirstProduct";
-    private static final String LENGTH = "length";
+    private static final String M_LENGTH = "mLength";
     private static final String DIAMETER = "diameter";
     private static final String TMT = "tmt";
     private static final String FORM = "form";
@@ -100,6 +101,10 @@ public class mobilecartsteps extends AbstractWebPage {
     private static final String GET_PRICE_NOW = "getpricenow";
     private static final String HRCOIL = "hrcoil";
     private static final String COLDROLLEDCOIL = "coldrolledcoil";
+    private static final String THICKNESS_DROPDOWN="thicknessDropdown";
+    private static final String M_WIDTH="mWidth";
+    private static final String PLP_PRODUCT="plpProduct";
+    private static final String MS_COLD_ROLLED_CATEGORY="msColdRolledCategory";
 
     private final JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
 
@@ -126,31 +131,59 @@ public class mobilecartsteps extends AbstractWebPage {
 
     @When("user clicks on catalogue menu")
     public void clickCatalogueMenu() {
-        waitAndClickOn(CATALOGUE_MENU);
-        log.info("Clicked on catalogue menu");
+        try {
+            waitAndClickOn(CATALOGUE_MENU);
+            log.info("Clicked on catalogue menu");
+        }
+        catch (Exception e) {
+            log.info("Failed to click on catalogue menu");
+            throw new RuntimeException("Failed to click on catalogue menu", e);
+        }
     }
 
     @And("user clicks Hot rolled category")
     public void clickHotRolledCategory() {
-        waitAndClickOn(MSHOTROLLED_CATEGORY);
+        try {
+            waitAndCheckIsElementClickable(MSHOTROLLED_CATEGORY);
+            waitAndClickOn(MSHOTROLLED_CATEGORY);
+            log.info("Clicked on hot rolled category");
+        } catch (Exception e) {
+            log.info("Failed to click on hot rolled category");
+            throw new RuntimeException("Failed to click on hot rolled category", e);
+        }
     }
 
     @And("click on HR Sheet product on msite")
     public void clickOnHRSheetProductOnMsite() {
-        waitAndClickOn(HRSHEET);
+        try{
+            waitAndCheckIsElementClickable(HRSHEET);
+            waitAndClickOn(HRSHEET);
+            log.info("Clicked on HR Sheet product");
+        }
+        catch (Exception e) {
+            log.info("Failed to click on HR Sheet product on msite");
+            throw new RuntimeException("Failed to click on HR Sheet product", e);
+        }
     }
 
     @And("click on HR Coil product on msite")
     public void clickOnHRCoilProductOnMsite() {
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
-        WebElement hrCoilElement = wait.until(
-                ExpectedConditions.elementToBeClickable(By.xpath(HRCOIL)));
-        hrCoilElement.click();
+        waitAndCheckIsElementClickable(HRCOIL);
+        waitAndClickOn(HRCOIL);
+        log.info("Clicked on HR Coil product");
     }
 
     @And("user clicks Cold rolled category")
     public void clickOnHcoldrolledOnMsite() {
-        waitAndClickOn(COLDROLLEDCOIL);
+        try{
+            waitAndCheckIsElementClickable(MS_COLD_ROLLED_CATEGORY);
+            waitAndClickOn(MS_COLD_ROLLED_CATEGORY);
+            log.info("Clicked on cold rolled category");
+        }
+        catch (Exception e) {
+            log.info("Failed to click on cold rolled category");
+            throw new RuntimeException("Failed to click on cold rolled category", e);
+        }
     }
 
     private void scrollToElemnt(String headerText) {
@@ -167,138 +200,22 @@ public class mobilecartsteps extends AbstractWebPage {
                 y, offset);
     }
 
-    @And("select thickness {string} width {string} length {string} quantity {string} for HR Sheet on msite")
-    public void selectAttributesForHRSheetOnMsite(String thickness,
-            String width,
-            String length,
-            String quantity) {
-
-        waitAndClickOn(PRICE_DETAILS);
-
+    @And("select thickness {string}")
+    public void selectAttributesForHRSheetOnMsite(String thickness) {
         try {
-            // ===== THICKNESS =====
-            scrollToElemnt("Thickness (mm)");
+            // Select thickness for HR Coil
+            waitAndCheckIsElementClickable(THICKNESS_DROPDOWN);
+            waitAndClickOn(THICKNESS_DROPDOWN);
+            log.info("Successfully clicked on thickness dropdown");
+            waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
             waitAndClickOn(ATTRIBUTE, thickness);
+            log.info("Successfully selected thickness: " +thickness+" mm");
             pdpThickness = thickness;
 
-            // ===== WIDTH =====
-            scrollToElemnt("Width (mm)");
-            waitAndClickOn(ATTRIBUTE, width);
-            pdpWidth = width;
-
-            // ===== LENGTH =====
-            scrollToElemnt("Length (mm)");
-            waitAndClickOn(ATTRIBUTE, length);
-            pdpLength = length;
-
-            // ===== QUANTITY =====
-            Thread.sleep(1000);
-            scrollToElemnt("Specify quantity (In number of sheets)");
-            waitAndSetText(QUANTITY, quantity);
-            pdpQuantity = quantity;
-
         } catch (Exception e) {
-            throw new RuntimeException("Failed to select HR Sheet attributes", e);
+            log.info("Failed to select thickness for HR Sheet on msite");
+            throw new RuntimeException("Failed to Select thickness", e);
         }
-    }
-
-    @And("select thickness {string} width {string} quantity {string} for HR Coil on msite")
-    public void selectAttributesForHRcoilOnMsite(String thickness,
-                                                  String width,
-                                                  String length,
-                                                  String quantity) {
-
-        System.out.println("entered");
-
-        waitAndClickOn(PRICE_DETAILS);
-
-        try {
-            // ===== THICKNESS =====
-            scrollToElemnt("Thickness (mm)");
-            waitAndClickOn(ATTRIBUTE, thickness);
-            pdpThickness = thickness;
-
-            // ===== WIDTH =====
-            scrollToElemnt("Width (mm)");
-            waitAndClickOn(ATTRIBUTE, width);
-            pdpWidth = width;
-
-            // ===== QUANTITY =====
-            Thread.sleep(1000);
-            scrollToElemnt("Specify quantity (In number of sheets)");
-            waitAndSetText(QUANTITY, quantity);
-            pdpQuantity = quantity;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to select HR Sheet attributes", e);
-        }
-    }
-
-    @And("add to cart on mobile")
-    public void addToCartonmobile() {
-        try {
-            pdpProductName = waitAndGetText(PDP_PRODUCT_NAME);
-            log.info("Product name " + pdpProductName + " is fetched from PDP");
-            if (pdpProductName.isEmpty()) {
-                log.info("Product name is empty on PDP");
-            }
-        } catch (Exception e) {
-            log.info("Failed to get product name from PDP");
-        }
-        try {
-            sleep(1000);
-            waitAndCheckIsElementClickable(ADD_TO_CART_MOBILE);
-            waitAndClickOn(ADD_TO_CART_MOBILE);
-            log.info("Clicked on add to cart button");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to click on add to cart button", e);
-        }
-    }
-
-    @And("click view cart on mobile")
-    public void clickViewCartonmobile() {
-        By viewCartBy = By.xpath("//div[normalize-space()='View cart']");
-
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
-
-        WebElement viewCart = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(viewCartBy));
-
-        // scroll into center (important for sticky footer)
-        ((JavascriptExecutor) Grid.driver()).executeScript(
-                "arguments[0].scrollIntoView({block:'center'});", viewCart);
-
-        // JS click (critical)
-        ((JavascriptExecutor) Grid.driver()).executeScript(
-                "arguments[0].click();", viewCart);
-    }
-
-    @Then("Verify the Attribute values for HR Coil in cart page on msite")
-    public void verifyTheAttributeValuesForHRCoilinCartPagemobile() {
-
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
-
-
-
-        WebElement qtyElement = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.xpath(CART_PAGE_QUANTITY)));
-
-        cartPageQuantity = qtyElement.getText();
-
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
-
-        cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-
-        softAssert.assertFalse(cartAttributeValue.isEmpty(),
-                "Attribute value is not displayed in cart page");
-
-        softAssert.assertEquals(cartAttributeValue,
-                pdpThickness + " x " + pdpWidth + " mm",
-                "Attribute value mismatch");
-
-        softAssert.assertTrue(
-                isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName),
-                "Product name mismatch");
     }
 
     @And("click edit on mobile cart")
@@ -313,7 +230,74 @@ public class mobilecartsteps extends AbstractWebPage {
         safeClick(editBtn);
     }
 
-    // Scroll methods moved to CustomUtil - use scrollToCenter(),
-    // scrollAboveSticky(), safeClick()
+    @And("click M-site add to cart")
+    public void clickMSiteAddToCart() {
+        try {
+            sleep(1000);
+            hideKeyboard();
+            waitAndCheckIsElementClickable(ADD_TO_CART_MOBILE);
+            waitAndClickOn(ADD_TO_CART_MOBILE);
+            log.info("successfully clicked on M-site add to cart button");
+        }
+        catch (Exception e) {
+            log.info("Failed to click on add to cart button on M-site");
+            throw new RuntimeException("Failed to click on add to cart button", e);
+        }
+    }
 
-}
+    @And("enter width {string}")
+    public void enterWidthMsite(String width) {
+        try {
+            // Enter width
+            waitAndCheckIsElementClickable(M_WIDTH);
+            waitAndSetText(M_WIDTH, width);
+            log.info("Successfully Entered width: " +width+" mm on M-site");
+            pdpWidth = width;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to select width on M-site", e);
+        }
+    }
+
+       @And("enter length {string}")
+        public void enterLengthMsite (String length){
+            try {
+                // Enter length
+                waitAndCheckIsElementClickable(M_LENGTH);
+                waitAndSetText(M_LENGTH, length);
+                log.info("Successfully Entered length: " + length + " mm on M-site");
+                pdpLength = length;
+            } catch (Exception e) {
+                log.info("Failed to select length on M-site");
+                throw new RuntimeException("Failed to select length on M-site", e);
+            }
+        }
+
+        @And("enter quantity {string}")
+    public void enterQuantityMsite(String quantity) {
+            try {
+                // Enter quantity
+                sleep(1000);
+                waitAndCheckIsElementClickable(QUANTITY);
+                waitAndSetText(QUANTITY, quantity);
+                log.info("Successfully Entered quantity: " + quantity + " MT on M-site");
+                pdpQuantity = quantity;
+            } catch (Exception e) {
+                log.info("Failed to enter quantity on M-site");
+                throw new RuntimeException("Failed to enter quantity on M-site", e);
+            }
+        }
+
+        @And("click on CR {string} product on msite")
+        public void clickOnCRProductOnMsite(String coil) {
+            try{
+                waitAndCheckIsElementClickable(PLP_PRODUCT, coil);
+                waitAndClickOn(PLP_PRODUCT, coil);
+                log.info("Clicked on CR coil product on msite");
+            }
+            catch (Exception e) {
+                log.info("Failed to click on CR product on msite");
+                throw new RuntimeException("Failed to click on CR product on msite", e);
+            }
+        }
+
+    }
