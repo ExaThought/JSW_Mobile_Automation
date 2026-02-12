@@ -1,4 +1,4 @@
-@customerdetails
+@customerdetails @regression
 Feature: validate customer profile details
 
   Background:

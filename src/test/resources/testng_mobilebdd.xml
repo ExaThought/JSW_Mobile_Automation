@@ -15,6 +15,11 @@
         <parameter name="executionTimeout" value="10000"/>
         <parameter name="cucumber.plugin"
                    value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
+        <parameter name="selfHeal" value="true"/>
+        <parameter name="selfHeal.recovery.tries" value="2"/>
+        <parameter name="selfHeal.score.cap" value="0.7"/>
+        <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
+        <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
