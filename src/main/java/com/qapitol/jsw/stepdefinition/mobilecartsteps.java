@@ -92,19 +92,15 @@ public class mobilecartsteps extends AbstractMobilePage {
     private static final String EDIT_DIAMETER_DROPDOWN = "editDiameterDropdown";
     private static final String EDIT_FORM_DROPDOWN = "editFormDropdown";
     private static final String CATALOGUE_MENU = "catalogueMenu";
-    private static final String MSHOTROLLED_CATEGORY = "mshotrolledCategory";
-    private static final String HRSHEET = "hrSheet";
     private static final String MTHICKNESS = "mthickness";
     private static final String PRICE_DETAILS = "priceDetails";
     private static final String ADD_TO_CART_MOBILE = "mobaddTocart";
     private static final String VIEW_CART_MOBILE = "mviewCart";
     private static final String GET_PRICE_NOW = "getpricenow";
-    private static final String HRCOIL = "hrcoil";
-    private static final String COLDROLLEDCOIL = "coldrolledcoil";
     private static final String THICKNESS_DROPDOWN="thicknessDropdown";
     private static final String M_WIDTH="mWidth";
     private static final String PLP_PRODUCT="plpProduct";
-    private static final String MS_COLD_ROLLED_CATEGORY="msColdRolledCategory";
+    private static final String CATEGORY_PRODUCT="categoryProduct";
 
     private final JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
 
@@ -141,51 +137,18 @@ public class mobilecartsteps extends AbstractMobilePage {
         }
     }
 
-    @And("user clicks Hot rolled category")
-    public void clickHotRolledCategory() {
+    @And("click on {string}")
+    public void clickOnCategory(String category) {
         try {
-            waitAndCheckIsElementClickable(MSHOTROLLED_CATEGORY);
-            waitAndClickOn(MSHOTROLLED_CATEGORY);
-            log.info("Clicked on hot rolled category");
-        } catch (Exception e) {
-            log.info("Failed to click on hot rolled category");
-            throw new RuntimeException("Failed to click on hot rolled category", e);
+            waitAndCheckIsElementClickable(CATEGORY_PRODUCT, category);
+            waitAndClickOn(CATEGORY_PRODUCT, category);
+            log.info("Clicked on category: " + category);
+        }
+        catch (Exception e)
+        { log.info("Failed to click on category: " + category);
+            throw new RuntimeException("Failed to click on category: " + category, e);
         }
     }
-
-    @And("click on HR Sheet product on msite")
-    public void clickOnHRSheetProductOnMsite() {
-        try{
-            waitAndCheckIsElementClickable(HRSHEET);
-            waitAndClickOn(HRSHEET);
-            log.info("Clicked on HR Sheet product");
-        }
-        catch (Exception e) {
-            log.info("Failed to click on HR Sheet product on msite");
-            throw new RuntimeException("Failed to click on HR Sheet product", e);
-        }
-    }
-
-    @And("click on HR Coil product on msite")
-    public void clickOnHRCoilProductOnMsite() {
-        waitAndCheckIsElementClickable(HRCOIL);
-        waitAndClickOn(HRCOIL);
-        log.info("Clicked on HR Coil product");
-    }
-
-    @And("user clicks Cold rolled category")
-    public void clickOnHcoldrolledOnMsite() {
-        try{
-            waitAndCheckIsElementClickable(MS_COLD_ROLLED_CATEGORY);
-            waitAndClickOn(MS_COLD_ROLLED_CATEGORY);
-            log.info("Clicked on cold rolled category");
-        }
-        catch (Exception e) {
-            log.info("Failed to click on cold rolled category");
-            throw new RuntimeException("Failed to click on cold rolled category", e);
-        }
-    }
-
     private void scrollToElemnt(String headerText) {
         // Delegate to CustomUtil
         scrollToCenter(headerText);
@@ -203,6 +166,7 @@ public class mobilecartsteps extends AbstractMobilePage {
     @And("select thickness {string}")
     public void selectAttributesForHRSheetOnMsite(String thickness) {
         try {
+            sleep(2000);
             // Select thickness for HR Coil
             waitAndCheckIsElementClickable(THICKNESS_DROPDOWN);
             waitAndClickOn(THICKNESS_DROPDOWN);
@@ -287,8 +251,8 @@ public class mobilecartsteps extends AbstractMobilePage {
             }
         }
 
-        @And("click on CR {string} product on msite")
-        public void clickOnCRProductOnMsite(String coil) {
+        @And("click on {string} product on msite")
+        public void clickOnProductOnMsite(String coil) {
             try{
                 waitAndCheckIsElementClickable(PLP_PRODUCT, coil);
                 waitAndClickOn(PLP_PRODUCT, coil);

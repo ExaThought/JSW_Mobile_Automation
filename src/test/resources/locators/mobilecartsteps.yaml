@@ -170,19 +170,9 @@ elements:
   catalogueMenu:
     en_US:
       web: xpath=//span[normalize-space()='Catalogue']
-
-  mshotrolledCategory:
+  categoryProduct:
     en_US:
-      web: xpath=//h3[contains(normalize-space(),'MS Hot rolled')]
-
-  msColdRolledCategory:
-    en_US:
-      web: xpath=//h3[contains(normalize-space(),'MS Cold rolled')]
-
-  hrSheet:
-    en_US:
-      web: xpath=(//a[.//div[contains(normalize-space(),'JSW Steel Hot Rolled Sheet')]])[1]
-
+      web: xpath=//h3[contains(normalize-space(),"{0}")]
   mthickness:
     en_US:
       web: xpath=//div[normalize-space()='Thickness (mm)']
@@ -202,18 +192,6 @@ elements:
   getpricenow:
     en_US:
       web: xpath=//span[normalize-space()='Get price now']
-
-  hrcoil:
-    en_US:
-      web: xpath=//div[contains(text(),'JSW Steels Hot Rolled Coils IS 2062:2011 E250A')]
-
-  coldrolledcoil:
-    en_US:
-      web: xpath=//h3[normalize-space()='MS Cold rolled']
-  cementCategory:
-    en_US:
-      web: xpath=//h3[text()='Cement']
-
   coatedSteelCategory:
     en_US:
       web: xpath=//h3[text()='Coated Steel']
