@@ -1,3 +1,4 @@
+@msanity
 Feature: Browse by categories - tile navigation
 
   @categoryTileClick
@@ -19,4 +20,4 @@ Feature: Browse by categories - tile navigation
       | Coated Steel       |
       | Structural Steel   |
       | MS Hot Rolled      |
-      | SS Hot Rolled      |
+

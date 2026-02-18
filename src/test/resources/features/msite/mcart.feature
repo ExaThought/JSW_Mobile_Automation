@@ -1,4 +1,5 @@
-@mCart @regression
+@mCart @regression @msanity
+
 Feature: Check Add-To-Cart
 
 
@@ -18,8 +19,8 @@ Feature: Check Add-To-Cart
     And click on "MS Hot rolled"
     And click on "Sheets" product on msite
     And select thickness "1.6"
+    And enter width "1500.0"
     And enter length "2500"
-    And enter width "1250"
     And enter quantity "50"
     And click M-site add to cart
 

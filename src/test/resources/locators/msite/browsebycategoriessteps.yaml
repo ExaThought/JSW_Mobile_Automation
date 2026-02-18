@@ -5,7 +5,7 @@ elements:
 
   structuralSteelCategory:
     en_US:
-      web: xpath=//a[.//img[@alt='Structural Steel']]
+      web: xpath=//a[.//img[@alt='Structural steel']]
 
   tmtCategory:
     en_US:
@@ -21,11 +21,11 @@ elements:
 
   msColdRolledCategory:
     en_US:
-      web: xpath=//a[.//img[@alt='MS Cold Rolled']]
+      web: xpath=//a[.//img[@alt='Cold rolled']]
 
   msHotRolledCategory:
     en_US:
-      web: xpath=//a[.//img[@alt='MS Hot Rolled']]
+      web: xpath=//a[.//img[@alt='Hot rolled']]
 
   bitumenCategory:
     en_US:

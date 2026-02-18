@@ -1,4 +1,5 @@
-@search
+@search @msanity
+
 Feature: Verify search coming  on home page
 
   Background:

@@ -89,6 +89,9 @@ elements:
   attributeValue:
     en_US:
       web: xpath=//button[normalize-space()="{0}"]
+  withValue:
+    en_US:
+      web: xpath=//button[contains(normalize-space(),'1500')]
   thickness:
     en_US:
       web: xpath=//div[contains(text(),"Thickness (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
@@ -142,7 +145,7 @@ elements:
       web: xpath=//div[contains(text(),"Length (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
   pdpProductName:
     en_US:
-      web: xpath=(//span[contains(text(),'Brand:')]/parent::div/parent::div/child::h1)[2]
+      web: xpath=//h1[contains(@class,'text-palette-supporting-gray-title')]
   galvanizedSheet:
     en_US:
       web: xpath=(//a[contains(text(),'Galvanized sheets')])
@@ -157,7 +160,8 @@ elements:
       web: xpath=//div[contains(text(),'Enter quantity')]
   cartPageProductName:
     en_US:
-      web: xpath=//div[contains(text(),"{0}")]
+      web: xpath=//div[contains(@class,'typography-md-h5')][1]
+
   cartPageQuantity:
     en_US:
       web: xpath=//div[contains(normalize-space(),'Qty:')]
@@ -187,7 +191,7 @@ elements:
 
   mviewCart:
     en_US:
-      web: xpath=//div[normalize-space()='View cart']
+      web: xpath=//button[normalize-space()='View cart']
 
   getpricenow:
     en_US:
@@ -210,6 +214,12 @@ elements:
   thicknessDropdown:
      en_US:
        web: xpath=//label[contains(text(),'Thickness (mm)')]//following-sibling::button
+  widthDropdown:
+    en_US:
+      web: xpath=//label[contains(text(),'Width (mm)')]//following-sibling::button
+  lengthDropdown:
+    en_US:
+      web: xpath=//label[contains(text(),'Length (mm)')]//following-sibling::button
   mWidth:
     en_US:
       web: xpath=//input[@id='input-width']
@@ -219,6 +229,32 @@ elements:
   plpProduct:
     en_US:
       web: xpath=//div[contains(text(),"{0}")]
+
+  pricePerUnit:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-price')])[1]
+
+  cartLineSubtotal:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-total')])[1]
+
+  cartSubtotal:
+    en_US:
+      web: xpath=//div[contains(text(),'Subtotal')]/following-sibling::div
+
+  cartGrandTotal:
+    en_US:
+      web: xpath=//div[contains(text(),'Grand Total')]/following-sibling::div
+
+  emptyCartMessage:
+    en_US:
+      web: xpath=//div[contains(text(),'Your cart is empty')]
+
+  deleteok:
+    en_US:
+      web: xpath=//button[@id='remove-btn']
+
+
 
 
 
