@@ -33,6 +33,7 @@ Feature: Validate Cart Page
   @CartQuantityUpdate
   Scenario: Verify quantity update updates subtotal
     When user clicks on view cart
+    And click edit on mobile cart
     And user edits all attributes in cart
 
 

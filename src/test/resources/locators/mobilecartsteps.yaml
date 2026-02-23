@@ -254,6 +254,90 @@ elements:
     en_US:
       web: xpath=//button[@id='remove-btn']
 
+  editButton:
+    en_US:
+      web: xpath=(//div[contains(@class,'action-cta') and normalize-space()='Edit'])[1]
+
+  loaderSpinner:
+    en_US:
+      web: css=.loader
+
+  lineItemSubtotal:
+    en_US:
+      web: xpath=//div[contains(@class,'line-item-subtotal')]
+
+  cartSubtotalContainer:
+    en_US:
+      web: xpath=//div[contains(@class,'cart-subtotal')]
+
+  lineItemPricePerUnit:
+    en_US:
+      web: xpath=//div[contains(@class,'line-item-price-per-unit')]
+
+  editActionCta:
+    en_US:
+      web: xpath=(//div[contains(@class,'action-cta') and normalize-space()='Edit'])[1]
+
+  editButtonDynamic:
+    en_US:
+      web: xpath=(//div[contains(@class,'action-cta') and normalize-space()='Edit'])[{0}]
+
+  editThicknessBtn:
+    en_US:
+      web: xpath=(//div[contains(text(),'Thickness (mm)')]/following-sibling::div//button)[{0}]
+
+  editWidthBtn:
+    en_US:
+      web: xpath=(//div[contains(text(),'Width (mm)')]/following-sibling::div//button)[{0}]
+
+  editLengthBtn:
+    en_US:
+      web: xpath=(//div[contains(text(),'Length (mm)')]/following-sibling::div//button)[{0}]
+
+  editQtyInput:
+    en_US:
+      web: xpath=(//label[contains(text(),'Enter quantity')]//following-sibling::div//input)[{0}]
+
+  quantityInput:
+    en_US:
+      web: xpath=//input[@class='quantity-input']
+
+  selfPickup:
+    en_US:
+      web: xpath=//span[normalize-space()='Self pickup']
+
+  deleteActionCta:
+    en_US:
+      web: xpath=//div[contains(@class,'action-cta') and normalize-space()='Delete']
+
+  lineItem:
+    en_US:
+      web: xpath=//div[contains(@class,'line-item')]
+
+  lineItemAttribute:
+    en_US:
+      web: xpath=//div[contains(@class,'line-item-attribute')]
+
+  shippingCharge:
+    en_US:
+      web: xpath=//div[contains(text(),'Shipping')]/following-sibling::div
+
+  taxAmount:
+    en_US:
+      web: xpath=//div[contains(text(),'Tax')]/following-sibling::div
+
+  discountAmount:
+    en_US:
+      web: xpath=//div[contains(text(),'Discount')]/following-sibling::div
+
+  pricePerUnitLocator:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-price')])[1]
+
+  lineSubtotalLocator:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-total')])[1]
+
 
 
 

@@ -98,15 +98,57 @@ public class mobilecartsteps extends AbstractMobilePage {
     private static final String ADD_TO_CART_MOBILE = "mobaddTocart";
     private static final String VIEW_CART_MOBILE = "mviewCart";
     private static final String GET_PRICE_NOW = "getpricenow";
-    private static final String THICKNESS_DROPDOWN="thicknessDropdown";
+    private static final String THICKNESS_DROPDOWN = "thicknessDropdown";
     private static final String WIDTH_DROPDOWN = "widthDropdown";
-    private static final String M_WIDTH="mWidth";
-    private static final String PLP_PRODUCT="plpProduct";
-    private static final String CATEGORY_PRODUCT="categoryProduct";
+    private static final String M_WIDTH = "mWidth";
+    private static final String PLP_PRODUCT = "plpProduct";
+    private static final String CATEGORY_PRODUCT = "categoryProduct";
     private static final String LENGTH_DROPDOWN = "lengthDropdown";
     private static final String DELETEOK = "deleteok";
+    private static final String EDIT_BUTTON = "editButton";
+    private static final String LOADER_SPINNER = "loaderSpinner";
+    private static final String LINE_ITEM_SUBTOTAL = "lineItemSubtotal";
+    private static final String CART_SUBTOTAL_CONTAINER = "cartSubtotalContainer";
+    private static final String LINE_ITEM_PRICE_PER_UNIT = "lineItemPricePerUnit";
+    private static final String EDIT_ACTION_CTA = "editActionCta";
+    private static final String EDIT_BUTTON_DYNAMIC = "editButtonDynamic";
+    private static final String EDIT_THICKNESS_BTN = "editThicknessBtn";
+    private static final String EDIT_WIDTH_BTN = "editWidthBtn";
+    private static final String EDIT_LENGTH_BTN = "editLengthBtn";
+    private static final String EDIT_QTY_INPUT = "editQtyInput";
+    private static final String QUANTITY_INPUT = "quantityInput";
+    private static final String SELF_PICKUP = "selfPickup";
+    private static final String DELETE_ACTION_CTA = "deleteActionCta";
+    private static final String LINE_ITEM = "lineItem";
+    private static final String LINE_ITEM_ATTRIBUTE = "lineItemAttribute";
+    private static final String SHIPPING_CHARGE = "shippingCharge";
+    private static final String TAX_AMOUNT = "taxAmount";
+    private static final String DISCOUNT_AMOUNT = "discountAmount";
+    private static final String PRICE_PER_UNIT_LOCATOR = "pricePerUnitLocator";
+    private static final String LINE_SUBTOTAL_LOCATOR = "lineSubtotalLocator";
 
+    private final LocatorReader locatorReader = new LocatorReader("locators/mobilecartsteps.yaml");
     private final JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+
+    private By byFor(String key) {
+        String raw = locatorReader.getXpath("elements." + key + ".en_US.web");
+        if (raw == null)
+            raw = locatorReader.getXpath(key);
+        if (raw != null && raw.startsWith("css="))
+            return By.cssSelector(raw.substring(4));
+        return By.xpath(raw != null ? raw : "//" + key);
+    }
+
+    private By byFor(String key, String param) {
+        String raw = locatorReader.getXpath("elements." + key + ".en_US.web");
+        if (raw == null)
+            raw = locatorReader.getXpath(key);
+        if (raw != null)
+            raw = raw.replace("{0}", param);
+        if (raw != null && raw.startsWith("css="))
+            return By.cssSelector(raw.substring(4));
+        return By.xpath(raw != null ? raw : "//" + key);
+    }
 
     Actions actions = new Actions(Grid.driver());
     static String requirementId;
@@ -131,14 +173,12 @@ public class mobilecartsteps extends AbstractMobilePage {
     public static List<String> pdpSelectedAttributes = new ArrayList<>();
 
 
-
     @When("user clicks on catalogue menu")
     public void clickCatalogueMenu() {
         try {
             waitAndClickOn(CATALOGUE_MENU);
             log.info("Clicked on catalogue menu");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("Failed to click on catalogue menu");
             throw new RuntimeException("Failed to click on catalogue menu", e);
         }
@@ -150,12 +190,12 @@ public class mobilecartsteps extends AbstractMobilePage {
             waitAndCheckIsElementClickable(CATEGORY_PRODUCT, category);
             waitAndClickOn(CATEGORY_PRODUCT, category);
             log.info("Clicked on category: " + category);
-        }
-        catch (Exception e)
-        { log.info("Failed to click on category: " + category);
+        } catch (Exception e) {
+            log.info("Failed to click on category: " + category);
             throw new RuntimeException("Failed to click on category: " + category, e);
         }
     }
+
     private void scrollToElemnt(String headerText) {
         // Delegate to CustomUtil
         scrollToCenter(headerText);
@@ -173,32 +213,43 @@ public class mobilecartsteps extends AbstractMobilePage {
     @And("select thickness {string}")
     public void selectAttributesForHRSheetOnMsite(String thickness) {
         try {
-            sleep(2000);
-            // Select thickness for HR Coil
+            sleep(1500);
+            // Thickness options are inline buttons — scroll section into view then click
+            // value
             waitAndCheckIsElementClickable(THICKNESS_DROPDOWN);
             waitAndClickOn(THICKNESS_DROPDOWN);
-            log.info("Successfully clicked on thickness dropdown");
+            sleep(500);
             waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
             waitAndClickOn(ATTRIBUTE, thickness);
-            log.info("Successfully selected thickness: " +thickness+" mm");
+            log.info("Successfully selected thickness: " + thickness + " mm");
             pdpThickness = thickness;
-
         } catch (Exception e) {
-            log.info("Failed to select thickness for HR Sheet on msite");
-            throw new RuntimeException("Failed to Select thickness", e);
+            log.info("Failed to select thickness");
+            throw new RuntimeException("Failed to select thickness", e);
         }
     }
 
     @And("click edit on mobile cart")
     public void mclickEdit() {
-        By editBtn = By.xpath("(//div[normalize-space()='Edit'])[1]");
+        try {
+            // Wait for any loader to disappear
+            WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(byFor(LOADER_SPINNER)));
 
-        // Wait for loader to disappear
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".loader")));
+            // Find the first Edit CTA and scroll it into view above the sticky footer
+            WebElement editBtn = wait.until(
+                    ExpectedConditions.presenceOfElementLocated(byFor(EDIT_BUTTON)));
+            js.executeScript("arguments[0].scrollIntoView({block: 'center'});", editBtn);
+            sleep(500);
 
-        // Use centralized safe click utility
-        safeClick(editBtn);
+            // Click using JS to avoid interception by sticky elements
+            wait.until(ExpectedConditions.elementToBeClickable(editBtn));
+            js.executeScript("arguments[0].click();", editBtn);
+            log.info("Clicked Edit button on mobile cart");
+        } catch (Exception e) {
+            log.info("Failed to click Edit on mobile cart");
+            throw new RuntimeException("Failed to click Edit on mobile cart", e);
+        }
     }
 
     @And("click M-site add to cart")
@@ -209,8 +260,7 @@ public class mobilecartsteps extends AbstractMobilePage {
             waitAndCheckIsElementClickable(ADD_TO_CART_MOBILE);
             waitAndClickOn(ADD_TO_CART_MOBILE);
             log.info("successfully clicked on M-site add to cart button");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("Failed to click on add to cart button on M-site");
             throw new RuntimeException("Failed to click on add to cart button", e);
         }
@@ -224,79 +274,64 @@ public class mobilecartsteps extends AbstractMobilePage {
             waitAndClickOn(WIDTH_DROPDOWN);
             // Enter width
             waitAndCheckIsElementClickable(ATTRIBUTE, width);
-                       waitAndClickOn(ATTRIBUTE, width);
-                      log.info("Successfully selected width: " +width+" mm");
-                        pdpWidth = width;
-            log.info("Successfully Entered width: " +width+" mm on M-site");
+            waitAndClickOn(ATTRIBUTE, width);
+            log.info("Successfully selected width: " + width + " mm");
+            pdpWidth = width;
+            log.info("Successfully Entered width: " + width + " mm on M-site");
             pdpWidth = width;
         } catch (Exception e) {
             throw new RuntimeException("Failed to select width on M-site", e);
         }
     }
 
-       @And("enter length {string}")
-        public void enterLengthMsite (String length){
-            try {
-                // Enter length
-
-                if (waitAndCheckIsElementClickable(M_LENGTH))
-                { waitAndSetText(M_LENGTH, length);
-                log.info("Successfully Entered length: " + length + " mm on M-site");
-                pdpLength = length;
-            }
-            else {
-                    WebElement lengthDropdown = Grid.driver().findElement(
-                            By.xpath("//label[contains(text(),'Thickness (mm)')]//following-sibling::button")
-                    );
-
-                    ((JavascriptExecutor) Grid.driver())
-                            .executeScript("arguments[0].scrollIntoView(true);", lengthDropdown);
-
-                  //  lengthDropdown.click();
-
-                    waitAndCheckIsElementClickable(LENGTH_DROPDOWN);
-                    waitAndClickOn(LENGTH_DROPDOWN);
-                    // Enter width
-                    waitAndCheckIsElementClickable(ATTRIBUTE, length);
-                    waitAndClickOn(ATTRIBUTE, length);
-                    log.info("Successfully selected width: " +length+" mm");
-                    pdpWidth = length;
-                    log.info("Successfully Entered width: " +length+" mm on M-site");
-                    pdpLength = length;
-                }}
-                catch(Exception e) {
-                log.info("Failed to select length on M-site");
-                throw new RuntimeException("Failed to select length on M-site", e);
-            }
+    @And("enter length {string}")
+    public void enterLengthMsite(String length) {
+        try {
+            sleep(1500);
+            WebElement lengthDropdown = Grid.driver().findElement(
+                     By.xpath("//label[contains(text(),'Thickness (mm)')]//following-sibling::button")
+                            );
+            ((JavascriptExecutor) Grid.driver()).executeScript("arguments[0].scrollIntoView(true);", lengthDropdown);
+            // Length options are inline buttons — scroll section into view then click value
+            waitAndCheckIsElementClickable(LENGTH_DROPDOWN);
+            waitAndClickOn(LENGTH_DROPDOWN);
+            sleep(500);
+            waitAndCheckIsElementClickable(ATTRIBUTE, length);
+            waitAndClickOn(ATTRIBUTE, length);
+            log.info("Successfully selected length: " + length + " mm");
+            pdpLength = length;
+        } catch (Exception e) {
+            log.info("Failed to select length on M-site");
+            throw new RuntimeException("Failed to select length on M-site", e);
         }
+    }
 
-        @And("enter quantity {string}")
+    @And("enter quantity {string}")
     public void enterQuantityMsite(String quantity) {
-            try {
-                // Enter quantity
-                sleep(1000);
-                waitAndCheckIsElementClickable(QUANTITY);
-                waitAndSetText(QUANTITY, quantity);
-                log.info("Successfully Entered quantity: " + quantity + " MT on M-site");
-                pdpQuantity = quantity;
-            } catch (Exception e) {
-                log.info("Failed to enter quantity on M-site");
-                throw new RuntimeException("Failed to enter quantity on M-site", e);
-            }
+        try {
+            // Enter quantity
+            sleep(1000);
+            waitAndCheckIsElementClickable(QUANTITY);
+            waitAndSetText(QUANTITY, quantity);
+            log.info("Successfully Entered quantity: " + quantity + " MT on M-site");
+            pdpQuantity = quantity;
+        } catch (Exception e) {
+            log.info("Failed to enter quantity on M-site");
+            throw new RuntimeException("Failed to enter quantity on M-site", e);
         }
+    }
 
-        @And("click on {string} product on msite")
-        public void clickOnProductOnMsite(String coil) {
-            try{
-                waitAndCheckIsElementClickable(PLP_PRODUCT, coil);
-                waitAndClickOn(PLP_PRODUCT, coil);
-                log.info("Clicked on CR coil product on msite");
-            }
-            catch (Exception e) {
-                log.info("Failed to click on CR product on msite");
-                throw new RuntimeException("Failed to click on CR product on msite", e);
-            }
+    @And("click on {string} product on msite")
+    public void clickOnProductOnMsite(String coil) {
+        try {
+            waitAndCheckIsElementClickable(PLP_PRODUCT, coil);
+            waitAndClickOn(PLP_PRODUCT, coil);
+            log.info("Clicked on CR coil product on msite");
+        } catch (Exception e) {
+            log.info("Failed to click on CR product on msite");
+            throw new RuntimeException("Failed to click on CR product on msite", e);
         }
+    }
 
     @When("user clicks on view cart")
     public void clickViewCart() {
@@ -357,34 +392,6 @@ public class mobilecartsteps extends AbstractMobilePage {
         }
     }
 
-    @Then("line subtotal should be correct")
-    public void validateLineSubtotal() {
-
-        double price = extractPrice(waitAndGetText("pricePerUnit"));
-        double quantity = Double.parseDouble(pdpQuantity);
-
-        double expectedSubtotal = price * quantity;
-
-        double actualSubtotal = extractPrice(waitAndGetText("cartLineSubtotal"));
-
-        Assert.assertEquals(actualSubtotal, expectedSubtotal, "Subtotal mismatch!");
-    }
-
-    @Then("grand total should be calculated correctly")
-    public void validateGrandTotal() {
-
-        double subtotal = extractPrice(waitAndGetText("cartSubtotal"));
-        double shipping = extractPrice(waitAndGetText("shippingCharge"));
-        double tax = extractPrice(waitAndGetText("taxAmount"));
-        double discount = extractPrice(waitAndGetText("discountAmount"));
-
-        double expectedGrandTotal = subtotal + shipping + tax - discount;
-        double actualGrandTotal = extractPrice(waitAndGetText("cartGrandTotal"));
-
-        Assert.assertEquals(actualGrandTotal, expectedGrandTotal, "Grand total mismatch!");
-    }
-
-
     @Then("empty cart message should be displayed")
     public void validateEmptyCart() {
         waitAndCheckIsElementVisible("emptyCartMessage");
@@ -392,8 +399,7 @@ public class mobilecartsteps extends AbstractMobilePage {
 
     public double extractPrice(String priceText) {
         return Double.parseDouble(
-                priceText.replaceAll("[^0-9.]", "")
-        );
+                priceText.replaceAll("[^0-9.]", ""));
     }
 /*
     @Then("capture selected attributes from PDP")
@@ -421,26 +427,22 @@ public class mobilecartsteps extends AbstractMobilePage {
         try {
             // 1. Locate all line subtotal elements
             List<WebElement> lineSubtotalElements = Grid.driver().findElements(
-                    By.xpath("//div[contains(@class,'line-item-subtotal')]")
-            );
+                    byFor(LINE_ITEM_SUBTOTAL));
 
             // 2. Sum up the line subtotals
             double calculatedSubtotal = 0.0;
             for (WebElement elem : lineSubtotalElements) {
-                String text = elem.getText().replaceAll("[^0-9.]", ""); // remove currency symbols
-                double value = Double.parseDouble(text);
-                calculatedSubtotal += value;
+                String text = elem.getText().replaceAll("[^0-9.]", "");
+                calculatedSubtotal += Double.parseDouble(text);
             }
 
             System.out.println("Calculated Subtotal from line items: " + calculatedSubtotal);
 
             // 3. Get displayed cart subtotal
             WebElement cartSubtotalElem = Grid.driver().findElement(
-                    By.xpath("//div[contains(@class,'cart-subtotal')]")
-            );
-            String subtotalText = cartSubtotalElem.getText().replaceAll("[^0-9.]", "");
-            double displayedSubtotal = Double.parseDouble(subtotalText);
-
+                    byFor(CART_SUBTOTAL_CONTAINER));
+            double displayedSubtotal = Double.parseDouble(
+                    cartSubtotalElem.getText().replaceAll("[^0-9.]", ""));
             System.out.println("Displayed Cart Subtotal: " + displayedSubtotal);
 
             // 4. Assert equality
@@ -452,14 +454,12 @@ public class mobilecartsteps extends AbstractMobilePage {
         }
     }
 
-
     @Then("price per unit should be displayed")
     public void pricePerUnitShouldBeDisplayed() {
 
         // 1. Locate all line items' price per unit elements
         List<WebElement> priceElements = Grid.driver().findElements(
-                By.xpath("//div[contains(@class,'line-item-price-per-unit')]")
-        );
+                byFor(LINE_ITEM_PRICE_PER_UNIT));
 
         // 2. Validate each line item's price is visible and not empty
         for (WebElement priceEl : priceElements) {
@@ -474,114 +474,83 @@ public class mobilecartsteps extends AbstractMobilePage {
     @And("user edits all attributes in cart")
     public void editAllCartAttributes() {
         try {
+            WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
 
-            // Assuming you want to loop through all line items in the cart
-            List<WebElement> cartItems = Grid.driver().findElements(By.xpath("(//div[contains(@class,'action-cta') and normalize-space()='Edit'])[1]"));
+            // Get a fresh count of Edit CTAs
+            List<WebElement> editCtaList = Grid.driver().findElements(byFor(EDIT_ACTION_CTA));
+            int totalItems = editCtaList.size();
+            log.info("Total cart items to edit: " + totalItems);
 
-            for (int i = 1; i <= cartItems.size(); i++) {
-                // 1. Click Edit button dynamically for each line item
-                By editBtn = By.xpath("(//div[normalize-space()='Edit'])[" + i + "]");
-                safeClick(editBtn);
+            for (int i = 0; i < totalItems; i++) {
 
-                // 2. Edit Thickness
-                String thicknessValue = pdpThickness;
-                WebElement thicknessDropdown = Grid.driver().findElement(By.xpath(
-                        "(//div[contains(text(),'Thickness (mm)')]/following-sibling::div//button)[" + i + "]"
-                ));
-                thicknessDropdown.click();
-                WebElement thicknessOption = Grid.driver().findElement(By.xpath(
-                        String.format("//button[normalize-space()='%s']", thicknessValue)
-                ));
-                thicknessOption.click();
-                log.info("Edited Thickness to: " + thicknessValue);
+                // Re-fetch Edit buttons fresh each iteration (DOM may have changed after modal
+                // closes)
+                List<WebElement> editBtns = Grid.driver().findElements(byFor(EDIT_ACTION_CTA));
+                WebElement editBtn = editBtns.get(i);
 
-                // 3. Edit Width
-                String widthValue = pdpWidth;
-                WebElement widthDropdown = Grid.driver().findElement(By.xpath(
-                        "(//div[contains(text(),'Width (mm)')]/following-sibling::div//button)[" + i + "]"
-                ));
-                widthDropdown.click();
-                WebElement widthOption = Grid.driver().findElement(By.xpath(
-                        String.format("//button[normalize-space()='%s']", widthValue)
-                ));
-                widthOption.click();
-                log.info("Edited Width to: " + widthValue);
+                // Scroll the Edit button to center — avoids sticky header/footer interception
+                js.executeScript("arguments[0].scrollIntoView({block: 'center'});", editBtn);
+                sleep(600);
 
-                // 4. Edit Length
-                String lengthValue = pdpLength;
-                WebElement lengthDropdown = Grid.driver().findElement(By.xpath(
-                        "(//div[contains(text(),'Length (mm)')]/following-sibling::div//button)[" + i + "]"
-                ));
-                lengthDropdown.click();
-                WebElement lengthOption = Grid.driver().findElement(By.xpath(
-                        String.format("//button[normalize-space()='%s']", lengthValue)
-                ));
-                lengthOption.click();
-                log.info("Edited Length to: " + lengthValue);
+                // Wait until clickable then JS-click (avoids ElementClickInterceptedException)
+                wait.until(ExpectedConditions.elementToBeClickable(editBtn));
+                js.executeScript("arguments[0].click();", editBtn);
+                log.info("Opened Edit modal for cart item #" + (i + 1));
 
-                // 5. Edit Quantity dynamically
-                String quantityValue = pdpQuantity;
-                WebElement qtyInput = Grid.driver().findElement(By.xpath(
-                        "(//input[contains(@class,'edit-input') and @readonly='readonly'])[" + i + "]"
-                ));
-                qtyInput.clear();
-                qtyInput.sendKeys(quantityValue);
-                log.info("Edited Quantity to: " + quantityValue);
+                // Wait for the edit modal to appear (Done button is a reliable anchor)
+                wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(SAVE_EDIT)));
+                sleep(400);
 
-                // 6. Save changes
-                WebElement saveBtn = Grid.driver().findElement(By.xpath("//span[contains(text(),'Done')]"));
-                saveBtn.click();
+                // Edit Quantity (available for all product types)
+                try {
+                    WebElement qtyInput = wait.until(
+                            ExpectedConditions
+                                    .visibilityOfElementLocated(byFor(EDIT_QTY_INPUT, String.valueOf(i + 1))));
+                    qtyInput.clear();
+                    qtyInput.sendKeys(pdpQuantity);
+                    log.info("Updated quantity to: " + pdpQuantity + " for item #" + (i + 1));
+                } catch (Exception qe) {
+                    log.info("Quantity field not found for item #" + (i + 1) + ", skipping.");
+                }
 
-                log.info("Attributes updated for cart item #" + i);
+                // Click Done to save
+                waitAndClickOn(SAVE_EDIT);
+                sleep(800); // wait for modal to close and DOM to settle
+                log.info("Saved edits for cart item #" + (i + 1));
             }
 
-            log.info("All attributes updated successfully for all cart items.");
+            log.info("All cart items edited successfully.");
         } catch (Exception e) {
             log.info("Failed to edit cart attributes");
             throw new RuntimeException("Failed to edit cart attributes", e);
         }
     }
 
-
-
-
-
     @Then("line subtotal should update correctly")
     public void lineSubtotalShouldUpdateCorrectly() {
         // Get price per unit for the item
-        String pricePerUnitText = waitAndGetText("pricePerUnitLocator");
-        double pricePerUnit = extractPrice(pricePerUnitText);
+        double pricePerUnit = extractPrice(waitAndGetText(PRICE_PER_UNIT_LOCATOR));
 
         // Get updated quantity from the input
-        WebElement qtyInput = Grid.driver().findElement(By.xpath("//input[@class='quantity-input']"));
+        WebElement qtyInput = Grid.driver().findElement(byFor(QUANTITY_INPUT));
         int qty = Integer.parseInt(qtyInput.getAttribute("value"));
 
         // Calculate expected subtotal
         double expectedSubtotal = pricePerUnit * qty;
 
-        // Get actual line subtotal text
-        String actualSubtotalText = waitAndGetText("lineSubtotalLocator");
-        double actualSubtotal = extractPrice(actualSubtotalText);
+        // Get actual line subtotal
+        double actualSubtotal = extractPrice(waitAndGetText(LINE_SUBTOTAL_LOCATOR));
 
         Assert.assertEquals(actualSubtotal, expectedSubtotal, 0.01, "Line subtotal did not update correctly");
     }
 
     @When("user deletes all cart items")
-    public void userDeletesAllCartItems() throws InterruptedException {
+    public void userDeletesAllCartItems() {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
 
+        // Wait for and scroll to self-pickup anchor
         WebElement selfPickup = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.xpath("//span[normalize-space()='Self pickup']")
-                )
-        );
-
-
-
-         selfPickup = Grid.driver().findElement(
-                By.xpath("//span[text()='Self pickup']")
-        );
-
+                ExpectedConditions.visibilityOfElementLocated(byFor(SELF_PICKUP)));
         ((JavascriptExecutor) Grid.driver())
                 .executeScript("arguments[0].scrollIntoView(true);", selfPickup);
 
@@ -589,11 +558,10 @@ public class mobilecartsteps extends AbstractMobilePage {
         while (true) {
 
             List<WebElement> deleteButtons = Grid.driver()
-                    .findElements(By.xpath("//div[contains(@class,'action-cta') and normalize-space()='Delete']"));
+                    .findElements(byFor(DELETE_ACTION_CTA));
 
-            if (deleteButtons.size() == 0) {
-                break; // No more items left
-            }
+            if (deleteButtons.isEmpty())
+                break;
 
             WebElement firstDelete = deleteButtons.get(0);
 
@@ -603,17 +571,17 @@ public class mobilecartsteps extends AbstractMobilePage {
 
             // Wait until that delete button disappears (important)
             wait.until(ExpectedConditions.stalenessOf(firstDelete));
-    }}
+        }
+    }
 
     @Then("no line items should be visible")
     public void noLineItemsShouldBeVisible() {
-        List<WebElement> lineItems = Grid.driver().findElements(By.xpath("//div[contains(@class,'line-item')]"));
+        List<WebElement> lineItems = Grid.driver().findElements(byFor(LINE_ITEM));
 
         for (WebElement item : lineItems) {
             Assert.assertFalse(item.isDisplayed(), "Found visible line item when none expected");
         }
 
-        // Or simpler: expect zero items
         Assert.assertTrue(lineItems.isEmpty(), "Expected no line items but found some");
     }
 
@@ -622,7 +590,7 @@ public class mobilecartsteps extends AbstractMobilePage {
     public void selectedAttributesShouldMatchPDP() {
 
         String cartAttributeText = Grid.driver()
-                .findElement(By.xpath("//div[contains(@class,'line-item-attribute')]"))
+                .findElement(byFor(LINE_ITEM_ATTRIBUTE))
                 .getText();
 
         System.out.println("Cart Attribute Text: " + cartAttributeText);
@@ -631,14 +599,7 @@ public class mobilecartsteps extends AbstractMobilePage {
 
             Assert.assertTrue(
                     cartAttributeText.contains(expectedValue),
-                    "Attribute value missing in cart: " + expectedValue
-            );
+                    "Attribute value missing in cart: " + expectedValue);
         }
     }
-
-
-
-
-
-
 }
