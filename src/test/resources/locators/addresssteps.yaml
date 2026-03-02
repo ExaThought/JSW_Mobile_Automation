@@ -49,7 +49,7 @@ elements:
 
   ccpAddressSaveChangesButton:
     en_US:
-      web: //button[@id='save-change' and normalize-space()='Save changes']
+      web: xpath=(//button[@id='save-change' and normalize-space()='Save changes'])[2]
 
   # ================= SAVED ADDRESS VALIDATION (Dynamic) =================
 

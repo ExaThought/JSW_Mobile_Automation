@@ -93,7 +93,7 @@ public class AddressSteps extends AbstractWebPage {
 
         softAssert.assertTrue(
                 isElementPresent(CCP_PROFILE_ADDRESSES_TAB_ACTIVE),
-                "❌ Addresses tab is not active"
+                " Addresses tab is not active"
         );
     }
 
@@ -132,12 +132,12 @@ public class AddressSteps extends AbstractWebPage {
     @Then("customer clicks on Save changes button")
     public void customer_clicks_on_save_changes_button() {
 
-        WebElement button = getElement(CCP_ADDRESS_SAVE_CHANGES_BUTTON);
-        scrollIntoView(button);
+    waitAndCheckIsElementClickable(CCP_ADDRESS_SAVE_CHANGES_BUTTON);
+    waitAndClickOn(CCP_ADDRESS_SAVE_CHANGES_BUTTON);
 
-        ((JavascriptExecutor) Grid.driver())
-                .executeScript("arguments[0].click();", button);
     }
+
+
 
 
     // ================= VALIDATE SAVED ADDRESS =================
@@ -154,7 +154,7 @@ public class AddressSteps extends AbstractWebPage {
 
         softAssert.assertTrue(
                 address.isDisplayed(),
-                "❌ Address with company name '" + companyName + "' is NOT displayed"
+                " Address with company name '" + companyName + "' is NOT displayed"
         );
     }
 
@@ -224,7 +224,7 @@ public class AddressSteps extends AbstractWebPage {
 
         softAssert.assertTrue(
                 isInvisible,
-                "❌ Address with company name '" + companyName + "' is still visible after deletion"
+                " Address with company name '" + companyName + "' is still visible after deletion"
         );
     }
 
@@ -245,7 +245,7 @@ public class AddressSteps extends AbstractWebPage {
 
         softAssert.assertFalse(
                 saveBtn.isEnabled(),
-                "❌ Save changes button is ENABLED but should be DISABLED"
+                " Save changes button is ENABLED but should be DISABLED"
         );
     }
 
@@ -258,7 +258,7 @@ public class AddressSteps extends AbstractWebPage {
 
         softAssert.assertFalse(
                 msg.isEmpty(),
-                "❌ Company name error message not displayed"
+                " Company name error message not displayed"
         );
     }
 }

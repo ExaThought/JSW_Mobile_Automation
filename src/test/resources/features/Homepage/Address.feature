@@ -1,4 +1,4 @@
-@address
+@address @regression
 Feature: validate Address
 
   Background:
@@ -13,7 +13,7 @@ Feature: validate Address
     And user clicks on Addresses tab
     Then customer navigate company name jsw test address
     Then account logout
-  @sanity
+  @sanity @add
   Scenario: Check and validate  add Address for customer
     And user clicks on Testacco user menu
     And user clicks on Profile option
