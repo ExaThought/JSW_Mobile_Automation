@@ -59,7 +59,7 @@ public class ActiveOrderSteps extends AbstractWebPage {
 
         waitAndClickOn(CCP_CREATE_ORDER_CTA);
         sleep(3000);
-        //Copy order number
+        //Copy order number remove sleep method
         ccpOrderNumber = waitAndGetText(CCP_ORDER_NUMBER);
         System.out.println(ccpOrderNumber);
 
@@ -70,7 +70,7 @@ public class ActiveOrderSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(MY_ORDERS_TAB);
         waitAndClickOn(MY_ORDERS_TAB);
 
-        System.out.println("Clicked on My Orders tab");
+
     }
 
     @And("user clicks on Active order tab")

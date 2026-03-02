@@ -1,5 +1,5 @@
-@creditOrder
-Feature: Check CCP order creation from sf to ccp
+@creditOrder @regression
+Feature: Check CCP credit order details
 
   Background:
     Given Go to session "ccp"
