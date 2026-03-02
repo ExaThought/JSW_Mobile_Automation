@@ -1,0 +1,46 @@
+elements:
+
+  # ================= CUSTOMER MENU =================
+
+  ccpUserMenuTestacco:
+    en_US:
+      web: //span[contains(normalize-space(),'Testauto')]
+
+  ccpUserMenuProfileOption:
+    en_US:
+      web: //a[contains(@class,'user-dropdown-item') and normalize-space()='Profile']
+
+
+  # ================= BANK TAB =================
+
+  bankAccountDetailsTab:
+    en_US:
+      web: //ul[@role='tablist']//a[contains(text(),'Bank account details')]
+
+
+
+  # ================= BANK DETAILS VALUES =================
+
+  gstinNameValue:
+    en_US:
+      web: //span[contains(normalize-space(),'GSTIN name')]/following-sibling::div
+
+  accountHolderNameValue:
+    en_US:
+      web: //span[contains(normalize-space(),'Account holder’s name')]/following-sibling::div
+
+  bankAccountNumberValue:
+    en_US:
+      web: //div[contains(normalize-space(),'Bank account number')]/following-sibling::div
+
+  ifscCodeValue:
+    en_US:
+      web: //div[normalize-space()='IFSC code']/following::div[contains(@class,'text-align-right')][1]
+
+  replaceBankAccountButton:
+    en_US:
+      web: //div[normalize-space()='Replace bank account']
+
+    enterBankAccountHeading:
+      en_US:
+        web: //div[normalize-space()='Enter bank account information']

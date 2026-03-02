@@ -5,6 +5,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -31,6 +32,10 @@ public class CustomUtil {
     public static void waitUntilElementDisappears(By locator) {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
         wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+    }
+
+    public static void moveToElement(By locator){
+        Actions actions = new Actions(Grid.driver());
     }
 
 
