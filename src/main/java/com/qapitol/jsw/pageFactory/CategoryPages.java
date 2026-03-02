@@ -26,6 +26,9 @@ public class CategoryPages {
     public static By editEnterQuantity=By.xpath("//div[contains(text(),'Enter quantity')]");
     public static  By CONFIRM_ORDER_BTN = By.xpath("//button[normalize-space()='Confirm order']");
     public static  By ACTIVE_ORDER_NUMBER = By.xpath("//span[normalize-space()='Order number:']/following-sibling::span");
+    public static By VIEW_ORDER_DOCUMENTS_BTN = By.xpath("//p[normalize-space()='View order documents']");
+    public  static By SAVE_ADDRESS=By.xpath("//button[@id='save-change' and normalize-space()='Save changes']");
+
 
 }
 
