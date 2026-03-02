@@ -84,9 +84,9 @@ public class BankDetailSteps extends AbstractWebPage {
         String gstinName = getTextValue(GSTIN_NAME_VALUE);
 
         softAssert.assertFalse(gstinName.isEmpty(),
-                "❌ GSTIN Name is empty");
+                " GSTIN Name is empty");
 
-        System.out.println("✅ GSTIN Name Found: " + gstinName);
+
     }
 
     @Then("user should see Account holder name in Bank details")
@@ -95,9 +95,9 @@ public class BankDetailSteps extends AbstractWebPage {
         String holderName = getTextValue(ACCOUNT_HOLDER_NAME_VALUE);
 
         softAssert.assertFalse(holderName.isEmpty(),
-                "❌ Account Holder Name is empty");
+                " Account Holder Name is empty");
 
-        System.out.println("✅ Account Holder Name Found: " + holderName);
+
     }
 
     @Then("user should see Bank account number in Bank details")
@@ -106,9 +106,9 @@ public class BankDetailSteps extends AbstractWebPage {
         String accountNumber = getTextValue(BANK_ACCOUNT_NUMBER_VALUE);
 
         softAssert.assertFalse(accountNumber.isEmpty(),
-                "❌ Bank Account Number is empty");
+                " Bank Account Number is empty");
 
-        System.out.println("✅ Bank Account Number Found: " + accountNumber);
+
     }
 
     @Then("user should see IFSC code in Bank details")
@@ -117,9 +117,9 @@ public class BankDetailSteps extends AbstractWebPage {
         String ifscCode = getTextValue(IFSC_CODE_VALUE);
 
         softAssert.assertFalse(ifscCode.isEmpty(),
-                "❌ IFSC Code is empty");
+                " IFSC Code is empty");
 
-        System.out.println("✅ IFSC Code Found: " + ifscCode);
+
 
 
     }
@@ -129,7 +129,7 @@ public class BankDetailSteps extends AbstractWebPage {
 
         clickOn("replaceBankAccountButton");
 
-        System.out.println("✅ Clicked on Replace bank account");
+
     }
 
     @Then("user should see Enter bank account information page")
@@ -139,10 +139,10 @@ public class BankDetailSteps extends AbstractWebPage {
 
         Assert.assertFalse(
                 headingText.isEmpty(),
-                "❌ Enter bank account information heading not visible"
+                " Enter bank account information heading not visible"
         );
 
-        System.out.println("✅ Heading Found: " + headingText);
+
     }
 }
 
