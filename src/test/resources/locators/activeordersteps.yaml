@@ -1,0 +1,71 @@
+elements:
+  loginButton:
+    en_US:
+      web: //button[@id='login-cta']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+  cartPage:
+    en_US:
+      web: //div[@class='cart-icon-container full-cart']
+  ccpOrderNumber:
+    en_US:
+      web: xpath=//div[contains(text(),'Order number')]/following-sibling::div
+  ccpCreateOrderCTA:
+    en_US:
+      web: xpath=//button[contains(text(),'Confirm order')]
+  erpPiPoCheckBox:
+    en_US:
+      web: xpath=//span[contains(text(),'Verify PI/PO')]/parent::label/child::span//input
+  erpBillingAddress:
+    en_US:
+      web: xpath=//p[contains(text(),'Billing address verified')]/ancestor::label/child::span/child::input
+  erpSpoc:
+    en_US:
+      web: xpath=//div[@id='demo-simple-select']
+  ccpMyOrderPage:
+    en_US:
+      web: xpath=//a[@href='/my-orders']
+  orderConfirmStatus:
+    en_US:
+      web: xpath=//p[contains(@class, 'typography-h5')]
+  continueToLoginButton:
+    en_US:
+      web: //button[@id='login-to-continue']
+
+  activeOrderTab:
+    en_US:
+      web: xpath=//button[contains(@class,'order-tab-button') and normalize-space()='Active']
+
+  orderPlacedText:
+    en_US:
+      web: xpath=//p[contains(normalize-space(),'Payment details')]
+
+  activePageOrderNumber:
+    en_US:
+      web: xpath=//div[contains(@class,'order-summary')]//span[normalize-space()='Order number:']/following-sibling::span
+
+
+  deliveredOrderTab:
+    en_US:
+      web: //button[normalize-space()='Delivered']
+  cancelledOrderTab:
+    en_US:
+      web: //button[normalize-space()='Cancelled']
+  allOrderTab:
+    en_US:
+      web: //button[normalize-space()='All']
+  myOrdersTab:
+    en_US:
+      web: //a[contains(@class,'links') and normalize-space()='My orders']
+
+

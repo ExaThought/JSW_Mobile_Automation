@@ -24,5 +24,8 @@ public class CategoryPages {
     public static String deleteCartLineItem="(//div[contains(text(),'Delete')])[1]";
     public static String coatedSteel="(//a[contains(text(),'Coated Steel')])[2]";
     public static By editEnterQuantity=By.xpath("//div[contains(text(),'Enter quantity')]");
+    public static  By CONFIRM_ORDER_BTN = By.xpath("//button[normalize-space()='Confirm order']");
+    public static  By ACTIVE_ORDER_NUMBER = By.xpath("//span[normalize-space()='Order number:']/following-sibling::span");
+
 }
 
