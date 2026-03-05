@@ -17,7 +17,11 @@ elements:
 
   productCard:
     en_US:
-      web: xpath=//a[starts-with(@href, '/product-detail/')]
+      web: xpath=//div/a[contains(@class, 'flex') and contains(@class, 'justify-between')]
+
+  productCardplp:
+    en_US:
+      web: xpath=//img[contains(@class,'object-contain') and contains(@class,'p-2')]
 
   productName:
     en_US:

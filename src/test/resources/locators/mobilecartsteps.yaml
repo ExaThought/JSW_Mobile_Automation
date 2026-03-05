@@ -338,7 +338,41 @@ elements:
     en_US:
       web: xpath=(//div[contains(@class,'line-item-total')])[1]
 
+  coatingGradeDropdown:
+    en_US:
+      web: xpath=//label[contains(text(),'Coating grade')]/following-sibling::button
 
+  spangleTypeDropdown:
+    en_US:
+      web: xpath=//label[contains(text(),'Spangle type')]/following-sibling::button
+
+  diameterDropdown:
+    en_US:
+      web: xpath=//label[contains(text(),'Diameter (mm)')]/following-sibling::button
+
+  flangeWidthDropdown:
+    en_US:
+      web: xpath=//label[contains(text(),'Flange width')]/following-sibling::button
+
+  webDepthDropdown:
+      en_US:
+        web: xpath=//label[contains(text(),'Web depth')]/following-sibling::button
+
+  sectionalWeightDropdown:
+      en_US:
+        web: xpath=//label[contains(text(),'Sectional weight')]/following-sibling::button
+
+  cutLengthDropdown:
+      en_US:
+        web: xpath=//label[contains(text(),'Cut length')]/following-sibling::button
+
+  tmtQuanttatity:
+    en_US:
+      web: xpath=//input[@data-slot='input']
+
+  ubend:
+    en_US:
+      web: xpath=//img[contains(@src,'U_c05acdd85b')]
 
 
 

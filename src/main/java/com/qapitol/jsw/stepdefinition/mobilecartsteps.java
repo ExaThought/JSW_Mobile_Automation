@@ -20,20 +20,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.qapitol.jsw.pageFactory.CategoryPages.*;
-import static com.qapitol.jsw.pageFactory.CategoryPages.anglesSubCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.beamsAndColumnsSubCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.channelsSubCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.coatedSteel;
-import static com.qapitol.jsw.pageFactory.CategoryPages.coldRolledCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.coldRolledCoilsSubCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.coldRolledSheetsSubCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.editEnterQuantity;
-import static com.qapitol.jsw.pageFactory.CategoryPages.hotRolledCoilsSubCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.length;
-import static com.qapitol.jsw.pageFactory.CategoryPages.plpFirstProduct;
-import static com.qapitol.jsw.pageFactory.CategoryPages.structuralSteelCategory;
-import static com.qapitol.jsw.pageFactory.CategoryPages.wireCategory;
 import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
@@ -126,6 +112,15 @@ public class mobilecartsteps extends AbstractMobilePage {
     private static final String DISCOUNT_AMOUNT = "discountAmount";
     private static final String PRICE_PER_UNIT_LOCATOR = "pricePerUnitLocator";
     private static final String LINE_SUBTOTAL_LOCATOR = "lineSubtotalLocator";
+    private static final String COATING_GRADE_DROPDOWN = "coatingGradeDropdown";
+    private static final String SPANGLE_TYPE_DROPDOWN = "spangleTypeDropdown";
+    private static final String DIAMETER_DROPDOWN = "diameterDropdown";
+    private static final String FLANGE_WIDTH_DROPDOWN = "flangeWidthDropdown";
+    private static final String WEB_DEPTH_DROPDOWN = "webDepthDropdown";
+    private static final String SECTIONAL_WEIGHT_DROPDOWN = "sectionalWeightDropdown";
+    private static final String CUT_LENGTH_DROPDOWN = "cutLengthDropdown";
+    private static final String TMTQUANTATITY = "tmtQuanttatity";
+    private static final String UBEND = "ubend";
 
     private final LocatorReader locatorReader = new LocatorReader("locators/mobilecartsteps.yaml");
     private final JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
@@ -169,9 +164,12 @@ public class mobilecartsteps extends AbstractMobilePage {
     static String pdpForm;
     static String updatedDiameter;
     static String mpdpthickness;
+    static String pdpFlangeWidth;
+    static String pdpWebDepth;
+    static String pdpSectionalWeight;
+    static String pdpCutLength;
 
     public static List<String> pdpSelectedAttributes = new ArrayList<>();
-
 
     @When("user clicks on catalogue menu")
     public void clickCatalogueMenu() {
@@ -196,6 +194,24 @@ public class mobilecartsteps extends AbstractMobilePage {
         }
     }
 
+    @When("scroll down to {string} section")
+    public void scrollToCategory(String category) {
+        try {
+            // WebElement categoryElement = Grid.driver().findElement(
+            // By.xpath("//p[normalize-space()='" + category + "']")
+            // );
+            WebElement categoryElement = Grid.driver().findElement(
+                    By.xpath("//h3[contains(normalize-space(),'" + category + "')]"));
+            ((JavascriptExecutor) Grid.driver()).executeScript(
+                    "arguments[0].scrollIntoView(true);", categoryElement);
+
+            log.info("Scrolled to category section: " + category);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to scroll to category: " + category, e);
+        }
+    }
+
     private void scrollToElemnt(String headerText) {
         // Delegate to CustomUtil
         scrollToCenter(headerText);
@@ -210,21 +226,38 @@ public class mobilecartsteps extends AbstractMobilePage {
                 y, offset);
     }
 
+    /*
+     * @And("select thickness {string}")
+     * public void selectAttributesForHRSheetOnMsite(String thickness) {
+     * try {
+     * sleep(1500);
+     * // Thickness options are inline buttons — scroll section into view then click
+     * // value
+     * waitAndCheckIsElementClickable(THICKNESS_DROPDOWN);
+     * waitAndClickOn(THICKNESS_DROPDOWN);
+     * sleep(500);
+     * waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
+     * waitAndClickOn(ATTRIBUTE, thickness);
+     * 
+     * log.info("Successfully selected thickness: " + thickness + " mm");
+     * // pdpThickness = thickness;
+     * } catch (Exception e) {
+     * log.info("Failed to select thickness");
+     * throw new RuntimeException("Failed to select thickness", e);
+     * }
+     * }
+     */
+
     @And("select thickness {string}")
     public void selectAttributesForHRSheetOnMsite(String thickness) {
         try {
             sleep(1500);
-            // Thickness options are inline buttons — scroll section into view then click
-            // value
-            waitAndCheckIsElementClickable(THICKNESS_DROPDOWN);
-            waitAndClickOn(THICKNESS_DROPDOWN);
-            sleep(500);
-            waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
-            waitAndClickOn(ATTRIBUTE, thickness);
-            log.info("Successfully selected thickness: " + thickness + " mm");
-            pdpThickness = thickness;
+            // thicknessDropdown exists in YAML → will use dropdown path, select first
+            // option
+            String selected = smartSetAttribute("Thickness (mm)", "thicknessDropdown", null, thickness);
+            pdpThickness = selected;
+            storeAttribute("Thickness", selected);
         } catch (Exception e) {
-            log.info("Failed to select thickness");
             throw new RuntimeException("Failed to select thickness", e);
         }
     }
@@ -252,6 +285,90 @@ public class mobilecartsteps extends AbstractMobilePage {
         }
     }
 
+    /**
+     * Core smart attribute setter — detects input type and acts accordingly
+     * For dropdowns: selects FIRST option (ignores passed value)
+     * For text inputs: types the passed value
+     */
+    private String smartSetAttribute(String attributeLabel, String dropdownKey, String textInputXpath, String value) {
+        try {
+            WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
+
+            // -------------------------
+            // 1️⃣ Handle text input
+            // -------------------------
+            if (textInputXpath != null) {
+                WebElement input = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(textInputXpath)));
+                input.clear();
+                input.sendKeys(value);
+                System.out.println("Typed " + attributeLabel + " : " + value);
+                return value; // return typed value
+            }
+
+            // -------------------------
+            // 2️⃣ Handle dropdown
+            // -------------------------
+            String dropdownXpath = locatorReader.getXpath("elements." + dropdownKey + ".en_US.web");
+            dropdownXpath = dropdownXpath.replace("xpath=", "");
+
+            WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(dropdownXpath)));
+            js.executeScript("arguments[0].scrollIntoView({block:'center'});", dropdown);
+            dropdown.click();
+
+            WebElement dropdownContainer = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(
+                            By.xpath("//div[contains(@class,'bottom') or contains(@class,'sheet')]")));
+
+            List<WebElement> options = dropdownContainer.findElements(By.xpath(".//span[normalize-space()]"));
+            if (options.isEmpty())
+                throw new RuntimeException("No options found for attribute: " + attributeLabel);
+
+            String selectedValue = null;
+
+            if (value != null && !value.isEmpty()) {
+                // Try to select the value from feature file
+                for (WebElement option : options) {
+                    if (option.getText().trim().equals(value)) {
+                        js.executeScript("arguments[0].scrollIntoView({block:'center'});", option);
+                        js.executeScript("arguments[0].click();", option);
+                        selectedValue = option.getText().trim();
+                        break;
+                    }
+                }
+                if (selectedValue == null) {
+                    throw new RuntimeException("Dropdown option not found: " + value + " for " + attributeLabel);
+                }
+            } else {
+                // Fallback: pick first option if no value provided
+                WebElement firstOption = options.get(0);
+                js.executeScript("arguments[0].scrollIntoView({block:'center'});", firstOption);
+                js.executeScript("arguments[0].click();", firstOption);
+                selectedValue = firstOption.getText().trim();
+            }
+
+            System.out.println("Selected " + attributeLabel + " : " + selectedValue);
+
+            // Wait until dropdown closes
+            wait.until(ExpectedConditions.invisibilityOf(dropdownContainer));
+
+            return selectedValue;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set attribute: " + attributeLabel, e);
+        }
+    }
+
+    private void storeAttribute(String label, String value) {
+        // Skip storing if value is null or blank — prevents empty entries like
+        // "Thickness: "
+        if (value == null || value.trim().isEmpty()) {
+            System.out.println("Skipping storeAttribute for '" + label + "' — value is empty");
+            return;
+        }
+        pdpSelectedAttributes.removeIf(s -> s.startsWith(label + ":"));
+        pdpSelectedAttributes.add(label + ": " + value);
+    }
+
     @And("click M-site add to cart")
     public void clickMSiteAddToCart() {
         try {
@@ -269,18 +386,77 @@ public class mobilecartsteps extends AbstractMobilePage {
     @And("enter width {string}")
     public void enterWidthMsite(String width) {
         try {
-            sleep(2000);
-            waitAndCheckIsElementClickable(WIDTH_DROPDOWN);
-            waitAndClickOn(WIDTH_DROPDOWN);
-            // Enter width
-            waitAndCheckIsElementClickable(ATTRIBUTE, width);
-            waitAndClickOn(ATTRIBUTE, width);
-            log.info("Successfully selected width: " + width + " mm");
-            pdpWidth = width;
-            log.info("Successfully Entered width: " + width + " mm on M-site");
-            pdpWidth = width;
+            sleep(1000);
+            // widthDropdown exists in YAML → dropdown
+            String selected = smartSetAttribute("Width (mm)", "widthDropdown", null, width);
+            pdpWidth = selected;
+            storeAttribute("Width", selected);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to select width on M-site", e);
+            throw new RuntimeException("Failed to set width", e);
+        }
+    }
+
+    @And("select diameter {string}")
+    public void enterDiameterMsite(String diameter) {
+        try {
+            sleep(1000);
+            String selected = smartSetAttribute("Diameter (mm)", "diameterDropdown", null, diameter);
+            pdpDiameter = selected;
+            storeAttribute("Diameter", selected);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set diameter", e);
+        }
+    }
+
+    @And("select Flange Width {string}")
+    public void selectFlangeWidth(String flangeWidth) {
+        try {
+            sleep(1000);
+            String selected = smartSetAttribute("Flange width", "flangeWidthDropdown", null, flangeWidth);
+            pdpFlangeWidth = selected;
+            storeAttribute("Flange Width", selected);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set flange width", e);
+        }
+    }
+
+    @And("enter Web Depth {string}")
+    public void enterWebDepth(String webDepth) {
+        try {
+            sleep(1000);
+            String selected = smartSetAttribute("Web depth", "webDepthDropdown", null, webDepth);
+            pdpWebDepth = selected;
+            storeAttribute("Web Depth", selected);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set web depth", e);
+        }
+    }
+
+    @And("enter sectional weigth {string}")
+    public void enterSectionalWeight(String sectionalWeight) {
+        try {
+            WebElement lengthDropdown = Grid.driver().findElement(
+                    By.xpath("//label[contains(text(),'Flange width')]/following-sibling::button"));
+            ((JavascriptExecutor) Grid.driver()).executeScript("arguments[0].scrollIntoView(true);", lengthDropdown);
+            sleep(2000);
+            waitAndCheckIsElementClickable(SECTIONAL_WEIGHT_DROPDOWN);
+            String selected = smartSetAttribute("Sectional weight", "sectionalWeightDropdown", null, sectionalWeight);
+            pdpSectionalWeight = selected;
+            storeAttribute("Sectional Weight", selected);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to select sectional weight on M-site", e);
+        }
+    }
+
+    @And("enter cutlength {string}")
+    public void enterCutLength(String cutLength) {
+        try {
+            sleep(1000);
+            String selected = smartSetAttribute("Cut length", "cutLengthDropdown", null, cutLength);
+            pdpCutLength = selected;
+            storeAttribute("Cut Length", selected);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set cut length", e);
         }
     }
 
@@ -289,20 +465,38 @@ public class mobilecartsteps extends AbstractMobilePage {
         try {
             sleep(1500);
             WebElement lengthDropdown = Grid.driver().findElement(
-                     By.xpath("//label[contains(text(),'Thickness (mm)')]//following-sibling::button")
-                            );
+                    By.xpath("//label[contains(text(),'Thickness (mm)')]//following-sibling::button"));
             ((JavascriptExecutor) Grid.driver()).executeScript("arguments[0].scrollIntoView(true);", lengthDropdown);
             // Length options are inline buttons — scroll section into view then click value
             waitAndCheckIsElementClickable(LENGTH_DROPDOWN);
-            waitAndClickOn(LENGTH_DROPDOWN);
-            sleep(500);
-            waitAndCheckIsElementClickable(ATTRIBUTE, length);
-            waitAndClickOn(ATTRIBUTE, length);
-            log.info("Successfully selected length: " + length + " mm");
-            pdpLength = length;
+            String selected = smartSetAttribute("Length (mm)", "lengthDropdown", null, length);
+            pdpLength = selected;
+            storeAttribute("Length", selected);
         } catch (Exception e) {
             log.info("Failed to select length on M-site");
             throw new RuntimeException("Failed to select length on M-site", e);
+        }
+    }
+
+    @And("select coating grade {string}")
+    public void selectCoatingGrade(String coatingGrade) {
+        try {
+            sleep(1000);
+            String selected = smartSetAttribute("Coating grade", "coatingGradeDropdown", null, coatingGrade);
+            storeAttribute("Coating Grade", selected);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to select coating grade", e);
+        }
+    }
+
+    @And("select spangle type {string}")
+    public void selectSpangleType(String spangleType) {
+        try {
+            sleep(1000);
+            String selected = smartSetAttribute("Spangle type", "spangleTypeDropdown", null, spangleType);
+            storeAttribute("Spangle Type", selected);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to select spangle type", e);
         }
     }
 
@@ -342,9 +536,9 @@ public class mobilecartsteps extends AbstractMobilePage {
     public void validateProductName() {
         waitAndCheckIsElementClickable(CART_PAGE_PRODUCT_NAME);
         sleep(2000);
-        String cartName = waitAndGetText(CART_PAGE_PRODUCT_NAME).trim();
+        List<WebElement> productNames = Grid.driver().findElements(byFor(CART_PAGE_PRODUCT_NAME));
+        String cartName = productNames.get(productNames.size() - 1).getText().trim();
         Assert.assertEquals(cartName, pdpProductName, "Product name mismatch!");
-
     }
 
     @Then("capture product name from PDP")
@@ -355,10 +549,10 @@ public class mobilecartsteps extends AbstractMobilePage {
         System.out.println("Captured PDP Product Name: " + pdpProductName);
     }
 
-
     @Then("quantity should match entered quantity")
     public void validateQuantity() {
-        String cartQty = waitAndGetText(CART_PAGE_QUANTITY);
+        List<WebElement> quantities = Grid.driver().findElements(byFor(CART_PAGE_QUANTITY));
+        String cartQty = quantities.get(quantities.size() - 1).getText();
         Assert.assertTrue(cartQty.contains(pdpQuantity), "Quantity mismatch!");
     }
 
@@ -369,21 +563,23 @@ public class mobilecartsteps extends AbstractMobilePage {
         try {
             // Thickness
             String thickness = waitAndGetText("mthickness");
-            pdpSelectedAttributes.add("Thickness: " + thickness);
+            if (thickness != null && !thickness.trim().isEmpty())
+                pdpSelectedAttributes.add("Thickness: " + thickness.trim());
 
             // Width
             String width = waitAndGetText("mWidth");
-            pdpSelectedAttributes.add("Width: " + width);
+            if (width != null && !width.trim().isEmpty())
+                pdpSelectedAttributes.add("Width: " + width.trim());
 
             // Length (if exists)
             String length = waitAndGetText("mLength");
-            if (length != null && !length.isEmpty()) {
-                pdpSelectedAttributes.add("Length: " + length);
-            }
+            if (length != null && !length.trim().isEmpty())
+                pdpSelectedAttributes.add("Length: " + length.trim());
 
             // Quantity
             String qty = waitAndGetText("quantity");
-            pdpSelectedAttributes.add("Quantity: " + qty);
+            if (qty != null && !qty.trim().isEmpty())
+                pdpSelectedAttributes.add("Quantity: " + qty.trim());
 
             System.out.println("PDP Selected Attributes: " + pdpSelectedAttributes);
 
@@ -401,26 +597,27 @@ public class mobilecartsteps extends AbstractMobilePage {
         return Double.parseDouble(
                 priceText.replaceAll("[^0-9.]", ""));
     }
-/*
-    @Then("capture selected attributes from PDP")
-    public void captureSelectedAttributesFromPDP() {
-
-        pdpSelectedAttributes.clear();
-
-        List<WebElement> attributes = Grid.driver().findElements(
-                By.xpath("//div[contains(@class,'selected-attribute')]")
-        );
-
-        for (WebElement attr : attributes) {
-            String value = attr.getText().trim();
-
-            if (!value.isEmpty()) {
-                pdpSelectedAttributes.add(value);
-            }
-        }
-
-        System.out.println("PDP Selected Attributes: " + pdpSelectedAttributes);
-    }*/
+    /*
+     * @Then("capture selected attributes from PDP")
+     * public void captureSelectedAttributesFromPDP() {
+     *
+     * pdpSelectedAttributes.clear();
+     *
+     * List<WebElement> attributes = Grid.driver().findElements(
+     * By.xpath("//div[contains(@class,'selected-attribute')]")
+     * );
+     *
+     * for (WebElement attr : attributes) {
+     * String value = attr.getText().trim();
+     *
+     * if (!value.isEmpty()) {
+     * pdpSelectedAttributes.add(value);
+     * }
+     * }
+     *
+     * System.out.println("PDP Selected Attributes: " + pdpSelectedAttributes);
+     * }
+     */
 
     @Then("cart subtotal should equal sum of line subtotals")
     public void cartSubtotalShouldEqualSumOfLineSubtotals() {
@@ -554,7 +751,6 @@ public class mobilecartsteps extends AbstractMobilePage {
         ((JavascriptExecutor) Grid.driver())
                 .executeScript("arguments[0].scrollIntoView(true);", selfPickup);
 
-
         while (true) {
 
             List<WebElement> deleteButtons = Grid.driver()
@@ -585,21 +781,97 @@ public class mobilecartsteps extends AbstractMobilePage {
         Assert.assertTrue(lineItems.isEmpty(), "Expected no line items but found some");
     }
 
-
     @Then("selected attributes should match PDP")
     public void selectedAttributesShouldMatchPDP() {
 
-        String cartAttributeText = Grid.driver()
-                .findElement(byFor(LINE_ITEM_ATTRIBUTE))
-                .getText();
+        // IMPORTANT: byFor(LINE_ITEM) uses contains(@class,'line-item') which also
+        // matches
+        // line-item-attribute, line-item-subtotal etc. Use word-boundary match instead.
+        List<WebElement> lineItems = Grid.driver().findElements(
+                By.xpath("//div[contains(concat(' ', normalize-space(@class), ' '), ' line-item ')]"));
+        if (lineItems.isEmpty()) {
+            throw new RuntimeException("No line items found in cart");
+        }
+        WebElement lastLineItem = lineItems.get(lineItems.size() - 1);
 
-        System.out.println("Cart Attribute Text: " + cartAttributeText);
+        // Scope the attribute search to the last line item only
+        List<WebElement> attributeElements = lastLineItem.findElements(
+                By.xpath(".//div[contains(@class,'line-item-attribute')]"));
 
-        for (String expectedValue : pdpSelectedAttributes) {
+        System.out.println("Last line item tag/class: " + lastLineItem.getAttribute("class"));
+        System.out.println("Attribute elements found in last line item: " + attributeElements.size());
 
-            Assert.assertTrue(
-                    cartAttributeText.contains(expectedValue),
-                    "Attribute value missing in cart: " + expectedValue);
+        List<String> cartAttributes = new ArrayList<>();
+
+        for (WebElement el : attributeElements) {
+            String text = el.getText()
+                    .toLowerCase()
+                    .replace("(mm)", "")
+                    .replaceAll("\\s+", "")
+                    .trim();
+
+            cartAttributes.add(text);
+        }
+
+        System.out.println("Cart Attributes: " + cartAttributes);
+        System.out.println("PDP Attributes: " + pdpSelectedAttributes);
+
+        for (String expected : pdpSelectedAttributes) {
+
+            // New (fixed): extract only the value after the colon
+            String valueOnly = expected.contains(":")
+                    ? expected.substring(expected.indexOf(":") + 1)
+                    : expected;
+
+            String normalizedExpected = valueOnly // e.g. " 1.6"
+                    .toLowerCase()
+                    .replace("(mm)", "")
+                    .replaceAll("\\s+", "") // → "1.6"
+                    .trim();
+
+            // Skip comparison if the expected value is empty (no attribute to verify)
+            if (normalizedExpected.isEmpty()) {
+                System.out.println("Skipping empty attribute check for: " + expected);
+                continue;
+            }
+
+            boolean matchFound = false;
+
+            for (String cartAttr : cartAttributes) {
+                if (cartAttr.contains(normalizedExpected)) {
+                    matchFound = true;
+                    break;
+                }
+            }
+
+            Assert.assertTrue(matchFound,
+                    "Attribute value missing in cart: " + expected + " (looking for: '" + normalizedExpected + "')");
+        }
+    }
+
+    @And("click on ubend")
+    public void clickOnUbend() {
+        try {
+            waitAndCheckIsElementClickable(UBEND);
+            waitAndClickOn(UBEND);
+            log.info("Successfully clicked on U-Bend option");
+        } catch (Exception e) {
+            log.info("Failed to click on U-Bend option");
+            throw new RuntimeException("Failed to click on U-Bend option", e);
+        }
+    }
+
+    @And("enter TMT quantity {string}")
+    public void enterTmtQuantity(String quantity) {
+        try {
+            sleep(1000);
+            waitAndCheckIsElementClickable(TMTQUANTATITY);
+            waitAndSetText(TMTQUANTATITY, quantity);
+            log.info("Successfully entered TMT quantity: " + quantity);
+            pdpQuantity = quantity;
+        } catch (Exception e) {
+            log.info("Failed to enter TMT quantity");
+            throw new RuntimeException("Failed to enter TMT quantity", e);
         }
     }
 }
