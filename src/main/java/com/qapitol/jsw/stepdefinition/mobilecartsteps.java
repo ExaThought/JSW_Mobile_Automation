@@ -300,7 +300,7 @@ public class mobilecartsteps extends AbstractMobilePage {
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
 
             // -------------------------
-            // 1️ Handle text input
+            //  Handle text input
             // -------------------------
             if (textInputXpath != null) {
                 WebElement input = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(textInputXpath)));
@@ -311,7 +311,7 @@ public class mobilecartsteps extends AbstractMobilePage {
             }
 
             // -------------------------
-            // 2️ Handle dropdown
+            //  Handle dropdown
             // -------------------------
             String dropdownXpath = locatorReader.getXpath("elements." + dropdownKey + ".en_US.web");
             dropdownXpath = dropdownXpath.replace("xpath=", "");
