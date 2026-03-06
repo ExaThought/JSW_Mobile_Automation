@@ -370,6 +370,30 @@ elements:
     en_US:
       web: xpath=//input[@data-slot='input']
 
+  categoryTitleH3:
+    en_US:
+      web: xpath=//h3[contains(normalize-space(),'%s')]
+
+  categoryTitleP:
+    en_US:
+      web: xpath=//p[normalize-space()='%s']
+
+  bottomSheetContainer:
+    en_US:
+      web: xpath=//div[contains(@class,'bottom') or contains(@class,'sheet')]
+
+  bottomSheetOptions:
+    en_US:
+      web: xpath=.//span[normalize-space()]
+
+  lineItemWordBoundary:
+    en_US:
+      web: xpath=//div[contains(concat(' ', normalize-space(@class), ' '), ' line-item ')]
+
+  lineItemAttributeWordBoundary:
+    en_US:
+      web: xpath=.//div[contains(@class,'line-item-attribute')]
+
   ubend:
     en_US:
       web: xpath=//img[contains(@src,'U_c05acdd85b')]
