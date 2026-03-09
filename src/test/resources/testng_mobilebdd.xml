@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite verbose="1" name="Jsw automation" data-provider-thread-count="1" annotations="JDK">
+    <parameter name="data.env" value="qa"/>
+    <parameter name="data.testId" value="testCaseId"/>
+    <parameter name="api.retry
+  .count" value="3"/>
+    <parameter name="enableSessionsKeepAlive" value="true"/>
+    <test name="Jsw application">
+        <parameter name="sessions" value="sessions_mobile.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
+        <parameter name="cucumber.filter.tags" value="@regression"/>
+        <parameter name="cucumber.publish.quiet" value="true"/>
+        <parameter name="executionTimeout" value="10000"/>
+        <parameter name="cucumber.plugin"
+                   value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
+        <parameter name="selfHeal" value="true"/>
+        <parameter name="selfHeal.recovery.tries" value="2"/>
+        <parameter name="selfHeal.score.cap" value="0.7"/>
+        <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
+        <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
+</suite>

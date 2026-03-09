@@ -1,0 +1,16 @@
+elements:
+  fromOurCustomerssection:
+    en_US:
+      web: //h2[contains(normalize-space(.), 'From our customers')]
+  fromOurCustomerssectionContent:
+    en_US:
+      web: "(//h2[contains(normalize-space(.), 'From our customers')]/following::img[contains(@alt, 'Carousel slide')])[1]"
+  ImagecarouselContent:
+    en_US:
+      web: //h2[contains(normalize-space(.), 'From our customers')]/following::div[@role='group']//img[contains(@alt,'Carousel slide')]
+  msmeMasterclasssection:
+    en_US:
+      web: //h2[contains(normalize-space(.), 'MSME Masterclass')]
+  msmeMasterclassCarousal:
+    en_US:
+      web: //div[@role='region' and @aria-roledescription='carousel']//img[@alt='Video thumbnail'][1]

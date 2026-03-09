@@ -1,0 +1,95 @@
+pageTitle: {}
+
+elements:
+
+  # ================= USER MENU =================
+
+  ccpUserMenuTestacco:
+    en_US:
+      web: //span[contains(normalize-space(),'Testauto')]
+
+  ccpUserMenuProfileOption:
+    en_US:
+      web: //a[contains(@class,'user-dropdown-item') and normalize-space()='Profile']
+
+  # ================= PROFILE TABS =================
+
+  ccpProfileAddressesTab:
+    en_US:
+      web: //a[@role='tab' and normalize-space()='Addresses']
+
+  ccpProfileAddressesTabActive:
+    en_US:
+      web: //a[@role='tab' and contains(@class,'active') and normalize-space()='Addresses']
+
+  # ================= ADD ADDRESS FORM =================
+
+  ccpAddAddressButton:
+    en_US:
+      web: //button[contains(normalize-space(),'+ Add address')]
+
+  ccpAddressCompanyNameInput:
+    en_US:
+      web: //input[@id='company']
+
+  ccpAddressLine1Input:
+    en_US:
+      web: //span[contains(normalize-space(),'Address line 1')]
+        /ancestor::div[contains(@class,'field-wrapper')]//input
+
+  ccpAddressPinCodeInput:
+    en_US:
+      web: //span[contains(normalize-space(),'Pin code')]
+        /ancestor::div[contains(@class,'field-wrapper')]//input
+
+  ccpAddressCityInput:
+    en_US:
+      web: //span[contains(normalize-space(),'City')]
+        /ancestor::div[contains(@class,'field-wrapper')]//input
+
+  ccpAddressSaveChangesButton:
+    en_US:
+      web: xpath=(//button[@id='save-change' and normalize-space()='Save changes'])[2]
+
+  # ================= SAVED ADDRESS VALIDATION (Dynamic) =================
+
+  ccpSavedAddressCompanyNameDynamic:
+    en_US:
+      web: //div[contains(@class,'display-company-name')
+        and normalize-space()='${companyName}']
+
+  # ================= EDIT ADDRESS =================
+
+  ccpEditButtonForSavedAddress:
+    en_US:
+      web: //div[contains(@class,'display-company-name')
+        and normalize-space()='${companyName}']
+        /ancestor::div[contains(@class,'address-list-item')]
+        //div[normalize-space()='Edit']
+
+  # ================= DELETE ADDRESS =================
+
+  ccpDeleteButtonForSavedAddress:
+    en_US:
+      web: //div[contains(@class,'display-company-name')
+        and normalize-space()='${companyName}']
+        /ancestor::div[contains(@class,'address')]
+        //img[contains(@class,'delete-icon')]
+
+  # ================= DELETE CONFIRM MODAL =================
+
+  ccpDeleteAddressProceedButton:
+    en_US:
+      web: //button[normalize-space()='Proceed'
+        and contains(@class,'primary-outline-btn')]
+
+  ccpDeleteAddressCancelButton:
+    en_US:
+      web: //button[normalize-space()='Cancel'
+        and contains(@class,'primary-btn')]
+
+  # ================= ERROR MESSAGE =================
+
+  ccpCompanyNameErrorMessage:
+    en_US:
+      web: //div[normalize-space()='Please enter company name']

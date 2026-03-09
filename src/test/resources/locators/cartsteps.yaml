@@ -20,6 +20,9 @@ elements:
   deleteLineItem:
     en_US:
       web: xpath=(//div[contains(text(),'Delete')])[1]
+  editLineItem:
+    en_US:
+      web: xpath=(//div[contains(text(),'Edit')])[1]
   deleteCta:
     en_US:
       web: xpath=//span[contains(text(),'Delete')]
@@ -58,19 +61,22 @@ elements:
       web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
   mildSteel:
     en_US:
-      web: xpath=//a[contains(text(),'Mild Steel')]
+      web: xpath=(//a[contains(., 'Mild Steel')])[1]
   colourCoated:
     en_US:
       web: xpath=(//a[contains(text(),'Colour coated')])[2]
+  coatedSteel:
+    en_US:
+      web: xpath=(//a[contains(text(),'Coated Steel')])[2]
   colourCoatedPdp:
     en_US:
-      web: xpath=(//div[@class='card-title'])[1]
+      web: xpath=(//a[contains(text(),'Sheets')])[1]
   width(mm):
     en_US:
       web: xpath=(//div[contains(text(),"Width (mm)")]//parent::div//following-sibling::div//child::div//child::button)[{0}]
   coatingGrade:
     en_US:
-      web: xpath=(//div[contains(text(),'Coating grade - AZ (GSM)')]//parent::div//following-sibling::div//child::div//child::button)[1]
+      web: xpath=(//div[contains(text(),"Coating grade - AZ (GSM)")]//parent::div//following-sibling::div//child::div//child::button)[{0}]
   rcCheckoutSuccessPage:
     en_US:
       web: xpath=//div[@class='rc-subimitted h-100 d-flex justify-content-center align-items-center flex-column']//following-sibling::div[contains(text(),'submitted')]
@@ -79,13 +85,93 @@ elements:
       web: xpath=//a[@class='cart']
   plpFirstProduct:
     en_US:
-      web: xpath= (//span[contains(text(),'Brand:')])[1]
+      web: xpath= (//span[contains(text(),"Brand:")])[{0}]
+  attributeValue:
+    en_US:
+      web: xpath=//button[normalize-space()="{0}"]
   thickness:
     en_US:
       web: xpath=//div[contains(text(),"Thickness (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
   length:
     en_US:
       web: xpath=//div[contains(text(),"Length (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
-
+  diameter:
+    en_US:
+      web: xpath=//div[contains(text(),"Diameter (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  tmt:
+    en_US:
+      web: xpath=//a[contains(text(),'TMT')]//parent::div[@class='nav-active-link-jsw']
+  form:
+    en_US:
+      web: xpath=//div[contains(text(),"Form")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  legLength:
+    en_US:
+      web: xpath=//div[contains(text(),"Leg length (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  flangeWidth:
+    en_US:
+      web: xpath=//div[contains(text(),"Flange width (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  webDepth:
+    en_US:
+      web: xpath=//div[contains(text(),"Web depth (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  sectionalWeight:
+    en_US:
+      web: xpath=//div[contains(text(),"Sectional weight (kg/m)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+  editQuantity:
+    en_US:
+      web: xpath=//div[contains(text(),'Enter quantity')]/following-sibling::div/child::input
+  editSave:
+    en_US:
+      web: xpath=//span[contains(text(),'Done')]
+  editWidthDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Width (mm)')]/following-sibling::input
+  editThicknessDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Thickness (mm)')]/following-sibling::input
+  editLengthDropdown:
+    en_US:
+      web: xpath=//div[contains(text(),'Length (mm)')]/following-sibling::input
+  editWidth:
+    en_US:
+      web: xpath=//div[contains(text(),"Width (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  editThickness:
+    en_US:
+      web: xpath=//div[contains(text(),"Thickness (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  editLength:
+    en_US:
+      web: xpath=//div[contains(text(),"Length (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+  pdpProductName:
+    en_US:
+      web: xpath=(//span[contains(text(),'Brand:')]/parent::div/parent::div/child::h1)[2]
+  galvanizedSheet:
+    en_US:
+      web: xpath=(//a[contains(text(),'Galvanized sheets')])
+  updateAttribute:
+    en_US:
+      web: xpath=//div[@class='card-body']/child::div[contains(text(),"{0}")]
+  cartPageAttributeValue:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[1]
+  cartPageSpangleTypeValue:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[2]
+  cartPageCoatingGradeValue:
+    en_US:
+      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[3]
+  editCartPageEnterQuantity:
+    en_US:
+      web: xpath=//div[contains(text(),'Enter quantity')]
+  cartPageProductName:
+    en_US:
+      web: xpath=//div[contains(text(),"{0}")]
+  cartPageQuantity:
+    en_US:
+      web: xpath=//div[contains(text(),'Qty:')]
+  editDiameterDropdown:
+    en_US:
+      web: xpath=//div[normalize-space()='Diameter (mm)']/following-sibling::input
+  editFormDropdown:
+    en_US:
+      web: xpath=//div[normalize-space()='Form']/following-sibling::input
 
 

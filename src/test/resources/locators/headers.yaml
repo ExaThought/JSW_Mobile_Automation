@@ -1,0 +1,7 @@
+elements:
+  loginButton:
+    en_US:
+      web: //button[@id='login-cta']
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']

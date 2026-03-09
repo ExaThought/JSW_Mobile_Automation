@@ -2,7 +2,9 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.CcpErpSyncImpl;
 import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
+import com.qapitol.jsw.pageFactory.CategoryPages;
 import com.qapitol.jsw.utils.ConfigUtil;
+import com.qapitol.jsw.utils.CustomUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.When;
@@ -42,32 +44,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         String orderType="CT_SLC_SLO_CASH_AND_CARRY";
         ctSlcSloCreation.getSlcSloResponse(orderType);
     }
-    @And("login to ccp and create an order {string} and {string}")
-    public void login_to_ccp_and_create_an_order(String userName, String password){
 
-        this.userName=userName;
-        this.password=password;
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        Grid.driver().manage().window().maximize();
-        // click on login CTA button
-        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        waitAndClickOn(LOGIN_CTA_BUTTON);
-        //Click on Login with OTP
-        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP);
-        // Give Email
-        waitAndCheckIsElementVisible(LOGIN_EMAIL);
-        waitAndSetText(LOGIN_EMAIL, userName);
-        // Click on continue button
-        waitAndCheckIsElementVisible(CONTINUE_BUTTON);
-        waitAndClickOn(CONTINUE_BUTTON);
-        // Give password
-        waitAndCheckIsElementVisible(LOGIN_PASSWORD);
-        waitAndSetText(LOGIN_PASSWORD, password);
-        // Login
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);
-    }
     @And("open the cart page and create order")
     public void open_the_cart_page_and_create_order(){
         //open cart page

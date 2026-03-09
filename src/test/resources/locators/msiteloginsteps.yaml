@@ -1,0 +1,54 @@
+elements:
+  loginButton:
+    en_US:
+      web: xpath=//button[contains(text(),'Login')]
+  loginIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'cursor-pointer')]//div[contains(@class,'rounded-full')][1]
+  loginNowButton:
+    en_US:
+      web: xpath=//button[normalize-space()='Login now']
+  emailTextBox:
+    en_US:
+      web: xpath=//div[@class='field-placeholder typography-h6 typography-font-regular']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: xpath=//input[@id='password']
+
+
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  emailTab:
+    en_US:
+      web: xpath=//button[contains(text(),'Email')]
+
+  emailInput:
+      en_US:
+        web: xpath=//input[@type='email']
+
+  continueButton:
+      en_US:
+        web: xpath=//button[@id='login-to-continue']
+
+  profileIcon:
+      en_US:
+        web: xpath=//p[normalize-space()='Account']
+
+  loginToContinue:
+      en_US:
+        web: xpath=//button[@id='login-to-continue']
+
+  errorMessage:
+    en_US:
+      web: xpath=//div[contains(text(),'Credentials are not valid. Please try again')]
+
+  invalidEmailErrorMessage:
+    en_US:
+      web: xpath=//div[contains(text(),'You have entered a wrong email address')]
+
+
+

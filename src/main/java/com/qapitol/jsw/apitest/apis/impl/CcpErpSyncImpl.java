@@ -17,7 +17,7 @@ public class CcpErpSyncImpl extends BaseApiImpl {
         //Set OrderNumber
         requestBody.setOrderNumber(orderNumber);
 
-        RequestApi requestApi = getZohoOMSApiClientFactory().create(RequestApi.class);
+        RequestApi requestApi = getOmsUrl().create(RequestApi.class);
        OrderConfirmationRes response= requestApi.orderConfirmRequest(requestBody);
         if (response == null || Objects.isNull(response.getCurrentState())) {
             throw new IllegalStateException("Order confirmation response is invalid for order: " + orderNumber);

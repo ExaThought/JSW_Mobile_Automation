@@ -1,0 +1,52 @@
+elements:
+
+  registrationForm:
+    en_US:
+      web: "//form[contains(@class,'registration')]"
+
+  fullNameInput:
+    en_US:
+      web: //input[@id='fullName']
+
+  loginButton:
+    en_US:
+      web: xpath=//button[contains(text(),'Login')]
+
+  loginIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'cursor-pointer')]//div[contains(@class,'rounded-full')][1]
+
+  loginNowButton:
+    en_US:
+      web: xpath=//button[normalize-space()='Login now']
+  emailTextBox:
+    en_US:
+      web: xpath=//div[@class='field-placeholder typography-h6 typography-font-regular']
+
+  mobileInput:
+    en_US:
+      web: //input[@id='mobile']
+
+  gstInput:
+    en_US:
+      web: //input[@id='gstin']
+
+  termsCheckbox:
+    en_US:
+      web: //input[@id='terms' and @type='checkbox']
+
+  nextButton:
+    en_US:
+      web: //button[@id='register-next']
+
+  invalidEmailError:
+    en_US:
+      web: //div[contains(@class,'typography-text-error-red')]//div[contains(normalize-space(),'wrong email')]
+
+  phoneError:
+    en_US:
+      web: //div[contains(text(),'Please enter correct phone number')]
+
+  gstError:
+    en_US:
+      web: //div[contains(text(),'Enter valid gstin number')]
