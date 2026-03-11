@@ -363,6 +363,8 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to enter quantity for hot rolled sheet", e);
         }
 
+        sleep(5000);
+
     }
 
     @And("add to cart")
