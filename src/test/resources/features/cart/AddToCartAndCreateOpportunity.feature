@@ -17,8 +17,8 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Sheet product
-    And open HR Sheet plp "3" product
-    And select thickness "3" width "1250" length "2500" quantity "50" for HR Sheet
+    And open HR Sheet plp "1" product
+    And select thickness "2.5" width "1500" length "2500" quantity "50" for HR Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page
@@ -76,7 +76,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And click to Coated steel category
     And click on Coated steel sheet product
     And open Coated steel sheet pdp "1" product
-    And select thickness "2" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
+    And select thickness "3" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for Coated Steel Sheet in cart page
@@ -96,7 +96,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
   @TMT
   Scenario: Verify TMT product add to cart
     When click on TMT product
-    And click on TMT plp "3" product
+    And click on TMT plp "1" product
     And select diameter "10" form "Straight" quantity "50" for TMT
     And add to cart
     And click view cart

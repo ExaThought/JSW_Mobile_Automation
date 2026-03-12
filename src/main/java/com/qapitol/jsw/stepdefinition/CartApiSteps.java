@@ -171,7 +171,7 @@ public class CartApiSteps {
 //        deleteCartResponse=cartRCV2ApiImp.getDeleteCartResponse();
 //        softAssert.assertEquals(deleteCartResponse.getData(),"Cart Deleted Successfully");
 //        log.info("Cart completely deleted successfully");
-        payload="RCV2_DELETE_LINE_ITEM_2";
+//        payload="RCV2_DELETE_LINE_ITEM_2";
         deleteLineItemResponse =cartRCV2ApiImp.getDeleteLineItemResponse(payload,ctLineItemId);
         Assert.assertEquals(deleteLineItemResponse.getStatus(),"OK","Unable to delete cart");
         log.info("Cart completely deleted successfully");
