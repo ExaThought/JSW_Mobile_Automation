@@ -1,4 +1,5 @@
-@home_sections
+@home_sections @msanity
+
 Feature: Validate Home Page Sections
 
   As a mobile user

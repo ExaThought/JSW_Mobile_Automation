@@ -31,8 +31,8 @@ public class msiteloginSteps extends AbstractWebPage {
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
     private static final String CONTINUE_BUTTON = "continueButton";
     private static final String EMAIL_INPUT = "emailInput";
-    private static final String LOGIN_TO_CONTINUE = "loginToContinue";
     private static final String PROFILE_ICON = "profileIcon";
+    private static final String SUCCESSLOGIN = "continueToHome";
     private static final String CCP_LOGIN_ERROR_MESSAGE="errorMessage";
     private static final String CCP_INVALID_EMAIL_ERROR_MESSAGE = "invalidEmailErrorMessage";
 
@@ -49,6 +49,13 @@ public class msiteloginSteps extends AbstractWebPage {
         waitAndClickOn(LOGIN_BUTTON);
     }
 
+    @And("user clicks on login floating button on mobile")
+    public void click_login_floating_button_on_mobile() {
+        waitAndCheckIsElementClickable(10,LOGIN_BUTTON);
+        waitAndCheckIsElementVisible(LOGIN_BUTTON);
+        waitAndClickOn(LOGIN_BUTTON);
+    }
+
     @When("user enters email {string}")
     public void enter_email(String email) {
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
@@ -56,7 +63,7 @@ public class msiteloginSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(EMAIL_INPUT);
         clickUsingActions(locatorReader.getXpath("elements.emailInput.en_US.web"));
 
-       // waitAndCheckIsElementVisible(EMAIL_INPUT);
+        // waitAndCheckIsElementVisible(EMAIL_INPUT);
         waitAndSetText(EMAIL_INPUT, email);
 
     }
@@ -74,16 +81,17 @@ public class msiteloginSteps extends AbstractWebPage {
     }
 
 
-   @When("user submits login")
+    @When("user submits login")
     public void submit_login() {
-       waitAndCheckIsElementVisible(CONTINUE_BUTTON);
-        waitAndClickOn(CONTINUE_BUTTON);
+        waitAndCheckIsElementVisible(SUCCESSLOGIN);
+        waitAndClickOn(SUCCESSLOGIN);
     }
 
     @When("user clicks on proceed to login")
-    public void click_proceed_to_login() {
-        waitAndCheckIsElementVisible(LOGIN_TO_CONTINUE);
-        waitAndClickOn(LOGIN_TO_CONTINUE);
+    public void click_proceed_to_login() throws InterruptedException {
+        Thread.sleep(5000);
+        waitAndCheckIsElementVisible(SUCCESSLOGIN);
+        waitAndClickOn(SUCCESSLOGIN);
     }
 
     @And("user enters password {string}")
