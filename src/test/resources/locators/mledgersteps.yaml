@@ -1,0 +1,273 @@
+elements:
+  paymentReminderCloseBtn:
+    en_US:
+      web: xpath=//button[@aria-label='Close'] | //button[contains(@class,'close')] | //div[@role='dialog']//button[1] | //*[contains(@class,'BottomSheet')]//button
+
+  # ── Bottom Navigation ─────────────────────────────────────────────────────
+  ledgerTab:
+    en_US:
+      web: xpath=//div[contains(@class,'bottom-navbar__link--active') and .//span[normalize-space()='Ledger']]
+
+  homeTab:
+    en_US:
+      web: xpath=//div[contains(@class,'bottom-navbar__link') and .//span[normalize-space()='Home']]
+
+  catalogueTab:
+    en_US:
+      web: xpath=//div[contains(@class,'bottom-navbar__link') and .//span[normalize-space()='Catalogue']]
+
+  cartTab:
+    en_US:
+      web: xpath=//div[contains(@class,'bottom-navbar__link') and .//span[normalize-space()='Cart']]
+
+  orderTab:
+    en_US:
+      web: xpath=//div[contains(@class,'bottom-navbar__link') and .//span[normalize-space()='Order']]
+
+
+  # ── Ledger Page Header / Title ─────────────────────────────────────────────
+  ledgerPageTitle:
+    en_US:
+      web: xpath=//h1[contains(text(),'Ledger')] | //*[contains(@class,'ledger') and contains(@class,'title')]
+
+  # ── Payments Due Now Section ───────────────────────────────────────────────
+  paymentsDueNowSection:
+    en_US:
+      web: xpath=//span[contains(@class, 'mobile-ledger-label') and normalize-space()='Payments due now']
+
+  paymentsDueNowLabel:
+    en_US:
+      web: xpath=//*[contains(text(),'Payments due now')]
+
+  paymentsDueNowAmount:
+    en_US:
+      web: xpath=//*[contains(text(),'Payments due now')]/following-sibling::* | //*[contains(text(),'Payments due now')]/parent::*/following-sibling::*[contains(@class,'amount') or contains(@class,'value')]
+
+  paymentsDueNowArrow:
+    en_US:
+      web: xpath=//*[contains(text(),'Payments due now')]/ancestor::div[1]//*[contains(@class,'arrow') or contains(@class,'chevron') or name()='svg']
+
+  # ── Due Later Section ──────────────────────────────────────────────────────
+  dueLaterSection:
+    en_US:
+      web: xpath=//span[contains(@class,'mobile-ledger-label') and normalize-space()='Due later']
+
+  dueLaterLabel:
+    en_US:
+      web: xpath=//*[contains(text(),'Due later')]
+
+  dueLaterAmount:
+    en_US:
+      web: xpath=//*[contains(text(),'Due later')]/following-sibling::* | //*[contains(text(),'Due later')]/parent::*/following-sibling::*[contains(@class,'amount') or contains(@class,'value')]
+
+  # ── Usable Ledger Balance Section ─────────────────────────────────────────
+  usableLedgerBalanceSection:
+    en_US:
+      web: xpath=//*[contains(@class,'mobile-ledger-label') and normalize-space()='Usable ledger balance']
+
+  usableLedgerBalanceLabel:
+    en_US:
+      web: xpath=//*[contains(@class,'mobile-ledger-label') and normalize-space()='Usable ledger balance']
+
+  usableLedgerBalanceAmount:
+    en_US:
+      web: xpath=//*[contains(text(),'Usable ledger balance')]/following-sibling::* | //*[contains(text(),'Usable ledger balance')]/parent::*/following-sibling::*[contains(@class,'amount') or contains(@class,'value')]
+
+  ledgerStatementTab:
+    en_US:
+      web: xpath=//button[contains(.,'Ledger statement')] | //a[contains(.,'Ledger statement')] | //div[contains(@class,'tab') and contains(.,'Ledger statement')]
+
+  ledgerStatementFrom:
+    en_US:
+      web: xpath=//input[@name='fromDate']
+
+  ledgerStatementTo:
+    en_US:
+      web: xpath=//input[@name='toDate']
+
+  datePickerFrom:
+    en_US:
+      web: xpath=//input[@id='usable-ledger-from-date']
+
+  calendarIconFrom:
+    en_US:
+      web: xpath=(//img[contains(@class,'calendar-icon')] | //*[local-name()='svg' and contains(@class,'calendar')])[1]
+
+  datePickerTo:
+    en_US:
+      web: xpath=//input[@id='usable-ledger-to-date'] | //input[@placeholder='To' or @name='toDate' or contains(@class,'end-date')] | (//*[contains(@class,'date-picker') or contains(@class,'calendar')])[2]
+
+  calendarIconTo:
+    en_US:
+      web: xpath=(//img[contains(@class,'calendar-icon')] | //*[local-name()='svg' and contains(@class,'calendar')])[2]
+
+
+  calendarPrevMonthBtn:
+    en_US:
+      web: xpath=//button[contains(@class,'prev') or contains(@aria-label,'Previous') or @title='Previous month'] | //*[local-name()='svg']/*[local-name()='path' and contains(@d,'M15 19l-7')]//ancestor::button[1] | //*[contains(@class,'calendar')]//button[1]
+
+  calendarDay:
+    en_US:
+      web: xpath=(//*[contains(@class,'calendar') or @role='grid']//span[text()='{0}' or normalize-space()='{0}'] | //*[contains(@class,'calendar') or @role='grid']//div[text()='{0}' or normalize-space()='{0}'])[last()]
+
+
+  downloadStatementBtn:
+    en_US:
+      web: xpath=//button[.//span[normalize-space()='Download']]
+
+  statementDataList:
+    en_US:
+      web: xpath=//*[contains(text(),'Opening')] | //*[contains(text(),'Closing')] | //*[contains(@class,'ledger-record') or contains(@class,'transaction')]
+
+  requestedDocumentsList:
+    en_US:
+      web: xpath=//div[contains(@class,'requested-documents-container')]
+
+  downloadDocumentBtn:
+    en_US:
+      web: xpath=(//div[contains(@class,'documents-cards-container')]//button[contains(@class,'download-btn')])[1]
+
+  documentTypeOption:
+    en_US:
+      web: xpath=//span[contains(@class,'option-text') and normalize-space()='{0}']
+
+  dateRangeOption:
+    en_US:
+      web: xpath=//span[contains(@class,'option-text') and normalize-space()='{0}']
+
+  documentTypeDropdown:
+    en_US:
+      web: xpath=//*[contains(text(),'All Documents')]/parent::* | (//*[contains(@class,'select') or contains(@class,'dropdown')])[1]
+
+  dateTypeDropdown:
+    en_US:
+      web: xpath=(//div[contains(@class,'dropdown-header')])[2]
+
+  requestDocumentsBtn:
+    en_US:
+      web: xpath=//button[contains(.,'Request')] | //*[contains(text(),'Request')]/ancestor::button[1]
+
+  preparingFilesToast:
+    en_US:
+      web: xpath=//*[contains(text(),'Preparing files for download')] | //*[contains(@class,'loader') and contains(text(),'Preparing')]
+
+  downloadSuccessToast:
+    en_US:
+      web: xpath=//*[contains(text(),'File downloaded successfully')] | //*[contains(@class,'toast-message')] | //*[@role='alert']
+
+  errorToast:
+    en_US:
+      web: xpath=//*[contains(text(),'error') or contains(text(),'failed') or contains(text(),'Something went wrong')] | //*[contains(@class,'toast-error')]
+
+  viewDownloadLedgerLink:
+    en_US:
+      web: xpath=//*[contains(text(),'View & download ledger') or contains(text(),'View and download ledger')]
+
+  # ── Other Actions Section ──────────────────────────────────────────────────
+  otherActionsSection:
+    en_US:
+      web: xpath=//*[contains(text(),'Other actions')]/ancestor::div[contains(@class,'section') or contains(@class,'container')][1]
+
+  otherActionsLabel:
+    en_US:
+      web: xpath=//*[contains(text(),'Other actions')]
+
+  paymentInstructionsOption:
+    en_US:
+      web: xpath=//*[contains(text(),'Payment instructions')]
+
+
+  financialDocumentsOption:
+    en_US:
+      web: xpath=//*[contains(text(),'Financial documents')]
+
+  helpAndSupportOption:
+    en_US:
+      web: xpath=//*[contains(text(),'Help & support') or contains(text(),'Help and support')]
+
+  usableCreditLimitSection:
+    en_US:
+      web: xpath=//*[contains(text(),'Usable credit limit')]
+
+  usableCreditLimitLabel:
+    en_US:
+      web: xpath=//*[contains(text(),'Usable credit limit')]
+
+  usableCreditLimitAmount:
+    en_US:
+      web: xpath=//*[contains(text(),'Usable credit limit')]/following-sibling::* | //*[contains(text(),'Usable credit limit')]/parent::*/following-sibling::*[contains(@class,'amount')]
+
+  documentsNotAvailableToast:
+    en_US:
+      web: xpath=//p[contains(@class,'toast-label') and contains(text(),'Documents not available')]
+
+  # ── Flatpickr Calendar ─────────────────────────────────────────────────────
+  flatpickrCalendarOpen:
+    en_US:
+      web: css=.flatpickr-calendar.open
+
+  flatpickrMonthDropdown:
+    en_US:
+      web: css=.flatpickr-calendar.open select.flatpickr-monthDropdown-months
+
+  flatpickrDayByLabel:
+    en_US:
+      web: css=.flatpickr-calendar.open .flatpickr-day[aria-label='{0}']
+
+  flatpickrYearInput:
+    en_US:
+      web: css=.flatpickr-calendar.open input.cur-year
+
+  flatpickrPrevMonthBtn:
+    en_US:
+      web: css=.flatpickr-calendar.open .flatpickr-prev-month
+
+  flatpickrNextMonthBtn:
+    en_US:
+      web: css=.flatpickr-calendar.open .flatpickr-next-month
+
+  flatpickrCurrentMonthDays:
+    en_US:
+      web: css=.flatpickr-calendar.open .flatpickr-day:not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled)
+
+  flatpickrAllMonthSelects:
+    en_US:
+      web: css=select.flatpickr-monthDropdown-months
+
+  fromDateInput:
+    en_US:
+      web: css=input[name='fromDate']
+
+  toDateInput:
+    en_US:
+      web: css=input[name='toDate']
+
+  fromDateInputAll:
+    en_US:
+      web: css=input[name='fromDate'], input[name='fromDateLabel'], #usable-ledger-from-date
+
+  toDateInputAll:
+    en_US:
+      web: css=input[name='toDate'], input[name='toDateLabel'], #usable-ledger-to-date
+
+  # ── Page Load Checks ───────────────────────────────────────────────────────
+  ledgerPageLoadCheck:
+    en_US:
+      web: xpath=//*[contains(text(),'Payments due now') or contains(text(),'Usable ledger balance') or contains(text(),'Due later')]
+
+  paymentInstructionsPageHeader:
+    en_US:
+      web: xpath=//*[contains(text(),'Payment instructions') or contains(text(),'payment-instructions')]
+
+  financialDocsContainer:
+    en_US:
+      web: xpath=//div[contains(@class,'financial-docs-container')] | //h1[contains(text(),'Financial documents')]
+
+  # ── Dynamic Message Locators ────────────────────────────────────────────────
+  toastMessage:
+    en_US:
+      web: xpath=//*[contains(@class,'toast-label') and contains(translate(normalize-space(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'{0}')] | //*[contains(@class,'toast-message') and contains(translate(normalize-space(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'{0}')] | //*[contains(translate(normalize-space(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'{0}')]
+
+  validationMessage:
+    en_US:
+      web: xpath=//*[contains(text(),'{0}')]
