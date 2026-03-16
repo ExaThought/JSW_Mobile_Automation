@@ -55,7 +55,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then Verify the Attribute values for HR Coil in cart page
     Then Delete the line item from cart
 
-  @multiSKUCart
+  @multiSKUCart @test01
   Scenario: Check multi product add to cart and delete one by one from cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
