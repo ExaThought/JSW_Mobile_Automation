@@ -9,9 +9,6 @@ import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.And;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -22,7 +19,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 
-public class ActiveOrderSteps extends AbstractWebPage {
+public class MyOrderPageSteps extends AbstractWebPage {
 
 
     public static final String CART_PAGE = "cartPage";
@@ -32,6 +29,7 @@ public class ActiveOrderSteps extends AbstractWebPage {
     private static final String CANCELLED_ORDER_TAB = "cancelledOrderTab";
     private static final String ALL_ORDER_TAB = "allOrderTab";
     private static final String MY_ORDERS_TAB = "myOrdersTab";
+    private static final String ORDER_CANCELLED_TEXT="cancelOrderText";
 
     SessionSteps sessionSteps=new SessionSteps();
     String ccpOrderNumber;
@@ -83,9 +81,7 @@ public class ActiveOrderSteps extends AbstractWebPage {
 
     @Then("verify payment details present on page after navigation")
     public void verify_order_placed_text_is_present() {
-
         waitAndCheckIsElementVisible("orderPlacedText");
-
         String actualText = waitAndGetText("orderPlacedText");
 
         Assert.assertEquals(actualText.trim(), "Payment details",
@@ -139,6 +135,15 @@ public class ActiveOrderSteps extends AbstractWebPage {
         waitAndClickOn(ALL_ORDER_TAB);
 
         System.out.println("Clicked on All Orders tab");
+    }
+
+    @Then("check order cancelled tag is present for cancelled order")
+    public void check_order_cancelled_tag_is_present_for_cancelled_order() {
+        waitAndCheckIsElementVisible(ORDER_CANCELLED_TEXT);
+        String actualText = waitAndGetText(ORDER_CANCELLED_TEXT);
+        log.info("Cancelled order tag text read from UI");
+        Assert.assertEquals(actualText, "Order cancelled",
+                "Cancelled tag is not present for cancelled order");
     }
 
 

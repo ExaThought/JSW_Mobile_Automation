@@ -6,7 +6,7 @@ elements:
 
   ccpUserMenuTestacco:
     en_US:
-      web: //span[contains(normalize-space(),'Testauto')]
+      web: (//button[@id='drop-down-head'])[1]
 
   ccpUserMenuProfileOption:
     en_US:
@@ -93,3 +93,10 @@ elements:
   ccpCompanyNameErrorMessage:
     en_US:
       web: //div[normalize-space()='Please enter company name']
+
+  pinCodeErrorMessage:
+    en_US:
+      web: xpath=//input[@id='pincode']/parent::div/following-sibling::div/child::div
+  setAsDefaultShippingAddressCheck:
+    en_US:
+      web: xpath=//div[contains(text(),'Default')]/parent::div/parent::div/following-sibling::div

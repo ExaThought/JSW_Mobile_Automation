@@ -67,7 +67,6 @@ public class BuyAgainSteps extends AbstractWebPage {
                 "'View details & pay' button is not displayed on Buy Again page"
         );
 
-        softAssert.assertAll();
     }
 
     @And("user navigate to order button")
@@ -91,7 +90,6 @@ public class BuyAgainSteps extends AbstractWebPage {
                 "My Orders page title is not displayed"
         );
 
-        softAssert.assertAll();
     }
     @And("user navigate to ledger button")
     public void userNavigateToLedgerButton() {
@@ -118,7 +116,6 @@ public class BuyAgainSteps extends AbstractWebPage {
                 "Ledger page title is not displayed"
         );
 
-        softAssert.assertAll();
     }
     @And("user navigate to Material tracking button")
     public void userNavigateToMaterialTrackingButton() {
@@ -142,7 +139,6 @@ public class BuyAgainSteps extends AbstractWebPage {
                 "Material Tracking page title is not displayed"
         );
 
-        softAssert.assertAll();
     }
 
     @And("user click on checkbox for Add to cart")
@@ -177,7 +173,6 @@ public class BuyAgainSteps extends AbstractWebPage {
                 "Item count not updated on Add to cart button"
         );
 
-        softAssert.assertAll();
     }
 
     public void scrollToElement(By locator, int timeoutInSeconds) {

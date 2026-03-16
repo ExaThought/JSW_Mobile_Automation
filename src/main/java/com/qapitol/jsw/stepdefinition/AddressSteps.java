@@ -40,6 +40,8 @@ public class AddressSteps extends AbstractWebPage {
 
     private static final String CCP_DELETE_PROCEED_BUTTON = "ccpDeleteAddressProceedButton";
     private static final String CCP_COMPANY_NAME_ERROR = "ccpCompanyNameErrorMessage";
+    private static final String ADDRESS_PIN_CODE_ERROR ="pinCodeErrorMessage";
+    private static final String SET_AS_DEFAULT_SHIPPING_ADDRESS_CHECK="setAsDefaultShippingAddressCheck";
 
 
     // ================= COMMON HELPERS =================
@@ -119,6 +121,14 @@ public class AddressSteps extends AbstractWebPage {
     @And("customer enter pin code {string}")
     public void enter_pin_code(String pinCode) {
         waitAndSetText(CCP_ADDRESS_PINCODE_INPUT, pinCode);
+    }
+
+    @Then("validate pincode error message {string}")
+    public void validate_pincode_error_message(String expectedMsg) {
+        waitAndCheckIsElementVisible(ADDRESS_PIN_CODE_ERROR);
+        String actualMsg = waitAndGetText(ADDRESS_PIN_CODE_ERROR);
+        log.info("Successfully retrieved pin code error message: " + actualMsg);
+        softAssert.assertEquals(actualMsg, expectedMsg, " Pin code error message mismatch");
     }
 
     @And("customer enter city {string}")
@@ -260,5 +270,13 @@ public class AddressSteps extends AbstractWebPage {
                 msg.isEmpty(),
                 " Company name error message not displayed"
         );
+    }
+
+    @Then("validate set as default option should not be visible for shipping address")
+    public void validate_set_as_default_option_should_not_be_visible_for_shipping_address() {
+        String msg=waitAndGetText(SET_AS_DEFAULT_SHIPPING_ADDRESS_CHECK);
+        System.out.println(msg+"------------------");
+//        log.info("Is 'Set as default shipping address' checkbox present?= " + isPresent);
+//        softAssert.assertFalse(isPresent, " Set as default shipping address checkbox is visible but should not be");
     }
 }

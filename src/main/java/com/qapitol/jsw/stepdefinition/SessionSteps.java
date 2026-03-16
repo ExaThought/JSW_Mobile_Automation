@@ -82,8 +82,9 @@ public  class SessionSteps extends AbstractWebPage {
         userEmail = emailId;
         userPassword= "SnN3QDIwMjU=";
 //        waitForSearchOverlayToDisappear();
-        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
+        sleep(3000);
+//        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
+//        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
         waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
@@ -94,6 +95,7 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndSetText(LOGIN_PASSWORD, pass);// Give the password
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login to continue
+        sleep(5000);
         log.exiting();
     }
 
@@ -125,6 +127,7 @@ public  class SessionSteps extends AbstractWebPage {
                         }
                     });
         } catch (Exception ignored) {
+            log.info("Search Overlay Is not showing");
         }
     }
 

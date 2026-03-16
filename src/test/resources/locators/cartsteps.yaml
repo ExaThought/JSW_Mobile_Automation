@@ -173,5 +173,20 @@ elements:
   editFormDropdown:
     en_US:
       web: xpath=//div[normalize-space()='Form']/following-sibling::input
+  cartCount:
+    en_US:
+      web: xpath=//div[@class='count']
+  emptyCartMessage:
+    en_US:
+      web: xpath=//div[contains(text(),'Your cart is empty')]
+  emptyCartCount:
+    en_US:
+      web: xpath=//div[@class='cart-icon-container empty-cart']/child::div
+  cartPageSKUCount:
+    en_US:
+      web: xpath=//div[@class='typography-h6 typography-font-semibold']
+  deleteCartTitle:
+    en_US:
+      web: //div[contains(text(),'Delete item')]
 
 

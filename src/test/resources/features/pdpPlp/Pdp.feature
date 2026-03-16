@@ -44,3 +44,33 @@
       And click on HR Sheet product
       And open HR Sheet plp "1" product
       Then check brand name is not empty in PDP page
+
+    Scenario: Verify when entering quantity = 0
+        When move the mouse to Mild steel category
+        And move to Hot rolled category
+        And click on HR Coil product
+        And open HR Coil plp "2" product
+        And select thickness "4" width "1250" quantity "0" for HR Coil
+        Then check Add to cart is disabled
+
+    Scenario: Verify Add to Cart enabled state after all attributes selected
+      When move the mouse to Mild steel category
+      And move to Hot rolled category
+      And click on HR Coil product
+      And open HR Coil plp "2" product
+      And select thickness "4" width "1250" quantity "100" for HR Coil
+      Then check Add to cart is enabled
+
+    Scenario: Verify image gallery loads on PDP
+      When move the mouse to Mild steel category
+      And move to Hot rolled category
+      And click on HR Coil product
+      And open HR Coil plp "2" product
+      Then check image gallery loads on PDP page
+
+    Scenario: Verify product description is not empty
+      When move the mouse to Mild steel category
+      And move to Hot rolled category
+      And click on HR Coil product
+      And open HR Coil plp "4" product
+      Then check product description is not empty in PDP page

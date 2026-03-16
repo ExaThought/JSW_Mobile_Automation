@@ -34,11 +34,11 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public static final String CCP_ReGISTER_CTA = "registrationButton";
     public static final String CCP_ReGISTER_vIA_OTP = "registrationViaOtp";
     private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
+    private static final String CHECKBOX="checkBox";
 
 
     @And("user open the CCP web portal")
     public void user_open_the_ccp_web_portal() {
-        waitForSearchOverlayToDisappear();
         waitAndCheckIsElementClickable(CCP_ReGISTER_CTA);
         waitAndClickOn(CCP_ReGISTER_CTA); // click on login CTA button
         waitAndCheckIsElementClickable(CCP_ReGISTER_vIA_OTP);
@@ -122,12 +122,20 @@ public class CcpRegistrationSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_FULL_NAME);
         waitAndSetText(CCP_FULL_NAME, fullName);
 
-        waitAndCheckIsElementVisible(CCP_MOBILE);
-        waitAndSetText(CCP_MOBILE, mobile);
-
         waitAndCheckIsElementVisible(CCP_GSTIN);
         waitAndSetText(CCP_GSTIN, gstin);
 
+        waitAndCheckIsElementVisible(CCP_MOBILE);
+        waitAndSetText(CCP_MOBILE, mobile);
+
+    }
+
+    @And("remove checkbox")
+    public void removeCheckbox() {
+        waitAndCheckIsElementVisible(CHECKBOX);
+        waitAndCheckIsElementClickable(CHECKBOX);
+        waitAndClickOn(CHECKBOX);
+        log.info("Successfully clicked on checkbox to uncheck it");
     }
 
     @Then("next button should be disabled")
@@ -198,11 +206,6 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     // Step for invalid GSTIN error validation
     @Then("user should not able to proceed with GSTIN error")
     public void userShouldNotAbleToProceedWithGSTINError() {
-        // Wait for NEXT button to be visible before any click
-        waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
-
-        //click anywhere write code
-        waitAndClickOn(CCP_REGISTER_NEXT);
 
         // Wait for the error message
         waitAndCheckIsElementVisible(CCP_INVALID_GSTIN_ERROR);
@@ -211,7 +214,7 @@ public class CcpRegistrationSteps extends AbstractWebPage {
         String msg = waitAndGetText(CCP_INVALID_GSTIN_ERROR);
 
         // Assert the error message
-        softAssert.assertEquals(msg, "Please enter correct GSTIN for account registration on JSW ONE MSME");
+        softAssert.assertEquals(msg, "Please enter correct GSTIN for account registration on JSW ONE MSME","GSTIN error message mismatch!");
     }
 
 
