@@ -3,7 +3,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
+    And ccp login with "jayadev.yl@jsw.in" and "Jsw@2025"
     And user close payment due pop up
 
 #  @addToCart @checkout
@@ -29,12 +29,58 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Coil product
-    And open HR Coil plp "2" product
+    And open HR Coil plp "4" product
     And select thickness "4" width "1250" quantity "50" for HR Coil
     And add to cart
     And click view cart
     Then Verify the Attribute values for HR Coil in cart page
     Then Delete the line item from cart
+
+  Scenario: Add same product twice and verify quantity merge or duplicate handling
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "4" product
+    And select thickness "4" width "1250" quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "4" product
+    And select same attribute values
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page
+    Then Delete the line item from cart
+
+  @multiSKUCart @test01
+  Scenario: Check multi product add to cart and delete one by one from cart
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "4" product
+    And select thickness "4" width "1250" quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Sheet product
+    And open HR Sheet plp "1" product
+    And select thickness "2.5" width "1500" length "2500" quantity "50" for HR Sheet
+    And add to cart
+    And click view cart
+    Then verify the Attribute values for HR Sheet in cart page
+    When click on TMT product
+    And click on TMT plp "1" product
+    And select diameter "10" form "Straight" quantity "50" for TMT
+    And add to cart
+    And click view cart
+    Then verify the Attribute values for TMT in cart page
+    Then Verify the cart page SKU and cart icon count and delete one by one
+
 
   @CRCoil
   Scenario: Verify CR Coil Product Add to Cart

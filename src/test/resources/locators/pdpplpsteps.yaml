@@ -17,3 +17,6 @@ elements:
     brandName:
       en_US:
         web: xpath=(//span[contains(text(),'Brand:')])[2]/following-sibling::span
+    pdpDescription:
+      en_US:
+        web: xpath=//div[text()='Product information']/following::div[contains(@class,'packaging-info')]

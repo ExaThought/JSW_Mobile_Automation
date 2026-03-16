@@ -10,7 +10,11 @@ import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+
+import java.time.Duration;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.*;
 import static com.qapitol.jsw.utils.CustomUtil.scrollingToViewAndClickUsingJS;
@@ -74,6 +78,11 @@ public class CartSteps extends AbstractWebPage {
     private static final String EDIT_FORM_DROPDOWN = "editFormDropdown";
     private static final String CART_PAGE_SPANGLE = "cartPageSpangleTypeValue";
     private static final String CART_PAGE_COATING_GRADE = "cartPageCoatingGradeValue";
+    private static final String CART_COUNT = "cartCount";
+    private static final String EMPTY_CART_MESSAGE = "emptyCartMessage";
+    private static final String EMPTY_CART_COUNT = "emptyCartCount";
+    private static final String CART_PAGE_SKU_COUNT = "cartPageSKUCount";
+    private static final String DELETE_CART_TITLE = "deleteCartTitle";
 
 
     Actions actions = new Actions(Grid.driver());
@@ -99,6 +108,7 @@ public class CartSteps extends AbstractWebPage {
     static String pdpSpangleType;
     static String cartPageSpangle;
     static String cartPageCoatingGrade;
+    static int skuCount;
 
     @And("user will add Stainless Steel product to cart")
     public void user_will_add_stainless_steel_product_to_cart() {
@@ -267,11 +277,45 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
+    @And("select same attribute values")
+    public void selectSameAttributeValues() {
+        try {
+            waitAndCheckIsElementClickable(ATTRIBUTE, pdpThickness);
+            waitAndClickOn(ATTRIBUTE, pdpThickness);
+            log.info("Selected same thickness value " + pdpThickness + " mm for hot rolled coil");
+        } catch (Exception e) {
+            log.info("Failed to select same thickness value for hot rolled coil");
+            throw new RuntimeException("Failed to select same thickness value for hot rolled coil", e);
+        }
+
+        try {
+            waitAndCheckIsElementClickable(ATTRIBUTE, pdpWidth);
+            waitAndClickOn(ATTRIBUTE, pdpWidth);
+            log.info("Selected same width value " + pdpWidth + " mm for hot rolled coil");
+        } catch (Exception e) {
+            log.info("Failed to select same width value for hot rolled coil");
+            throw new RuntimeException("Failed to select same width value for hot rolled coil", e);
+        }
+
+        try {
+            waitAndCheckIsElementClickable(QUANTITY);
+            waitAndSetText(QUANTITY, pdpQuantity);
+            int quantityValue = Integer.parseInt(pdpQuantity) * 2;
+            pdpQuantity = String.valueOf(quantityValue);
+            log.info("Entered same quantity " + pdpQuantity + " for hot rolled coil");
+        } catch (Exception e) {
+            log.info("Failed to enter same quantity for hot rolled coil");
+            throw new RuntimeException("Failed to enter same quantity for hot rolled coil", e);
+        }
+    }
+
     @Then("Verify the Attribute values for HR Coil in cart page")
     public void verifyTheAttributeValuesForHRCoilinCartPage() {
         //verify quantity in cart page
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
+
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
 
         cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
@@ -363,8 +407,6 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to enter quantity for hot rolled sheet", e);
         }
 
-        sleep(5000);
-
     }
 
     @And("add to cart")
@@ -388,6 +430,7 @@ public class CartSteps extends AbstractWebPage {
             waitAndCheckIsElementClickable(ADD_TO_CART_CTA);
             waitAndClickOn(ADD_TO_CART_CTA);
             log.info("Clicked on add to cart button");
+            skuCount = skuCount + 1;
         } catch (Exception e) {
             throw new RuntimeException("Failed to click on add to cart button", e);
         }
@@ -412,6 +455,7 @@ public class CartSteps extends AbstractWebPage {
         //Verify product name in cart page for cement
         softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
         //Verify the quantity in cart page for cement
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " bags", "Quantity in cart page is not matching with selected quantity in PDP or quantity is not displayed in cart page");
@@ -424,7 +468,7 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " x " + pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
         softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
-
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), String.valueOf(skuCount), "Cart count is not updated in cart icon after adding product to cart");
 
     }
 
@@ -437,10 +481,11 @@ public class CartSteps extends AbstractWebPage {
             if (isElementPresent(DELETE_CTA_BUTTON)) {
                 waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
                 waitAndClickOn(DELETE_CTA_BUTTON);
+                softAssert.assertTrue(isElementPresent(EMPTY_CART_MESSAGE, "After deleting line item, empty cart message is not displayed"));
+                softAssert.assertEquals(waitAndGetText(EMPTY_CART_COUNT), "", "Cart count is not updated in cart icon after deleting product from cart");
                 log.info("Deleted successfully the line item from cart");
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             log.info("Failed to delete line item from cart");
             throw new RuntimeException("Failed to delete line item from cart", e);
         }
@@ -463,7 +508,7 @@ public class CartSteps extends AbstractWebPage {
         //Scroll and click on it to open CR Coil PDP
         WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
         scrollingToViewAndClickUsingJS(locator);
-        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT,product);
+        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT, product);
         waitAndClickOn(PLP_FIRST_PRODUCT, product);
     }
 
@@ -530,7 +575,7 @@ public class CartSteps extends AbstractWebPage {
         cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
-
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
         //verify product name in cart page for CR Coil
         softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
@@ -583,13 +628,12 @@ public class CartSteps extends AbstractWebPage {
         }
 
         try {
-            if (isElementPresent(ATTRIBUTE,width)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE,width);
+            if (isElementPresent(ATTRIBUTE, width)) {
+                waitAndCheckIsElementClickable(ATTRIBUTE, width);
                 waitAndClickOn(ATTRIBUTE, width);
                 log.info("Width value " + width + "mm is selected for cold rolled sheet");
                 pdpWidth = width;
-            }
-            else {
+            } else {
                 log.info("Width value " + width + "mm is not available for selection, selecting available width value");
                 Allure.addAttachment("Width value not available", "Width value " + width + "mm is not available for selection, selecting available width value");
                 waitAndCheckIsElementClickable(WIDTH);
@@ -604,13 +648,12 @@ public class CartSteps extends AbstractWebPage {
         WebElement locator = Grid.driver().findElement(By.xpath(length));
         scrollingToViewAndClickUsingJS(locator);
         try {
-            if (isElementPresent(ATTRIBUTE,length)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE,length);
+            if (isElementPresent(ATTRIBUTE, length)) {
+                waitAndCheckIsElementClickable(ATTRIBUTE, length);
                 waitAndClickOn(ATTRIBUTE, length);
                 log.info("Length value " + length + "mm is selected for cold rolled sheet");
                 pdpLength = length;
-            }
-            else{
+            } else {
                 log.info("Length value " + length + "mm is not available for selection, selecting available length value");
                 Allure.addAttachment("Length value not available", "Length value " + length + "mm is not available for selection, selecting available length value");
                 waitAndCheckIsElementClickable(LENGTH);
@@ -628,8 +671,7 @@ public class CartSteps extends AbstractWebPage {
             waitAndSetText(QUANTITY, quantity);
             log.info("Quantity " + quantity + " is entered for cold rolled sheet");
             pdpQuantity = quantity;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("Failed to enter quantity for cold rolled sheet");
             throw new RuntimeException("Failed to enter quantity for cold rolled sheet", e);
         }
@@ -641,7 +683,7 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " x " + pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
         softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
-
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
     }
 
     @And("verify the updated Attribute values for CR Sheet in cart page")
@@ -665,7 +707,7 @@ public class CartSteps extends AbstractWebPage {
     @And("open Cement pdp {string} product")
     public void openCementPdp(String product) {
         try {
-            waitAndCheckIsElementClickable(CEMENT_PDP,product);
+            waitAndCheckIsElementClickable(CEMENT_PDP, product);
             waitAndClickOn(CEMENT_PDP, product);
         } catch (Exception e) {
             log.info("Failed to open PDP cement page");
@@ -825,6 +867,7 @@ public class CartSteps extends AbstractWebPage {
 
         cartPageCoatingGrade = waitAndGetText(CART_PAGE_COATING_GRADE);
         softAssert.assertEquals(cartPageCoatingGrade, "Coating grade: " + pdpCoatingGrade + " GSM", "Coating grade value in cart page is not matching with selected coating grade value in PDP or coating grade value is not displayed in cart page");
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
     }
 
     @And("click on Wire product")
@@ -888,6 +931,8 @@ public class CartSteps extends AbstractWebPage {
         //verify quantity in cart page
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
+
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
 
         //verify diameter in cart page
         cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
@@ -988,6 +1033,8 @@ public class CartSteps extends AbstractWebPage {
         //verify quantity in cart page
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
+
+        softAssert.assertEquals(waitAndGetText(CART_COUNT), String.valueOf(skuCount), "Cart count is not updated in cart icon after adding product to cart");
 
     }
 
@@ -1271,5 +1318,52 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
+    @When("click cart icon")
+    public void clickCartIcon() {
+        waitAndClickOn(EMPTY_CART_COUNT);
+        log.info("Clicked on cart icon with empty cart");
+    }
+
+    @Then("check the empty cart page display with message {string}")
+    public void checkTheEmptyCartPageDisplayWithMessage(String expectedMessage) {
+        try {
+            String actualMessage = waitAndGetText(EMPTY_CART_MESSAGE);
+            softAssert.assertEquals(actualMessage, expectedMessage, "Empty cart message is not matching with expected message or empty cart message is not displayed");
+            log.info("Empty cart message is displayed and matching with expected message: " + expectedMessage);
+        } catch (Exception e) {
+            log.info("Failed to verify empty cart message");
+            throw new RuntimeException("Failed to verify empty cart message", e);
+        }
+    }
+
+    @Then("Verify the cart page SKU and cart icon count and delete one by one")
+    public void verifyTheCartPageSKUAndCartIconCountAndDeleteOneByOne() {
+
+        String skuCount = waitAndGetText(CART_PAGE_SKU_COUNT);
+        int expectedSkuCount = Integer.parseInt(skuCount.split(" ")[0]);
+        System.out.println(skuCount + "========================" + expectedSkuCount);
+        int i = 0;
+        while (i < expectedSkuCount) {
+            waitAndClickOn(DELETE_LINE_ITEM);
+            Boolean deleteCartTitleFlag = true;
+            if (isElementPresent(DELETE_CTA_BUTTON) && deleteCartTitleFlag) {
+                waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
+                waitAndClickOn(DELETE_CTA_BUTTON);
+                log.info("Deleted successfully the line item from cart");
+
+                String locator = getLocator(DELETE_CART_TITLE);
+
+                WebElement deleteCartTitle = Grid.driver().findElement(By.xpath(locator));
+                System.out.println(deleteCartTitle.getText());
+                WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
+                deleteCartTitleFlag = wait.until(
+                        ExpectedConditions.invisibilityOfElementLocated(By.xpath(locator))
+                );
+            }
+            i++;
+        }
+
+
+    }
 
 }

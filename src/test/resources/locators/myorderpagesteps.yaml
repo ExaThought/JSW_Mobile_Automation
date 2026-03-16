@@ -6,6 +6,7 @@ elements:
     en_US:
       web: //button[@id='login-via-otp']
   ccpLoginEmail:
+
     en_US:
       web: //input[@id='email']
   ccpLoginPassword:
@@ -67,5 +68,7 @@ elements:
   myOrdersTab:
     en_US:
       web: //a[contains(@class,'links') and normalize-space()='My orders']
-
+  cancelOrderText:
+    en_US:
+      web: xpath=(//p[contains(text(),'Order cancelled')])[1]
 
