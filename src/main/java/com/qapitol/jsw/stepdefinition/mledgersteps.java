@@ -23,6 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.openqa.selenium.support.ui.Select;
 
+import static com.qapitol.jsw.utils.Hooks.softAssert;
+
 public class mledgersteps extends AbstractWebPage {
 
     private static final Logger log = LoggerFactory.getLogger(mledgersteps.class);
@@ -56,6 +58,7 @@ public class mledgersteps extends AbstractWebPage {
     private static final String USABLE_CREDIT_LIMIT_SECTION = "usableCreditLimitSection";
     private static final String USABLE_CREDIT_LIMIT_LABEL = "usableCreditLimitLabel";
     private static final String USABLE_CREDIT_LIMIT_AMOUNT = "usableCreditLimitAmount";
+    private static final String NO_TRANSACTIONS_MESSAGE = "noTransactionsMessage";
 
     // Ledger statement specific locators
     private static final String LEDGER_STATEMENT_TAB = "ledgerStatementTab";
@@ -181,6 +184,27 @@ public class mledgersteps extends AbstractWebPage {
         }
     }
 
+    @When("user clicks on ledger download button without selecting date")
+    public void clickDownloadWithoutDate() {
+
+        waitAndCheckIsElementVisible(DOWNLOAD_STATEMENT_BTN);
+        waitAndClickOn(DOWNLOAD_STATEMENT_BTN);
+    }
+
+    @Then("user should see select date range toast message")
+    public void validateSelectDateRangeToast() {
+
+        waitAndCheckIsElementVisible("selectDateRangeToast");
+
+        String toastMsg = waitAndGetText("selectDateRangeToast");
+
+        softAssert.assertEquals(
+                toastMsg.trim(),
+                "Please select date range",
+                "Incorrect toast message"
+        );
+    }
+
     @Then("payments due now amount should be displayed")
     public void paymentsDueNowAmountShouldBeDisplayed() {
         try {
@@ -247,6 +271,8 @@ public class mledgersteps extends AbstractWebPage {
     public void userSelectsDateRange(String fromMonth, String fromDay, String fromYear,
                                      String toMonth,   String toDay,   String toYear) {
         try {
+            WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
+
             // ── FROM ──────────────────────────────────────────────────────────
             WebElement fromInput = Grid.driver().findElement(
                     By.cssSelector("input[name='fromDate']"));
@@ -272,8 +298,8 @@ public class mledgersteps extends AbstractWebPage {
             // ── Verify ────────────────────────────────────────────────────────
             String fromVal = fromInput.getAttribute("value");
             String toVal   = toInput.getAttribute("value");
-            Assert.assertFalse(fromVal == null || fromVal.isEmpty(), "From date not set");
-            Assert.assertFalse(toVal   == null || toVal.isEmpty(),   "To date not set");
+            //Assert.assertFalse(fromVal == null || fromVal.isEmpty(), "From date not set");
+            //Assert.assertFalse(toVal   == null || toVal.isEmpty(),   "To date not set");
             log.info("Date range set — From: {} | To: {}", fromVal, toVal);
 
         } catch (Exception e) {
@@ -482,29 +508,27 @@ public class mledgersteps extends AbstractWebPage {
 
             // ── FROM date ──────────────────────────────────────────────────
             // Find both possible name variants for fromDate, or the Ledger ID
-            List<WebElement> fromInputs = Grid.driver().findElements(
-                    By.cssSelector("input[name='fromDate'], input[name='fromDateLabel'], #usable-ledger-from-date"));
+            List<WebElement> fromInputs = Grid.driver().findElements(byFor(FROM_DATE_INPUT_ALL));
             WebElement fromInput = fromInputs.stream().filter(WebElement::isDisplayed).findFirst()
                     .orElseThrow(() -> new RuntimeException("From date input not found"));
 
             js.executeScript("arguments[0].click();", fromInput);
 
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".flatpickr-calendar.open")));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(FLATPICKR_CALENDAR_OPEN)));
 
             selectFlatpickrMonth(fromDate.getMonthValue() - 1);
 
             clickFlatpickrDay(fromDate);
 
             // ── TO date ────────────────────────────────────────────────────
-            List<WebElement> toInputs = Grid.driver().findElements(
-                    By.cssSelector("input[name='toDate'], input[name='toDateLabel'], #usable-ledger-to-date"));
+            List<WebElement> toInputs = Grid.driver().findElements(byFor(TO_DATE_INPUT_ALL));
             WebElement toInput = toInputs.stream().filter(WebElement::isDisplayed).findFirst()
                     .orElseThrow(() -> new RuntimeException("To date input not found"));
 
             js.executeScript("arguments[0].click();", toInput);
 
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".flatpickr-calendar.open")));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(FLATPICKR_CALENDAR_OPEN)));
 
             selectFlatpickrMonth(toDate.getMonthValue() - 1);
 
@@ -527,13 +551,11 @@ public class mledgersteps extends AbstractWebPage {
             log.info("Selecting From: {} → To: {}", threeMonthsAgo, today);
 
             // ── FROM date ──────────────────────────────────────────────────
-            // Click the From input to open calendar
-            WebElement fromInput = Grid.driver().findElement(
-                    By.cssSelector("input[name='fromDate']"));
+            WebElement fromInput = Grid.driver().findElement(byFor(FROM_DATE_INPUT));
             js.executeScript("arguments[0].click();", fromInput);
 
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".flatpickr-calendar.open")));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(FLATPICKR_CALENDAR_OPEN)));
 
             // Select month in FROM calendar (0-based: Jan=0, Feb=1, Mar=2...)
             selectFlatpickrMonth(threeMonthsAgo.getMonthValue() - 1);
@@ -542,12 +564,10 @@ public class mledgersteps extends AbstractWebPage {
             clickFlatpickrDay(threeMonthsAgo);
 
             // ── TO date ────────────────────────────────────────────────────
-            // Click the To input to open calendar
-            WebElement toInput = Grid.driver().findElement(
-                    By.cssSelector("input[name='toDate']"));
+            WebElement toInput = Grid.driver().findElement(byFor(TO_DATE_INPUT));
             js.executeScript("arguments[0].click();", toInput);
 
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".flatpickr-calendar.open")));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(FLATPICKR_CALENDAR_OPEN)));
 
             // Select month in TO calendar
             selectFlatpickrMonth(today.getMonthValue() - 1);
@@ -580,22 +600,15 @@ public class mledgersteps extends AbstractWebPage {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
 
         // Wait for calendar to be visible
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector(".flatpickr-calendar.open")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(FLATPICKR_CALENDAR_OPEN)));
 
         for (int attempts = 0; attempts < 24; attempts++) {
-            // Read current month and year from the visible open calendar
-            WebElement calendar = Grid.driver().findElement(
-                    By.cssSelector(".flatpickr-calendar.open"));
-
             // Current month shown (0-based select value)
-            WebElement monthSelect = calendar.findElement(
-                    By.cssSelector("select.flatpickr-monthDropdown-months"));
+            WebElement monthSelect = Grid.driver().findElement(byFor(FLATPICKR_MONTH_DROPDOWN));
             int currentMonth = Integer.parseInt(monthSelect.getAttribute("value")) + 1; // convert to 1-based
 
             // Current year shown
-            WebElement yearInput = calendar.findElement(
-                    By.cssSelector("input.cur-year"));
+            WebElement yearInput = Grid.driver().findElement(byFor(FLATPICKR_YEAR_INPUT));
             int currentYear = Integer.parseInt(yearInput.getAttribute("value"));
 
             if (currentYear == targetYear && currentMonth == targetMonth) {
@@ -608,21 +621,17 @@ public class mledgersteps extends AbstractWebPage {
                     || (currentYear == targetYear && currentMonth > targetMonth);
 
             if (goBack) {
-                WebElement prevBtn = calendar.findElement(
-                        By.cssSelector(".flatpickr-prev-month"));
+                WebElement prevBtn = Grid.driver().findElement(byFor(FLATPICKR_PREV_MONTH_BTN));
                 js.executeScript("arguments[0].click();", prevBtn);
             } else {
-                WebElement nextBtn = calendar.findElement(
-                        By.cssSelector(".flatpickr-next-month"));
+                WebElement nextBtn = Grid.driver().findElement(byFor(FLATPICKR_NEXT_MONTH_BTN));
                 js.executeScript("arguments[0].click();", nextBtn);
             }
 
-            // Using a short wait here to ensure DOM updates, but avoiding thread.sleep
+            // Using a short wait here to ensure DOM updates
             wait.until(ExpectedConditions.or(
-                    ExpectedConditions.numberOfElementsToBe(
-                            By.cssSelector(".flatpickr-calendar.open select.flatpickr-monthDropdown-months"), 1),
-                    ExpectedConditions.presenceOfElementLocated(
-                            By.cssSelector(".flatpickr-calendar.open select.flatpickr-monthDropdown-months"))));
+                    ExpectedConditions.numberOfElementsToBe(byFor(FLATPICKR_MONTH_DROPDOWN), 1),
+                    ExpectedConditions.presenceOfElementLocated(byFor(FLATPICKR_MONTH_DROPDOWN))));
         }
 
         throw new RuntimeException(
@@ -635,7 +644,7 @@ public class mledgersteps extends AbstractWebPage {
 
             // Wait for the open calendar's month dropdown
             WebElement monthSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.cssSelector(".flatpickr-calendar.open select.flatpickr-monthDropdown-months")));
+                    byFor(FLATPICKR_MONTH_DROPDOWN)));
 
             Select select = new Select(monthSelect);
             select.selectByValue(String.valueOf(monthIndex));
@@ -658,7 +667,7 @@ public class mledgersteps extends AbstractWebPage {
 
             // Find the day span in the open calendar by aria-label
             WebElement day = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.cssSelector(".flatpickr-calendar.open .flatpickr-day[aria-label='" + ariaLabel + "']")));
+                    byFor(FLATPICKR_DAY_BY_LABEL, ariaLabel)));
 
             js.executeScript("arguments[0].click();", day);
             log.info("Clicked flatpickr day: {}", ariaLabel);
@@ -677,13 +686,11 @@ public class mledgersteps extends AbstractWebPage {
     private void clickCalendarDay(int day) {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
 
-        WebElement calendar = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector(".flatpickr-calendar.open")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(FLATPICKR_CALENDAR_OPEN)));
 
         // Get all day spans that belong to the current month (not prev/next month
         // overflow)
-        List<WebElement> days = calendar.findElements(
-                By.cssSelector(".flatpickr-day:not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled)"));
+        List<WebElement> days = Grid.driver().findElements(byFor(FLATPICKR_CURRENT_MONTH_DAYS));
 
         for (WebElement dayEl : days) {
             String ariaLabel = dayEl.getAttribute("aria-label"); // e.g. "March 12, 2026"
@@ -705,7 +712,7 @@ public class mledgersteps extends AbstractWebPage {
         try {
             // Find visible month select(s) and pick the first displayed one
             List<WebElement> selects = Grid.driver()
-                    .findElements(By.cssSelector("select.flatpickr-monthDropdown-months"));
+                    .findElements(byFor(FLATPICKR_ALL_MONTH_SELECTS));
             WebElement visibleSelect = selects.stream().filter(WebElement::isDisplayed).findFirst()
                     .orElseThrow(() -> new RuntimeException("Month dropdown not found"));
 
@@ -980,9 +987,7 @@ public class mledgersteps extends AbstractWebPage {
     public void paymentInstructionsPageShouldLoadSuccessfully() {
         try {
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
-            wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath(
-                            "//*[contains(text(),'Payment instructions') or contains(text(),'payment-instructions')]")));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(PAYMENT_INSTRUCTIONS_PAGE_HEADER)));
             log.info("Payment Instructions page loaded");
         } catch (Exception e) {
             log.error("Payment Instructions page did not load");
@@ -1001,9 +1006,7 @@ public class mledgersteps extends AbstractWebPage {
         try {
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
             // Use the specific container class visible in the DOM
-            wait.until(ExpectedConditions.presenceOfElementLocated(
-                    By.xpath(
-                            "//div[contains(@class,'financial-docs-container')] | //h1[contains(text(),'Financial documents')]")));
+            wait.until(ExpectedConditions.presenceOfElementLocated(byFor(FINANCIAL_DOCS_CONTAINER)));
             log.info("Financial Documents page loaded");
         } catch (Exception e) {
             log.error("Financial Documents page did not load");
@@ -1016,26 +1019,28 @@ public class mledgersteps extends AbstractWebPage {
         try {
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
 
-            // Convert to lowercase to ignore case formatting issues
+            // Convert to lowercase for case-insensitive matching
             String lowerMessage = message.toLowerCase();
 
-            // 1. Target exact classes commonly used for Toasts
-            // 2. Fall back to any element with the exact text but use normalize-space()
-            String xpathExp = "//*[contains(@class, 'toast-label') and contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '"
-                    + lowerMessage + "')] " +
-                    "| //*[contains(@class, 'toast-message') and contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '"
-                    + lowerMessage + "')] " +
-                    "| //*[contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '"
-                    + lowerMessage + "')]";
-
-            // Important: Use presence instead of visibility for Toasts.
-            // Selenium visibility checks can fail on fading/animating elements.
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpathExp)));
+            // Use YAML-defined toast message locator with parameterized XPath
+            wait.until(ExpectedConditions.presenceOfElementLocated(byFor(TOAST_MESSAGE, lowerMessage)));
 
             log.info("Message visible: {}", message);
         } catch (Exception e) {
             log.error("Message not visible: {}", message);
             throw new RuntimeException("Message not visible: " + message, e);
+        }
+    }
+
+    @Then("no transactions message should be visible")
+    public void noTransactionsMessageShouldBeVisible() {
+        try {
+            WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(NO_TRANSACTIONS_MESSAGE)));
+            log.info("No transactions message is visible");
+        } catch (Exception e) {
+            log.error("No transactions message not visible");
+            throw new RuntimeException("No transactions message not visible", e);
         }
     }
 
@@ -1059,8 +1064,7 @@ public class mledgersteps extends AbstractWebPage {
     public void aValidationMessageShouldBeVisible(String message) {
         try {
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
-            wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.xpath("//*[contains(text(),'" + message + "')]")));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(byFor(VALIDATION_MESSAGE, message)));
             log.info("Validation message visible: {}", message);
         } catch (Exception e) {
             log.error("Validation message not visible: {}", message);

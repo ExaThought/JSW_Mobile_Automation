@@ -81,6 +81,14 @@ elements:
     en_US:
       web: xpath=//input[@name='fromDate']
 
+  noTransactionsMessage:
+    en_US:
+      web: xpath=//p[contains(text(),'No transactions found')]
+
+  selectDateRangeToast:
+    en_US:
+      web: xpath=//div[@role='alert']//p[normalize-space()='Please select date range']
+
   ledgerStatementTo:
     en_US:
       web: xpath=//input[@name='toDate']

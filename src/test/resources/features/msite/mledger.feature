@@ -63,16 +63,15 @@ Feature: Validate Ledger Page on mSite
   @LedgerStatementEmptyState
   Scenario: Verify Ledger statement empty state message
     When user clicks on usable ledger balance section
-    And navigates to the ledger statement tab
-    And user selects date range from "2021-01-01" to "2021-01-31" from calendar
-    Then a message "No records found" should be visible
+    And user selects date range from "March" "1" "2026" to "March" "1" "2026"
+    Then no transactions message should be visible
 
-  @LedgerStatementValidation
+
+  @LedgerDateValidation
   Scenario: Verify Ledger statement download date validation
     When user clicks on usable ledger balance section
-    And navigates to the ledger statement tab
-    When user clicks on download statement button
-    Then a validation message "Please select" should be visible
+    When user clicks on ledger download button without selecting date
+    Then user should see select date range toast message
 
   @LedgerOtherActions
   Scenario: Verify Other Actions section is visible
