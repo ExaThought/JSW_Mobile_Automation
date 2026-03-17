@@ -68,7 +68,7 @@ Feature: Check CCP registration
     Then new user continue to Registration
     And enter full name "Indresh Kumar" mobile number "9876543210" and gst "29ABVPR0591F1Z1"
     And remove checkbox
-      And next button should be disabled
+    And next button should be disabled
 
 
 

@@ -68,6 +68,8 @@ public class CustomerDetailSteps extends AbstractWebPage {
 
         String actualName = getTextValue(PROFILE_NAME_VALUE);
         log.info("Successfully retrieved Name from profile: " + actualName);
+
+        // Read from Yaml
         String expectedName = Data.get().get("name").toString();
         softAssert.assertEquals(actualName, expectedName,
                 "Name mismatch! Expected: " + expectedName + ", but found: " + actualName +" In profile details.");
@@ -78,6 +80,7 @@ public class CustomerDetailSteps extends AbstractWebPage {
 
         String actualPhone = getTextValue(PROFILE_PHONE_VALUE);
         log.info("Successfully retrieved Phone number from profile: " + actualPhone);
+
         String expectedPhone = Data.get().get("phone_number").toString();
         softAssert.assertEquals(actualPhone, expectedPhone,
                 "Phone number mismatch! Expected: " + expectedPhone + ", but found: " + actualPhone + " In profile details.");
