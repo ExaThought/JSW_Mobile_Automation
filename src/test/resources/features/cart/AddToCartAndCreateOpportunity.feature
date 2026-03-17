@@ -3,7 +3,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "jayadev.yl@jsw.in" and "Jsw@2025"
+    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
     And user close payment due pop up
 
 #  @addToCart @checkout
