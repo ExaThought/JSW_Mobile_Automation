@@ -20,7 +20,7 @@
       And move to Hot rolled category
       And click on HR Sheet product
       And open HR Sheet plp "1" product
-      And select thickness "2.5"
+      And select thickness for pdp "2.5"
       Then check Add to cart is disabled
       And select width "1500"
       Then check Add to cart is disabled

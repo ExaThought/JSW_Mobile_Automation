@@ -56,7 +56,7 @@ public class pdpPlpSteps extends AbstractWebPage {
     }
 
 
-    @And("select thickness {string}")
+    @And("select thickness for pdp {string}")
     public void selectThickness(String thickness) {
         waitAndCheckIsElementVisible(ATTRIBUTES_SECTION);
         waitAndClickOn(ATTRIBUTES_SECTION,thickness);
