@@ -5,7 +5,7 @@ import org.openqa.selenium.By;
 
 public class CategoryPages {
 
-    public static String mildSteelCategory="(//a[contains(., 'Mild Steel')])[1]";
+    public static String mildSteelCategory="(//a[contains(., 'Mild steel')])[1]";
     public static String hotRolledCategory="(//a[contains(text(),'Hot rolled')])[4]";
     public static String hotRolledSheetsSubCategory="(//a[contains(text(),'Hot rolled sheets')])[1]";
     public static String hotRolledCoilsSubCategory="(//a[contains(text(),'Hot rolled coils')])[1]";

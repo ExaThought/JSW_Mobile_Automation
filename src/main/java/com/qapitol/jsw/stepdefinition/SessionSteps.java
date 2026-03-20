@@ -80,7 +80,7 @@ public  class SessionSteps extends AbstractWebPage {
     public void ccpLogin(String emailId, String pass) {
         log.entering(emailId, pass);
         userEmail = emailId;
-        userPassword= "SnN3QDIwMjU=";
+        userPassword= "SnN3QDIwMjY=";
         waitForSearchOverlayToDisappear();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button

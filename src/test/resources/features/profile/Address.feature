@@ -3,8 +3,8 @@ Feature: validate Address
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "jayadev.yl@jsw.in" and "Jsw@2025"
-#    And user close payment due pop up
+    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
+    And user close payment due pop up
 
   @sanity
   Scenario: Check and validate  navigation for  Address page

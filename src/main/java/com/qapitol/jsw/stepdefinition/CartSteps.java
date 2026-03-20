@@ -481,7 +481,7 @@ public class CartSteps extends AbstractWebPage {
             if (isElementPresent(DELETE_CTA_BUTTON)) {
                 waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
                 waitAndClickOn(DELETE_CTA_BUTTON);
-                softAssert.assertTrue(isElementPresent(EMPTY_CART_MESSAGE, "After deleting line item, empty cart message is not displayed"));
+                softAssert.assertEquals(waitAndGetText(EMPTY_CART_MESSAGE),"Your cart is empty","After deleting line item, empty cart message is not displayed");
                 softAssert.assertEquals(waitAndGetText(EMPTY_CART_COUNT), "", "Cart count is not updated in cart icon after deleting product from cart");
                 log.info("Deleted successfully the line item from cart");
             }

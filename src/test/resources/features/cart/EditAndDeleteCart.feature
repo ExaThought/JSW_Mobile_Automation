@@ -3,7 +3,7 @@ Feature: Check Edit and Delete line item from Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
+    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
     And user close payment due pop up
 
   @HRSheetEditAndDeleteCart

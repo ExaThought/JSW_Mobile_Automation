@@ -3,7 +3,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
+    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
     And user close payment due pop up
 
 #  @addToCart @checkout
@@ -55,7 +55,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then Verify the Attribute values for HR Coil in cart page
     Then Delete the line item from cart
 
-  @multiSKUCart @test01
+  @multiSKUCart
   Scenario: Check multi product add to cart and delete one by one from cart
     When move the mouse to Mild steel category
     And move to Hot rolled category

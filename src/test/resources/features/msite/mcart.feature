@@ -14,7 +14,7 @@ Feature: Check Add-To-Cart
     When user clicks on proceed to login
     When user clicks on catalogue menu
 
-  @HRSheet @test01
+  @HRSheet
   Scenario: Verify HR Sheet Product Add to Cart
     And click on "MS Hot rolled"
     And click on "Sheets" product on msite
