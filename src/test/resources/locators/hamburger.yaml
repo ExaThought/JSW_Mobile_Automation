@@ -1,0 +1,83 @@
+elements:
+
+  # ── Hamburger Menu ──────────────────────────────────────────────────────────
+  hamburgerIcon:
+    en_US:
+      web: css=header button svg, header a[href*='profile'], div.rounded-full, xpath=//a[@href='/profile'] | //header//a[contains(@href,'profile')]
+
+  # ── Menu Options ────────────────────────────────────────────────────────────
+  profileDetailsOption:
+    en_US:
+      web: xpath=//a[contains(@href,'profile')] | //*[normalize-space()='Profile details']
+
+  savedAddressesOption:
+    en_US:
+      web: xpath=//p[normalize-space()='Saved addresses'] | //span[normalize-space()='Saved addresses']
+
+  bankDetailsOption:
+    en_US:
+      web: xpath=//p[normalize-space()='Bank account details'] | //span[normalize-space()='Bank account details']
+
+  blogsOption:
+    en_US:
+      web: xpath=//p[normalize-space()='Blogs'] | //span[normalize-space()='Blogs']
+
+  helpSupportOption:
+    en_US:
+      web: xpath=//p[normalize-space()='Help & support'] | //span[normalize-space()='Help & support']
+
+  policiesOption:
+    en_US:
+      web: xpath=//p[contains(normalize-space(),'JSW One policies')] | //span[contains(normalize-space(),'JSW One policies')] | //*[contains(text(),'policies')]
+
+  termsConditionsOption:
+    en_US:
+      web: xpath=//p[normalize-space()='Terms & conditions'] | //span[normalize-space()='Terms & conditions']
+
+  privacyPolicyOption:
+    en_US:
+      web: xpath=//p[normalize-space()='Privacy policy'] | //span[normalize-space()='Privacy policy']
+
+  returnPolicyOption:
+    en_US:
+      web: xpath=//p[normalize-space()='Return policy'] | //span[normalize-space()='Return policy']
+
+  # ── Page Titles (STRICT) ────────────────────────────────────────────────────
+  profilePageTitle:
+    en_US:
+      web: xpath=//div[contains(@class,'typography') and normalize-space()='Profile details']
+
+  addressesPageTitle:
+    en_US:
+      web: xpath=//div[normalize-space()='Saved addresses']
+
+  bankPageTitle:
+    en_US:
+      web: xpath=//div[contains(text(),'Bank account details')]
+
+  blogsPageTitle:
+    en_US:
+      web: xpath=//h1[contains(text(),'Blogs')]
+
+  helpPageTitle:
+    en_US:
+      web: xpath=//h1[contains(text(),'Help') or contains(text(),'Support')]
+
+  policiesPageTitle:
+    en_US:
+      web: xpath=//h1[contains(text(),'Policies')]
+
+  termsPageTitle:
+    en_US:
+      web: xpath=//h1[contains(text(),'Terms')] | //div[contains(text(),'Terms')]
+
+  privacyPageTitle:
+    en_US:
+      web: xpath=//h1[contains(text(),'Privacy')] | //div[contains(text(),'Privacy')]
+
+  returnPageTitle:
+    en_US:
+      web: xpath=//h1[contains(text(),'Return')] | //div[contains(text(),'Return')]
+
+
+
