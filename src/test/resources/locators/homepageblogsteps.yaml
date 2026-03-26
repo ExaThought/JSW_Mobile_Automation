@@ -1,0 +1,34 @@
+elements:
+
+  blogSection:
+    en_US:
+      web: //div[contains(@class,'blog-list')]
+
+  blogSectionTitle:
+    en_US:
+      web: //h1[normalize-space()='Browse articles & blogs']
+
+  blogCard:
+    en_US:
+      web: //div[contains(@class,'blog-item')]
+
+  blogTitle:
+    en_US:
+      web: //h5[contains(@class,'card-title')]
+
+  blogReadMoreButton:
+    en_US:
+      web: //button[contains(text(),'Read')]
+
+  firstBlogReadMoreButton:
+    en_US:
+      web: (//div[contains(@class,'blog-item')]//button[contains(text(),'Read')])[1]
+  blogPageTitle:
+    en_US:
+      web: //h1[contains(@class,'blog-title')]
+  blogPostedOnText:
+    en_US:
+      web: //span[normalize-space()='Posted on']
+  blogYoutubeIcon:
+    en_US:
+      web: //img[@alt='Youtube']
