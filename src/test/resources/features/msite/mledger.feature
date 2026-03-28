@@ -1,4 +1,4 @@
-@mLedger @regression @msanity
+@mLedger @msanity
 Feature: Validate Ledger Page on mSite
 
   Background:

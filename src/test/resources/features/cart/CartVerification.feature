@@ -3,7 +3,7 @@ Feature: Check Cart page and its functionality
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
+    And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
       And user close payment due pop up
 
 

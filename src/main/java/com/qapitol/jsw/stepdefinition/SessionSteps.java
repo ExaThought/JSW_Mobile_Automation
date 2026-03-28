@@ -11,6 +11,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
+import java.util.Base64;
 
 
 
@@ -80,7 +81,9 @@ public  class SessionSteps extends AbstractWebPage {
     public void ccpLogin(String emailId, String pass) {
         log.entering(emailId, pass);
         userEmail = emailId;
-        userPassword= "SnN3QDIwMjY=";
+        //convert given password to Base64
+        String encodedPassword = Base64.getEncoder().encodeToString(pass.getBytes());
+        userPassword= encodedPassword;
         waitForSearchOverlayToDisappear();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button

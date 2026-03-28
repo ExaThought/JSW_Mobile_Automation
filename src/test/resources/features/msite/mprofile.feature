@@ -1,4 +1,4 @@
-@MobileProfile @regression @profile
+@MobileProfile @profile
 Feature: Mobile Profile Page Validation
 
   Background:

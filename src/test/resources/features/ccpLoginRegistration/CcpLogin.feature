@@ -1,4 +1,4 @@
-@login @regression @loginRegression
+@login @regression @loginRegression @test01
 Feature: Check Login
 
   Background:
@@ -35,8 +35,8 @@ Feature: Check Login
 
     @loginAndLogout
   Scenario: Check CCP Login and Logout functionality
-    And enter valid email "testnewurl@yopmail.com"
+    And enter valid email "testpre_prod12as@gmail.com"
     And user click on continue button
-    And enter valid password "Jsw@2025"
+    And enter valid password "Jsw@2026"
     Then user should able to login
     Then user close payment due pop up

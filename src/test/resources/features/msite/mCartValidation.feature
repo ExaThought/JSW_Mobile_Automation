@@ -1,4 +1,4 @@
-@mCartValidation @regression @msanity
+@mCartValidation  @msanity
 Feature: Validate Cart Page
 
   Background:

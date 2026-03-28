@@ -25,6 +25,7 @@ public class pdpPlpSteps extends AbstractWebPage {
     @And("click one reset button in pdp page")
     public void clickOneResetButtonInPdpPage() {
         waitAndCheckIsElementVisible(RESET_BUTTON);
+        waitAndCheckIsElementClickable(RESET_BUTTON);
         waitAndClickOn(RESET_BUTTON);
         log.info("Clicked on reset button in PDP page");
     }
