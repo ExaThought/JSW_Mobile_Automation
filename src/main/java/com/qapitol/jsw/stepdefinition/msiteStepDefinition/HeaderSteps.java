@@ -6,11 +6,13 @@ import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.appium.java_client.AppiumDriver;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -35,9 +37,17 @@ public class HeaderSteps extends AbstractWebPage {
             new LocatorReader("locators/msite/headersteps.yaml");
 
     private final SoftAssert softAssert = new SoftAssert();
-    private final AppiumDriver driver = (AppiumDriver) Grid.driver();
+//    private final AppiumDriver driver = (AppiumDriver) Grid.driver();
 
     // ------------------- Helpers -------------------
+    private WebDriver driver;
+
+
+    @Before
+    public void setUp() {
+        driver = Grid.driver();
+    }
+
 
     private WebElement getElement(String key) {
         String xpath = locatorReader.getXpath("elements." + key + ".en_US.web");
@@ -67,7 +77,7 @@ public class HeaderSteps extends AbstractWebPage {
     @When("user open the msite")
     public void user_open_the_msite() {
         driver.get(ConfigUtil.getSecretValue("ccpPortalUrl"));
-        ChromeSslBypassUtil.bypassSslWarning(driver);
+//        ChromeSslBypassUtil.bypassSslWarning(driver);
     }
 
     @Then("the home page should load successfully")
