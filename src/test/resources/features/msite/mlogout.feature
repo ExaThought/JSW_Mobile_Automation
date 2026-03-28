@@ -17,6 +17,7 @@ Feature: Logout functionality
     When user clicks on proceed to login
     Then user should be logged in successfully via email
 
+    @test01
   Scenario: Successful logout from profile page
     When user clicks on profile icon
     When user clicks on logout button and redirects to home page
