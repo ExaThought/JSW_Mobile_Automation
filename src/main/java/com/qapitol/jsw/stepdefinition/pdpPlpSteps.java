@@ -22,8 +22,8 @@ public class pdpPlpSteps extends AbstractWebPage {
     private final String BRAND_NAME="brandName";
     private final String PDP_DESCRIPTION="pdpDescription";
 
-    @And("click one reset button in pdp page")
-    public void clickOneResetButtonInPdpPage() {
+    @And("click on reset button in pdp page")
+    public void clickOnResetButtonInPdpPage() {
         waitAndCheckIsElementVisible(RESET_BUTTON);
         waitAndCheckIsElementClickable(RESET_BUTTON);
         waitAndClickOn(RESET_BUTTON);

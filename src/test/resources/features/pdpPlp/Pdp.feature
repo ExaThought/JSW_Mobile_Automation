@@ -12,7 +12,7 @@
       And click on HR Sheet product
       And open HR Sheet plp "1" product
       And select thickness "2.5" width "1500" length "2500" quantity "50" for HR Sheet
-      And click one reset button in pdp page
+      And click on reset button in pdp page
       Then check Add to cart is disabled
 
     Scenario: Verify the Cascading in PDP  page.

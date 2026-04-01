@@ -3,16 +3,16 @@ Feature: Check Edit and Delete line item from Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
+    And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
     And user close payment due pop up
 
-  @HRSheetEditAndDeleteCart
+  @HRSheetEditAndDeleteCart @test01
   Scenario: Verify HR Sheet Product Add to Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Sheet product
-    And open HR Sheet plp "3" product
-    And select thickness "3" width "1250" length "2500" quantity "50" for HR Sheet
+    And open HR Sheet plp "1" product
+    And select thickness "2.5" width "1250" length "1500" quantity "50" for HR Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page

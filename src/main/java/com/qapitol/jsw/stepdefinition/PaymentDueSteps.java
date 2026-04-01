@@ -120,6 +120,7 @@ public class PaymentDueSteps extends AbstractWebPage {
                     waitAndCheckIsElementVisible(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
                     waitAndCheckIsElementClickable(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
                     waitAndClickOn(CCP_HOME_PAGE_PAYMENT_DUE_CLOSE_BUTTON);
+                    log.info("payment due pop up successfully closed for customer with payment due:" + customerGSTN);
                 } catch (Exception e) {
                     log.info("payment due pop up is not closed for customer with payment due:" + customerGSTN);
                     Allure.addAttachment("Payment Due Pop Up Not Closed", "Payment due pop up is not closed for customer with payment due:" + customerGSTN);

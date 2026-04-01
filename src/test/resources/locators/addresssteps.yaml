@@ -1,18 +1,11 @@
-pageTitle: {}
-
 elements:
-
-  # ================= USER MENU =================
-
   ccpUserMenuTestacco:
     en_US:
-      web: (//button[@id='drop-down-head'])[1]
+      web: xpath=(//button[@id='drop-down-head'])[1]
 
   ccpUserMenuProfileOption:
     en_US:
       web: //a[contains(@class,'user-dropdown-item') and normalize-space()='Profile']
-
-  # ================= PROFILE TABS =================
 
   ccpProfileAddressesTab:
     en_US:
@@ -21,8 +14,6 @@ elements:
   ccpProfileAddressesTabActive:
     en_US:
       web: //a[@role='tab' and contains(@class,'active') and normalize-space()='Addresses']
-
-  # ================= ADD ADDRESS FORM =================
 
   ccpAddAddressButton:
     en_US:
@@ -51,14 +42,10 @@ elements:
     en_US:
       web: xpath=(//button[@id='save-change' and normalize-space()='Save changes'])[2]
 
-  # ================= SAVED ADDRESS VALIDATION (Dynamic) =================
-
   ccpSavedAddressCompanyNameDynamic:
     en_US:
       web: //div[contains(@class,'display-company-name')
         and normalize-space()='${companyName}']
-
-  # ================= EDIT ADDRESS =================
 
   ccpEditButtonForSavedAddress:
     en_US:
@@ -71,17 +58,13 @@ elements:
 
   ccpDeleteButtonForSavedAddress:
     en_US:
-      web: //div[contains(@class,'display-company-name')
-        and normalize-space()='${companyName}']
-        /ancestor::div[contains(@class,'address')]
-        //img[contains(@class,'delete-icon')]
+      web: //div[contains(@class,'display-company-name')and normalize-space()='${companyName}']/ancestor::div[contains(@class,'address')]//img[contains(@class,'delete-icon')]
 
   # ================= DELETE CONFIRM MODAL =================
 
   ccpDeleteAddressProceedButton:
     en_US:
-      web: //button[normalize-space()='Proceed'
-        and contains(@class,'primary-outline-btn')]
+      web: //button[normalize-space()='Proceed' and contains(@class,'primary-outline-btn')]
 
   ccpDeleteAddressCancelButton:
     en_US:

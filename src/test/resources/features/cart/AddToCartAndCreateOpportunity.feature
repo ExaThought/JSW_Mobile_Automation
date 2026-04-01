@@ -1,4 +1,4 @@
-@AddToCartAndCreateOpportunity @regression
+@AddToCartAndCreateOpportunity
 Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:
@@ -18,7 +18,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Hot rolled category
     And click on HR Sheet product
     And open HR Sheet plp "1" product
-    And select thickness "2.5" width "1500" length "2500" quantity "50" for HR Sheet
+    And select thickness "2.5" width "1250" length "1500" quantity "50" for HR Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page
@@ -30,7 +30,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Hot rolled category
     And click on HR Coil product
     And open HR Coil plp "1" product
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select thickness "2.5" width "1250" quantity "50" for HR Coil
     And add to cart
     And click view cart
@@ -42,7 +42,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Hot rolled category
     And click on HR Coil product
     And open HR Coil plp "1" product
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select thickness "2.5" width "1250" quantity "50" for HR Coil
     And add to cart
     And click view cart
@@ -51,7 +51,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Hot rolled category
     And click on HR Coil product
     And open HR Coil plp "1" product
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select same attribute values
     And add to cart
     And click view cart
@@ -64,7 +64,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Hot rolled category
     And click on HR Coil product
     And open HR Coil plp "1" product
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select thickness "2.5" width "1250" quantity "50" for HR Coil
     And add to cart
     And click view cart
@@ -79,7 +79,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then verify the Attribute values for HR Sheet in cart page
     When click on TMT product
     And click on TMT plp "1" product
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select diameter "10" form "Straight" quantity "50" for TMT
     And add to cart
     And click view cart
@@ -93,7 +93,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Cold rolled category
     And click on CR Coil product
     And open CR Coil pdp "1" product
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select thickness "0.5" width "1250" quantity "50" for CR Coil
     And add to cart
     And click view cart
@@ -106,7 +106,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Cold rolled category
     And click on CR Sheet product
     And open CR Sheet pdp
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select thickness "0.8" width "1250" length "1930" quantity "50" for CR Sheet
     And add to cart
     And click view cart
@@ -129,7 +129,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And click to Coated steel category
     And click on Coated steel sheet product
     And open Coated steel sheet pdp "1" product
-    And click one reset button in pdp page
+    And click on reset button in pdp page
     And select thickness "3" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
     And add to cart
     And click view cart
