@@ -17,3 +17,52 @@ elements:
   retryBtn:
     en_US:
       web: //a[text()='Retry']
+
+
+  ledgerButton:
+    en_US:
+      web: //h1[text()='Ledger']
+
+  paymentDueLabel:
+    en_US:
+      web: //p[contains(text(),'Payments due now')]
+
+  paymentDueAmount:
+    en_US:
+      web: //p[contains(@class,'payment-due-amount')]
+
+  payNowButton:
+    en_US:
+      web: //button//span[text()='Pay now']
+
+  warningIcon:
+    en_US:
+      web: //img[@alt='Warning']
+
+  ledgerTitle:
+    en_US:
+      web: //h1[text()='Ledger']
+
+  transactingEntityDropdown:
+    en_US:
+      web: //select[@class='material-select-element']
+
+  financialDocumentsButton:
+    en_US:
+      web: //button[text()='Financial documents']
+
+  paymentInstructionsButton:
+    en_US:
+      web: //button[text()='Payment instructions']
+
+  helpSupportButton:
+    en_US:
+      web: //button[text()='Help & Support']
+
+  overdueMessage:
+    en_US:
+      web: //p[contains(text(),'Overdue invoices')]
+
+  frozenAccountMessage:
+    en_US:
+      web: //span[contains(text(),'Your account is frozen')]
