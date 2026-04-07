@@ -6,4 +6,12 @@
   browserName: "Chrome"
   deviceName: "Android Emulator"
   automationName: "UiAutomator2"
-  browserRunHeadless: true
+  browserRunHeadless: false
+
+#- name: "android_chrome"
+#  local: true
+#  platform: "web"
+#  browserName: "chrome"
+#  deviceName: "Pixel 5"
+#  mobileEmulation: true
+#  browserRunHeadless: true
