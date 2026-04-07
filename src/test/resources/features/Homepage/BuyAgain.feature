@@ -1,4 +1,4 @@
-@buy @regression
+@buy
 Feature: validate Buy-again
 
   Background:

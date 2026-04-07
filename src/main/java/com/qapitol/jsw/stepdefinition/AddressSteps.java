@@ -82,9 +82,9 @@ public class AddressSteps extends AbstractWebPage {
     @And("user clicks on Addresses tab")
     public void userClicksOnAddressesTab() {
 
-        WebElement tab = getElement(CCP_PROFILE_ADDRESSES_TAB);
-        scrollIntoView(tab);
-
+//        WebElement tab = getElement(CCP_PROFILE_ADDRESSES_TAB);
+//        scrollIntoView(tab);
+        waitAndCheckIsElementClickable(CCP_PROFILE_ADDRESSES_TAB);
         waitAndClickOn(CCP_PROFILE_ADDRESSES_TAB);
     }
 
@@ -275,8 +275,5 @@ public class AddressSteps extends AbstractWebPage {
     @Then("validate set as default option should not be visible for shipping address")
     public void validate_set_as_default_option_should_not_be_visible_for_shipping_address() {
         String msg=waitAndGetText(SET_AS_DEFAULT_SHIPPING_ADDRESS_CHECK);
-        System.out.println(msg+"------------------");
-//        log.info("Is 'Set as default shipping address' checkbox present?= " + isPresent);
-//        softAssert.assertFalse(isPresent, " Set as default shipping address checkbox is visible but should not be");
     }
 }

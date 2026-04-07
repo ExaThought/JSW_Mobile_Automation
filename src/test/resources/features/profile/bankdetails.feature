@@ -1,9 +1,9 @@
-@bankdetails
+@bankdetails @regression
 Feature: Validate Bank Account Details Section
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
+    And ccp login with "testnewurl@yopmail.com" and "Jsw@2025"
     And user close payment due pop up
 
 
@@ -11,7 +11,6 @@ Feature: Validate Bank Account Details Section
     And user clicks on customer account menu bar
     And user able to navigate on customer Profile section
     And user clicks on Bank account details tab
-
 
   Scenario: Validate GSTIN Name and Account holder name in Bank details
     And user clicks on customer account menu bar
@@ -35,3 +34,5 @@ Feature: Validate Bank Account Details Section
     And user clicks on Bank account details tab
     When user clicks on Replace bank account option
     Then user should see Enter bank account information page
+
+

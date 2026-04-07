@@ -1,4 +1,4 @@
-@mCart @regression @msanity
+@mCart  @msanity
 
 Feature: Check Add-To-Cart
 

@@ -1,4 +1,4 @@
-@creditOrder @regression
+@creditOrder
 Feature: Check CCP credit order details
 
   Background:

@@ -707,8 +707,8 @@ public class CartSteps extends AbstractWebPage {
     @And("open Cement pdp {string} product")
     public void openCementPdp(String product) {
         try {
-            waitAndCheckIsElementClickable(CEMENT_PDP, product);
-            waitAndClickOn(CEMENT_PDP, product);
+            waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT, product);
+            waitAndClickOn(PLP_FIRST_PRODUCT, product);
         } catch (Exception e) {
             log.info("Failed to open PDP cement page");
             throw new RuntimeException("Failed to open PDP cement page", e);

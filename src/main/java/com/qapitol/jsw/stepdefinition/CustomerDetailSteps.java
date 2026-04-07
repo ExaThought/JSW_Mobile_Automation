@@ -53,7 +53,9 @@ public class CustomerDetailSteps extends AbstractWebPage {
 
     @And("user clicks on customer account menu")
     public void userClicksOnUserMenu() {
-        clickOn(CCP_USER_MENU_TESTACCO);
+//        clickOn(CCP_USER_MENU_TESTACCO);
+        waitAndCheckIsElementClickable(CCP_USER_MENU_TESTACCO);
+        waitAndClickOn(CCP_USER_MENU_TESTACCO);
     }
 
     @And("user able to navigate  on  customer Profile")
