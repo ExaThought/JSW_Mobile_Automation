@@ -1,4 +1,4 @@
-@AddToCartAndCreateOpportunity
+@AddToCartAndCreateOpportunity @regression
 Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:

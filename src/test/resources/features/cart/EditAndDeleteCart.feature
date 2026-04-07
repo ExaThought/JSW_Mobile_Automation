@@ -1,4 +1,4 @@
-@EditAndDeleteCart @regression
+@EditAndDeleteCart
 Feature: Check Edit and Delete line item from Cart
 
   Background:
@@ -6,7 +6,7 @@ Feature: Check Edit and Delete line item from Cart
     And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
     And user close payment due pop up
 
-  @HRSheetEditAndDeleteCart @test01
+  @HRSheetEditAndDeleteCart
   Scenario: Verify HR Sheet Product Add to Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category

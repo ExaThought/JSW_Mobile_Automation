@@ -1,11 +1,13 @@
 package com.qapitol.jsw.utils;
 
 import com.qapitol.jsw.stepdefinition.SessionSteps;
+import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
 import io.cucumber.java.Before;
 import lombok.extern.java.Log;
+import org.openqa.selenium.JavascriptExecutor;
 import org.testng.asserts.SoftAssert;
 
 import static com.qapitol.jsw.stepdefinition.SessionSteps.CCP_DROP_DOWN;
@@ -40,9 +42,13 @@ public class Hooks {
                 sessionSteps.ccpLogOut();
             } catch (Exception e) {
                 log.info("No log out is found");
+                String expiredToken = Config.getConfigProperty("ccpExpiredToken");
+                JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+                // Inject expired/invalid token
+                js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);
+                Grid.driver().navigate().refresh();
             }
 
         }
-
     }
 }
