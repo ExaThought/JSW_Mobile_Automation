@@ -18,7 +18,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And move to Hot rolled category
     And click on HR Sheet product
     And open HR Sheet plp "1" product
-    And select thickness "2.5" width "1250" length "1500" quantity "50" for HR Sheet
+    And select thickness "2.5" width "1500" length "2500" quantity "50" for HR Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page
@@ -116,7 +116,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
   @Cement
   Scenario: Verify Cement Product Add to Cart
     When click on Cement product
-    And open Cement pdp "1" product
+    And open Cement pdp "2" product
     And enter quantity "250" for Cement
     And add to cart
     And click view cart

@@ -888,7 +888,7 @@ public class CartSteps extends AbstractWebPage {
         scrollingToViewAndClickUsingJS(locator);
         try {
             waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-            waitAndClickOn(PLP_FIRST_PRODUCT, "1");
+            waitAndClickOn(PLP_FIRST_PRODUCT, "2");
         } catch (Exception e) {
             log.info("Failed to click on Wire category");
             throw new RuntimeException("Failed to click on Wire category", e);

@@ -100,6 +100,7 @@ public  class SessionSteps extends AbstractWebPage {
         log.exiting();
     }
 
+
     @Then("account logout")
      public  void ccpLogOut(){
         waitAndCheckIsElementVisible(CCP_DROP_DOWN);
