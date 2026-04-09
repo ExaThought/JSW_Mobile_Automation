@@ -29,7 +29,8 @@ public  class SessionSteps extends AbstractWebPage {
     private static final String CCP_LOG_OUT="ccpLogout";
     private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
     private static final String PAYMENT_DUE_POP_UP="paymentDuePopUp";
-    private static final String PAYMENT_DUE_CLOOSE="ccpHomePagePaymentDueClose";
+    private static final String PAYMENT_DUE_CLOSE ="ccpHomePagePaymentDueClose";
+    private static final String LOGIN_POP_UP_CLOSE_BUTTON="loginPopUpCloseButton";
 
     public static String userEmail;
     public static String userPassword;
@@ -66,8 +67,8 @@ public  class SessionSteps extends AbstractWebPage {
             if (!isElementPresent(LOGIN_CTA_BUTTON)) {
                 log.info("CCP User is already logged in, logging out to continue with fresh login");
                 if (isElementPresent(PAYMENT_DUE_POP_UP)){
-                   waitAndCheckIsElementVisible(PAYMENT_DUE_CLOOSE);
-                   waitAndClickOn(PAYMENT_DUE_CLOOSE);
+                   waitAndCheckIsElementVisible(PAYMENT_DUE_CLOSE);
+                   waitAndClickOn(PAYMENT_DUE_CLOSE);
                 }
                 ccpLogOut();
             }
@@ -85,19 +86,26 @@ public  class SessionSteps extends AbstractWebPage {
         String encodedPassword = Base64.getEncoder().encodeToString(pass.getBytes());
         userPassword= encodedPassword;
         waitForSearchOverlayToDisappear();
+        if(waitAndCheckIsElementVisible(LOGIN_POP_UP_CLOSE_BUTTON)){
+            waitAndCheckIsElementClickable(LOGIN_POP_UP_CLOSE_BUTTON);
+            waitAndClickOn(LOGIN_POP_UP_CLOSE_BUTTON);
+        }
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
+        waitAndClickOn(LOGIN_CTA_BUTTON);
+        log.info("successfully clicked Login CTA button");
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP); //Click on Login with OTP
+        waitAndClickOn(LOGIN_VIA_OTP);
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
-        waitAndSetText(LOGIN_EMAIL, emailId); // Give you Email
+        waitAndSetText(LOGIN_EMAIL, emailId);
+        log.info("successfully entered Email");
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
-        waitAndSetText(LOGIN_PASSWORD, pass);// Give the password
+        log.info("successfully entered to password");
+        waitAndSetText(LOGIN_PASSWORD, pass);
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);// Login to continue
-        log.exiting();
+        waitAndClickOn(CCP_LOGIN_CTA);
+        log.info("successfully clicked on Login button");
     }
 
 
