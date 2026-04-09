@@ -1,4 +1,4 @@
-@regression
+@regression @tokenCheck
 Feature: Check Token for all the page
 
   Background:

@@ -1,4 +1,4 @@
-
+@regression @tokenCheck
   Feature: Check Token for Guest user
 
     Background:
