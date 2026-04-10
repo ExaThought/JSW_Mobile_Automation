@@ -44,6 +44,9 @@ public class TokenSteps extends AbstractWebPage {
         JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
         // Inject expired/invalid token
         js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);
+        js.executeScript(
+                "document.cookie = 'token=" + expiredToken + "; path=/; Secure; SameSite=Strict';"
+        );
         log.info("Expired token successfully set in local storage");
     }
 
