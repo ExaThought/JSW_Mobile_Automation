@@ -26,3 +26,6 @@ elements:
   ccpHomePagePaymentDueClose:
     en_US:
       web: //button[@aria-label='Close' and contains(@class,'close')]
+  loginPopUpCloseButton:
+    en_US:
+      web: xpath=//img[@alt='close']

@@ -14,3 +14,27 @@ elements:
   orderSummaryPage:
     en_US:
       web: xpath=(//div[contains(text(),'View details')])[1]
+  searchBox:
+    en_US:
+      web: xpath=//input[@id='SearchText']
+  searchInput:
+    en_US:
+      web: xpath=//input[@id='SearchInput']
+  homePageRegisterCta:
+    en_US:
+      web: xpath=//span[contains(text(),'Register')]
+  continueWithEmailCta:
+    en_US:
+      web: xpath=//button[contains(text(),'Continue with email')]
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']

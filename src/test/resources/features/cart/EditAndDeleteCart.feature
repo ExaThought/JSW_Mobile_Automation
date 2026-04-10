@@ -12,14 +12,14 @@ Feature: Check Edit and Delete line item from Cart
     And move to Hot rolled category
     And click on HR Sheet product
     And open HR Sheet plp "1" product
-    And select thickness "2.5" width "1250" length "1500" quantity "50" for HR Sheet
+    And select thickness "2.5" width "1500" length "2500" quantity "50" for HR Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page
     And click edit
     And update Thickness to "1.6" dropdown
     And update Width to "1500" dropdown
-    And update Length to "7250" dropdown
+    And update Length to "6300" dropdown
     And update Quantity "75"
     And Save edit changes
     And verify the updated Attribute values for HR Sheet in cart page
