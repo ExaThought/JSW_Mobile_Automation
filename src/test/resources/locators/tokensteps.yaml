@@ -38,3 +38,9 @@ elements:
   ccpLoginCTA:
     en_US:
       web: //button[@id='login-to-continue']
+  ledgerPage:
+    en_US:
+      web: //div[contains(text(),'Ledger')]
+  trackMaterialPage:
+    en_US:
+      web: //div[contains(text(),'Track Materials')]

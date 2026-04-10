@@ -17,6 +17,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+import static com.qapitol.jsw.utils.CustomUtil.scrollingToViewAndClickUsingJS;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class TokenSteps extends AbstractWebPage {
@@ -34,6 +35,8 @@ public class TokenSteps extends AbstractWebPage {
     private static final String LOGIN_EMAIL = "ccpLoginEmail";
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
     private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
+    private static final String LEDGER_PAGE="ledgerPage";
+    private static final String TRACK_MATERIAL_PAGE="trackMaterialPage";
 
 
     private String pageName;
@@ -154,5 +157,25 @@ public class TokenSteps extends AbstractWebPage {
         waitAndSetText(LOGIN_PASSWORD, pass);// Give the password
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);// Login to continue
+    }
+
+    @When("user open the ledger page")
+    public void user_open_the_ledger_page() {
+        pageName="Ledger Page";
+        String locator = getLocator(LEDGER_PAGE);
+        scrollingToViewAndClickUsingJS(Grid.driver().findElement(By.xpath(locator)));
+        waitAndCheckIsElementClickable(LEDGER_PAGE);
+        waitAndClickOn(LEDGER_PAGE);
+        log.info("User navigated to ledger page successfully to test token expiry in ledger page");
+    }
+
+    @When("user open the Track Material page")
+    public void user_open_the_track_material_page() {
+        pageName = "Track Material Page";
+        String locator = getLocator(TRACK_MATERIAL_PAGE);
+        scrollingToViewAndClickUsingJS(Grid.driver().findElement(By.xpath(locator)));
+        waitAndCheckIsElementClickable(TRACK_MATERIAL_PAGE);
+        waitAndClickOn(TRACK_MATERIAL_PAGE);
+        log.info("User navigated to Track Material page successfully to test token expiry in Track Material page");
     }
 }
