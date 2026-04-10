@@ -85,7 +85,7 @@ public  class SessionSteps extends AbstractWebPage {
         //convert given password to Base64
         String encodedPassword = Base64.getEncoder().encodeToString(pass.getBytes());
         userPassword= encodedPassword;
-        waitForSearchOverlayToDisappear();
+//        waitForSearchOverlayToDisappear();
         if(waitAndCheckIsElementVisible(LOGIN_POP_UP_CLOSE_BUTTON)){
             waitAndCheckIsElementClickable(LOGIN_POP_UP_CLOSE_BUTTON);
             waitAndClickOn(LOGIN_POP_UP_CLOSE_BUTTON);

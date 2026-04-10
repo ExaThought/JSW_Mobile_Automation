@@ -12,7 +12,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
 #    Then check user able to delete line item from cart
 #    And user checkout the RCV2
 
-  @HRSheet
+  @HRSheet @test01
   Scenario: Verify HR Sheet Product Add to Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
