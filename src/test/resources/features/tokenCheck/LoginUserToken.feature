@@ -74,6 +74,7 @@ Feature: Check Token for all the page
     And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
     Then verify the user is able to login successfully
 
+  @tokenCheck1
   Scenario: Verify Expired token in HR Sheet PLP page
     When move the mouse to Mild steel category
     And move to Hot rolled category
@@ -236,6 +237,22 @@ Feature: Check Token for all the page
 
   Scenario: Verify Expired token in search result page
     When user search for "tmt"
+    When user set expired token in local storage
+    And user refresh the page
+    Then verify the user is logged out and navigate to login page
+    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    Then verify the user is able to login successfully
+
+  Scenario: Verify Expired token in Ledger page
+    When user open the ledger page
+    When user set expired token in local storage
+    And user refresh the page
+    Then verify the user is logged out and navigate to login page
+    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    Then verify the user is able to login successfully
+
+  Scenario: verify Expired token in Track Material  page
+    When user open the Track Material page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page

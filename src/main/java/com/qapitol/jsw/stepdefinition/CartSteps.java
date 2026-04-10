@@ -468,6 +468,7 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " x " + pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
         softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+        System.out.println((pdpProductName));
         softAssert.assertEquals(waitAndGetText(CART_COUNT), String.valueOf(skuCount), "Cart count is not updated in cart icon after adding product to cart");
 
     }
