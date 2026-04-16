@@ -1,4 +1,4 @@
-@search
+@search @regression
 Feature: Validate Search functionality and navigation
 
   Background:
