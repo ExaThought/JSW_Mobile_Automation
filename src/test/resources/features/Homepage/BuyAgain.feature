@@ -4,7 +4,7 @@ Feature: validate Buy-again
   Background:
     Given Go to session "ccp"
     And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
-#    And user close payment due pop up
+    And user close payment due pop up
 
 
   @sanity
