@@ -37,6 +37,10 @@ public class BankDetailSteps extends AbstractWebPage {
     private static final String ACCOUNT_HOLDER_NAME_VALUE = "accountHolderNameValue";
     private static final String BANK_ACCOUNT_NUMBER_VALUE = "bankAccountNumberValue";
     private static final String IFSC_CODE_VALUE = "ifscCodeValue";
+    private static final String EMPTY_BANK_DETAILS_TITLE = "emptyBankDetailsTitle";
+    private static final String ADD_BANK_DETAILS_CTA_BUTTON = "addBankDetailsCTAButton";
+    private static final String BANK_DETAILS_POP_UP_TITLE = "bankDetailsPopUpTitle";
+    private static final String BANK_DETAILS_POP_UP_SUB_TITLE="bankDetailsPopUpSubTitle";
 
 
     // ================= COMMON METHODS =================
@@ -119,9 +123,6 @@ public class BankDetailSteps extends AbstractWebPage {
         softAssert.assertFalse(ifscCode.isEmpty(),
                 " IFSC Code is empty");
 
-
-
-
     }
 
     @When("user clicks on Replace bank account option")
@@ -144,5 +145,28 @@ public class BankDetailSteps extends AbstractWebPage {
 
 
     }
+
+    @Then("verify bank details title")
+    public void verifyBankDetailsTitle() {
+        waitAndCheckIsElementPresent(EMPTY_BANK_DETAILS_TITLE);
+        String actualBankDetailsTitle = waitAndGetText(EMPTY_BANK_DETAILS_TITLE);
+        softAssert.assertEquals(actualBankDetailsTitle, "Bank account details", "Bank Details Title is not matching");
+    }
+
+    @And("click on CTA button")
+    public void clickOnCtaButton() {
+        waitAndCheckIsElementClickable(ADD_BANK_DETAILS_CTA_BUTTON);
+        waitAndClickOn(ADD_BANK_DETAILS_CTA_BUTTON);
+        log.info("Clicked Add Bank Details CTA button");
+    }
+
+    @Then("Verify the pop-up")
+    public void verifyThePopUp() {
+       waitAndCheckIsElementPresent(BANK_DETAILS_POP_UP_TITLE);
+       softAssert.assertEquals(waitAndGetText(BANK_DETAILS_POP_UP_TITLE),"Enter bank account information","Bank Details Pop up Title Is not matching");
+       waitAndCheckIsElementPresent(BANK_DETAILS_POP_UP_SUB_TITLE);
+       softAssert.assertEquals(waitAndGetText(BANK_DETAILS_POP_UP_SUB_TITLE),"Account holder’s name:","Bank Details Pop up Sub Title Is not matching");
+    }
+
 }
 

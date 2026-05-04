@@ -1,4 +1,5 @@
-@carousal
+@carousal @msanity
+
 Feature: From Our Customers Carousel
 
   As a user

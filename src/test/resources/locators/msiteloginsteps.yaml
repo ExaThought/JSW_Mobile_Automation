@@ -40,7 +40,11 @@ elements:
 
   loginToContinue:
       en_US:
-        web: xpath=//button[@id='login-to-continue']
+        web: xpath=//button[contains(@class,'bg-primary-main') and normalize-space(.)='Login now']
+
+  continueToHome:
+    en_US:
+      web: xpath=//button[@id='login-to-continue']
 
   errorMessage:
     en_US:

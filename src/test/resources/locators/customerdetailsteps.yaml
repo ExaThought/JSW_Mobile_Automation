@@ -1,10 +1,7 @@
 elements:
-
-  # ================= USER MENU =================
-
   ccpUserMenuTestacco:
     en_US:
-      web: //span[contains(normalize-space(),'Testauto')]
+      web: xpath=(//img[@class="header-arrow-down"])[1]
 
   ccpUserMenuProfileOption:
     en_US:

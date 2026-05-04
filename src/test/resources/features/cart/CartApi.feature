@@ -15,7 +15,7 @@ Feature: Check RCV2 Cart Api
 #    And check for Cement product and verify the primary and secondary uom and quantity
 #    And check for StainlessSteel product and verify the primary and secondary uom and quantity
 #    Then check how many line item present in get cart
-#    And delete complete cart
+    And delete complete cart
 
 
   @testCaseId=id-005 @dataFile="rcv2.yaml"

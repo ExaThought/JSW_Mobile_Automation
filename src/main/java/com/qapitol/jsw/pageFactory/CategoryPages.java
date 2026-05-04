@@ -5,7 +5,7 @@ import org.openqa.selenium.By;
 
 public class CategoryPages {
 
-    public static String mildSteelCategory="(//a[contains(., 'Mild Steel')])[1]";
+    public static String mildSteelCategory="(//a[contains(., 'Mild steel')])[1]";
     public static String hotRolledCategory="(//a[contains(text(),'Hot rolled')])[4]";
     public static String hotRolledSheetsSubCategory="(//a[contains(text(),'Hot rolled sheets')])[1]";
     public static String hotRolledCoilsSubCategory="(//a[contains(text(),'Hot rolled coils')])[1]";
@@ -28,6 +28,7 @@ public class CategoryPages {
     public static  By ACTIVE_ORDER_NUMBER = By.xpath("//span[normalize-space()='Order number:']/following-sibling::span");
     public static By VIEW_ORDER_DOCUMENTS_BTN = By.xpath("//p[normalize-space()='View order documents']");
     public  static By SAVE_ADDRESS=By.xpath("//button[@id='save-change' and normalize-space()='Save changes']");
+    public static By Add_TO_CART_BUTTON=By.xpath("//div[contains(text(),'Add to cart')]/parent::button");
 
 
 }

@@ -1,9 +1,9 @@
-@buy @regression
+@buy
 Feature: validate Buy-again
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
+    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
     And user close payment due pop up
 
 
@@ -11,27 +11,21 @@ Feature: validate Buy-again
   Scenario: Check and validate payment due floater pop up after navigate to My Buy again
     And user navigate to buy again page
     Then  verify payment due floater pop up for Buy-again
-    Then account logout
-
 
   @sanity
   Scenario: Check and validate redirection for order page
     And user navigate to order button
     Then verify order page title
-    Then account logout
-
 
   @sanity
   Scenario: Check and validate redirection for ledger page
     And user navigate to ledger button
     Then verify ledger page title
-    Then account logout
 
   @sanity
   Scenario: Check and validate redirection for material tracking  page
     And user navigate to Material tracking button
     Then verify Material tracking page deatils
-    Then account logout
 
 
   @sanity
@@ -39,7 +33,7 @@ Feature: validate Buy-again
     And user navigate to buy again page
     And user click on checkbox for Add to cart
     Then verify items added to cart from Buy-again
-    Then account logout
+
 
 
 

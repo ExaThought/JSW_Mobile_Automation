@@ -4,7 +4,7 @@ Feature: Check payment due pop up and payment due floater pop up
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testnewurl@yopmail.com" and "Jsw@2025"
+    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
 
   @sanity @emailLogin @emailLoginWithValidCredentials
   Scenario: Check and validate payment due pop up after login

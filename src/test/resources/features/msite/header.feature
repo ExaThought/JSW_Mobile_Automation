@@ -1,4 +1,5 @@
-@home
+@home @msanity
+
 Feature: Check home page
 
   Background:

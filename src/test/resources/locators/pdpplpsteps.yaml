@@ -1,0 +1,22 @@
+elements:
+    resetSelectionButton:
+      en_US:
+        web: xpath=//div[@class='reset-selection']
+    addToCart:
+      en_US:
+        web: xpath=//div[contains(text(),'Add to cart')]/parent::button
+    attributeValue:
+      en_US:
+        web: xpath=//button[normalize-space()="{0}"]
+    quantity:
+      en_US:
+        web: xpath=(//input[@id='inputQty'])[1]
+    cartPageQuantity:
+      en_US:
+        web: xpath=//div[contains(text(),'Qty:')]
+    brandName:
+      en_US:
+        web: xpath=(//span[contains(text(),'Brand:')])[2]/following-sibling::span
+    pdpDescription:
+      en_US:
+        web: xpath=//div[text()='Product information']/following::div[contains(@class,'packaging-info')]

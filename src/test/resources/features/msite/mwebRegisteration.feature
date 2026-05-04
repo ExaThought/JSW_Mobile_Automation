@@ -1,4 +1,5 @@
-@mregistration
+@mregistration @msanity
+
 Feature: Check CCP registration on MWeb
 
   Background:

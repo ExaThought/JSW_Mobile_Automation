@@ -44,3 +44,15 @@ elements:
     enterBankAccountHeading:
       en_US:
         web: //div[normalize-space()='Enter bank account information']
+  emptyBankDetailsTitle:
+    en_US:
+      web: xpath=(//div[contains(text(),'Bank account details')])[2]
+  addBankDetailsCTAButton:
+    en_US:
+      web: xpath=//button[starts-with(@class,'primary-btn')]/child::div
+  bankDetailsPopUpTitle:
+    en_US:
+      web: xpath=//div[@class='d-flex flex-column']/child::div[1]
+  bankDetailsPopUpSubTitle:
+    en_US:
+      web: xpath=//div[@class='d-flex flex-column']/child::div/child::div/child::div[1]

@@ -25,7 +25,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "user@example.com"
     Then new user continue to Registration
-    And enter full name "" mobile number "9876543210" and gst "29ABCDE1234F1Z5"
+    And enter full name "" mobile number "9876543210" and gst "29ABVPR0591F1Z1"
     Then next button should be disabled
 
   @sanity @registrationNegative
@@ -33,7 +33,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "user@example.com"
     Then new user continue to Registration
-    And enter full name "Indresh Kumar" mobile number "" and gst "29ABCDE1234F1Z5"
+    And enter full name "Indresh Kumar" mobile number "" and gst "29ABVPR0591F1Z1"
     Then next button should be disabled
 
   @sanity @registrationNegative
@@ -49,7 +49,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "indresh.kumarallen@gmail.com"
     Then new user continue to Registration
-    And enter full name "Indresh Kumar" mobile number "12345" and gst "29ABCDE1234F1Z5"
+    And enter full name "Indresh Kumar" mobile number "12345" and gst "29ABVPR0591F1Z1"
     Then user should not able to proceed with phone number error
     And next button should be disabled
 
@@ -60,6 +60,14 @@ Feature: Check CCP registration
     Then new user continue to Registration
     And enter full name "Indresh Kumar" mobile number "9876543210" and gst "INVALIDGSTIN"
     Then user should not able to proceed with GSTIN error
+    And next button should be disabled
+
+  Scenario: Verify T&C checkbox is required before submitting
+    And user open the CCP web portal
+    And enter new valid email id "indresh.kumarallen@gmail.com"
+    Then new user continue to Registration
+    And enter full name "Indresh Kumar" mobile number "9876543210" and gst "29ABVPR0591F1Z1"
+    And remove checkbox
     And next button should be disabled
 
 

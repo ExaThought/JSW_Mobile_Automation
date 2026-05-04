@@ -8,16 +8,24 @@ import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
+
+import java.time.Duration;
+import java.util.logging.Logger;
 
 public class FooterSteps extends AbstractWebPage {
 
     // Reference to HeaderSteps for shared methods
     HeaderSteps hs = new HeaderSteps();
 
+    private static final Logger logger = Logger.getLogger(FooterSteps.class.getName());
+
     // LocatorReader for YAML
     private final LocatorReader locatorReader = new LocatorReader("locators/msite/footersteps.yaml");
+    private String lastClickedLink;
 
     SoftAssert softAssert = new SoftAssert();
 
@@ -37,8 +45,7 @@ public class FooterSteps extends AbstractWebPage {
     public void the_footer_link_should_be_visible(String linkKey) throws InterruptedException {
         softAssert.assertTrue(
                 waitAndCheckIsElementVisible(linkKey),
-                "Footer link not visible: " + linkKey
-        );
+                "Footer link not visible: " + linkKey);
     }
 
     // ------------------- Support Info -------------------
@@ -46,74 +53,82 @@ public class FooterSteps extends AbstractWebPage {
     public void the_support_phone_number_should_be_visible() throws InterruptedException {
         softAssert.assertTrue(
                 waitAndCheckIsElementVisible("supportPhone"),
-                "Support phone number not visible"
-        );
+                "Support phone number not visible");
     }
 
     @Then("the support email address should be visible")
     public void the_support_email_address_should_be_visible() throws InterruptedException {
         softAssert.assertTrue(
                 waitAndCheckIsElementVisible("supportEmail"),
-                "Support email address not visible"
-        );
+                "Support email address not visible");
     }
 
     // ------------------- Scroll & Click -------------------
     private void scrollToElementAndClick(String yamlKey) {
-        WebElement element = null;
-        int attempts = 0;
+        String xpath = locatorReader.getXpath("elements." + yamlKey + ".en_US.web");
+        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
 
-        while (attempts < 10) {
-            try {
-                // Get XPath from YAML
-                String xpath = locatorReader.getXpath("elements." + yamlKey + ".en_US.web");
-                element = Grid.driver().findElement(By.xpath(xpath));
+        try {
+            WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpath)));
 
-                if (element.isDisplayed()) {
-                    // Scroll precisely to element's top, accounting for fixed headers
-                    ((JavascriptExecutor) Grid.driver()).executeScript(
-                            "window.scrollTo({top: arguments[0] - 100, behavior: 'smooth'});",
-                            element.getLocation().getY()
-                    );
+            ((JavascriptExecutor) Grid.driver()).executeScript(
+                    "arguments[0].scrollIntoView({block:'center', inline:'nearest'});",
+                    element);
 
-                    // Small wait for scroll animation
-                    Thread.sleep(500);
+            wait.until(ExpectedConditions.visibilityOf(element));
+            wait.until(ExpectedConditions.elementToBeClickable(element));
 
-                    element.click();
-                    return;
-                }
-            } catch (Exception ignored) {}
-            try { Thread.sleep(500); } catch (InterruptedException ignored) {}
-            attempts++;
+            element.click();
+            logger.info("Successfully clicked on footer element: " + yamlKey);
+        } catch (Exception e) {
+            logger.severe("Failed to click on footer element: " + yamlKey + " | Error: " + e.getMessage());
+            throw new RuntimeException("Element not clickable: " + yamlKey, e);
         }
     }
-
 
     // ------------------- Map feature names to YAML keys -------------------
     private String getFooterYamlKey(String linkName) {
         switch (linkName.trim().toLowerCase()) {
-            case "buy online": return "buyOnlineSection";
-            case "msme": return "msmeSection";
-            case "support": return "supportSection";
-            case "policy": return "policySection";
+            case "buy online":
+                return "buyOnlineSection";
+            case "msme":
+                return "msmeSection";
+            case "support":
+                return "supportSection";
+            case "policy":
+                return "policySection";
 
-            case "mild steel": return "mildSteelLink";
-            case "structural steel": return "structuralSteelLink";
-            case "tmt": return "tmtLink";
-            case "cement": return "cementLink";
+            case "mild steel":
+                return "mildSteelLink";
+            case "structural steel":
+                return "structuralSteelLink";
+            case "tmt":
+                return "tmtLink";
+            case "cement":
+                return "cementLink";
 
-            case "about us": return "aboutUsLink";
-            case "blogs": return "blogsLink";
-            case "site map": return "siteMapLink";
-            case "jsw one tmt": return "jswOneTmtLink";
+            case "about us":
+                return "aboutUsLink";
+            case "blogs":
+                return "blogsLink";
+            case "site map":
+                return "siteMapLink";
+            case "jsw one tmt":
+                return "jswOneTmtLink";
 
-            case "support phone": return "supportPhone";
-            case "support email": return "supportEmail";
-            case "help support": return "helpSupportLink";
+            case "support phone":
+                return "supportPhone";
+            case "support email":
+                return "supportEmail";
+            case "help support":
+                return "helpSupportLink";
 
-            case "terms & conditions": return "termsAndConditions";
-            case "privacy policy": return "privacyPolicy";
-            case "return policy": return "returnPolicy";
+            case "terms & conditions":
+                return "termsAndConditions";
+            case "privacy policy":
+                return "privacyPolicy";
+            case "return policy":
+                return "returnPolicy";
 
             default:
                 throw new IllegalArgumentException("Unknown footer link: " + linkName);
@@ -123,6 +138,7 @@ public class FooterSteps extends AbstractWebPage {
     // ------------------- Footer Link Click -------------------
     @When("the user clicks on the footer link {string}")
     public void the_user_clicks_on_the_footer_link(String linkName) throws InterruptedException {
+        this.lastClickedLink = linkName;
         String yamlKey = getFooterYamlKey(linkName);
         scrollToElementAndClick(yamlKey);
     }
@@ -131,6 +147,23 @@ public class FooterSteps extends AbstractWebPage {
     @Then("the user should be redirected to the corresponding page")
     public void the_user_should_be_redirected_to_the_corresponding_page() {
         String currentUrl = Grid.driver().getCurrentUrl();
-        Assert.assertTrue(currentUrl.startsWith("http"), "Footer navigation redirection failed");
+        Assert.assertTrue(currentUrl.startsWith("http"),
+                "Footer navigation redirection failed (URL: " + currentUrl + ")");
+
+        // Verification of page content to ensure it's not blank and matches expectation
+        String pageTitle = Grid.driver().getTitle();
+        String bodyText = Grid.driver().findElement(By.tagName("body")).getText();
+
+        Assert.assertFalse(bodyText.trim().isEmpty(), "Page seems to be blank after navigation to: " + currentUrl);
+
+        if (lastClickedLink != null) {
+            String expected = lastClickedLink.toLowerCase();
+
+            boolean match = pageTitle.toLowerCase().contains(expected)
+                    || bodyText.toLowerCase().contains(expected);
+
+            Assert.assertTrue(match, "Page context mismatch. Expected to find '" + lastClickedLink
+                    + "' in title ('" + pageTitle + "') or body of " + currentUrl);
+        }
     }
 }

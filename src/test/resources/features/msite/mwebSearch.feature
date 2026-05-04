@@ -1,4 +1,5 @@
-@search
+@msearch @msanity
+
 Feature: Verify search coming  on home page
 
   Background:
@@ -10,21 +11,21 @@ Feature: Verify search coming  on home page
   Scenario: Verify presence and visibility of search bar
     Then user should see search bar on home page
 
-  @search
+  @search @fail
   Scenario Outline: Validate search results for valid, partial and invalid keywords
     When user enters "<keyword>" in search bar
     Then search results should be displayed for "<resultType>"
 
     Examples:
       | keyword     | resultType |
-      | cement      | valid      |
-      | cem         | partial    |
+      | Cement      | valid      |
+      | Cem         | partial    |
       | xyz123@@    | invalid    |
 
   @search
   Scenario: Verify search keyword retention in search bar
-    When user enters "cement" in search bar
-    Then search keyword "cement" should be retained in search bar
+    When user enters "Cement" in search bar
+    Then search keyword "Cement" should be retained in search bar
 
   @search
   Scenario: Validate search input and auto-suggestions

@@ -61,7 +61,7 @@ elements:
       web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
   mildSteel:
     en_US:
-      web: xpath=(//a[contains(., 'Mild Steel')])[1]
+      web: xpath=(//a[contains(., 'Mild steel')])[1]
   colourCoated:
     en_US:
       web: xpath=(//a[contains(text(),'Colour coated')])[2]
@@ -142,7 +142,7 @@ elements:
       web: xpath=//div[contains(text(),"Length (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
   pdpProductName:
     en_US:
-      web: xpath=(//span[contains(text(),'Brand:')]/parent::div/parent::div/child::h1)[2]
+      web: xpath=(//span[contains(text(),'Brand:')]/parent::div/parent::div/child::h1)
   galvanizedSheet:
     en_US:
       web: xpath=(//a[contains(text(),'Galvanized sheets')])
@@ -173,5 +173,20 @@ elements:
   editFormDropdown:
     en_US:
       web: xpath=//div[normalize-space()='Form']/following-sibling::input
+  cartCount:
+    en_US:
+      web: xpath=//div[@class='count']
+  emptyCartMessage:
+    en_US:
+      web: xpath=//div[contains(text(),"Your cart is empty")]
+  emptyCartCount:
+    en_US:
+      web: xpath=//div[@class='cart-icon-container empty-cart']/child::div
+  cartPageSKUCount:
+    en_US:
+      web: xpath=//div[@class='typography-h6 typography-font-semibold']
+  deleteCartTitle:
+    en_US:
+      web: //div[contains(text(),'Delete item')]
 
 

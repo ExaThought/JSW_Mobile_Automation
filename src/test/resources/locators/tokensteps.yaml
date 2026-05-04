@@ -1,0 +1,46 @@
+elements:
+  mildSteelTitle:
+    en_US:
+      web: xpath=//h2[@id='mild-steel']
+  cartPage:
+    en_US:
+      web: xpath=//a[@href='/cart-detail']
+  myRequirementPage:
+    en_US:
+      web: xpath=//a[@href='/my-requirements']
+  myOrderPage:
+    en_US:
+      web: xpath=//a[@href='/my-orders']
+  orderSummaryPage:
+    en_US:
+      web: xpath=(//div[contains(text(),'View details')])[1]
+  searchBox:
+    en_US:
+      web: xpath=//input[@id='SearchText']
+  searchInput:
+    en_US:
+      web: xpath=//input[@id='SearchInput']
+  homePageRegisterCta:
+    en_US:
+      web: xpath=//span[contains(text(),'Register')]
+  continueWithEmailCta:
+    en_US:
+      web: xpath=//button[contains(text(),'Continue with email')]
+  loginViaOtp:
+    en_US:
+      web: //button[@id='login-via-otp']
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@id='login-to-continue']
+  ledgerPage:
+    en_US:
+      web: //div[contains(text(),'Ledger')]
+  trackMaterialPage:
+    en_US:
+      web: //div[contains(text(),'Track Materials')]

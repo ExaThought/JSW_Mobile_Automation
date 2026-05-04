@@ -1,0 +1,131 @@
+elements:
+  # ── Header ──────────────────────────────────────────────────────────────────
+  profileIcon:
+    en_US:
+      web: css=header button svg, header a[href*='profile'], div.rounded-full, xpath=//a[@href='/profile'] | //header//a[contains(@href,'profile')]
+
+  profileDetailsOption:
+    en_US:
+      web: xpath=//a[contains(@href,'profile')] | //*[normalize-space()='Profile details']
+
+  # ── Page Title ───────────────────────────────────────────────────────────────
+  profilePageTitle:
+    en_US:
+      web: xpath=//div[contains(@class,'typography-h3') and contains(@class,'typography-font-semibold') and normalize-space()='Profile details']
+
+  # ── Personal Details ─────────────────────────────────────────────────────────
+  personalDetailsSection:
+    en_US:
+      web: xpath=//div[contains(@class,'typography-h5') and normalize-space()='Personal details']
+
+  profileNameLabel:
+    en_US:
+      web: xpath=//div[normalize-space()='Name']
+
+  profileNameValue:
+    en_US:
+      web: xpath=//div[normalize-space()='Name']/following-sibling::div[1]
+
+  profilePhoneLabel:
+    en_US:
+      web: xpath=//div[normalize-space()='Phone number']
+
+  profilePhoneValue:
+    en_US:
+      web: xpath=//div[normalize-space()='Phone number']/following-sibling::div[1]
+
+  profileEmailLabel:
+    en_US:
+      web: xpath=//div[normalize-space()='Email address']
+
+  profileEmailValue:
+    en_US:
+      web: xpath=//div[normalize-space()='Email address']/following-sibling::div[1]
+
+  # ── Company Details ───────────────────────────────────────────────────────────
+  companyDetailsSection:
+    en_US:
+      web: xpath=//div[contains(@class,'typography-h5') and normalize-space()='Company details']
+
+  companyNameValue:
+    en_US:
+      web: xpath=//div[normalize-space()='Name']/following-sibling::div[contains(@class,'display-company-name') or 1]
+
+
+  companyAddressLabel:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='Address']
+
+  companyAddressValue:
+    en_US:
+      web: xpath=//div[contains(@class,'col-md-4') and not(contains(@class,'flex-fill'))]//div[contains(@class,'s-pb-8') and normalize-space()='Address']/following-sibling::div[contains(@class,'typography-text-primary-grey')][1]
+
+  companyGstinLabel:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='GSTIN']
+
+  companyGstinValue:
+    en_US:
+      web: xpath=//div[contains(@class,'col-md-4') and not(contains(@class,'flex-fill'))]//div[contains(@class,'s-pb-8') and normalize-space()='GSTIN']/following-sibling::div[contains(@class,'typography-text-primary-grey')][1]
+
+  companyPanLabel:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='PAN']
+
+  companyPanValue:
+    en_US:
+      web: xpath=//div[contains(@class,'col-md-4') and not(contains(@class,'flex-fill'))]//div[contains(@class,'s-pb-8') and normalize-space()='PAN']/following-sibling::div[contains(@class,'typography-text-primary-grey')][1]
+  # ── Banking Details ───────────────────────────────────────────────────────────
+  bankingDetailsSection:
+    en_US:
+      web: xpath=//div[contains(@class,'typography-h5') and normalize-space()='For NEFT/RTGS payments']
+
+  bankNameLabel:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='Bank name']
+
+  bankNameValue:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='Bank name']/following-sibling::div[contains(@class,'typography-text-primary-grey')]//span[contains(@class,'acc-info')]
+
+  beneficiaryNameLabel:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='Beneficiary name']
+
+  beneficiaryNameValue:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='Beneficiary name']/following-sibling::div[contains(@class,'typography-text-primary-grey')]//span[contains(@class,'acc-info')]
+
+  accountNumberLabel:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='Account number']
+
+  accountNumberValue:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='Account number']/following-sibling::div[contains(@class,'typography-text-primary-grey')]//span[contains(@class,'acc-info')]
+
+  ifscCodeLabel:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='IFSC code']
+
+  ifscCodeValue:
+    en_US:
+      web: xpath=//div[contains(@class,'s-pb-8') and contains(@class,'typography-font-semibold') and normalize-space()='IFSC code']/following-sibling::div[contains(@class,'typography-text-primary-grey')]//span[contains(@class,'acc-info')]
+
+  # ── Navigation Tabs ───────────────────────────────────────────────────────────
+  profileDetailsTab:
+    en_US:
+      web: xpath=//a[contains(@class,'profile-tab-title') and contains(@class,'active')]
+
+  addressesTab:
+    en_US:
+      web: xpath=//a[contains(@class,'nav-link') and normalize-space()='Addresses']
+
+  bankAccountDetailsTab:
+    en_US:
+      web: xpath=//a[contains(@class,'nav-link') and normalize-space()='Bank account details']
+
+  # ── Payment Reminder ──────────────────────────────────────────────────────────
+  paymentReminderCloseBtn:
+    en_US:
+      web: xpath=//div[@role='dialog']//button

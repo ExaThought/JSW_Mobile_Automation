@@ -33,6 +33,7 @@ public class mwebSearchSteps  extends AbstractWebPage {
     private static final String PRODUCT_NAME = "productName";
     private static final String PRODUCT_IMAGE = "productImage";
     private static final String VIEW_ALL = "viewAllButton";
+    public static final String PRODUCT_CARD_PLP = "productCardplp";
     LocatorReader locatorReader = new LocatorReader("locators/mwebsearchsteps.yaml");
     SoftAssert softAssert = new SoftAssert();
     Actions actions = new Actions(Grid.driver());
@@ -139,7 +140,7 @@ public class mwebSearchSteps  extends AbstractWebPage {
     @Then("each product card should have name, image")
     public void verify_product_details() {
 
-        String productCardXpath = locatorReader.getXpath("elements.productCard.en_US.web");
+        String productCardXpath = locatorReader.getXpath("elements.productCardplp.en_US.web");
         String productNameXpath = locatorReader.getXpath("elements.productName.en_US.web");
         String productImageXpath = locatorReader.getXpath("elements.productImage.en_US.web");
 
@@ -183,7 +184,7 @@ public class mwebSearchSteps  extends AbstractWebPage {
 
     @When("user selects a product from PLP")
     public void click_product_from_plp() {
-        waitAndClickOn(PRODUCT_CARD);
+        waitAndClickOn(PRODUCT_CARD_PLP);
     }
 
 

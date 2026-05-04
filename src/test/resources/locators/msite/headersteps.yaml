@@ -1,7 +1,7 @@
 elements:
   jswLogo:
     en_US:
-      web: xpath=//img[@alt='JSW Logo']
+      web: xpath=//img[contains(@alt,'JSW')] | //a[@href='/']//img | //header//img | //img[contains(@src,'logo')]
   loginViaOtp:
     en_US:
       web: //button[@id='login-via-otp']

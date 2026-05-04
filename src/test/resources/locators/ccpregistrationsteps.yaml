@@ -54,5 +54,8 @@ elements:
   invalidGSTINErrorMessage:
     en_US:
       web: //div[contains(text(),'Please enter correct GSTIN for account registration on JSW ONE MSME')]
+  checkBox:
+    en_US:
+      web: xpath=//span[contains(text(),'I agree to JSW')]
 
 

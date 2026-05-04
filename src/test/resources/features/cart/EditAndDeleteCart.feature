@@ -1,9 +1,9 @@
-@EditAndDeleteCart @regression
+@EditAndDeleteCart
 Feature: Check Edit and Delete line item from Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
+    And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
     And user close payment due pop up
 
   @HRSheetEditAndDeleteCart
@@ -11,15 +11,15 @@ Feature: Check Edit and Delete line item from Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Sheet product
-    And open HR Sheet plp "3" product
-    And select thickness "3" width "1250" length "2500" quantity "50" for HR Sheet
+    And open HR Sheet plp "1" product
+    And select thickness "2.5" width "1500" length "2500" quantity "50" for HR Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page
     And click edit
     And update Thickness to "1.6" dropdown
     And update Width to "1500" dropdown
-    And update Length to "7250" dropdown
+    And update Length to "6300" dropdown
     And update Quantity "75"
     And Save edit changes
     And verify the updated Attribute values for HR Sheet in cart page
@@ -30,14 +30,14 @@ Feature: Check Edit and Delete line item from Cart
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Coil product
-    And open HR Coil plp "2" product
-    And select thickness "4" width "1250" quantity "50" for HR Coil
+    And open HR Coil plp "1" product
+    And select thickness "2.5" width "1250" quantity "50" for HR Coil
     And add to cart
     And click view cart
     Then Verify the Attribute values for HR Coil in cart page
     And click edit
-    And update Thickness to "3" dropdown
-    And update Width to "1500" dropdown
+    And update Thickness to "6" dropdown
+    And update Width to "1540" dropdown
     And update Quantity "75"
     And Save edit changes
     And Verify the updated Attribute values for HR Coil in cart page
@@ -83,7 +83,7 @@ Feature: Check Edit and Delete line item from Cart
   @CementEditAndDeleteCart
   Scenario: Verify Cement Product Add to Cart
     When click on Cement product
-    And open Cement pdp "1" product
+    And open Cement pdp "2" product
     And enter quantity "250" for Cement
     And add to cart
     And click view cart
