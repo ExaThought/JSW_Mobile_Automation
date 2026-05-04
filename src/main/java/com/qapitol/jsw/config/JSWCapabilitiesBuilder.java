@@ -24,7 +24,8 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
         if (getTestSession() instanceof WebTestSession) {
             boolean isHeadless = ((WebTestSession) getTestSession()).isBrowserRunHeadless();
             if (isHeadless) {
-                Path userProfileDirPath = Paths.get(System.getProperty("user.dir"), "profiles", getTestSession().getSessionName().trim());
+                String profileDirName = getTestSession().getSessionName().trim() + "-t" + Thread.currentThread().getId();
+                Path userProfileDirPath = Paths.get(System.getProperty("user.dir"), "profiles", profileDirName);
                 File userProfileDir = userProfileDirPath.toFile();
                 if (!userProfileDir.exists()) {
                     try {
