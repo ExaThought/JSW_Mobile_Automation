@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.jsw.config.TestGroupContext;
 import com.qapitol.sauron.common.configuration.Config;
 
 import java.util.Set;
@@ -25,7 +26,10 @@ public class UserConfig {
     }
 
     private static String getGroup() {
-        String group = Config.getConfigProperty("test.group");
+        String group = TestGroupContext.get();
+        if (group == null || group.isBlank()) {
+            group = Config.getConfigProperty("test.group");
+        }
         if (group == null || group.isBlank()) {
             throw new IllegalStateException(
                 "test.group parameter is not set in testng XML. Valid values: " + VALID_GROUPS

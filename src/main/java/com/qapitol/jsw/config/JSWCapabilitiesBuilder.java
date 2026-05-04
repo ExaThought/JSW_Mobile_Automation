@@ -25,7 +25,10 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
         if (getTestSession() instanceof WebTestSession) {
             boolean isHeadless = ((WebTestSession) getTestSession()).isBrowserRunHeadless();
             if (isHeadless) {
-                String testGroup = Config.getConfigProperty("test.group");
+                String testGroup = TestGroupContext.get();
+                if (testGroup == null || testGroup.isBlank()) {
+                    testGroup = Config.getConfigProperty("test.group");
+                }
                 String profileSuffix = (testGroup != null && !testGroup.isBlank())
                         ? testGroup
                         : String.valueOf(Thread.currentThread().getId());
