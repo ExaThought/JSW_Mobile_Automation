@@ -4,7 +4,7 @@ Feature: Validate Blog and Youtube video sections
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testautomation01@yopmail.com" and "Jsw@2025"
+    And ccp login with configured user
     And user close payment due pop up
 
   Scenario: Validate logged user can navigate to blog

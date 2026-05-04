@@ -3,7 +3,7 @@ Feature: Validate Bank Account Details Section
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testnewurl@yopmail.com" and "Jsw@2025"
+    And ccp login with configured user
     And user close payment due pop up
 
 

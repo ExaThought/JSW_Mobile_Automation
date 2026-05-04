@@ -8,9 +8,9 @@ Feature: Logout functionality
     Then the home page should load successfully
     And the CCP logo should be visible
     When user clicks on login button
-    And user enters email "testautomation01@yopmail.com"
+    And user enters email with configured msite user
     When user submits login
-    And user enters password "Jsw@2025"
+    And user enters password with configured msite user
     When user clicks on proceed to login
     Then user should be logged in successfully via email
 
