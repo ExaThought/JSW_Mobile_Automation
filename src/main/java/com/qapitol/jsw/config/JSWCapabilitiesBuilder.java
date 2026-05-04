@@ -1,6 +1,7 @@
 package com.qapitol.jsw.config;
 
 import com.qapitol.sauron.common.capabilities.DefaultCapabilitiesBuilder;
+import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.web.sessions.WebTestSession;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -24,8 +25,12 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
         if (getTestSession() instanceof WebTestSession) {
             boolean isHeadless = ((WebTestSession) getTestSession()).isBrowserRunHeadless();
             if (isHeadless) {
-                String profileDirName = getTestSession().getSessionName().trim() + "-t" + Thread.currentThread().getId();
-                Path userProfileDirPath = Paths.get(System.getProperty("user.dir"), "profiles", profileDirName);
+                String testGroup = Config.getConfigProperty("test.group");
+                String profileSuffix = (testGroup != null && !testGroup.isBlank())
+                        ? testGroup
+                        : String.valueOf(Thread.currentThread().getId());
+                Path userProfileDirPath = Paths.get(System.getProperty("user.dir"), "profiles",
+                        getTestSession().getSessionName().trim() + "_" + profileSuffix);
                 File userProfileDir = userProfileDirPath.toFile();
                 if (!userProfileDir.exists()) {
                     try {
