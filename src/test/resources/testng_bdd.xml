@@ -61,15 +61,4 @@
     </classes>
   </test>
 
-  <!-- ==================== GROUP: Msite ==================== -->
-  <test name="Msite">
-    <parameter name="test.group" value="msite"/>
-    <parameter name="sessions" value="sessions_mobile.yaml"/>
-    <parameter name="cucumber.features" value="src/test/resources/features/msite"/>
-    <parameter name="cucumber.filter.tags" value="@msanity or @mLedger or @mCart or @mCartValidation or @hamburger or @logout or @MobileProfile"/>
-    <classes>
-      <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-    </classes>
-  </test>
-
 </suite>
