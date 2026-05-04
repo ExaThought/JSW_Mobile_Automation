@@ -15,7 +15,10 @@ public class GlobalConfigProperties extends AbstractConfigInitializer {
 
     @Override
     public void initialize(ITestContext iTestContext) {
-
+        String group = iTestContext.getCurrentXmlTest().getParameter("test.group");
+        if (group != null && !group.isBlank()) {
+            TestGroupContext.set(group);
+        }
     }
 
     @Override
