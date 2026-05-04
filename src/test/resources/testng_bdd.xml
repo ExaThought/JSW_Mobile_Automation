@@ -21,7 +21,6 @@
   <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
   <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
 
-  <!-- ==================== GROUP: Homepage ==================== -->
   <test name="Homepage">
     <parameter name="test.group" value="homepage"/>
     <parameter name="sessions" value="sessions.yaml"/>
@@ -32,7 +31,6 @@
     </classes>
   </test>
 
-  <!-- ==================== GROUP: Cart ==================== -->
   <test name="Cart">
     <parameter name="test.group" value="cart"/>
     <parameter name="sessions" value="sessions.yaml"/>
@@ -43,23 +41,21 @@
     </classes>
   </test>
 
-  <!-- ==================== GROUP: Profile ==================== -->
   <test name="Profile">
     <parameter name="test.group" value="profile"/>
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@address or @bankdetails or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword"/>
+    <parameter name="cucumber.filter.tags" value="@address or @bankdetails or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword or @tokenCheck"/>
     <classes>
       <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
     </classes>
   </test>
 
-  <!-- ==================== GROUP: Orders ==================== -->
   <test name="Orders">
     <parameter name="test.group" value="orders"/>
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation or @ccpErpSyncRegression or @tokenCheck or @regressionApi"/>
+    <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation or @ccpErpSyncRegression"/>
     <classes>
       <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
     </classes>
