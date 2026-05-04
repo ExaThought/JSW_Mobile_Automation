@@ -70,3 +70,34 @@ elements:
   returnPolicy:
     en_US:
       web: xpath=//*[contains(normalize-space(text()),'Return Policy')]
+
+
+  elements:
+
+    # -------- Social Icons --------
+
+    socialYoutubeIcon:
+      en_US:
+        web: xpath=//a[contains(@href,'youtube')]
+
+    socialLinkedInIcon:
+      en_US:
+        web: xpath=//a[contains(@href,'linkedin')]
+
+    socialInstagramIcon:
+      en_US:
+        web: xpath=//a[contains(@href,'instagram')]
+
+    # -------- App Download Section --------
+
+    downloadAppSection:
+      en_US:
+        web: xpath=//*[contains(text(),'Download our App')]
+
+    googlePlayIcon:
+      en_US:
+        web: xpath=//img[contains(@alt,'google play')]
+
+    appStoreIcon:
+      en_US:
+        web: xpath=//img[contains(@alt,'app store')]

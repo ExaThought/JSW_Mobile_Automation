@@ -123,7 +123,6 @@ public class BankDetailSteps extends AbstractWebPage {
         softAssert.assertFalse(ifscCode.isEmpty(),
                 " IFSC Code is empty");
 
-
     }
 
     @When("user clicks on Replace bank account option")

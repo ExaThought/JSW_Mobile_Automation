@@ -32,6 +32,33 @@ Feature: Validate Footer links and navigation
     And the footer link "Privacy policy" should be visible for web
     And the footer link "Return Policy" should be visible for web
 
+  Scenario: Verify social media icons visibility in footer
+    Then the "socialYoutubeIcon" should be visible in the footer for web
+    And the "socialLinkedInIcon" should be visible in the footer for web
+    And the "socialInstagramIcon" should be visible in the footer for web
+
+  Scenario: Verify social media icons redirection
+    When the user clicks on social icon "YouTube"
+    Then the user should be redirected to the correct social page "youtube"
+
+    When the user clicks on social icon "LinkedIn"
+    Then the user should be redirected to the correct social page "linkedin"
+
+    When the user clicks on social icon "Instagram"
+    Then the user should be redirected to the correct social page "instagram"
+
+  Scenario: Verify App download section visibility
+    Then the "downloadAppSection" should be visible in the footer for web
+    And the "googlePlayIcon" should be visible in the footer for web
+    And the "appStoreIcon" should be visible in the footer for web
+
+  Scenario: Verify App download redirection
+    When the user clicks on app icon "Google Play"
+    Then the user should be redirected to the correct app store "playstore"
+
+    When the user clicks on app icon "App Store"
+    Then the user should be redirected to the correct app store "appstore"
+
   Scenario Outline: Verify footer link navigation
     Given the footer link "<linkName>" should be visible for web
     When the user clicks on the footer link "<linkName>" for web

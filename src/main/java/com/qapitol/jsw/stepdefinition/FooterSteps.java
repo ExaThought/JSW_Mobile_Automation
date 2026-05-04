@@ -158,4 +158,75 @@ public class FooterSteps extends AbstractWebPage {
 
         System.out.println("Current URL: " + currentUrl);
     }
+    @Then("the {string} should be visible in the footer for web")
+    public void verify_element_visible(String key) throws InterruptedException {
+
+        softAssert.assertTrue(
+                waitAndCheckIsElementVisible(key),
+                "Element not visible: " + key
+        );
+    }
+
+    @When("the user clicks on social icon {string}")
+    public void click_social_icon(String iconName) {
+
+        String key = getSocialKey(iconName);
+        scrollToElementAndClick(key);
+    }
+    @When("the user clicks on app icon {string}")
+    public void click_app_icon(String appName) {
+
+        String key = getAppKey(appName);
+        scrollToElementAndClick(key);
+    }
+    private String getSocialKey(String name) {
+
+        switch (name.toLowerCase()) {
+            case "youtube": return "socialYoutubeIcon";
+            case "linkedin": return "socialLinkedInIcon";
+            case "instagram": return "socialInstagramIcon";
+            default: throw new IllegalArgumentException("Invalid social icon: " + name);
+        }
+    }
+    private String getAppKey(String name) {
+
+        switch (name.toLowerCase()) {
+            case "google play": return "googlePlayIcon";
+            case "app store": return "appStoreIcon";
+            default: throw new IllegalArgumentException("Invalid app icon: " + name);
+        }
+    }
+    @Then("the user should be redirected to the correct social page {string}")
+    public void verify_social_redirect(String platform) {
+
+        String url = Grid.driver().getCurrentUrl();
+
+        switch (platform.toLowerCase()) {
+            case "youtube":
+                Assert.assertTrue(url.contains("youtube"), "Not redirected to YouTube");
+                break;
+            case "linkedin":
+                Assert.assertTrue(url.contains("linkedin"), "Not redirected to LinkedIn");
+                break;
+            case "instagram":
+                Assert.assertTrue(url.contains("instagram"), "Not redirected to Instagram");
+                break;
+        }
+    }
+    @Then("the user should be redirected to the correct app store {string}")
+    public void verify_app_redirect(String store) {
+
+        String url = Grid.driver().getCurrentUrl();
+
+        switch (store.toLowerCase()) {
+            case "playstore":
+                Assert.assertTrue(url.contains("play.google"), "Not redirected to Play Store");
+                break;
+            case "appstore":
+                Assert.assertTrue(url.contains("apple"), "Not redirected to App Store");
+                break;
+        }
+    }
+
 }
+
