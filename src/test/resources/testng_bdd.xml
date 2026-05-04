@@ -22,7 +22,7 @@
     <parameter name="test.group" value="homepage"/>
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@regression and (@blog or @ledger or @footer or @search or @buy or @paymentDue or @customerDetails)"/>
+    <parameter name="cucumber.filter.tags" value="@footer or @search or @paymentDue or @ledger or @customerDetails or @SEOCheck or @GuestUser"/>
     <classes>
       <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
     </classes>
@@ -33,7 +33,7 @@
     <parameter name="test.group" value="cart"/>
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@regression and (@AddToCartAndCreateOpportunity or @EditAndDeleteCart or @CartLineItem or @CartQuantityUpdate or @EmptyCart or @creditOrder or @ccpActiveOrder or @PDPValidation)"/>
+    <parameter name="cucumber.filter.tags" value="@AddToCartAndCreateOpportunity or @CartVerification or @shipment or @PDPValidation"/>
     <classes>
       <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
     </classes>
@@ -44,7 +44,7 @@
     <parameter name="test.group" value="profile"/>
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@regression and (@address or @bankdetails or @loginRegression or @registrationRegression or @forgetPassword)"/>
+    <parameter name="cucumber.filter.tags" value="@address or @bankdetails or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword"/>
     <classes>
       <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
     </classes>
@@ -55,7 +55,7 @@
     <parameter name="test.group" value="orders"/>
     <parameter name="sessions" value="sessions.yaml"/>
     <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@regression and (@slcOrderCreation or @ccpErpSyncRegression or @tokenCheck or @centralCart or @regressionApi)"/>
+    <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation or @ccpErpSyncRegression or @tokenCheck or @regressionApi"/>
     <classes>
       <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
     </classes>

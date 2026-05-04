@@ -1,4 +1,4 @@
-@regression
+@regression @CartVerification
 Feature: Check Cart page and its functionality
 
   Background:

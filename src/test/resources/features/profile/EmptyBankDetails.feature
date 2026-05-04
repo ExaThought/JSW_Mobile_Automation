@@ -1,4 +1,4 @@
-@regression
+@regression @EmptyBankDetails
 
 Feature: Verify empty bank details in profile
 
