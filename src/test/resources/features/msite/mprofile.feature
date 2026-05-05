@@ -1,4 +1,4 @@
-@MobileProfile @profile
+@MobileProfile @mprofile
 Feature: Mobile Profile Page Validation
 
   Background:

@@ -1,4 +1,4 @@
-@hamburger @msanity @profile
+@mhamburger @msanity @mprofile
 Feature: Hamburger Menu Navigation Validation
 
   Background:

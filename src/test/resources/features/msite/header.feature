@@ -1,4 +1,4 @@
-@home @msanity
+@mhome @msanity
 
 Feature: Check home page
 

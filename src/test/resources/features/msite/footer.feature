@@ -1,4 +1,4 @@
-@footer @msanity
+@mfooter @msanity
 
 Feature: Verify footer elements and navigation on home page
 

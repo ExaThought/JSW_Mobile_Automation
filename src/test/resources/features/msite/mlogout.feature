@@ -1,4 +1,4 @@
-@logout @msanity
+@mlogout @msanity
 
 
 Feature: Logout functionality
