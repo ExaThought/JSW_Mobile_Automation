@@ -3,62 +3,76 @@
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="5"
        data-provider-thread-count="1" annotations="JDK">
 
-  <listeners>
-    <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
-  </listeners>
+    <listeners>
+        <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
+    </listeners>
 
-  <parameter name="data.env" value="qa"/>
-  <parameter name="data.testId" value="testCaseId"/>
-  <parameter name="api.retry.count" value="3"/>
-  <parameter name="enableSessionsKeepAlive" value="true"/>
-  <parameter name="executionTimeout" value="10000"/>
-  <parameter name="cucumber.publish.quiet" value="true"/>
-  <parameter name="cucumber.plugin" value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
-  <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
-  <parameter name="selfHeal" value="true"/>
-  <parameter name="selfHeal.recovery.tries" value="2"/>
-  <parameter name="selfHeal.score.cap" value="0.7"/>
-  <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
-  <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
+    <parameter name="data.env" value="qa"/>
+    <parameter name="data.testId" value="testCaseId"/>
+    <parameter name="api.retry.count" value="3"/>
+    <parameter name="enableSessionsKeepAlive" value="true"/>
+    <parameter name="executionTimeout" value="10000"/>
+    <parameter name="cucumber.publish.quiet" value="true"/>
+    <parameter name="cucumber.plugin"
+               value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
+    <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
+    <parameter name="selfHeal" value="true"/>
+    <parameter name="selfHeal.recovery.tries" value="2"/>
+    <parameter name="selfHeal.score.cap" value="0.7"/>
+    <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
+    <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
 
-  <test name="Homepage">
-    <parameter name="test.group" value="homepage"/>
-    <parameter name="sessions" value="sessions.yaml"/>
-    <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@footer or @search or @paymentDue or @ledger or @customerDetails or @SEOCheck or @GuestUser"/>
-    <classes>
-      <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-    </classes>
-  </test>
+    <test name="Homepage">
+        <parameter name="test.group" value="homepage"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags"
+                   value="@footer or @search or @paymentDue or @ledger or @customerDetails"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-  <test name="Cart">
-    <parameter name="test.group" value="cart"/>
-    <parameter name="sessions" value="sessions.yaml"/>
-    <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@AddToCartAndCreateOpportunity or @CartVerification or @shipment or @PDPValidation"/>
-    <classes>
-      <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-    </classes>
-  </test>
+    <test name="Cart">
+        <parameter name="test.group" value="cart"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags"
+                   value="@AddToCartAndCreateOpportunity or @CartVerification or @shipment or @PDPValidation"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-  <test name="Profile">
-    <parameter name="test.group" value="profile"/>
-    <parameter name="sessions" value="sessions.yaml"/>
-    <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@address or @bankdetails or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword or @tokenCheck"/>
-    <classes>
-      <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-    </classes>
-  </test>
+    <test name="Profile">
+        <parameter name="test.group" value="profile"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags"
+                   value="@address or @bankdetails or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword or @tokenCheck"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-  <test name="Orders">
-    <parameter name="test.group" value="orders"/>
-    <parameter name="sessions" value="sessions.yaml"/>
-    <parameter name="cucumber.features" value="src/test/resources/features"/>
-    <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation or @ccpErpSyncRegression"/>
-    <classes>
-      <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-    </classes>
-  </test>
+    <test name="Orders">
+        <parameter name="test.group" value="orders"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation or @ccpErpSyncRegression"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
+    <test name="GuestUser">
+        <parameter name="test.group" value="Guest"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags" value="@SEOCheck or @GuestUser"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
 </suite>

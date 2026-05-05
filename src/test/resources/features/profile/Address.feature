@@ -14,7 +14,7 @@ Feature: validate Address
     Then customer navigate company name jsw test address
 
 
-  @sanity @add
+  @sanity @add @test01
   Scenario: Check and validate  add Address for customer
     And user clicks on Testacco user menu
     And user clicks on Profile option
