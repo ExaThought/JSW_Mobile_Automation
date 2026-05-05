@@ -3,13 +3,15 @@ package com.qapitol.jsw.utils;
 import com.qapitol.jsw.apitest.apis.impl.BaseApiImpl;
 
 
+import java.util.Base64;
+
 import static io.restassured.RestAssured.*;
 
 public class Token extends BaseApiImpl {
 
     public static String getCCPToken(){
-        String email = ConfigUtil.getSecretValue("homepage.user.email");
-        String password = ConfigUtil.getSecretValue("homepage.user.password");
+        String email = UserConfig.getEmail();
+        String password = Base64.getEncoder().encodeToString(UserConfig.getPassword().getBytes());
         return getCCPToken(email, password);
     }
     public static String getCCPToken(String email, String password){
