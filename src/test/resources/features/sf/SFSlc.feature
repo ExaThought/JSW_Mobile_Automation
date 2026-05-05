@@ -21,7 +21,7 @@ Feature: Check SLC Flow
     And Open the cart and verify the cart details
     And Create an order and verify the order summery page
     Then account logout
-    And open the ERP and verify all the SFSlc order data≠
+    And open the ERP and verify all the SFSlc order data
 
   @testCaseId=id-001 @dataFile="sfslcslo.yaml"
   Scenario: Check Distribute credit order
