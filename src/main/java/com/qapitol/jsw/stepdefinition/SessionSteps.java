@@ -63,7 +63,6 @@ public  class SessionSteps extends AbstractWebPage {
             Grid.driver().get(url);
             sleep(1000);
             defocusSearchOverlay();
-            sleep(2000);
             //Logout the user incase already logged for jenkin's run
             if (!isElementPresent(LOGIN_CTA_BUTTON)) {
                 log.info("CCP User is already logged in, logging out to continue with fresh login");
@@ -112,6 +111,19 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);
         log.info("successfully clicked on Login button");
+    }
+
+    @And("open Login page to enter email and password")
+    public void openLoginPageToEnterEmailAndPassword() {
+        if(waitAndCheckIsElementVisible(LOGIN_POP_UP_CLOSE_BUTTON)){
+            waitAndCheckIsElementClickable(LOGIN_POP_UP_CLOSE_BUTTON);
+            waitAndClickOn(LOGIN_POP_UP_CLOSE_BUTTON);
+        }
+        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
+        waitAndClickOn(LOGIN_CTA_BUTTON);
+        log.info("successfully clicked Login CTA button");
+        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
+        waitAndClickOn(LOGIN_VIA_OTP);
     }
 
 

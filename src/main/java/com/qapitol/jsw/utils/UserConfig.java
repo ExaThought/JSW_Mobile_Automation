@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class UserConfig {
 
-    private static final Set<String> VALID_GROUPS = Set.of("homepage", "cart", "profile", "orders", "msite");
+    private static final Set<String> VALID_GROUPS = Set.of("homepage", "cart", "profile", "orders", "msite","Guest");
 
     public static String getEmail() {
         return ConfigUtil.getSecretValue(emailKey());
