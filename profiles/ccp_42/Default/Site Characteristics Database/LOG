@@ -1,2 +1,3 @@
-2026/05/06-18:57:09.571 4e1893 Creating DB /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Site Characteristics Database since it was missing.
-2026/05/06-18:57:09.577 4e1893 Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Site Characteristics Database/MANIFEST-000001
+2026/05/07-14:29:04.522 53ab74 Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Site Characteristics Database/MANIFEST-000001
+2026/05/07-14:29:04.522 53ab74 Recovering log #3
+2026/05/07-14:29:04.528 53ab74 Reusing old log /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Site Characteristics Database/000003.log 

@@ -1,2 +1,3 @@
-2026/05/06-18:57:09.846 4e19cc Creating DB /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Local Storage/leveldb since it was missing.
-2026/05/06-18:57:09.874 4e19cc Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Local Storage/leveldb/MANIFEST-000001
+2026/05/07-14:29:05.097 53ac78 Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Local Storage/leveldb/MANIFEST-000001
+2026/05/07-14:29:05.147 53ac78 Recovering log #3
+2026/05/07-14:29:05.184 53ac78 Reusing old log /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_42/Default/Local Storage/leveldb/000003.log 

@@ -1,2 +1,3 @@
-2026/05/06-18:57:12.587 4e1891 Creating DB /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_40/Default/shared_proto_db/metadata since it was missing.
-2026/05/06-18:57:12.659 4e1891 Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_40/Default/shared_proto_db/metadata/MANIFEST-000001
+2026/05/07-14:29:41.411 53b256 Reusing MANIFEST /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_40/Default/shared_proto_db/metadata/MANIFEST-000001
+2026/05/07-14:29:41.412 53b256 Recovering log #3
+2026/05/07-14:29:41.413 53b256 Reusing old log /Users/jayadevgowda/JswProject/msme-fe-utaf-automation/profiles/ccp_40/Default/shared_proto_db/metadata/000003.log 
