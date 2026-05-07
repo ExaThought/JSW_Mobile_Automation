@@ -8,6 +8,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -25,7 +26,6 @@ public class SearchSteps extends AbstractWebPage {
     private static final String PRODUCT_CARD = "productCard";
     private static final String PRODUCT_NAME = "productName";
     private static final String PRODUCT_IMAGE = "productImage";
-    private static final String VIEW_ALL = "viewAllButton";
 
     LocatorReader locatorReader =
             new LocatorReader("locators/searchsteps.yaml");
@@ -81,18 +81,20 @@ public class SearchSteps extends AbstractWebPage {
     @Then("search results should be displayed for {string} for web")
     public void verify_search_results_for_web(String resultType) {
 
-        String productXpath =
-                locatorReader.getXpath("elements.productCard.en_US.web");
+        // Count suggestion rows inside the search popup, not any
+        // /product-detail link on the underlying homepage.
+        String suggestionXpath =
+                locatorReader.getXpath("elements.searchSuggestions.en_US.web");
 
-        List<WebElement> products =
-                Grid.driver().findElements(By.xpath(productXpath));
+        List<WebElement> suggestions =
+                Grid.driver().findElements(By.xpath(suggestionXpath));
 
         if (resultType.equalsIgnoreCase("invalid")) {
-            Assert.assertTrue(products.isEmpty(),
-                    "Products found for invalid search");
+            Assert.assertTrue(suggestions.isEmpty(),
+                    "Suggestions found for invalid search");
         } else {
-            Assert.assertTrue(!products.isEmpty(),
-                    "No products found for valid search");
+            Assert.assertTrue(!suggestions.isEmpty(),
+                    "No suggestions found for valid search");
         }
     }
 
@@ -136,37 +138,39 @@ public class SearchSteps extends AbstractWebPage {
 
     @Then("product cards should be visible for web")
     public void verify_product_cards_visible_for_web() {
-        waitAndCheckIsElementVisible(PRODUCT_CARD);
+        waitAndCheckIsElementVisible(SEARCH_SUGGESTIONS);
     }
 
     @Then("each product card should have name, image for web")
     public void verify_product_card_details_for_web() {
 
+        // Iterate suggestion rows in the search popup; their inner DOM is
+        // span.suggestion-text + img.suggestion-image, not p.typography + img.
         String cardXpath =
-                locatorReader.getXpath("elements.productCard.en_US.web");
+                locatorReader.getXpath("elements.searchSuggestions.en_US.web");
 
         String nameXpath =
-                locatorReader.getXpath("elements.productName.en_US.web");
+                locatorReader.getXpath("elements.searchResultName.en_US.web");
 
         String imageXpath =
-                locatorReader.getXpath("elements.productImage.en_US.web");
+                locatorReader.getXpath("elements.searchResultImage.en_US.web");
 
         List<WebElement> cards =
                 Grid.driver().findElements(By.xpath(cardXpath));
 
         Assert.assertTrue(!cards.isEmpty(),
-                "No product cards found");
+                "No suggestion cards found");
 
         for (WebElement card : cards) {
 
             Assert.assertTrue(
                     card.findElements(By.xpath(nameXpath)).size() > 0,
-                    "Product name missing"
+                    "Suggestion name missing"
             );
 
             Assert.assertTrue(
                     card.findElements(By.xpath(imageXpath)).size() > 0,
-                    "Product image missing"
+                    "Suggestion image missing"
             );
         }
     }
@@ -197,7 +201,16 @@ public class SearchSteps extends AbstractWebPage {
 
     @When("user clicks on view all products for web")
     public void click_view_all_products_for_web() {
-        waitAndClickOn(VIEW_ALL);
+        // The redesigned search modal has no "view all" link; pressing Enter
+        // on the modal input submits the query and navigates to PLP
+        // (/product-list?text=<keyword>).
+        By modalInputBy =
+                By.xpath(locatorReader.getXpath("elements.searchModalInput.en_US.web"));
+
+        WebElement input =
+                wait.until(ExpectedConditions.elementToBeClickable(modalInputBy));
+
+        input.sendKeys(Keys.ENTER);
     }
 
     @When("user selects a product from PLP for web")
@@ -209,7 +222,7 @@ public class SearchSteps extends AbstractWebPage {
     public void verify_plp_navigation_for_web() {
 
         Assert.assertTrue(
-                Grid.driver().getCurrentUrl().contains("/query"),
+                Grid.driver().getCurrentUrl().contains("/product-list"),
                 "Not navigated to PLP page"
         );
     }

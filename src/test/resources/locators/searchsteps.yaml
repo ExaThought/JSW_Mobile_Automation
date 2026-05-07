@@ -23,6 +23,15 @@ elements:
     en_US:
       web: //div[contains(@class,'search-popup-overlay')]//a[contains(@class,'suggestion-row')]
 
+  # Inner elements of a suggestion row (relative xpaths used inside a card)
+  searchResultName:
+    en_US:
+      web: .//span[contains(@class,'suggestion-text')]
+
+  searchResultImage:
+    en_US:
+      web: .//img[contains(@class,'suggestion-image')]
+
   # -------- PRODUCTS --------
   productCard:
     en_US:
@@ -35,7 +44,3 @@ elements:
   productImage:
     en_US:
       web: .//img
-
-  viewAllButton:
-    en_US:
-      web: //a[contains(@href,'/query')]
