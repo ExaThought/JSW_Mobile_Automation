@@ -38,7 +38,7 @@
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
         <parameter name="cucumber.filter.tags"
-                   value="@AddToCartAndCreateOpportunity or @CartVerification or @shipment or @PDPValidation"/>
+                   value="@AddToCartAndCreateOpportunity or @CartVerification or @shipment or @PDPValidation or @EditAndDeleteCart"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>

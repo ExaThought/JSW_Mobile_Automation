@@ -4,3 +4,6 @@ sauronFiles
 target
 
 runtime_data.json
+.jenkins.env
+.jenkins.env.*
+.jenkins.envTAB

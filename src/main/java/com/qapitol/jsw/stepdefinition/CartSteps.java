@@ -646,8 +646,6 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click cold rolled sheet width", e);
         }
 
-        WebElement locator = Grid.driver().findElement(By.xpath(length));
-        scrollingToViewAndClickUsingJS(locator);
         try {
             if (isElementPresent(ATTRIBUTE, length)) {
                 waitAndCheckIsElementClickable(ATTRIBUTE, length);
@@ -1321,8 +1319,11 @@ public class CartSteps extends AbstractWebPage {
 
     @When("click cart icon")
     public void clickCartIcon() {
-        waitAndClickOn(EMPTY_CART_COUNT);
-        log.info("Clicked on cart icon with empty cart");
+        // Click the cart anchor itself instead of the inner div, which only
+        // exists in the empty-cart state — this works whether the cart is
+        // empty or has items.
+        waitAndClickOn(CART_PAGE);
+        log.info("Clicked on cart icon");
     }
 
     @Then("check the empty cart page display with message {string}")
