@@ -20,6 +20,7 @@ public class SearchSteps extends AbstractWebPage {
 
     // YAML keys
     private static final String SEARCH_INPUT = "searchInput";
+    private static final String SEARCH_MODAL_INPUT = "searchModalInput";
     private static final String SEARCH_SUGGESTIONS = "searchSuggestions";
     private static final String PRODUCT_CARD = "productCard";
     private static final String PRODUCT_NAME = "productName";
@@ -44,18 +45,27 @@ public class SearchSteps extends AbstractWebPage {
     @When("user enters {string} in search bar for web")
     public void enter_search_keyword_for_web(String keyword) {
 
-        By searchInputBy =
+        By searchTriggerBy =
                 By.xpath(locatorReader.getXpath("elements.searchInput.en_US.web"));
+
+        By modalInputBy =
+                By.xpath(locatorReader.getXpath("elements.searchModalInput.en_US.web"));
 
         By suggestionsBy =
                 By.xpath(locatorReader.getXpath("elements.searchSuggestions.en_US.web"));
 
-        WebElement input =
-                wait.until(ExpectedConditions.elementToBeClickable(searchInputBy));
+        // The homepage search bar is a trigger that opens a modal containing the
+        // real input. Click it first, then type into the modal input.
+        wait.until(ExpectedConditions.elementToBeClickable(searchTriggerBy)).click();
 
-        // Vue reactive input set
+        WebElement input =
+                wait.until(ExpectedConditions.elementToBeClickable(modalInputBy));
+
+        // Vue reactive input set on the modal input
         ((JavascriptExecutor) Grid.driver()).executeScript(
-                "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('input'));",
+                "arguments[0].focus();" +
+                "arguments[0].value = arguments[1];" +
+                "arguments[0].dispatchEvent(new Event('input', {bubbles: true}));",
                 input,
                 keyword
         );
@@ -165,7 +175,15 @@ public class SearchSteps extends AbstractWebPage {
 
     @When("user clicks on a product from search results for web")
     public void click_product_from_results_for_web() {
-        waitAndClickOn(PRODUCT_CARD);
+        // Click the first suggestion row inside the search popup, not any
+        // generic product-detail link elsewhere on the page.
+        By suggestionsBy =
+                By.xpath(locatorReader.getXpath("elements.searchSuggestions.en_US.web"));
+
+        WebElement firstSuggestion =
+                wait.until(ExpectedConditions.elementToBeClickable(suggestionsBy));
+
+        firstSuggestion.click();
     }
 
     @Then("user should be navigated to product detail page for web")
