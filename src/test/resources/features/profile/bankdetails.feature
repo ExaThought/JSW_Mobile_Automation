@@ -1,4 +1,4 @@
-@bankdetails @regression
+@bankDetails @regression
 Feature: Validate Bank Account Details Section
 
   Background:

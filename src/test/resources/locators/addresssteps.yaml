@@ -40,7 +40,7 @@ elements:
 
   ccpAddressSaveChangesButton:
     en_US:
-      web: xpath=(//button[@id='save-change' and normalize-space()='Save changes'])[2]
+      web: (//button[@id='save-change' and normalize-space()='Save changes'])[2]
 
   ccpSavedAddressCompanyNameDynamic:
     en_US:
