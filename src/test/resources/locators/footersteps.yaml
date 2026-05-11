@@ -1,72 +1,115 @@
 elements:
+  # All footer locators are scoped to the `.footer-out` wrapper so they
+  # don't accidentally match hidden duplicate elements in the header /
+  # mobile-menu / dropdowns earlier in the DOM. Navigation links are
+  # matched by @href (stable across copy changes); social icons by their
+  # @id; section headings by exact text.
+
+  # -------- Section headings --------
   buyOnlineSection:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Buy online')]
+      web: xpath=//div[contains(@class,'footer-out')]//*[normalize-space(text())='Buy online']
 
   msmeSection:
     en_US:
-      web: xpath=//p[contains(text(),'JSW One MSME')]
+      web: xpath=//div[contains(@class,'footer-out')]//*[normalize-space(text())='JSW One MSME']
 
   supportSection:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Support')]
+      web: xpath=//div[contains(@class,'footer-out')]//*[normalize-space(text())='Support']
 
   policySection:
     en_US:
-      web: xpath=//p[contains(normalize-space(text()),'Policy')]
+      web: xpath=//div[contains(@class,'footer-out')]//*[normalize-space(text())='Policy']
 
+  downloadAppSection:
+    en_US:
+      web: xpath=//div[contains(@class,'footer-out')]//*[normalize-space(text())='Download our App']
+
+  # -------- Buy online column links --------
   mildSteelLink:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Mild steel')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/category/mild-steel']
 
   structuralSteelLink:
     en_US:
-      web: xpath=//a[contains(normalize-space(text()),'Structural Steel')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/category/structural-steel']
 
   tmtLink:
     en_US:
-      web: xpath=//a[normalize-space(text())='TMT']
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/category/TMT-Bar-steel']
 
   cementLink:
     en_US:
-      web: xpath=//a[normalize-space(text())='Cement']
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/category/cement']
 
+  # -------- JSW One MSME column links --------
   aboutUsLink:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'About us')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/about-us']
 
   blogsLink:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Blogs')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/blogs']
 
+  # Footer text is "Sitemap" (one word); feature still uses "Site map".
   siteMapLink:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Site map')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/sitemap']
 
+  # The footer no longer has a "JSW One TMT" link — "One-Helix" replaced
+  # it. Point this key at One-Helix so the existing scenario keeps a real
+  # clickable target.
   jswOneTmtLink:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'JSW One TMT')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/lp/one-helix']
 
+  # -------- Support column --------
   supportPhone:
     en_US:
-      web: xpath=//*[contains(text(),'+91')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@id='f-contact-number']
 
   supportEmail:
     en_US:
-      web: xpath=//a[starts-with(@href,'mailto:support@jswonemsme.com')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@id='f-email-us']
 
   helpSupportLink:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Help & support')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/help-support']
 
+  # -------- Policy column links --------
   termsAndConditions:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Terms & conditions')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/terms-conditions']
 
   privacyPolicy:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Privacy policy')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/privacy-policy']
 
   returnPolicy:
     en_US:
-      web: xpath=//*[contains(normalize-space(text()),'Return Policy')]
+      web: xpath=//div[contains(@class,'footer-out')]//a[@href='/return-policy']
+
+  # -------- Social icons (stable @id) --------
+  socialYoutubeIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'footer-out')]//a[@id='social-Youtube']
+
+  socialLinkedInIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'footer-out')]//a[@id='social-LinkedIn']
+
+  socialInstagramIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'footer-out')]//a[@id='social-Instagram']
+
+  # -------- App store badges --------
+  # Note: on preprod these are <img> tags WITHOUT a parent anchor, so
+  # clicking them won't navigate. Visibility checks will pass.
+  googlePlayIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'footer-out')]//img[@alt='google play store']
+
+  appStoreIcon:
+    en_US:
+      web: xpath=//div[contains(@class,'footer-out')]//img[@alt='app store']
