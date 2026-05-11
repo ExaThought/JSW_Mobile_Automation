@@ -82,7 +82,7 @@ elements:
       web: xpath=//div[@class='rc-subimitted h-100 d-flex justify-content-center align-items-center flex-column']//following-sibling::div[contains(text(),'submitted')]
   cartPage:
     en_US:
-      web: xpath=//a[@class='cart']
+      web: xpath=//a[@href='/cart-detail']
   plpFirstProduct:
     en_US:
       web: xpath= (//span[contains(text(),"Brand:")])[{0}]
