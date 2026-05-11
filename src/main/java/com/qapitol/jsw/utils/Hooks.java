@@ -31,7 +31,7 @@ public class Hooks {
     @After
     public void afterScenario() {
         try{
-        System.out.println("c");
+        System.out.println("=== AFTER SCENARIO END ===");
         // Assert all soft assertions at the end of each scenario
         softAssert.assertAll();
     } catch (RuntimeException e) {

@@ -13,15 +13,15 @@ Feature: Check CCP-ERP order confirmation Sync
     And confirms the order in ERP and verify in CCP
 
   @orderConfirmation @cashAndCarryAdvanceOrderConfirmation @sanity
-  @testCaseId=id-002 @dataFile="ccpErpSync.yaml" @regression
+  @testCaseId=id-002 @dataFile="ccpErpSync.yaml"
   Scenario: Verify Order Confirmation for cash and carry Advance.
     When create cash and carry cart advance from SF
     Given Go to session "ccp"
     And ccp login with configured user
     Then user close payment due pop up
     And open the cart page and create order
-#    And logs into ERP and opens the order details page
-#    And confirms the order in ERP and verify in CCP
+    And logs into ERP and opens the order details page
+    And confirms the order in ERP and verify in CCP
 
 
 

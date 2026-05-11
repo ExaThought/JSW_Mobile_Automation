@@ -60,7 +60,6 @@ Feature: Validate Footer links and navigation
   Scenario: Verify App download redirection
     When the user clicks on app icon "Google Play"
     Then the user should be redirected to the correct app store "playstore"
-
     When the user clicks on app icon "App Store"
     Then the user should be redirected to the correct app store "appstore"
 

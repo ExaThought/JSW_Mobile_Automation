@@ -1181,7 +1181,7 @@ public class CartSteps extends AbstractWebPage {
     public void verifyTheUpdatedAttributeValuesForHRCoilinCartPage() {
         //verify quantity in cart page
         cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
+        softAssert.assertEquals(cartPageQuantity, "Qty: " + updatedQuantity + " MT");
 
         afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertEquals(afterUpdateCartAttributeValue, updatedThickness + " x " + updatedWidth + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");

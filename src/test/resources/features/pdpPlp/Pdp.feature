@@ -31,8 +31,8 @@
       When move the mouse to Mild steel category
       And move to Hot rolled category
       And click on HR Coil product
-      And open HR Coil plp "2" product
-      And select thickness "4" width "1250" quantity "10000" for HR Coil
+      And open HR Coil plp "1" product
+      And select thickness "2.5" width "1250" quantity "10000" for HR Coil
       And add to cart
       And click view cart
       Then check quantity enter below 10000 in PDP page
