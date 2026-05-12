@@ -1,0 +1,8 @@
+[47196:4334957:0505/115333.333945:INFO:components/enterprise/browser/controller/chrome_browser_cloud_management_controller.cc:238] No machine level policy manager exists.
+[47196:4335035:0505/115337.670493:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[47196:4335035:0505/115337.752209:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[47196:4335035:0505/115337.753317:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[47196:4334957:0505/115404.070932:ERROR:chrome/browser/ui/webui/ntp/new_tab_ui.cc:53] Requested load of chrome://newtab/ for incorrect profile type.
+[47196:4334957:0505/115404.078954:ERROR:chrome/browser/ui/webui/ntp/new_tab_ui.cc:53] Requested load of chrome://newtab/ for incorrect profile type.
+[47203:4335089:0505/115404.246116:WARNING:net/extras/sqlite/sqlite_persistent_store_backend_base.cc:176] Failed to post task from FlushAndNotifyInBackground@net/extras/sqlite/sqlite_persistent_store_backend_base.cc:226 to client_task_runner_.
+[47203:4335089:0505/115404.246557:WARNING:net/extras/sqlite/sqlite_persistent_store_backend_base.cc:176] Failed to post task from FlushAndNotifyInBackground@net/extras/sqlite/sqlite_persistent_store_backend_base.cc:226 to client_task_runner_.

@@ -1,4 +1,4 @@
-@viewAllNavigation @msanity
+@mviewAllNavigation @msanity
 
 Feature: View All navigation for categories on MSME QA mobile site
 

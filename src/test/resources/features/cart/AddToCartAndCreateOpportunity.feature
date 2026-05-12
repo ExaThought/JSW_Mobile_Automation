@@ -3,7 +3,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And ccp login with configured user
     And user close payment due pop up
 
 #  @addToCart @checkout
@@ -141,6 +141,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     When move the mouse to Mild steel category
     And click on Wire product
     And open Wire pdp
+    And click on reset button in pdp page
     And select diameter "10" quantity "50" for Wire
     And add to cart
     And click view cart
@@ -151,6 +152,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
   Scenario: Verify TMT product add to cart
     When click on TMT product
     And click on TMT plp "1" product
+    And click on reset button in pdp page
     And select diameter "10" form "Straight" quantity "50" for TMT
     And add to cart
     And click view cart

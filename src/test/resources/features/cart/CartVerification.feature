@@ -1,9 +1,9 @@
-@regression
+@regression @CartVerification
 Feature: Check Cart page and its functionality
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And ccp login with configured user
       And user close payment due pop up
 
 

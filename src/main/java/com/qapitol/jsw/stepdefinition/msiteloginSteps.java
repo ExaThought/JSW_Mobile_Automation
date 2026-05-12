@@ -1,6 +1,7 @@
 package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.LocatorReader;
+import com.qapitol.jsw.utils.UserConfig;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -56,6 +57,11 @@ public class msiteloginSteps extends AbstractWebPage {
         waitAndClickOn(LOGIN_BUTTON);
     }
 
+    @When("user enters email with configured msite user")
+    public void enter_email_with_configured_user() {
+        enter_email(UserConfig.getEmail("msite"));
+    }
+
     @When("user enters email {string}")
     public void enter_email(String email) {
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
@@ -92,6 +98,11 @@ public class msiteloginSteps extends AbstractWebPage {
         Thread.sleep(5000);
         waitAndCheckIsElementVisible(SUCCESSLOGIN);
         waitAndClickOn(SUCCESSLOGIN);
+    }
+
+    @And("user enters password with configured msite user")
+    public void enter_password_with_configured_user() {
+        enter_password(UserConfig.getPassword("msite"));
     }
 
     @And("user enters password {string}")

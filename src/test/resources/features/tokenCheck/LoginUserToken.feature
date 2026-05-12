@@ -3,14 +3,14 @@ Feature: Check Token for all the page
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And ccp login with configured user
     And user close payment due pop up
 
   Scenario: Verify token in home page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in cart page
@@ -18,7 +18,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in my requirement page
@@ -26,7 +26,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in my order page
@@ -34,7 +34,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in order summary page
@@ -42,7 +42,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in profile page
@@ -51,7 +51,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in address page
@@ -61,7 +61,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario:Verify Expired token in bank details page
@@ -71,7 +71,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   @tokenCheck1
@@ -82,7 +82,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in HR Coil PLP page
@@ -92,7 +92,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in CR Coil PLP page
@@ -102,7 +102,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in CR Sheet PLP page
@@ -113,7 +113,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: verify Expired token in cement PLP page
@@ -121,7 +121,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in Coated steel PLP page
@@ -131,7 +131,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in Wire PLP page
@@ -140,7 +140,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in TMT PLP page
@@ -148,7 +148,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in HR Sheet PDP page
@@ -159,7 +159,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in HR Coil PDP page
@@ -170,7 +170,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in CR Coil PDP page
@@ -181,7 +181,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in CR Sheet PDP page
@@ -193,7 +193,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: verify Expired token in cement PDP page
@@ -202,7 +202,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in Coated steel PDP page
@@ -213,7 +213,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in Wire PDP page
@@ -223,7 +223,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in TMT PDP page
@@ -232,7 +232,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in search result page
@@ -240,7 +240,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: Verify Expired token in Ledger page
@@ -248,7 +248,7 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully
 
   Scenario: verify Expired token in Track Material  page
@@ -256,5 +256,5 @@ Feature: Check Token for all the page
     When user set expired token in local storage
     And user refresh the page
     Then verify the user is logged out and navigate to login page
-    And user again login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And user again login with configured user
     Then verify the user is able to login successfully

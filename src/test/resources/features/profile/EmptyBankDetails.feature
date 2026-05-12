@@ -1,10 +1,10 @@
-@regression
+@regression @EmptyBankDetails
 
 Feature: Verify empty bank details in profile
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "preprodautomation01@yopmail.com" and "Jsw@2026"
+    And ccp login with configured user
     And user close payment due pop up
 
   Scenario: Check bank details design when user did not add bank details

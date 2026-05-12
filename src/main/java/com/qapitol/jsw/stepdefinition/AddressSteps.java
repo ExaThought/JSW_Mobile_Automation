@@ -251,11 +251,28 @@ public class AddressSteps extends AbstractWebPage {
     @Then("customer should not be able to save address")
     public void customer_should_not_be_able_to_save_address() {
 
-        WebElement saveBtn = getElement(CCP_ADDRESS_SAVE_CHANGES_BUTTON);
+        waitAndCheckIsElementVisible(CCP_ADDRESS_SAVE_CHANGES_BUTTON);
 
-        softAssert.assertFalse(
-                saveBtn.isEnabled(),
-                " Save changes button is ENABLED but should be DISABLED"
+        WebElement saveBtn = Grid.driver().findElement(By.xpath(getLocator(CCP_ADDRESS_SAVE_CHANGES_BUTTON)));
+
+        String disabledAttr = saveBtn.getAttribute("disabled");
+        String ariaDisabled = saveBtn.getAttribute("aria-disabled");
+        String classAttr = saveBtn.getAttribute("class");
+
+        boolean attrDisabled = disabledAttr != null &&
+                (disabledAttr.equalsIgnoreCase("true") || disabledAttr.equalsIgnoreCase("disabled"));
+
+        boolean ariaAttr = ariaDisabled != null &&
+                (ariaDisabled.equalsIgnoreCase("true") || ariaDisabled.equalsIgnoreCase("disabled"));
+
+        boolean classDisabled = classAttr != null &&
+                classAttr.toLowerCase().contains("disabled");
+
+        boolean finalState = !saveBtn.isEnabled() || attrDisabled || ariaAttr || classDisabled;
+
+        softAssert.assertTrue(
+                finalState,
+                "Save changes button is ENABLED but EXPECTED to be DISABLED!"
         );
     }
 

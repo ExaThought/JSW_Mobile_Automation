@@ -1,4 +1,4 @@
-@home_sections @msanity
+@mhome_sections @msanity
 
 Feature: Validate Home Page Sections
 

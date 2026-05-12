@@ -3,7 +3,7 @@ Feature: validate Buy-again
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testpre_prod12as@gmail.com" and "Jsw@2026"
+    And ccp login with configured user
     And user close payment due pop up
 
 

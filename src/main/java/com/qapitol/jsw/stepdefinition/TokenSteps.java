@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.UserConfig;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -143,6 +144,11 @@ public class TokenSteps extends AbstractWebPage {
         }
         softAssert.assertTrue(result,"User is not navigated to same page after login from "+pageName);
         log.info("User is navigated to same page after login from "+pageName);
+    }
+
+    @And("user again login with configured user")
+    public void user_again_login_with_configured_user() {
+        user_again_login(UserConfig.getEmail(), UserConfig.getPassword());
     }
 
     @And("user again login with {string} and {string}")

@@ -109,7 +109,7 @@ public class PaymentDueSteps extends AbstractWebPage {
         try {
             //Get Customer GSTN
             SessionSteps sessionStep = new SessionSteps();
-            String customerGSTN = sessionStep.getCustomerDetail().getGstIn();
+             String customerGSTN = sessionStep.getCustomerDetail().getGstIn();
 
             ApiUtils paymentDueResponse = new ApiUtils();
             double paymentDue = paymentDueResponse.getPaymentDueResponse(customerGSTN).getData().getTotalDueAmount();

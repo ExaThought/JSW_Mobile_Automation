@@ -5,6 +5,7 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.apitest.pojos.order.customerDetails.CustomerDetailsResponse;
 import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
+import com.qapitol.jsw.utils.UserConfig;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -62,7 +63,6 @@ public  class SessionSteps extends AbstractWebPage {
             Grid.driver().get(url);
             sleep(1000);
             defocusSearchOverlay();
-            sleep(2000);
             //Logout the user incase already logged for jenkin's run
             if (!isElementPresent(LOGIN_CTA_BUTTON)) {
                 log.info("CCP User is already logged in, logging out to continue with fresh login");
@@ -78,6 +78,11 @@ public  class SessionSteps extends AbstractWebPage {
         }
         log.exiting();
     }
+    @And("ccp login with configured user")
+    public void ccpLoginWithConfiguredUser() {
+        ccpLogin(UserConfig.getEmail(), UserConfig.getPassword());
+    }
+
     @And("ccp login with {string} and {string}")
     public void ccpLogin(String emailId, String pass) {
         log.entering(emailId, pass);
@@ -106,6 +111,19 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);
         log.info("successfully clicked on Login button");
+    }
+
+    @And("open Login page to enter email and password")
+    public void openLoginPageToEnterEmailAndPassword() {
+        if(waitAndCheckIsElementVisible(LOGIN_POP_UP_CLOSE_BUTTON)){
+            waitAndCheckIsElementClickable(LOGIN_POP_UP_CLOSE_BUTTON);
+            waitAndClickOn(LOGIN_POP_UP_CLOSE_BUTTON);
+        }
+        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
+        waitAndClickOn(LOGIN_CTA_BUTTON);
+        log.info("successfully clicked Login CTA button");
+        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
+        waitAndClickOn(LOGIN_VIA_OTP);
     }
 
 

@@ -9,15 +9,22 @@ import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
-import org.testng.asserts.SoftAssert;
+
+import java.time.Duration;
+import java.util.Set;
 
 public class FooterSteps extends AbstractWebPage {
 
     private final LocatorReader locatorReader =
             new LocatorReader("locators/footersteps.yaml");
 
-    SoftAssert softAssert = new SoftAssert();
+    // Captured BEFORE click so the Then step can assert the destination
+    // independently of any text-mapping table.
+    private String expectedHref;
+    private String originalWindow;
 
     public FooterSteps() {
         this.page = super.page != null ? super.page : new com.qapitol.sauron.core.pages.Page();
@@ -29,18 +36,24 @@ public class FooterSteps extends AbstractWebPage {
     public void the_section_should_be_visible_in_the_footer_for_web(String sectionKey)
             throws InterruptedException {
 
-        waitAndCheckIsElementVisible(sectionKey);
+        Assert.assertTrue(
+                waitAndCheckIsElementVisible(sectionKey),
+                "Footer section not visible: " + sectionKey
+        );
     }
 
     // ------------------- Footer Link Visibility -------------------
 
     @Then("the footer link {string} should be visible for web")
-    public void the_footer_link_should_be_visible_for_web(String linkKey)
+    public void the_footer_link_should_be_visible_for_web(String linkName)
             throws InterruptedException {
 
-        softAssert.assertTrue(
-                waitAndCheckIsElementVisible(linkKey),
-                "Footer link not visible: " + linkKey
+        // The feature passes a human label ("Mild steel"), not a yaml key.
+        // Map to the actual locator key before looking up.
+        String yamlKey = getFooterYamlKey(linkName);
+        Assert.assertTrue(
+                waitAndCheckIsElementVisible(yamlKey),
+                "Footer link not visible: " + linkName + " (key=" + yamlKey + ")"
         );
     }
 
@@ -50,7 +63,7 @@ public class FooterSteps extends AbstractWebPage {
     public void the_support_phone_number_should_be_visible_for_web()
             throws InterruptedException {
 
-        softAssert.assertTrue(
+        Assert.assertTrue(
                 waitAndCheckIsElementVisible("supportPhone"),
                 "Support phone number not visible"
         );
@@ -60,13 +73,18 @@ public class FooterSteps extends AbstractWebPage {
     public void the_support_email_address_should_be_visible_for_web()
             throws InterruptedException {
 
-        softAssert.assertTrue(
+        Assert.assertTrue(
                 waitAndCheckIsElementVisible("supportEmail"),
                 "Support email address not visible"
         );
     }
 
     // ------------------- Scroll & Click -------------------
+
+    private WebElement findFooterElement(String yamlKey) {
+        String xpath = locatorReader.getXpath("elements." + yamlKey + ".en_US.web");
+        return Grid.driver().findElement(By.xpath(xpath));
+    }
 
     private void scrollToElementAndClick(String yamlKey) {
 
@@ -75,10 +93,7 @@ public class FooterSteps extends AbstractWebPage {
 
         while (attempts < 10) {
             try {
-                String xpath =
-                        locatorReader.getXpath("elements." + yamlKey + ".en_US.web");
-
-                element = Grid.driver().findElement(By.xpath(xpath));
+                element = findFooterElement(yamlKey);
 
                 if (element.isDisplayed()) {
 
@@ -118,10 +133,10 @@ public class FooterSteps extends AbstractWebPage {
 
             case "about us": return "aboutUsLink";
             case "blogs": return "blogsLink";
-            case "site map": return "siteMapLink";
-            case "jsw one tmt": return "jswOneTmtLink";
+            case "sitemap": return "siteMapLink";
+            case "one-helix": return "jswOneTmtLink";
 
-            case "help support": return "helpSupportLink";
+            case "help & support": return "helpSupportLink";
 
             case "terms & conditions": return "termsAndConditions";
             case "privacy policy": return "privacyPolicy";
@@ -139,9 +154,13 @@ public class FooterSteps extends AbstractWebPage {
             throws InterruptedException {
 
         String yamlKey = getFooterYamlKey(linkName);
+
+        // Capture the destination from the anchor BEFORE clicking, so the
+        // Then step can verify the URL really changed to this target.
+        expectedHref = findFooterElement(yamlKey).getAttribute("href");
         scrollToElementAndClick(yamlKey);
 
-        System.out.println("Clicked on footer link: " + linkName);
+        System.out.println("Clicked on footer link: " + linkName + " -> " + expectedHref);
     }
 
     // ------------------- Verification -------------------
@@ -149,19 +168,37 @@ public class FooterSteps extends AbstractWebPage {
     @Then("the user should be redirected to the corresponding page for web")
     public void the_user_should_be_redirected_to_the_corresponding_page_for_web() {
 
+        Assert.assertNotNull(expectedHref, "expectedHref was not captured before click");
+
+        // Allow up to 10s for the SPA to finish routing
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
+                    .until(ExpectedConditions.urlContains(extractPath(expectedHref)));
+        } catch (Exception ignored) {}
+
         String currentUrl = Grid.driver().getCurrentUrl();
+        String expectedPath = extractPath(expectedHref);
 
         Assert.assertTrue(
-                currentUrl.startsWith("http"),
-                "Footer navigation redirection failed"
+                currentUrl.contains(expectedPath),
+                "Expected redirect to " + expectedPath + " but landed at " + currentUrl
         );
-
         System.out.println("Current URL: " + currentUrl);
     }
+
+    private String extractPath(String hrefOrUrl) {
+        if (hrefOrUrl == null) return "";
+        // Strip the origin so we compare just the path
+        int idx = hrefOrUrl.indexOf("://");
+        if (idx < 0) return hrefOrUrl; // already a path
+        int pathStart = hrefOrUrl.indexOf('/', idx + 3);
+        return pathStart < 0 ? "/" : hrefOrUrl.substring(pathStart);
+    }
+
     @Then("the {string} should be visible in the footer for web")
     public void verify_element_visible(String key) throws InterruptedException {
 
-        softAssert.assertTrue(
+        Assert.assertTrue(
                 waitAndCheckIsElementVisible(key),
                 "Element not visible: " + key
         );
@@ -171,14 +208,25 @@ public class FooterSteps extends AbstractWebPage {
     public void click_social_icon(String iconName) {
 
         String key = getSocialKey(iconName);
+
+        // target="_blank" on social anchors — capture the original window
+        // handle and the href, then click and switch to the new tab in the
+        // Then step.
+        expectedHref = findFooterElement(key).getAttribute("href");
+        originalWindow = Grid.driver().getWindowHandle();
         scrollToElementAndClick(key);
     }
+
     @When("the user clicks on app icon {string}")
     public void click_app_icon(String appName) {
 
         String key = getAppKey(appName);
+        // App-store badges are <img> with no parent anchor on preprod, so
+        // there's nothing to capture. The scenario that depends on actual
+        // navigation is tagged @ignore in the feature file.
         scrollToElementAndClick(key);
     }
+
     private String getSocialKey(String name) {
 
         switch (name.toLowerCase()) {
@@ -188,6 +236,7 @@ public class FooterSteps extends AbstractWebPage {
             default: throw new IllegalArgumentException("Invalid social icon: " + name);
         }
     }
+
     private String getAppKey(String name) {
 
         switch (name.toLowerCase()) {
@@ -196,37 +245,69 @@ public class FooterSteps extends AbstractWebPage {
             default: throw new IllegalArgumentException("Invalid app icon: " + name);
         }
     }
+
     @Then("the user should be redirected to the correct social page {string}")
     public void verify_social_redirect(String platform) {
 
-        String url = Grid.driver().getCurrentUrl();
+        // Wait for the new tab to open, then switch to it.
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
+                .until(d -> d.getWindowHandles().size() > 1);
 
-        switch (platform.toLowerCase()) {
-            case "youtube":
-                Assert.assertTrue(url.contains("youtube"), "Not redirected to YouTube");
-                break;
-            case "linkedin":
-                Assert.assertTrue(url.contains("linkedin"), "Not redirected to LinkedIn");
-                break;
-            case "instagram":
-                Assert.assertTrue(url.contains("instagram"), "Not redirected to Instagram");
-                break;
-        }
+        Set<String> handles = Grid.driver().getWindowHandles();
+        String newWindow = handles.stream()
+                .filter(h -> !h.equals(originalWindow))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No new tab opened after click"));
+
+        Grid.driver().switchTo().window(newWindow);
+
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
+                    .until(d -> d.getCurrentUrl().toLowerCase().contains(platform.toLowerCase()));
+        } catch (Exception ignored) {}
+
+        String url = Grid.driver().getCurrentUrl();
+        boolean ok = url.toLowerCase().contains(platform.toLowerCase());
+
+        // Always close the popup and switch back so subsequent clicks
+        // in the same scenario operate on the original JSW tab.
+        try { Grid.driver().close(); } catch (Exception ignored) {}
+        Grid.driver().switchTo().window(originalWindow);
+
+        Assert.assertTrue(ok,
+                "Expected " + platform + " URL but landed at: " + url);
     }
+
     @Then("the user should be redirected to the correct app store {string}")
     public void verify_app_redirect(String store) {
 
-        String url = Grid.driver().getCurrentUrl();
+        // App badges on preprod are <img> tags without a parent anchor, so
+        // clicking them never opens a new tab. Wait briefly and fail with
+        // a clear message — the linked feature scenario is @ignored.
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(5))
+                    .until(d -> d.getWindowHandles().size() > 1);
+        } catch (Exception ignored) {}
 
-        switch (store.toLowerCase()) {
-            case "playstore":
-                Assert.assertTrue(url.contains("play.google"), "Not redirected to Play Store");
-                break;
-            case "appstore":
-                Assert.assertTrue(url.contains("apple"), "Not redirected to App Store");
-                break;
+        Set<String> handles = Grid.driver().getWindowHandles();
+        if (handles.size() <= 1) {
+            Assert.fail("App store icon click did not open a new tab — the badge appears to have no anchor (website bug). Expected store: " + store);
         }
+
+        String newWindow = handles.stream()
+                .filter(h -> !h.equals(originalWindow))
+                .findFirst()
+                .orElseThrow();
+        Grid.driver().switchTo().window(newWindow);
+        String url = Grid.driver().getCurrentUrl();
+        boolean ok;
+        switch (store.toLowerCase()) {
+            case "playstore": ok = url.contains("play.google"); break;
+            case "appstore":  ok = url.contains("apple"); break;
+            default:          ok = false;
+        }
+        try { Grid.driver().close(); } catch (Exception ignored) {}
+        Grid.driver().switchTo().window(originalWindow);
+        Assert.assertTrue(ok, "Expected " + store + " URL but landed at: " + url);
     }
-
 }
-

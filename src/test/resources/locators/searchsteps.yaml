@@ -1,8 +1,14 @@
 elements:
   # -------- SEARCH --------
+  # Homepage trigger that opens the search modal
   searchInput:
     en_US:
       web: //input[@id='SearchText']
+
+  # Real search input rendered inside the modal once it opens
+  searchModalInput:
+    en_US:
+      web: //input[@id='SearchInput']
 
   searchPlaceholder:
     en_US:
@@ -12,10 +18,19 @@ elements:
     en_US:
       web: //span[contains(@class,'rotating-text')]
 
-  # Updated suggestions XPath: wait for container, then its <li>
+  # Suggestion rows inside the search popup overlay
   searchSuggestions:
     en_US:
-      web: //div[@id='popup_recent']//li
+      web: //div[contains(@class,'search-popup-overlay')]//a[contains(@class,'suggestion-row')]
+
+  # Inner elements of a suggestion row (relative xpaths used inside a card)
+  searchResultName:
+    en_US:
+      web: .//span[contains(@class,'suggestion-text')]
+
+  searchResultImage:
+    en_US:
+      web: .//img[contains(@class,'suggestion-image')]
 
   # -------- PRODUCTS --------
   productCard:
@@ -29,7 +44,3 @@ elements:
   productImage:
     en_US:
       web: .//img
-
-  viewAllButton:
-    en_US:
-      web: //a[contains(@href,'/query')]

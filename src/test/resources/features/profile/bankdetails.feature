@@ -1,19 +1,19 @@
-@bankdetails @regression
+@bankDetails @regression
 Feature: Validate Bank Account Details Section
 
   Background:
     Given Go to session "ccp"
-    And ccp login with "testnewurl@yopmail.com" and "Jsw@2025"
+    And ccp login with configured user
     And user close payment due pop up
 
 
   Scenario: Navigate to Bank account details tab
-    And user clicks on customer account menu bar
+    And user clicks on customer account menu
     And user able to navigate on customer Profile section
     And user clicks on Bank account details tab
 
   Scenario: Validate GSTIN Name and Account holder name in Bank details
-    And user clicks on customer account menu bar
+    And user clicks on customer account menu
     And user able to navigate on customer Profile section
     And user clicks on Bank account details tab
     Then user should see GSTIN Name in Bank details
@@ -21,7 +21,7 @@ Feature: Validate Bank Account Details Section
 
 
   Scenario: Validate Bank account number and IFSC code in Bank details
-    And user clicks on customer account menu bar
+    And user clicks on customer account menu
     And user able to navigate on customer Profile section
     And user clicks on Bank account details tab
     Then user should see Bank account number in Bank details

@@ -1,4 +1,4 @@
-@MobileProfile @profile
+@MobileProfile @mprofile
 Feature: Mobile Profile Page Validation
 
   Background:
@@ -6,9 +6,9 @@ Feature: Mobile Profile Page Validation
     Then the home page should load successfully
     And the CCP logo should be visible
     And user clicks on login floating button on mobile
-    And user enters email "navjotautomation@yopmail.com"
+    And user enters email with configured msite user
     When user submits login
-    And user enters password "Jsw@2026"
+    And user enters password with configured msite user
     When user clicks on proceed to login
     When user clicks on profile icon in header
     And user clicks on profile details option

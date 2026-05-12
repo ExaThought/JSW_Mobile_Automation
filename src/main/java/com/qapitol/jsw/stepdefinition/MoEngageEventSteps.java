@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.UserConfig;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -43,11 +44,21 @@ public class MoEngageEventSteps {
 //        waitAndClickOn(LOGIN_OTP);
     }
 
+    @And("Enter Email-ID with configured user")
+    public void enter_email_with_configured_user() {
+        enter_email(UserConfig.getEmail());
+    }
+
     @And("Enter Email-ID {string}")
     public void enter_email(String email) {
         driver.findElement(By.xpath("//input[@id='email']")).sendKeys(email);
 //        waitAndCheckIsElementVisible(LOGIN_EMAIL);
 //        waitAndSetText(LOGIN_EMAIL, email);
+    }
+
+    @And("Enter the Password with configured user")
+    public void enter_the_password_with_configured_user() {
+        enter_the_password(UserConfig.getPassword());
     }
 
     @And("Enter the Password {string}")
