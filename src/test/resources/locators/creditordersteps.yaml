@@ -66,10 +66,10 @@ elements:
       web: //button[normalize-space()='All']
   myOrdersTab:
     en_US:
-      web: //a[contains(@class,'links') and normalize-space()='My orders']
+      web: //a[@href="/my-orders"]
   viewDetailsButton:
     en_US:
-      web: //div[contains(@class,'text-right') and normalize-space()='View details']
+      web: (//span[text()='Order number:']/../following-sibling::a/div)[1]
 
   orderSummaryText:
     en_US:

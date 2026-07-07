@@ -16,10 +16,19 @@ import org.testng.Assert;
 import java.time.Duration;
 import java.util.Set;
 
+import static com.qapitol.jsw.utils.CustomUtil.*;
+import static com.qapitol.jsw.utils.Hooks.softAssert;
+
 public class FooterSteps extends AbstractWebPage {
 
     private final LocatorReader locatorReader =
             new LocatorReader("locators/footersteps.yaml");
+    private static final String MILD_STEEL = "(//a[text()='Mild steel'])[2]";
+    private static final String STRUCTURE_STEEL = "(//a[text()='%s'])[2]";
+    private static final String BUY_ONLINE = "(//p[text()='%s'])[2]";
+    private static final String SUPPORT_PHONE = "(//a[@href=\"tel: +917208055523\"])[2]";
+    private static final String SUPPORT_EMAIL = "(//a[@href=\"mailto:support@jswonemsme.com\"])[2]";
+    private static final String TEXT_VALUE = "(//*[normalize-space(text())='%s'])[1]";
 
     // Captured BEFORE click so the Then step can assert the destination
     // independently of any text-mapping table.
@@ -35,26 +44,34 @@ public class FooterSteps extends AbstractWebPage {
     @Then("the {string} section should be visible in the footer for web")
     public void the_section_should_be_visible_in_the_footer_for_web(String sectionKey)
             throws InterruptedException {
-
-        Assert.assertTrue(
-                waitAndCheckIsElementVisible(sectionKey),
-                "Footer section not visible: " + sectionKey
-        );
+        waits(By.xpath(String.format(BUY_ONLINE,sectionKey)));
+        Assert.assertTrue(isDisplayed(By.xpath(String.format(BUY_ONLINE,sectionKey))));
     }
 
     // ------------------- Footer Link Visibility -------------------
 
     @Then("the footer link {string} should be visible for web")
-    public void the_footer_link_should_be_visible_for_web(String linkName)
-            throws InterruptedException {
+    public void the_footer_link_should_be_visible_for_web(String linkName) {
+        try {
+            log.info("Verifying visibility of footer link: " + linkName);
 
-        // The feature passes a human label ("Mild steel"), not a yaml key.
-        // Map to the actual locator key before looking up.
-        String yamlKey = getFooterYamlKey(linkName);
-        Assert.assertTrue(
-                waitAndCheckIsElementVisible(yamlKey),
-                "Footer link not visible: " + linkName + " (key=" + yamlKey + ")"
-        );
+            By footerLink = By.xpath(String.format(STRUCTURE_STEEL, linkName));
+
+            waits(footerLink);
+
+            boolean displayed = isDisplayed(footerLink);
+
+            softAssert.assertTrue(
+                    displayed,
+                    "Footer link not visible: " + linkName
+            );
+
+            log.info("Footer link is visible: " + linkName);
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying footer link visibility: " + linkName + " | " + e.getMessage());
+            softAssert.fail("Exception while verifying footer link visibility: " + linkName + " | " + e.getMessage());
+        }
     }
 
     // ------------------- Support Info -------------------
@@ -64,7 +81,7 @@ public class FooterSteps extends AbstractWebPage {
             throws InterruptedException {
 
         Assert.assertTrue(
-                waitAndCheckIsElementVisible("supportPhone"),
+                isDisplayed(By.xpath(SUPPORT_PHONE)),
                 "Support phone number not visible"
         );
     }
@@ -74,7 +91,7 @@ public class FooterSteps extends AbstractWebPage {
             throws InterruptedException {
 
         Assert.assertTrue(
-                waitAndCheckIsElementVisible("supportEmail"),
+                isDisplayed(By.xpath(SUPPORT_EMAIL)),
                 "Support email address not visible"
         );
     }
@@ -150,42 +167,55 @@ public class FooterSteps extends AbstractWebPage {
     // ------------------- Footer Link Click -------------------
 
     @When("the user clicks on the footer link {string} for web")
-    public void the_user_clicks_on_the_footer_link_for_web(String linkName)
-            throws InterruptedException {
+    public void the_user_clicks_on_the_footer_link_for_web(String linkName) {
+        try {
+            log.info("Clicking on footer link: " + linkName);
 
-        String yamlKey = getFooterYamlKey(linkName);
+            By footerLink = By.xpath(String.format(STRUCTURE_STEEL, linkName));
 
-        // Capture the destination from the anchor BEFORE clicking, so the
-        // Then step can verify the URL really changed to this target.
-        expectedHref = findFooterElement(yamlKey).getAttribute("href");
-        scrollToElementAndClick(yamlKey);
+            waits(footerLink);
 
-        System.out.println("Clicked on footer link: " + linkName + " -> " + expectedHref);
+            softAssert.assertTrue(
+                    isDisplayed(footerLink),
+                    "Footer link not displayed: " + linkName
+            );
+
+            clickButton(footerLink);
+
+            log.info("Successfully clicked on footer link: " + linkName);
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking footer link: " + linkName + " | " + e.getMessage());
+            softAssert.fail("Failed to click footer link: " + linkName + " | " + e.getMessage());
+        }
     }
 
     // ------------------- Verification -------------------
 
-    @Then("the user should be redirected to the corresponding page for web")
-    public void the_user_should_be_redirected_to_the_corresponding_page_for_web() {
-
-        Assert.assertNotNull(expectedHref, "expectedHref was not captured before click");
-
-        // Allow up to 10s for the SPA to finish routing
+    @Then("the user should be redirected to the corresponding page for web {string}")
+    public void the_user_should_be_redirected_to_the_corresponding_page_for_web(String text) {
         try {
-            new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
-                    .until(ExpectedConditions.urlContains(extractPath(expectedHref)));
-        } catch (Exception ignored) {}
+            log.info("Verifying redirection contains text: " + text);
 
-        String currentUrl = Grid.driver().getCurrentUrl();
-        String expectedPath = extractPath(expectedHref);
+            WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
 
-        Assert.assertTrue(
-                currentUrl.contains(expectedPath),
-                "Expected redirect to " + expectedPath + " but landed at " + currentUrl
-        );
-        System.out.println("Current URL: " + currentUrl);
+            wait.until(driver -> driver.getCurrentUrl().toLowerCase().contains(text.toLowerCase()));
+
+            String currentUrl = Grid.driver().getCurrentUrl();
+            log.info("Current URL after navigation: " + currentUrl);
+
+            softAssert.assertTrue(
+                    currentUrl.toLowerCase().contains(text.toLowerCase()),
+                    "Expected URL to contain: " + text + " but found: " + currentUrl
+            );
+
+            log.info("URL redirection verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying page redirection: " + e.getMessage());
+            softAssert.fail("Exception while verifying redirection: " + e.getMessage());
+        }
     }
-
     private String extractPath(String hrefOrUrl) {
         if (hrefOrUrl == null) return "";
         // Strip the origin so we compare just the path

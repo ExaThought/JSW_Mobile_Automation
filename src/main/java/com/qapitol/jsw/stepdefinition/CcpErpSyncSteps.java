@@ -17,6 +17,9 @@ import org.testng.Assert;
 
 import java.io.IOException;
 
+import static com.qapitol.jsw.utils.CustomUtil.clickButton;
+import static com.qapitol.jsw.utils.CustomUtil.waits;
+
 public class CcpErpSyncSteps extends AbstractWebPage {
 
     public static final String LOGIN_CTA_BUTTON = "loginButton";
@@ -24,7 +27,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     public static final String LOGIN_EMAIL = "ccpLoginEmail";
     public static final String LOGIN_PASSWORD = "ccpLoginPassword";
     public static final String CCP_LOGIN_CTA = "ccpLoginCTA";
-    public static final String CART_PAGE = "cartPage";
+    public static final String CART_PAGE = "(//span[text()=\"Cart\"])[2]";
     public static final String CCP_ORDER_NUMBER = "ccpOrderNumber";
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
     public static final String CCP_MY_ORDER_PAGE="ccpMyOrderPage";
@@ -47,9 +50,12 @@ public class CcpErpSyncSteps extends AbstractWebPage {
 
     @And("open the cart page and create order")
     public void open_the_cart_page_and_create_order(){
-        //open cart page
-        waitAndCheckIsElementVisible(CART_PAGE);
-        waitAndClickOn(CART_PAGE);
+        //open cart page\
+        sleep(3000);
+        pageRefresh();
+        sleep(3000);
+        waits(By.xpath(CART_PAGE));
+        clickButton(By.xpath(CART_PAGE));
         //confirm order CTA
         waitAndCheckIsElementPresent(CCP_CREATE_ORDER_CTA);
         waitAndCheckIsElementVisible(CCP_CREATE_ORDER_CTA);

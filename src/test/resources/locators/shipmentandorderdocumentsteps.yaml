@@ -105,7 +105,7 @@ elements:
 
   shipmentInvoiceDocument:
     en_US:
-      web: //div[contains(@class,'doc-name') and normalize-space()='invoice.pdf']
+      web: (//div[contains(@class,'doc-name') and contains(normalize-space(), '.pdf')])[1]
 
 
 

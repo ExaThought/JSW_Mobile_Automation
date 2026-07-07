@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -14,6 +15,7 @@ import org.openqa.selenium.WebElement;
 import java.time.Duration;
 
 
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CcpRegistrationSteps extends AbstractWebPage {
@@ -35,14 +37,22 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public static final String CCP_ReGISTER_vIA_OTP = "registrationViaOtp";
     private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
     private static final String CHECKBOX="checkBox";
+    private static final String LOGIN_CTA_BUTTON = "//button[text()='Login']";
+    private static final String CONTINUE_EMAIL_BTN = "//button[@id=\"login-via-otp\"]";
+    private static final String ACCOUNT_ALREADY_EXISTS_ERROR_MSG="//span[@id=\"aae-desktop-title\"]";
+    private static final String GST_INFO_ICON = "//div[@class=\"gstin-success-icon\"]";
 
 
     @And("user open the CCP web portal")
     public void user_open_the_ccp_web_portal() {
-        waitAndCheckIsElementClickable(CCP_ReGISTER_CTA);
-        waitAndClickOn(CCP_ReGISTER_CTA); // click on login CTA button
-        waitAndCheckIsElementClickable(CCP_ReGISTER_vIA_OTP);
-        waitAndClickOn(CCP_ReGISTER_vIA_OTP); //Click on Login with OTP}
+//        waitAndCheckIsElementClickable(CCP_ReGISTER_CTA);
+//        waitAndClickOn(CCP_ReGISTER_CTA); // click on login CTA button
+//        waitAndCheckIsElementClickable(CCP_ReGISTER_vIA_OTP);
+//        waitAndClickOn(CCP_ReGISTER_vIA_OTP); //Click on Login with OTP}
+        waits(By.xpath(LOGIN_CTA_BUTTON));
+        clickButton(By.xpath(LOGIN_CTA_BUTTON));
+        waits(By.xpath(CONTINUE_EMAIL_BTN));
+        clickButton(By.xpath(CONTINUE_EMAIL_BTN));
     }
     public void waitForSearchOverlayToDisappear() {
         try {
@@ -106,28 +116,68 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     }
 
     @And("enter new valid email id {string}")
-    public void enterNewValidEmailId(String arg0) {
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_EMAIL);
-        waitAndSetText(CCP_REGISTRATION_EMAIL, arg0);
+    public void enterNewValidEmailId(String email) {
+        try {
+            log.info("Entering new valid email ID: " + email);
+
+            waitAndCheckIsElementVisible(CCP_REGISTRATION_EMAIL);
+
+            waitAndSetText(CCP_REGISTRATION_EMAIL, email);
+
+            log.info("Successfully entered the new valid email ID.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while entering the email ID: " + e.getMessage());
+            softAssert.fail("Failed to enter the email ID: " + e.getMessage());
+        }
     }
 
     @Then("new user continue to Registration")
     public void newUserContinueToRegistration() {
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
-        waitAndClickOn(CCP_REGISTRATION_CTA); // click on continue button
+        try {
+            log.info("Clicking on Continue button to proceed with registration.");
+
+            waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
+
+            waitAndClickOn(CCP_REGISTRATION_CTA);
+
+            log.info("Successfully clicked on Continue button.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Continue button: " + e.getMessage());
+            softAssert.fail("Failed to click Continue button: " + e.getMessage());
+        }
     }
 
     @And("enter full name {string} mobile number {string} and gst {string}")
     public void enterFullNameMobileNumberAndGst(String fullName, String mobile, String gstin) {
-        waitAndCheckIsElementVisible(CCP_FULL_NAME);
-        waitAndSetText(CCP_FULL_NAME, fullName);
+        try {
+            log.info("Entering registration details.");
 
-        waitAndCheckIsElementVisible(CCP_GSTIN);
-        waitAndSetText(CCP_GSTIN, gstin);
+            waitAndCheckIsElementVisible(CCP_FULL_NAME);
+            waitAndSetText(CCP_FULL_NAME, fullName);
+            log.info("Entered full name: " + fullName);
 
-        waitAndCheckIsElementVisible(CCP_MOBILE);
-        waitAndSetText(CCP_MOBILE, mobile);
+            waitAndCheckIsElementVisible(CCP_GSTIN);
 
+            if (ApiUtils.isGstinExists(gstin)) {
+                waitAndSetText(CCP_GSTIN, gstin);
+                log.info("Entered GSTIN: " + gstin);
+            } else {
+                log.info("GSTIN does not exist: " + gstin);
+                softAssert.fail("Provided GSTIN does not exist: " + gstin);
+            }
+
+            waitAndCheckIsElementVisible(CCP_MOBILE);
+            waitAndSetText(CCP_MOBILE, mobile);
+            log.info("Entered mobile number: " + mobile);
+
+            log.info("Registration details entered successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while entering registration details: " + e.getMessage());
+            softAssert.fail("Failed to enter registration details: " + e.getMessage());
+        }
     }
 
     @And("remove checkbox")
@@ -169,11 +219,32 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     @When("user clicks on terms and conditions checkbox")
     public void userClicksOnTermsAndConditionsCheckbox() {
-        String locatorValue = getLocator(CCP_TERMS_CHECKBOX);
-        WebDriver driver = Grid.driver();
-        WebElement checkbox = driver.findElement(By.xpath(locatorValue));
-        if (!checkbox.isSelected()) {
-            checkbox.click();
+        try {
+            log.info("Selecting the Terms and Conditions checkbox.");
+
+            waitAndCheckIsElementVisible(CCP_TERMS_CHECKBOX);
+            waitAndCheckIsElementClickable(CCP_TERMS_CHECKBOX);
+
+            WebDriver driver = Grid.driver();
+            WebElement checkbox = driver.findElement(By.xpath(getLocator(CCP_TERMS_CHECKBOX)));
+
+            if (!checkbox.isSelected()) {
+                checkbox.click();
+                log.info("Terms and Conditions checkbox selected successfully.");
+            } else {
+                log.info("Terms and Conditions checkbox is already selected.");
+            }
+
+            softAssert.assertTrue(
+                    checkbox.isSelected(),
+                    "Terms and Conditions checkbox is not selected."
+            );
+
+            log.info("Verified Terms and Conditions checkbox is selected.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while selecting the Terms and Conditions checkbox: " + e.getMessage());
+            softAssert.fail("Failed to select the Terms and Conditions checkbox: " + e.getMessage());
         }
     }
 
@@ -196,42 +267,123 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     // Step for invalid phone number error validation
     @Then("user should not able to proceed with phone number error")
     public void userShouldNotAbleToProceedWithPhoneError() {
-        waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
-        waitAndCheckIsElementVisible(CCP_INVALID_PHONE_ERROR);
+        try {
+            log.info("Verifying invalid phone number error message.");
 
-        String msg = waitAndGetText(CCP_INVALID_PHONE_ERROR);
-        softAssert.assertEquals(msg, "Please enter correct phone number");
+            waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
+            waitAndCheckIsElementVisible(CCP_INVALID_PHONE_ERROR);
+
+            String actualMessage = waitAndGetText(CCP_INVALID_PHONE_ERROR);
+            String expectedMessage = "Please enter correct phone number";
+
+            log.info("Actual phone number error message: " + actualMessage);
+
+            softAssert.assertEquals(
+                    actualMessage,
+                    expectedMessage,
+                    "Phone number error message mismatch. Expected: " + expectedMessage + " but found: " + actualMessage
+            );
+
+            log.info("Phone number error message verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying phone number error message: " + e.getMessage());
+            softAssert.fail("Exception while verifying phone number error message: " + e.getMessage());
+        }
     }
 
     // Step for invalid GSTIN error validation
     @Then("user should not able to proceed with GSTIN error")
     public void userShouldNotAbleToProceedWithGSTINError() {
+        try {
+            log.info("Verifying invalid GSTIN error message.");
 
-        // Wait for the error message
-        waitAndCheckIsElementVisible(CCP_INVALID_GSTIN_ERROR);
+            waitAndCheckIsElementVisible(CCP_INVALID_GSTIN_ERROR);
 
-        // Get error message text
-        String msg = waitAndGetText(CCP_INVALID_GSTIN_ERROR);
+            String actualMessage = waitAndGetText(CCP_INVALID_GSTIN_ERROR);
+            String expectedMessage = "Please enter correct GSTIN for account registration on JSW ONE MSME";
 
-        // Assert the error message
-        softAssert.assertEquals(msg, "Please enter correct GSTIN for account registration on JSW ONE MSME","GSTIN error message mismatch!");
+            log.info("Actual GSTIN error message: " + actualMessage);
+
+            softAssert.assertEquals(
+                    actualMessage,
+                    expectedMessage,
+                    "GSTIN error message mismatch. Expected: " + expectedMessage + " but found: " + actualMessage
+            );
+
+            log.info("GSTIN error message verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying GSTIN error message: " + e.getMessage());
+            softAssert.fail("Exception while verifying GSTIN error message: " + e.getMessage());
+        }
     }
 
 
     @And("user unchecks the terms and conditions checkbox")
     public void userUnchecksTheTermsAndConditionsCheckbox() {
-        WebDriver driver = Grid.driver();
+        try {
+            log.info("Unchecking the Terms and Conditions checkbox.");
 
-        // Wait for checkbox to be present and clickable
-        waitAndCheckIsElementVisible(CCP_TERMS_CHECKBOX);
-        waitAndCheckIsElementClickable(CCP_TERMS_CHECKBOX);
+            WebDriver driver = Grid.driver();
 
-        // Find the checkbox
-        WebElement checkbox = driver.findElement(By.xpath(getLocator(CCP_TERMS_CHECKBOX)));
+            waitAndCheckIsElementVisible(CCP_TERMS_CHECKBOX);
+            waitAndCheckIsElementClickable(CCP_TERMS_CHECKBOX);
 
-        // Uncheck only if it is selected
-        if (checkbox.isSelected()) {
-            checkbox.click();
+            WebElement checkbox = driver.findElement(By.xpath(getLocator(CCP_TERMS_CHECKBOX)));
+
+            if (checkbox.isSelected()) {
+                checkbox.click();
+                log.info("Terms and Conditions checkbox was selected and has been unchecked.");
+            } else {
+                log.info("Terms and Conditions checkbox is already unchecked.");
+            }
+
+            softAssert.assertFalse(
+                    checkbox.isSelected(),
+                    "Terms and Conditions checkbox is still selected."
+            );
+
+            log.info("Verified Terms and Conditions checkbox is unchecked.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while unchecking the Terms and Conditions checkbox: " + e.getMessage());
+            softAssert.fail("Failed to uncheck the Terms and Conditions checkbox: " + e.getMessage());
+        }
+    }
+
+    @Then("User click on Next Button")
+    public void userClickOnNextButton() {
+        waits(By.xpath(GST_INFO_ICON));
+        if(isDisplayed(By.xpath(GST_INFO_ICON))) {
+            waitAndClickOn(CCP_REGISTER_NEXT);
+        }else {
+            log.info("error in gst");
+        }
+        log.info("Click on next button");
+    }
+
+    @Then("User verifies the error message")
+    public void userVerifiesTheErrorMessage() {
+        try {
+            log.info("Verifying 'Account already exists' error message.");
+
+            waits(By.xpath(ACCOUNT_ALREADY_EXISTS_ERROR_MSG));
+
+            String actualErrorMessage = getText(By.xpath(ACCOUNT_ALREADY_EXISTS_ERROR_MSG));
+            log.info("Actual error message: " + actualErrorMessage);
+
+            softAssert.assertTrue(
+                    actualErrorMessage.contains("Account already exists"),
+                    "Expected error message 'Account already exists' was not displayed. Actual message: "
+                            + actualErrorMessage
+            );
+
+            log.info("Verified 'Account already exists' error message successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying the error message: " + e.getMessage());
+            softAssert.fail("Exception while verifying the error message: " + e.getMessage());
         }
     }
 }

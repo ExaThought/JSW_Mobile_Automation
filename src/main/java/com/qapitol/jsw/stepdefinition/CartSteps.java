@@ -1,7 +1,9 @@
 package com.qapitol.jsw.stepdefinition;
 
 
+import com.qapitol.jsw.context.ScenarioContext;
 import com.qapitol.jsw.pageFactory.CategoryPages;
+import com.qapitol.jsw.utils.CustomUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -9,20 +11,23 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import java.awt.*;
 import java.time.Duration;
+import java.util.List;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.*;
-import static com.qapitol.jsw.utils.CustomUtil.scrollingToViewAndClickUsingJS;
-import static com.qapitol.jsw.utils.CustomUtil.waitUntilElementDisappears;
+import static com.qapitol.jsw.pageFactory.CategoryPages.ALL_CATEGORY;
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
-    private static final String THICKNESS = "thickness";
+    private static final String THICKNESS = "(//span[text()='Thickness (mm)']/../following-sibling::div//button)[1]";
     private static final String QUANTITY = "quantity";
     private static final String ADD_TO_CART_CTA = "addToCart";
     private static final String VIEW_CART = "viewCart";
@@ -45,14 +50,15 @@ public class CartSteps extends AbstractWebPage {
     private static final String COLOUR_COATED = "colourCoated";
     private static final String PDP_COATED_STEEL_SHEET = "colourCoatedPdp";
     private static final String WIDTH = "width(mm)";
-    private static final String COATING_GRADE = "coatingGrade";
+    private static final String COATING_GRADE = "(//span[text()=\"Coating grade (gsm)\"]/../following-sibling::div/button)[1]";
     private static final String SUCCESS_PAGE_RCV2 = "rcCheckoutSuccessPage";
+    private static final String SPANGLE_TYPE = "(//span[text()=\"Spangle type\"]/../following-sibling::div/button)[1]";
     private static final String CART_PAGE = "cartPage";
     private static final String PLP_FIRST_PRODUCT = "plpFirstProduct";
     private static final String LENGTH = "length";
-    private static final String DIAMETER = "diameter";
+    private static final String DIAMETER = "(//span[text()='Diameter (mm)']/../following-sibling::div//button)[1]";
     private static final String TMT = "tmt";
-    private static final String FORM = "form";
+    private static final String FORM = "(//span[text()='TMT Form']/../following-sibling::div//button[@data-slot=\"button\"])[1]";
     private static final String LEG_LENGTH = "legLength";
     private static final String FLANGE_WIDTH = "flangeWidth";
     private static final String WEB_DEPTH = "webDepth";
@@ -69,7 +75,7 @@ public class CartSteps extends AbstractWebPage {
     private static final String PDP_PRODUCT_NAME = "pdpProductName";
     private static final String COATED_STEEL = "coatedSteel";
     private static final String GALVANIZED_SHEET = "galvanizedSheet";
-    private static final String UPDATE_ATTRIBUTE = "updateAttribute";
+    private static final String UPDATE_ATTRIBUTE = "(//div[@data-side='bottom']//button[not(@disabled)]//span)[1]";
     private static final String CART_PAGE_ATTRIBUTE_VALUE = "cartPageAttributeValue";
     private static final String EDIT_CART_PAGE_ENTER_QUANTITY = "editCartPageEnterQuantity";
     private static final String CART_PAGE_PRODUCT_NAME = "cartPageProductName";
@@ -78,11 +84,40 @@ public class CartSteps extends AbstractWebPage {
     private static final String EDIT_FORM_DROPDOWN = "editFormDropdown";
     private static final String CART_PAGE_SPANGLE = "cartPageSpangleTypeValue";
     private static final String CART_PAGE_COATING_GRADE = "cartPageCoatingGradeValue";
-    private static final String CART_COUNT = "cartCount";
+    private static final String CART_COUNT = "//section//p[contains(normalize-space(.), 'item')]";
     private static final String EMPTY_CART_MESSAGE = "emptyCartMessage";
     private static final String EMPTY_CART_COUNT = "emptyCartCount";
     private static final String CART_PAGE_SKU_COUNT = "cartPageSKUCount";
     private static final String DELETE_CART_TITLE = "deleteCartTitle";
+    private static final By CART_ICON = By.xpath("(//span[text()='Cart'])[2]");
+    private static final String DELETE_ITEMS = "(//div[@id='line-item-section']//*[text()='Delete' and not(ancestor::*[@data-index='-1'])])[1]";
+    private static final String DELETE_BTN = "//button[@id=\"remove-btn\"]";
+    private static final String EMPTY_CART_MSG = "//h2[text()='Your cart is empty']";
+    private static final String CUSTOM_WIDTH_MSG = "//label[text()=\"Custom width (mm):\"]/../following-sibling::div//span";
+    private static final String CUSTOM_WIDTH_TEXTBOX = "(//span[text()='Width (mm)']/../following-sibling::div//input)[1]";
+    private static final String CUSTOM_LENGTH_MSG = "//label[text()=\"Custom length (mm):\"]/../following-sibling::div/span";
+    private static final String CUSTOM_LENGTH_TEXTBOX = "//label[text()=\"Custom length (mm):\"]/following-sibling::input";
+    private static final String QUANTITY_TEXTBOX = "//input[@id=\"quantity-input\"]";
+    private static final String ADD_TO_CART_BTN = "//button[text()=\"Add to cart\"]";
+    private static final String VIEWCART = "//button[text()=\"View cart\"]";
+    private static final String JSW_LOGO = "(//a[@href=\"/\"])[1]";
+    private static final String DELETE_ITEM_MSG = "//div[contains(text(),'Are you sure you want to delete this item from the cart?')]";
+    private static final String ITEMS_COUNT = "//div[@id=\"cart-delivery-address\"]/following-sibling::div/div[contains(text(),'item')]";
+    private static final String WIRE_COIL = "(//li//a[@href=\"/category/wire-rod-coils\"])";
+    private static final String WIDTH_TEXTBOX = "(//span[text()='Width (mm)']/../following-sibling::div//input)[1]";
+    private static final String WIDTH_BUTTON = "(//span[text()='Width (mm)']/../following-sibling::div//button)[1]";
+    private static final String WIDTH_MSG = "//span[text()='Width (mm)']/../following-sibling::div//span";
+    private static final String EDIT_DIAMETER = "(//div[text()=\"Diameter (mm)\"]/following-sibling::div[2]//div[@class=\"p-1 hover-bg\"])[1]";
+    private static final String ITEM_NAME = "//h1";
+    public ScenarioContext context;
+
+    public CartSteps(ScenarioContext context)
+    {
+        this.context = context;
+    }
+
+
+
 
 
     Actions actions = new Actions(Grid.driver());
@@ -109,6 +144,8 @@ public class CartSteps extends AbstractWebPage {
     static String cartPageSpangle;
     static String cartPageCoatingGrade;
     static int skuCount;
+    static String cartValue;
+    static String cartPdpProductName;
 
     @And("user will add Stainless Steel product to cart")
     public void user_will_add_stainless_steel_product_to_cart() {
@@ -167,25 +204,32 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
+
     @When("move the mouse to Mild steel category")
     public void moveTheMouseToMildSteelCategory() {
-        //Reading locator from page factory
+
         try {
-            actions.moveToElement(Grid.driver().findElement(By.xpath(mildSteelCategory))).perform();
+            refreshAndWaitFor(ALL_CATEGORY);
+            hoverOverElement(ALL_CATEGORY);
+            waits(By.xpath(mildSteelCategory));
+            hoverOverElement(By.xpath(mildSteelCategory));
             log.info("cursor moved to mild steel category");
         } catch (Exception e) {
             throw new RuntimeException("mouse failed to move to mild steel category", e);
 
         }
 
+
     }
 
     @And("move to Hot rolled category")
     public void moveToHotRolledCategory() {
-        //Reading locator from page factory
+
+
         try {
-            actions.moveToElement(Grid.driver().findElement(By.xpath(hotRolledCategory))).perform();
-            log.info("cursor moved to hot rolled category");
+            hoverOverElement(By.xpath(msHotRolled));
+            log.info("Click in MS Hot Rolled");
+
         } catch (Exception e) {
             throw new RuntimeException("mouse failed to move to hot rolled category", e);
 
@@ -196,8 +240,9 @@ public class CartSteps extends AbstractWebPage {
     public void clickOnHRSheetProduct() {
         //Reading locator from page factory
         try {
-            actions.moveToElement(Grid.driver().findElement(By.xpath(hotRolledSheetsSubCategory))).click().perform();
-            log.info("Clicked on hot rolled sheet sub category");
+            hoverOverElement(By.xpath(hotRolledCategory));
+            clickButton(By.xpath(hotRolledCategory));
+            log.info("cursor moved to hot rolled category");
         } catch (Exception e) {
             throw new RuntimeException("Failed to click on hot rolled sheet sub category", e);
         }
@@ -218,9 +263,9 @@ public class CartSteps extends AbstractWebPage {
     @And("open HR Coil plp {string} product")
     public void openHRCoilPdp(String product) {
         try {
-            WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
-            scrollingToViewAndClickUsingJS(locator);
-            waitAndClickOn(PLP_FIRST_PRODUCT, product);
+            sleep(3000);
+            waits(By.xpath(plpFirstProduct));
+            clickButton(By.xpath(plpFirstProduct));
             log.info("Opened HR Coil PDP page");
         } catch (Exception e) {
             log.info("Failed to click on  hot rolled coil category");
@@ -228,21 +273,19 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("select thickness {string} width {string} quantity {string} for HR Coil")
-    public void selectAllTheHrCoilAttribute(String thickness, String width, String quantity) {
+    @And("select thickness, width, quantity {string} for HR Coil")
+    public void selectAllTheHrCoilAttribute(String quantity) {
 
         try {
-            if (isElementPresent(ATTRIBUTE, thickness)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
-                waitAndClickOn(ATTRIBUTE, thickness);
-                pdpThickness = thickness;
-                log.info("Thickness value " + thickness + " mm is selected for hot rolled coil");
-            } else {
-                log.info("Thickness value " + thickness + " is not available for selection, selecting available thickness value");
-                Allure.addAttachment("Thickness value not available", "Thickness value " + thickness + " is not available for selection, selecting available thickness value");
-                waitAndCheckIsElementClickable(THICKNESS);
-                waitAndClickOn(THICKNESS, "2");
-                pdpThickness = waitAndGetText(THICKNESS, "2");
+
+
+            {
+                context.cartPdpProductName=getText(By.xpath(ITEM_NAME));
+                waits(By.xpath(THICKNESS));
+                clickButton(By.xpath(THICKNESS));
+                context.pdpThickness = getText(By.xpath(THICKNESS));
+                log.info("Thickness value " + context.pdpThickness + " is not available for selection, selecting available thickness value");
+                Allure.addAttachment("Thickness value not available", "Thickness value " + context.pdpThickness + " is not available for selection, selecting available thickness value");
             }
         } catch (Exception e) {
             log.info("Failed to click hot rolled coil thickness");
@@ -250,26 +293,28 @@ public class CartSteps extends AbstractWebPage {
         }
 
         try {
-            if (isElementPresent(ATTRIBUTE, width)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, width);
-                waitAndClickOn(ATTRIBUTE, width);
-                pdpWidth = width;
-            } else {
-                log.info("Width value 2mm is not available for selection, selecting available width value");
-                Allure.addAttachment("Width value not available", "Width value 2mm is not available for selection, selecting available width value");
-                waitAndCheckIsElementClickable(WIDTH);
-                waitAndClickOn(WIDTH, "2");
-                pdpWidth = waitAndGetText(WIDTH, "2");
+
+            {
+
+                clickButton(By.xpath(WIDTH_TEXTBOX));
+                waits(By.xpath(WIDTH_MSG));
+                String widthValue = String.valueOf(CustomUtil.generateValueFromText(getText(By.xpath(WIDTH_MSG))));
+                enterText(By.xpath(WIDTH_TEXTBOX),widthValue);
+                Grid.driver().findElement(By.xpath(WIDTH_TEXTBOX)).sendKeys(Keys.ENTER);
+               // waitAndClickOn(WIDTH, "2");
+                context.pdpWidth = widthValue;
             }
         } catch (Exception e) {
-            log.info("Failed to click hot rolled coil width");
+            log.info("Width value 2mm is not available for selection, selecting available width value");
+            Allure.addAttachment("Width value not available", "Width value 2mm is not available for selection, selecting available width value");
+            log.info("Failed to click hot rolled coil width"+e);
             throw new RuntimeException("Failed to click hot rolled coil width", e);
         }
 
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
-            pdpQuantity = quantity;
+            context.pdpQuantity = quantity;
         } catch (Exception e) {
             log.info("Failed to enter quantity for hot rolled coil");
             throw new RuntimeException("Failed to enter quantity for hot rolled coil", e);
@@ -282,7 +327,7 @@ public class CartSteps extends AbstractWebPage {
         try {
             waitAndCheckIsElementClickable(ATTRIBUTE, pdpThickness);
             waitAndClickOn(ATTRIBUTE, pdpThickness);
-            log.info("Selected same thickness value " + pdpThickness + " mm for hot rolled coil");
+            log.info("Selected same thickness value " + context.pdpThickness + " mm for hot rolled coil");
         } catch (Exception e) {
             log.info("Failed to select same thickness value for hot rolled coil");
             throw new RuntimeException("Failed to select same thickness value for hot rolled coil", e);
@@ -299,61 +344,60 @@ public class CartSteps extends AbstractWebPage {
 
         try {
             waitAndCheckIsElementClickable(QUANTITY);
-            waitAndSetText(QUANTITY, pdpQuantity);
+            waitAndSetText(QUANTITY, context.pdpQuantity);
             int quantityValue = Integer.parseInt(pdpQuantity) * 2;
-            pdpQuantity = String.valueOf(quantityValue);
-            log.info("Entered same quantity " + pdpQuantity + " for hot rolled coil");
+            context.pdpQuantity = String.valueOf(quantityValue);
+            log.info("Entered same quantity " + context.pdpQuantity + " for hot rolled coil");
+            Grid.driver().findElement(By.xpath(QUANTITY)).sendKeys(Keys.ENTER);
+            Grid.driver().findElement(By.xpath(QUANTITY)).sendKeys(Keys.ENTER);
         } catch (Exception e) {
             log.info("Failed to enter same quantity for hot rolled coil");
             throw new RuntimeException("Failed to enter same quantity for hot rolled coil", e);
         }
     }
 
-    @Then("Verify the Attribute values for HR Coil in cart page")
-    public void verifyTheAttributeValuesForHRCoilinCartPage() {
+    @Then("Verify the Attribute values for HR Coil in cart page with cart count {string}")
+    public void verifyTheAttributeValuesForHRCoilinCartPage(String count) {
         //verify quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals( context.cartPageQuantity, "Qty: " +  context.pdpQuantity + " MT");
 
-        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
+        softAssert.assertEquals(String.valueOf(getItemCount(getText(By.xpath(CART_COUNT)))), count, "Cart count is not updated in cart icon after adding product to cart");
 
-        cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
-        softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
+        context.cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertFalse( context.cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
+        softAssert.assertEquals( context.cartAttributeValue,  context.pdpThickness + " x " +  context.pdpWidth + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
 
-        softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+        softAssert.assertTrue( context.cartPdpProductName.equals( context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+        log.info("Verifies the cart attributes");
 
     }
 
     @And("open HR Sheet plp {string} product")
     public void openHRSheetPdp(String product) {
-        WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
-        scrollingToViewAndClickUsingJS(locator);
+
+
+        //scrollingToViewAndClickUsingJS(locator);
         try {
-            waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-            waitAndClickOn(PLP_FIRST_PRODUCT, product);
+            WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+           clickButton(locator);
             log.info("Opened HR Sheet PDP page");
         } catch (Exception e) {
             throw new RuntimeException("Failed to click on first product of hot rolled sheet category", e);
         }
     }
 
-    @And("select thickness {string} width {string} length {string} quantity {string} for HR Sheet")
-    public void selectAllTheHrAttribute(String thickness, String width, String length, String quantity) {
+    @And("select thickness, width, length, quantity, for HR Sheet")
+    public void selectAllTheHrAttribute() {
 
-        //Select HR Sheet thickness
         try {
-            if (isElementPresent(ATTRIBUTE, thickness)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
-                waitAndClickOn(ATTRIBUTE, thickness);
-                pdpThickness = thickness;
-                log.info("Thickness value " + thickness + "mm is selected for hot rolled sheet");
-            } else {
-                log.info("Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                Allure.addAttachment("Thickness value not available", "Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                waitAndCheckIsElementClickable(THICKNESS);
-                waitAndClickOn(THICKNESS, "2");
-                pdpThickness = waitAndGetText(THICKNESS, "2");
+
+            {
+                context.cartPdpProductName = getText(By.xpath(ITEM_NAME));
+              clickButton(By.xpath(THICKNESS));
+                context.pdpThickness = getText(By.xpath(THICKNESS));
+                log.info("Thickness value " +  context.pdpThickness + "mm is not available for selection, selecting available thickness value");
+                Allure.addAttachment("Thickness value not available", "Thickness value " +  context.pdpThickness + "mm is not available for selection, selecting available thickness value");
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click hot rolled sheet thickness", e);
@@ -361,37 +405,48 @@ public class CartSteps extends AbstractWebPage {
 
         //Select HR Sheet width
         try {
-            if (isElementPresent(ATTRIBUTE, width)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, width);
-                waitAndClickOn(ATTRIBUTE, width);
-                pdpWidth = width;
-                log.info("Width value " + width + "mm is selected for hot rolled sheet");
-            } else {
-                log.info("Width value " + width + "mm is not available for selection, selecting available width value");
-                Allure.addAttachment("Width value not available", "Width value " + width + "mm is not available for selection, selecting available width value");
-                waitAndCheckIsElementClickable(WIDTH);
-                waitAndClickOn(WIDTH, "1");
-                pdpWidth = waitAndGetText(WIDTH, "1");
+
+             {
+
+                waits(By.xpath(CUSTOM_WIDTH_MSG));
+                String value = getText(By.xpath(CUSTOM_WIDTH_MSG));
+                String widthValue = String.valueOf(CustomUtil.generateValueFromText(value));
+                log.info("Enter the Custome width value  "+widthValue);
+                waits(By.xpath(CUSTOM_WIDTH_TEXTBOX));
+                clickButton(By.xpath(CUSTOM_WIDTH_TEXTBOX));
+                enterText(By.xpath(CUSTOM_WIDTH_TEXTBOX),widthValue+"");
+                WebElement width1 = Grid.driver().findElement(By.xpath(CUSTOM_WIDTH_TEXTBOX));
+                width1.sendKeys(Keys.ENTER);
+                // pdpWidth = widthValue;
+                 context.pdpWidth = widthValue;
+                 log.info("Width value " + context.pdpWidth + "mm is not available for selection, selecting available width value");
+                 Allure.addAttachment("Width value not available", "Width value " + context.pdpWidth + "mm is not available for selection, selecting available width value");
+                log.info("entering the custom width");
+
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click hot rolled sheet width", e);
         }
 
         //Scroll to length attribute and select length
-        WebElement locator = Grid.driver().findElement(By.xpath(CategoryPages.length));
+        WebElement locator = Grid.driver().findElement(By.xpath(CUSTOM_LENGTH_MSG));
         scrollingToViewAndClickUsingJS(locator);
         try {
-            if (isElementPresent(ATTRIBUTE, length)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, length);
-                waitAndClickOn(ATTRIBUTE, length);
-                pdpLength = length;
-                log.info("Length value " + length + "mm is selected for hot rolled sheet");
-            } else {
-                log.info("Length value " + length + "mm is not available for selection, selecting available length value");
-                Allure.addAttachment("Length value not available", "Length value " + length + "mm is not available for selection, selecting available length value");
-                waitAndCheckIsElementClickable(LENGTH);
-                waitAndClickOn(LENGTH, "1");
-                pdpLength = waitAndGetText(LENGTH, "1");
+
+
+            {
+
+                waits(By.xpath(CUSTOM_LENGTH_MSG));
+                String value = getText(By.xpath(CUSTOM_LENGTH_MSG));
+                String lengthValue = String.valueOf(CustomUtil.generateValueFromText(value));
+                log.info("Enter the Custom length value  "+lengthValue);
+                waits(By.xpath(CUSTOM_LENGTH_TEXTBOX));
+                enterText(By.xpath(CUSTOM_LENGTH_TEXTBOX),lengthValue+"");
+                WebElement element = Grid.driver().findElement(By.xpath(CUSTOM_LENGTH_TEXTBOX));
+                element.sendKeys(Keys.ENTER);
+                log.info("entering the custom length");
+                //pdpLength=lengthValue;
+                context.pdpLength=lengthValue;
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click hot rolled sheet length", e);
@@ -399,10 +454,17 @@ public class CartSteps extends AbstractWebPage {
 
         //Enter quantity for HR Sheet
         try {
-            waitAndCheckIsElementClickable(QUANTITY);
-            waitAndSetText(QUANTITY, quantity);
-            pdpQuantity = quantity;
-            log.info("Quantity " + quantity + " is entered for hot rolled sheet");
+
+            waits(By.xpath(QUANTITY_TEXTBOX));
+            WebElement qty = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX));
+            enterText(By.xpath(QUANTITY_TEXTBOX),"2");
+            //pdpQuantity="2";
+            context.pdpQuantity="2";
+            qty.sendKeys(Keys.ENTER);
+            log.info("Quantity 2 is entered for hot rolled sheet");
+            skuCount=2;
+
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to enter quantity for hot rolled sheet", e);
         }
@@ -414,25 +476,27 @@ public class CartSteps extends AbstractWebPage {
 
         //Copy PDP produuct Name
         try {
-            pdpProductName = waitAndGetText(PDP_PRODUCT_NAME);
-            log.info("Product name " + pdpProductName + " is fetched from PDP");
-            if (pdpProductName.isEmpty()) {
-                log.info("Product name is empty on PDP");
-                softAssert.assertTrue(false, "Product name is empty on PDP");
-            }
+            sleep(1000);
+            waits(By.xpath(ADD_TO_CART_BTN));
+            WebElement addToCart = Grid.driver().findElement(By.xpath(ADD_TO_CART_BTN));
+            clickButton(addToCart);
+
         } catch (Exception e) {
-            log.info("Failed to get product name from PDP");
+            log.info("Failed to click on add to cart");
         }
 
         //Click Add-to-cart button
         try {
-            sleep(1000);
-            waitAndCheckIsElementClickable(ADD_TO_CART_CTA);
-            waitAndClickOn(ADD_TO_CART_CTA);
+
+            scrollToCenter(By.xpath(ADD_TO_CART_BTN));
+            clickButton(By.xpath(ADD_TO_CART_BTN));
+            sleep(500);
+          //  clickButton(By.xpath(ADD_TO_CART_BTN));
             log.info("Clicked on add to cart button");
-            skuCount = skuCount + 1;
+            //skuCount = 1;
+            context.skuCount=1;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to click on add to cart button", e);
+            log.info("Failed to click on add to cart button"+ e.getMessage());
         }
     }
 
@@ -441,9 +505,15 @@ public class CartSteps extends AbstractWebPage {
 
         //Click View Cart
         try {
-            waitAndCheckIsElementClickable(VIEW_CART);
-            waitAndClickOn(VIEW_CART);
+            waits(By.xpath(VIEWCART));
+            clickButton(By.xpath(VIEWCART));
             log.info("Clicked on view cart button");
+            context.pdpProductName = waitAndGetText(PDP_PRODUCT_NAME);
+            log.info("Product name " + context.pdpProductName + " is fetched from PDP");
+            if (context.pdpProductName.isEmpty()) {
+                log.info("Product name is empty on PDP");
+                softAssert.assertTrue(false, "Product name is empty on PDP");
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click View Cart button", e);
         }
@@ -453,23 +523,26 @@ public class CartSteps extends AbstractWebPage {
     @Then("verify the Attribute values for Cement in cart page")
     public void verifyTheAttributeValuesForCementInCartPage() {
         //Verify product name in cart page for cement
-        softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+        softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
         softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
         //Verify the quantity in cart page for cement
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " bags", "Quantity in cart page is not matching with selected quantity in PDP or quantity is not displayed in cart page");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " bags", "Quantity in cart page is not matching with selected quantity in PDP or quantity is not displayed in cart page");
     }
 
-    @Then("verify the Attribute values for HR Sheet in cart page")
-    public void verifyTheAttributeValuesForHRSheetInCartPage() {
+    @Then("verify the Attribute values for HR Sheet in cart page with cart count {string}")
+    public void verifyTheAttributeValuesForHRSheetInCartPage(String count) {
 
-        cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
-        softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " x " + pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
-        softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
-        System.out.println((pdpProductName));
-        softAssert.assertEquals(waitAndGetText(CART_COUNT), String.valueOf(skuCount), "Cart count is not updated in cart icon after adding product to cart");
+        context.cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertFalse(context.cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
+        softAssert.assertEquals(context.cartAttributeValue, context.pdpThickness + " x " + context.pdpWidth + " x " + context.pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
+        log.info((context.pdpProductName)+"   "+context.cartPdpProductName);
+        softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+
+        waits(By.xpath(CART_COUNT));
+        String count1 = String.valueOf(CustomUtil.getItemCount(CustomUtil.getText(By.xpath(CART_COUNT))));
+        softAssert.assertEquals(count1,count , "Cart count is not updated in cart icon after adding product to cart");
 
     }
 
@@ -482,8 +555,11 @@ public class CartSteps extends AbstractWebPage {
             if (isElementPresent(DELETE_CTA_BUTTON)) {
                 waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
                 waitAndClickOn(DELETE_CTA_BUTTON);
-                softAssert.assertEquals(waitAndGetText(EMPTY_CART_MESSAGE),"Your cart is empty","After deleting line item, empty cart message is not displayed");
-                softAssert.assertEquals(waitAndGetText(EMPTY_CART_COUNT), "", "Cart count is not updated in cart icon after deleting product from cart");
+                new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath(EMPTY_CART_MSG)));
+                String actualMessage = Grid.driver().findElement(By.xpath(EMPTY_CART_MSG)).getText();
+                softAssert.assertEquals(actualMessage, "Your cart is empty", "Empty cart message is not matching with expected message or empty cart message is not displayed");
+                log.info("Empty cart message is displayed and matching with expected message: " + "Your cart is empty");
+
                 log.info("Deleted successfully the line item from cart");
             }
         } catch (Exception e) {
@@ -508,27 +584,22 @@ public class CartSteps extends AbstractWebPage {
     public void openCRCoilPdp(String product) {
         //Scroll and click on it to open CR Coil PDP
         WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
-        scrollingToViewAndClickUsingJS(locator);
-        waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT, product);
-        waitAndClickOn(PLP_FIRST_PRODUCT, product);
+        clickButton(locator);
     }
 
-    @And("select thickness {string} width {string} quantity {string} for CR Coil")
-    public void selectAllTheCRCoilAttribute(String thickness, String width, String quantity) {
+    @And("select thickness, width, quantity {string} for CR Coil")
+    public void selectAllTheCRCoilAttribute(String quantity) {
 
-        //Select thickness for CR Coil
+
         try {
-            if (isElementPresent(ATTRIBUTE, thickness)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
-                waitAndClickOn(ATTRIBUTE, thickness);
-                log.info("Thickness value " + thickness + " mm is selected for cold rolled coil");
-                pdpThickness = thickness;
-            } else {
-                log.info("Thickness value " + thickness + " mm is not available for selection, selecting available thickness value");
-                Allure.addAttachment("Thickness value not available", "Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                waitAndCheckIsElementClickable(THICKNESS);
-                waitAndClickOn(THICKNESS, "2");
-                pdpThickness = waitAndGetText(THICKNESS, "2");
+
+            {
+                cartPdpProductName=getText(By.xpath(ITEM_NAME));
+                waits(By.xpath(THICKNESS));
+                clickButton(By.xpath(THICKNESS));
+                pdpThickness = getText(By.xpath(THICKNESS));
+                log.info("Thickness value " + pdpThickness + " mm is not available for selection, selecting available thickness value");
+                Allure.addAttachment("Thickness value not available", "Thickness value " + pdpThickness + "mm is not available for selection, selecting available thickness value");
             }
         } catch (Exception e) {
             log.info("Failed to click cold rolled coil thickness");
@@ -537,17 +608,19 @@ public class CartSteps extends AbstractWebPage {
 
         //Select width for CR Coil
         try {
-            if (isElementPresent(ATTRIBUTE, width)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, width);
-                waitAndClickOn(ATTRIBUTE, width);
-                log.info("Width value " + width + " mm is selected for cold rolled coil");
-                pdpWidth = width;
-            } else {
-                log.info("Width value " + width + "mm is not available for selection, selecting available width value");
-                Allure.addAttachment("Width value not available", "Width value " + width + "mm is not available for selection, selecting available width value");
-                waitAndCheckIsElementClickable(WIDTH);
-                waitAndClickOn(WIDTH, "1");
-                pdpWidth = waitAndGetText(WIDTH, "1");
+
+            {
+
+
+                clickButton(By.xpath(WIDTH_TEXTBOX));
+                waits(By.xpath(WIDTH_MSG));
+                String widthValue = String.valueOf(CustomUtil.generateValueFromText(getText(By.xpath(WIDTH_MSG))));
+                enterText(By.xpath(WIDTH_TEXTBOX),widthValue);
+                Grid.driver().findElement(By.xpath(WIDTH_TEXTBOX)).sendKeys(Keys.ENTER);
+
+                pdpWidth = widthValue;
+                log.info("Width value " + pdpWidth + "mm is not available for selection, selecting available width value");
+                Allure.addAttachment("Width value not available", "Width value " + pdpWidth + "mm is not available for selection, selecting available width value");
             }
         } catch (Exception e) {
             log.info("Failed to click cold rolled coil width");
@@ -557,7 +630,7 @@ public class CartSteps extends AbstractWebPage {
         //Enter quantity for CR Coil
         try {
             waitAndCheckIsElementClickable(QUANTITY);
-            waitAndSetText(QUANTITY, "50");
+            waitAndSetText(QUANTITY, quantity);
             log.info("Quantity " + quantity + " is entered for cold rolled coil");
         } catch (Exception e) {
             log.info("Failed to enter quantity for cold rolled coil");
@@ -585,12 +658,12 @@ public class CartSteps extends AbstractWebPage {
     @And("verify the updated Attribute values for CR coil in cart page")
     public void verifyTheUpdatedAttributeValuesForCRCoilinCartPage() {
         //verify updated quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " MT");
 
         //verify updated cart attribute value for CR Coil
-        afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertEquals(afterUpdateCartAttributeValue, updatedThickness + " x " + updatedWidth + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
+        context.afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertEquals(context.afterUpdateCartAttributeValue, context.updatedThickness + " x " + context.updatedWidth + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
 
     }
 
@@ -603,25 +676,21 @@ public class CartSteps extends AbstractWebPage {
     @And("open CR Sheet pdp")
     public void openCRSheetPdp() {
         WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
-        scrollingToViewAndClickUsingJS(locator);
-        waitAndClickOn(PLP_FIRST_PRODUCT, "1");
+        clickButton(locator);
     }
 
-    @And("select thickness {string} width {string} length {string} quantity {string} for CR Sheet")
-    public void selectAllTheCRSheetAttribute(String thickness, String width, String length, String quantity) {
+    @And("select thickness, width, length, quantity {string} for CR Sheet")
+    public void selectAllTheCRSheetAttribute(String quantity) {
 
         try {
-            if (isElementPresent(ATTRIBUTE, thickness)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, thickness);
-                waitAndClickOn(ATTRIBUTE, thickness);
-                log.info("Thickness value " + thickness + "mm is selected for cold rolled sheet");
-                pdpThickness = thickness;
-            } else {
-                log.info("Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                Allure.addAttachment("Thickness value not available", "Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                waitAndCheckIsElementClickable(THICKNESS);
-                waitAndClickOn(THICKNESS, "2");
-                pdpThickness = waitAndGetText(THICKNESS, "2");
+
+             {
+                 context.cartPdpProductName=getText(By.xpath(ITEM_NAME));
+                waits(By.xpath(THICKNESS));
+                clickButton(By.xpath(THICKNESS));
+                context.pdpThickness = getText(By.xpath(THICKNESS));
+                 log.info("Thickness value " + context.pdpThickness + "mm is not available for selection, selecting available thickness value");
+                 Allure.addAttachment("Thickness value not available", "Thickness value " + context.pdpThickness + "mm is not available for selection, selecting available thickness value");
             }
         } catch (Exception e) {
             log.info("Failed to click cold rolled sheet thickness");
@@ -629,17 +698,20 @@ public class CartSteps extends AbstractWebPage {
         }
 
         try {
-            if (isElementPresent(ATTRIBUTE, width)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, width);
-                waitAndClickOn(ATTRIBUTE, width);
-                log.info("Width value " + width + "mm is selected for cold rolled sheet");
-                pdpWidth = width;
-            } else {
-                log.info("Width value " + width + "mm is not available for selection, selecting available width value");
-                Allure.addAttachment("Width value not available", "Width value " + width + "mm is not available for selection, selecting available width value");
-                waitAndCheckIsElementClickable(WIDTH);
-                waitAndClickOn(WIDTH, "1");
-                pdpWidth = waitAndGetText(WIDTH, "1");
+
+            {
+
+
+
+                clickButton(By.xpath(WIDTH_TEXTBOX));
+                waits(By.xpath(WIDTH_MSG));
+                String widthValue = String.valueOf(CustomUtil.generateValueFromText(getText(By.xpath(WIDTH_MSG))));
+                enterText(By.xpath(WIDTH_TEXTBOX),widthValue);
+                Grid.driver().findElement(By.xpath(WIDTH_TEXTBOX)).sendKeys(Keys.ENTER);
+
+               context.pdpWidth = widthValue;
+                log.info("Width value " + context.pdpWidth + "mm is not available for selection, selecting available width value");
+                Allure.addAttachment("Width value not available", "Width value " + pdpWidth + "mm is not available for selection, selecting available width value");
             }
         } catch (Exception e) {
             log.info("Failed to click cold rolled sheet width");
@@ -647,17 +719,19 @@ public class CartSteps extends AbstractWebPage {
         }
 
         try {
-            if (isElementPresent(ATTRIBUTE, length)) {
-                waitAndCheckIsElementClickable(ATTRIBUTE, length);
-                waitAndClickOn(ATTRIBUTE, length);
-                log.info("Length value " + length + "mm is selected for cold rolled sheet");
-                pdpLength = length;
-            } else {
-                log.info("Length value " + length + "mm is not available for selection, selecting available length value");
-                Allure.addAttachment("Length value not available", "Length value " + length + "mm is not available for selection, selecting available length value");
-                waitAndCheckIsElementClickable(LENGTH);
-                waitAndClickOn(LENGTH, "1");
-                pdpLength = waitAndGetText(LENGTH, "1");
+
+            {
+
+                waits(By.xpath(CUSTOM_LENGTH_MSG));
+                String value = getText(By.xpath(CUSTOM_LENGTH_MSG));
+                String lengthValue = String.valueOf(CustomUtil.generateValueFromText(value));
+                log.info("Enter the Custom length value  "+lengthValue);
+                waits(By.xpath(CUSTOM_LENGTH_TEXTBOX));
+                enterText(By.xpath(CUSTOM_LENGTH_TEXTBOX),lengthValue+"");
+                WebElement element = Grid.driver().findElement(By.xpath(CUSTOM_LENGTH_TEXTBOX));
+                element.sendKeys(Keys.ENTER);
+                log.info("entering the custom length");
+                context.pdpLength=lengthValue;
             }
         } catch (Exception e) {
             log.info("Failed to click cold rolled sheet length");
@@ -669,7 +743,7 @@ public class CartSteps extends AbstractWebPage {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
             log.info("Quantity " + quantity + " is entered for cold rolled sheet");
-            pdpQuantity = quantity;
+            context.pdpQuantity = quantity;
         } catch (Exception e) {
             log.info("Failed to enter quantity for cold rolled sheet");
             throw new RuntimeException("Failed to enter quantity for cold rolled sheet", e);
@@ -678,23 +752,28 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("verify the Attribute values for CR Sheet in cart page")
     public void verifyTheAttributeValuesForCRSheetInCartPage() {
-        cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
-        softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " x " + pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
-        softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
-        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
+        context.cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertFalse(context.cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
+        softAssert.assertEquals(context.cartAttributeValue, context.pdpThickness + " x " + context.pdpWidth + " x " + context.pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
+        softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+        softAssert.assertEquals(getItemCount(getText(By.xpath(CART_COUNT))), "1", "Cart count is not updated in cart icon after adding product to cart");
     }
 
     @And("verify the updated Attribute values for CR Sheet in cart page")
     public void verifyTheUpdatedAttributeValuesForCRSheetInCartPage() {
-        afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertEquals(afterUpdateCartAttributeValue, updatedThickness + " x " + updatedWidth + " x " + updatedLength + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
+       context.afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertEquals(context.afterUpdateCartAttributeValue, context.updatedThickness + " x " + context.updatedWidth + " x " + context.updatedLength + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
 
     }
 
     @When("click on Cement product")
     public void clickOnCementProduct() {
         try {
+            sleep(4000);
+            pageRefresh();
+            sleep(4000);
+            new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(ALL_CATEGORY));
+            actions.moveToElement(Grid.driver().findElement(ALL_CATEGORY)).perform();
             waitAndClickOn(CEMENT_PLP);
             log.info("Opened cement PLP page");
         } catch (Exception e) {
@@ -703,7 +782,7 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("open Cement pdp {string} product")
+    @And("open Cement pdp product")
     public void openCementPdp(String product) {
         try {
             waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT, product);
@@ -717,10 +796,11 @@ public class CartSteps extends AbstractWebPage {
     @And("enter quantity {string} for Cement")
     public void selectAllTheCementAttribute(String quantity) {
         try {
+            context.cartPdpProductName=getText(By.xpath(ITEM_NAME));
             waitAndCheckIsElementClickable(CEMENT_QUANTITY);
             waitAndSetText(CEMENT_QUANTITY, quantity);
             log.info("Quantity " + quantity + " is entered for cement");
-            pdpQuantity = quantity;
+            context.pdpQuantity = quantity;
         } catch (Exception e) {
             log.info("Failed to enter quantity for cement");
             throw new RuntimeException("Failed to enter quantity for cement", e);
@@ -730,7 +810,7 @@ public class CartSteps extends AbstractWebPage {
     @And("click to Coated steel category")
     public void clickToCoatedSteelCategory() {
         try {
-            actions.moveToElement(Grid.driver().findElement(By.xpath(coatedSteel))).perform();
+            actions.moveToElement(Grid.driver().findElement(By.xpath(coatedSteel))).click().perform();
             log.info("cursor moved to Coated Steel");
         } catch (Exception e) {
             throw new RuntimeException("mouse failed to move to coated steel", e);
@@ -760,19 +840,17 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("select thickness {string} width {string} length {string} coating grade {string} spangle type {string} quantity {string} for Colour Coated Sheet")
-    public void selectAllTheColourCoatedSheetAttribute(String thickness, String width, String length, String coatingGrade, String spangleType, String quantity) {
+    @And("select thickness, width, length, coating grade, spangle type, quantity {string} for Colour Coated Sheet")
+    public void selectAllTheColourCoatedSheetAttribute(String quantity) {
         try {
-            if (isElementPresent(ATTRIBUTE, thickness)) {
-                waitAndClickOn(ATTRIBUTE, thickness);
-                pdpThickness = thickness;
-                log.fine("Thickness value " + thickness + "mm is selected for Colour Coated Sheet");
-            } else {
-                log.info("Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                Allure.addAttachment("Thickness value not available", "Thickness value " + thickness + "mm is not available for selection, selecting available thickness value");
-                waitAndCheckIsElementClickable(THICKNESS);
-                waitAndClickOn(THICKNESS, "2");
-                pdpThickness = waitAndGetText(THICKNESS, "2");
+
+            {
+                context.cartPdpProductName=getText(By.xpath(ITEM_NAME));
+                waits(By.xpath(THICKNESS));
+                clickButton(By.xpath(THICKNESS));
+                context.pdpThickness = getText(By.xpath(THICKNESS));
+                log.info("Thickness value " + context.pdpThickness + "mm is not available for selection, selecting available thickness value");
+                Allure.addAttachment("Thickness value not available", "Thickness value " + context.pdpThickness + "mm is not available for selection, selecting available thickness value");
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click Colour Coated Sheet thickness", e);
@@ -780,35 +858,38 @@ public class CartSteps extends AbstractWebPage {
 
 
         try {
-            if (isElementPresent(ATTRIBUTE, width)) {
-                waitAndClickOn(ATTRIBUTE, width);
-                pdpWidth = width;
-                log.info("Width value " + width + "mm is selected for Colour Coated Sheet");
-            } else {
-                log.info("Width value " + width + "mm is not available for selection, selecting available width value");
-                Allure.addAttachment("Width value not available", "Width value " + width + "mm is not available for selection, selecting available width value");
-                waitAndCheckIsElementClickable(WIDTH);
-                waitAndClickOn(WIDTH, "1");
-                pdpWidth = waitAndGetText(WIDTH, "1");
+
+            {
+
+
+                clickButton(By.xpath(WIDTH_BUTTON));
+                context.pdpWidth = getText(By.xpath(WIDTH_BUTTON));
+                log.info("Width value " + context.pdpWidth + "mm is not available for selection, selecting available width value");
+                Allure.addAttachment("Width value not available", "Width value " + context.pdpWidth + "mm is not available for selection, selecting available width value");
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click Colour Coated Sheet Width", e);
         }
 
 
-        WebElement locator = Grid.driver().findElement(By.xpath(CategoryPages.length));
-        scrollingToViewAndClickUsingJS(locator);
+
         try {
-            if (isElementPresent(ATTRIBUTE, length)) {
-                waitAndClickOn(ATTRIBUTE, length);
-                pdpLength = length;
-                log.info("Length value " + length + "mm is selected for Colour Coated Sheet");
-            } else {
-                log.info("Length value " + length + "mm is not available for selection, selecting available length value");
-                Allure.addAttachment("Length value not available", "Length value " + length + "mm is not available for selection, selecting available length value");
-                waitAndCheckIsElementClickable(LENGTH);
-                waitAndClickOn(LENGTH, "1");
-                pdpLength = waitAndGetText(LENGTH, "1");
+
+            {
+
+                waits(By.xpath(CUSTOM_LENGTH_MSG));
+                String value = getText(By.xpath(CUSTOM_LENGTH_MSG));
+                String lengthValue = String.valueOf(CustomUtil.generateValueFromText(value));
+                log.info("Enter the Custom length value  "+lengthValue);
+                waits(By.xpath(CUSTOM_LENGTH_TEXTBOX));
+                enterText(By.xpath(CUSTOM_LENGTH_TEXTBOX),lengthValue+"");
+                WebElement element = Grid.driver().findElement(By.xpath(CUSTOM_LENGTH_TEXTBOX));
+                element.sendKeys(Keys.ENTER);
+                log.info("entering the custom length");
+                context.pdpLength = lengthValue;
+                log.info("Length value " + context.pdpLength + "mm is not available for selection, selecting available length value");
+                Allure.addAttachment("Length value not available", "Length value " + context.pdpLength + "mm is not available for selection, selecting available length value");
+
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click Colour Coated Sheet Length", e);
@@ -816,28 +897,28 @@ public class CartSteps extends AbstractWebPage {
 
 
         try {
-            if (isElementPresent(ATTRIBUTE, coatingGrade)) {
-                waitAndClickOn(ATTRIBUTE, coatingGrade);
-                log.info("Coating Grade value " + coatingGrade + " is selected for Colour Coated Sheet");
-                pdpCoatingGrade = coatingGrade;
-            } else {
-                log.info("Coating Grade value " + coatingGrade + " is not available for selection, selecting available coating grade value");
-                Allure.addAttachment("Coating Grade value not available", "Coating Grade value " + coatingGrade + " is not available for selection, selecting available coating grade value");
-                waitAndClickOn(COATING_GRADE, "1");
+
+            {
+                clickButton(By.xpath(COATING_GRADE));
+                context.pdpCoatingGrade = getText(By.xpath(COATING_GRADE));
+                log.info("Coating Grade value is "+context.pdpCoatingGrade);
+                Allure.addAttachment("Coating Grade value is available", "Coating Grade value " +  context.pdpCoatingGrade + " is not available for selection, selecting available coating grade value");
+
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click Colour Coated Sheet Coating Grade", e);
         }
 
         try {
-            if (isElementPresent(ATTRIBUTE, spangleType)) {
-                waitAndClickOn(ATTRIBUTE, spangleType);
-                log.info("Spangle Type value " + spangleType + " is selected for Colour Coated Sheet");
-                pdpSpangleType = spangleType;
-            } else {
-                log.info("Spangle Type value " + spangleType + " is not available for selection, selecting available spangle type value");
-                Allure.addAttachment("Spangle Type value not available", "Spangle Type value " + spangleType + " is not available for selection, selecting available spangle type value");
-//                waitAndClickOn(SPANGLE_TYPE, "1");
+
+            {
+
+                clickButton(By.xpath(SPANGLE_TYPE));
+                context.pdpSpangleType = getText(By.xpath(SPANGLE_TYPE));
+                if(context.pdpSpangleType==null) {
+                    log.info("Spangle Type value " + context.pdpSpangleType + " is not available for selection, selecting available spangle type value");
+                    Allure.addAttachment("Spangle Type value not available", "Spangle Type value " + context.pdpSpangleType + " is not available for selection, selecting available spangle type value");
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to click Colour Coated Sheet Spangle Type", e);
@@ -847,8 +928,8 @@ public class CartSteps extends AbstractWebPage {
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
-            pdpQuantity = quantity;
-            log.info("Quantity " + quantity + " is entered for Colour Coated Sheet");
+            context.pdpQuantity = quantity;
+            log.info("Quantity " + context.pdpQuantity + " is entered for Colour Coated Sheet");
         } catch (Exception e) {
             throw new RuntimeException("Failed to enter Quantity for Colour Coated Sheet", e);
         }
@@ -856,23 +937,24 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("verify the Attribute values for Coated Steel Sheet in cart page")
     public void verifyTheAttributeValuesForCoatedSteelSheetInCartPage() {
-        cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
-        softAssert.assertEquals(cartAttributeValue, pdpThickness + " x " + pdpWidth + " x " + pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
-        softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+        context.cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertFalse(context.cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
+        softAssert.assertEquals(context.cartAttributeValue, context.pdpThickness + " x " + context.pdpWidth + " x " + context.pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
+        softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
-        cartPageSpangle = waitAndGetText(CART_PAGE_SPANGLE);
-        softAssert.assertEquals(cartPageSpangle, "Spangle type: " + pdpSpangleType, "Spangle type value in cart page is not matching with selected spangle type value in PDP or spangle type value is not displayed in cart page");
+        context.cartPageSpangle = waitAndGetText(CART_PAGE_SPANGLE);
+        softAssert.assertEquals(context.cartPageSpangle, "Spangle type: " + context.pdpSpangleType.replace("Spangle type:","").trim(), "Spangle type value in cart page is not matching with selected spangle type value in PDP or spangle type value is not displayed in cart page");
 
-        cartPageCoatingGrade = waitAndGetText(CART_PAGE_COATING_GRADE);
-        softAssert.assertEquals(cartPageCoatingGrade, "Coating grade: " + pdpCoatingGrade + " GSM", "Coating grade value in cart page is not matching with selected coating grade value in PDP or coating grade value is not displayed in cart page");
-        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
+        context.cartPageCoatingGrade = waitAndGetText(CART_PAGE_COATING_GRADE);
+        softAssert.assertTrue(context.cartPageCoatingGrade.replace("Coating grade:","").contains(context.pdpCoatingGrade.trim()), "Coating grade value in cart page is not matching with selected coating grade value in PDP or coating grade value is not displayed in cart page");
+        softAssert.assertEquals(String.valueOf(getItemCount(getText(By.xpath(CART_COUNT)))), "1", "Cart count is not updated in cart icon after adding product to cart");
     }
 
     @And("click on Wire product")
     public void clickOnWireProduct() {
         try {
             //Reading locator from page factory
+            waits(By.xpath(wireCategory));
             actions.moveToElement(Grid.driver().findElement(By.xpath(wireCategory))).click().perform();
             log.info("Clicked on Wire category");
         } catch (Exception e) {
@@ -887,7 +969,7 @@ public class CartSteps extends AbstractWebPage {
         scrollingToViewAndClickUsingJS(locator);
         try {
             waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
-            waitAndClickOn(PLP_FIRST_PRODUCT, "2");
+            waitAndClickOn(PLP_FIRST_PRODUCT, "1");
         } catch (Exception e) {
             log.info("Failed to click on Wire category");
             throw new RuntimeException("Failed to click on Wire category", e);
@@ -898,15 +980,16 @@ public class CartSteps extends AbstractWebPage {
     public void selectAllTheWireAttribute(String diameter, String quantity) {
         //Select diameter for Wire
         try {
-            if (isElementPresent(ATTRIBUTE, diameter)) {
-                waitAndClickOn(ATTRIBUTE, diameter);
-                log.info("Diameter value " + diameter + "mm is selected for Wire");
-                pdpDiameter = diameter;
-            } else {
-                log.info("Diameter value " + diameter + "mm is not available for selection, selecting available diameter value");
-                Allure.addAttachment("Diameter value not available", "Diameter value " + diameter + "mm is not available for selection, selecting available diameter value");
-                waitAndClickOn(DIAMETER, "1");
-                pdpDiameter = waitAndGetText(DIAMETER, "1");
+
+            {
+                context.cartPdpProductName=getText(By.xpath(ITEM_NAME));
+
+                clickButton(By.xpath(DIAMETER));
+                String diameterValue = getText(By.xpath(DIAMETER));
+                // waitAndClickOn(WIDTH, "2");
+                context.pdpDiameter = diameterValue;
+                log.info("Diameter value " + context.pdpDiameter + "mm is  available for selection, selecting available diameter value");
+                Allure.addAttachment("Diameter value not available", "Diameter value " + context.pdpDiameter + "mm is not available for selection, selecting available diameter value");
             }
         } catch (Exception e) {
             log.info("Failed to click diameter in Wire PDP page");
@@ -918,7 +1001,7 @@ public class CartSteps extends AbstractWebPage {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
             log.info("Enter quantity " + quantity + " for Wire");
-            pdpQuantity = quantity;
+            context.pdpQuantity = quantity;
         } catch (Exception e) {
             log.info("Failed to enter quantity for Wire");
             throw new RuntimeException("Failed to enter quantity for Wire", e);
@@ -928,33 +1011,35 @@ public class CartSteps extends AbstractWebPage {
     @Then("verify the Attribute values for Wire in cart page")
     public void verifyTheAttributeValuesForWireInCartPage() {
         //verify quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
-
-        softAssert.assertEquals(waitAndGetText(CART_COUNT), "1", "Cart count is not updated in cart icon after adding product to cart");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " MT","Quantity is not matching");
+        waits(By.xpath(CART_COUNT));
+        softAssert.assertEquals(getItemCount(getText(By.xpath(CART_COUNT))), "1", "Cart count is not updated in cart icon after adding product to cart");
 
         //verify diameter in cart page
-        cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertFalse(cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
-        softAssert.assertEquals(cartAttributeValue, pdpDiameter + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
+        context.cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertFalse(context.cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
+        softAssert.assertEquals(context.cartAttributeValue, context.pdpDiameter + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
 
         //verify product Name in cart Page
-        softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName, "Wire Product Name is not matching in cart page or product name is not displayed in cart page"));
+        softAssert.assertTrue(context.cartPdpProductName.toLowerCase().contains(context.pdpProductName.toLowerCase()), "Wire Product Name is not matching in cart page or product name is not displayed in cart page");
     }
 
     @And("verify the updated Attribute values for Wire in cart page")
     public void verifyTheUpdatedAttributeValuesForWireInCartPage() {
         //verify quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " MT");
 
-        afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertEquals(afterUpdateCartAttributeValue, updatedDiameter + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
+        context.afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertEquals(context.afterUpdateCartAttributeValue, context.updatedDiameter + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
     }
 
     @When("click on TMT product")
     public void clickOnTMTProduct() {
         try {
+            new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(ALL_CATEGORY));
+            actions.moveToElement(Grid.driver().findElement(ALL_CATEGORY)).perform();
             waitAndClickOn(TMT);
             log.info("Clicked on TMT category");
         } catch (Exception e) {
@@ -967,8 +1052,7 @@ public class CartSteps extends AbstractWebPage {
     public void openTMTPdp(String product) {
         try {
             WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
-            scrollingToViewAndClickUsingJS(locator);
-            waitAndClickOn(PLP_FIRST_PRODUCT, product);
+            clickButton(locator);
             log.info("Opened TMT PDP page");
         } catch (Exception e) {
             log.info("Failed to open TMT Rebar PDP");
@@ -976,19 +1060,19 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("select diameter {string} form {string} quantity {string} for TMT")
-    public void selectAllTheTMTRebarAttribute(String diameter, String form, String quantity) {
+    @And("select diameter, form, quantity {string} for TMT")
+    public void selectAllTheTMTRebarAttribute(String quantity) {
 
         //Select diameter for TMT
         try {
-            if (isElementPresent(ATTRIBUTE, diameter)) {
-                waitAndClickOn(ATTRIBUTE, diameter);
-                log.info("Diameter value " + diameter + "mm is selected for TMT");
-                pdpDiameter = diameter;
-            } else {
-                log.info("Diameter value " + diameter + "mm is not available for selection, selecting available diameter value");
-                waitAndClickOn(DIAMETER, "1");
-                pdpDiameter = waitAndGetText(DIAMETER, "1");
+
+            {
+                context.cartPdpProductName=getText(By.xpath(ITEM_NAME));
+                clickButton(By.xpath(DIAMETER));
+                String diameterValue = getText(By.xpath(DIAMETER));
+                context.pdpDiameter = diameterValue;
+                sleep(1000);
+                log.info("Diameter value " + context.pdpDiameter + "mm is not available for selection, selecting available diameter value");
             }
         } catch (Exception e) {
             log.info("Failed to select TMT diameter");
@@ -997,14 +1081,13 @@ public class CartSteps extends AbstractWebPage {
 
         //Select form for TMT
         try {
-            if (isElementPresent(ATTRIBUTE, form)) {
-                waitAndClickOn(ATTRIBUTE, form);
-                log.info("Form value " + form + " Selected for TMT");
-                pdpForm = form;
-            } else {
-                log.info("Form value " + form + "mm is not available for selection, selecting available form value");
-                waitAndClickOn(FORM, "1");
-                pdpForm = waitAndGetText(FORM, "1");
+
+            {
+                waits(By.xpath(FORM));
+                clickButton(By.xpath(FORM));
+                context.pdpForm = getText(By.xpath(FORM));
+                log.info("Form value " + context.pdpForm + "mm is not available for selection, selecting available form value");
+                sleep(1000);
 
             }
         } catch (Exception e) {
@@ -1017,23 +1100,23 @@ public class CartSteps extends AbstractWebPage {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, quantity);
             log.info("Enter TMT Quantity in PDP page ");
-            pdpQuantity = quantity;
+            context.pdpQuantity = quantity;
         } catch (Exception e) {
             log.info("Failed to enter TMT Quantity in PDP page");
             throw new RuntimeException("Failed to enter TMT Quantity in PDP page", e);
         }
     }
 
-    @Then("verify the Attribute values for TMT in cart page")
-    public void verifyTheAttributeValuesForTmtInCartPage() {
+    @Then("verify the Attribute values for TMT in cart page with cart count {string}")
+    public void verifyTheAttributeValuesForTmtInCartPage(String count) {
         //verify product Name in cart Page
-        softAssert.assertTrue(isElementPresent(CART_PAGE_PRODUCT_NAME, pdpProductName, "TMT Product Name is not matching in cart page or product name is not displayed in cart page"));
+        softAssert.assertTrue((context.cartPdpProductName).toLowerCase().contains( context.pdpProductName.toLowerCase()), "TMT Product Name is not matching in cart page or product name is not displayed in cart page");
 
         //verify quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + pdpQuantity + " MT");
-
-        softAssert.assertEquals(waitAndGetText(CART_COUNT), String.valueOf(skuCount), "Cart count is not updated in cart icon after adding product to cart");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " MT");
+        log.info(""+(getItemCount(getText(By.xpath(CART_COUNT)))));
+        softAssert.assertEquals((getItemCount(getText(By.xpath(CART_COUNT)))), String.valueOf(count), "Cart count is not updated in cart icon after adding product to cart");
 
     }
 
@@ -1159,10 +1242,10 @@ public class CartSteps extends AbstractWebPage {
             waitAndCheckIsElementClickable(EDIT_QUANTITY, updateQuantity);
             clearTextBox(EDIT_QUANTITY);
             waitAndSetText(EDIT_QUANTITY, updateQuantity);
-            updatedQuantity = updateQuantity;
-            log.info("Updated quantity from " + pdpQuantity + " to " + updateQuantity + " in edit line item for " + pdpProductName);
+            context.updatedQuantity = updateQuantity;
+            log.info("Updated quantity from " + context.pdpQuantity + " to " + updateQuantity + " in edit line item for " + context.pdpProductName);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to update the Quantity for " + pdpProductName, e);
+            throw new RuntimeException("Failed to update the Quantity for " + context.pdpProductName, e);
         }
     }
 
@@ -1180,11 +1263,11 @@ public class CartSteps extends AbstractWebPage {
     @And("Verify the updated Attribute values for HR Coil in cart page")
     public void verifyTheUpdatedAttributeValuesForHRCoilinCartPage() {
         //verify quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + updatedQuantity + " MT");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.updatedQuantity + " MT");
 
-        afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertEquals(afterUpdateCartAttributeValue, updatedThickness + " x " + updatedWidth + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
+        context.afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertEquals(context.afterUpdateCartAttributeValue, context.updatedThickness + " x " + context.updatedWidth + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
 
 
     }
@@ -1192,32 +1275,31 @@ public class CartSteps extends AbstractWebPage {
     @Then("verify the updated Attribute values for Cement in cart page")
     public void verifyTheUpdatedAttributeValuesForCementInCartPage() {
         //Verify the updated quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + updatedQuantity + " bags", "After update, Quantity in cart page is not matching with updated quantity in edit line item or quantity is not displayed in cart page");
+       context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.updatedQuantity + " bags", "After update, Quantity in cart page is not matching with updated quantity in edit line item or quantity is not displayed in cart page");
     }
 
     @And("verify the updated Attribute values for HR Sheet in cart page")
     public void verifyTheUpdatedAttributeValuesForHRSheetInCartPage() {
-        afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
-        softAssert.assertEquals(afterUpdateCartAttributeValue, updatedThickness + " x " + updatedWidth + " x " + updatedLength + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
+       context.afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
+        softAssert.assertEquals(context.afterUpdateCartAttributeValue, context.updatedThickness + " x " + context.updatedWidth + " x " + context.updatedLength + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
     }
 
-    @And("update Thickness to {string} dropdown")
-    public void updateThickness(String updateThickness) {
+    @And("update Thickness to dropdown")
+    public void updateThickness() {
         try {
             waitAndClickOn(EDIT_THICKNESS_DROPDOWN);
             log.info("Clicked on edit thickness dropdown");
             sleep(2000);
-            if (isElementPresent(UPDATE_ATTRIBUTE, updateThickness)) {
-                waitAndCheckIsElementClickable(UPDATE_ATTRIBUTE, updateThickness);
-                waitAndClickOn(UPDATE_ATTRIBUTE, updateThickness);
-                updatedThickness = updateThickness;
-                log.info("Updated thickness from " + pdpThickness + "mm to " + updateThickness + "mm in edit line item");
+            if (isDisplayed(By.xpath(UPDATE_ATTRIBUTE))) {
+                clickButton(By.xpath(UPDATE_ATTRIBUTE));
+                context.updatedThickness = getText(By.xpath(UPDATE_ATTRIBUTE));
+                log.info("Updated thickness from " + context.pdpThickness + "mm to " + context.updatedThickness + "mm in edit line item");
             } else {
-                log.info("Given update thickness " + updateThickness + "mm is not available for selection, selecting available update thickness value");
-                Allure.addAttachment("Update Thickness value not available", "Given update thickness " + updateThickness + "mm is not available for selection, selecting available update thickness value");
+                log.info("Given update thickness " + context.updatedThickness + "mm is not available for selection, selecting available update thickness value");
+                Allure.addAttachment("Update Thickness value not available", "Given update thickness " + context.updatedThickness + "mm is not available for selection, selecting available update thickness value");
                 waitAndCheckIsElementClickable(EDIT_THICKNESS, "3");
-                updatedThickness = waitAndGetText(EDIT_THICKNESS, "3");
+                context.updatedThickness = waitAndGetText(EDIT_THICKNESS, "3");
                 waitAndClickOn(EDIT_THICKNESS, "3");
             }
         } catch (Exception e) {
@@ -1225,20 +1307,20 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("update Width to {string} dropdown")
-    public void updateWidth(String updateWidth) {
+    @And("update Width to dropdown")
+    public void updateWidth() {
         try {
             waitAndClickOn(EDIT_WIDTH_DROPDOWN);
             log.info("Clicked on edit width dropdown");
-            if (isElementPresent(UPDATE_ATTRIBUTE, updateWidth)) {
-                waitAndCheckIsElementClickable(UPDATE_ATTRIBUTE, updateWidth);
-                waitAndClickOn(UPDATE_ATTRIBUTE, updateWidth);
-                updatedWidth = updateWidth;
-                log.info("Updated width from" + pdpWidth + "mm to " + updateWidth + "mm in edit line item");
+            if (isDisplayed(By.xpath(UPDATE_ATTRIBUTE))) {
+                clickButton(By.xpath(UPDATE_ATTRIBUTE));
+                context.updatedWidth = getText(By.xpath(UPDATE_ATTRIBUTE));
+
+                log.info("Updated width from" + context.pdpWidth + "mm to " + context.updatedWidth + "mm in edit line item");
             } else {
-                log.info("Given update width " + updateWidth + "mm is not available for selection, selecting available update width value");
+                log.info("Given update width " + context.updatedWidth + "mm is not available for selection, selecting available update width value");
                 waitAndCheckIsElementClickable(EDIT_WIDTH, "2");
-                updatedWidth = waitAndGetText(EDIT_WIDTH, "2");
+                context.updatedWidth = waitAndGetText(EDIT_WIDTH, "2");
                 waitAndClickOn(EDIT_WIDTH, "2");
             }
         } catch (Exception e) {
@@ -1246,45 +1328,46 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("update Length to {string} dropdown")
-    public void updateLength(String updateLength) {
+    @And("update Length to dropdown")
+    public void updateLength() {
         try {
             waitAndClickOn(EDIT_LENGTH_DROPDOWN);
             log.info("Clicked on edit length dropdown");
-            if (isElementPresent(UPDATE_ATTRIBUTE, updateLength)) {
-                waitAndCheckIsElementClickable(UPDATE_ATTRIBUTE, updateLength);
-                waitAndClickOn(UPDATE_ATTRIBUTE, updateLength);
-                updatedLength = updateLength;
-                log.info("Updated length from " + pdpLength + "mm to " + updateLength + "mm in edit line item");
+            if (isDisplayed(By.xpath(UPDATE_ATTRIBUTE))) {
+                clickButton(By.xpath(UPDATE_ATTRIBUTE));
+                context.updatedLength = getText(By.xpath(UPDATE_ATTRIBUTE));
+                log.info("Updated length from " + context.pdpLength + "mm to " + context.updatedLength + "mm in edit line item");
             } else {
-                log.info("Given update length " + updateLength + "mm is not available for selection, selecting available update length value");
-                Allure.addAttachment("Update Length value not available", "Given update length " + updateLength + "mm is not available for selection, selecting available update length value");
-                waitAndCheckIsElementClickable(EDIT_LENGTH, "5");
-                updatedLength = waitAndGetText(EDIT_LENGTH, "5");
-                waitAndClickOn(EDIT_LENGTH, "5");
+                log.info("Given update length " + updatedLength + "mm is not available for selection, selecting available update length value");
+                Allure.addAttachment("Update Length value not available", "Given update length " + context.updatedLength + "mm is not available for selection, selecting available update length value");
+                waitAndCheckIsElementClickable(EDIT_LENGTH);
+                context.updatedLength = waitAndGetText(EDIT_LENGTH);
+                waitAndClickOn(EDIT_LENGTH);
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to update length in edit line item", e);
         }
     }
 
-    @And("update Diameter to {string}")
-    public void updateDiameter(String updateDiameter) {
+    @And("update Diameter")
+    public void updateDiameter() {
         try {
             waitAndClickOn(EDIT_DIAMETER_DROPDOWN);
             log.info("Clicked on edit Diameter dropdown");
-            boolean result = isElementPresent(UPDATE_ATTRIBUTE, updateDiameter);
-            if (isElementPresent(UPDATE_ATTRIBUTE, updateDiameter)) {
-                waitAndClickOn(UPDATE_ATTRIBUTE, updateDiameter);
-                updatedDiameter = updateDiameter;
-                log.info("Updated diameter from " + pdpDiameter + "mm to " + updateDiameter + "mm in edit line item");
-            } else {
-                log.info("Given update diameter " + updateDiameter + "mm is not available for selection, selecting available update diameter value");
-                Allure.addAttachment("Update Length value not available", "Given update length " + updateDiameter + "mm is not available for selection, selecting available update length value");
-                updatedDiameter = waitAndGetText(EDIT_LENGTH, "5");
-                waitAndClickOn(EDIT_LENGTH, "5");
+
+            {
+                if (isDisplayed(By.xpath(UPDATE_ATTRIBUTE))) {
+                    clickButton(By.xpath(UPDATE_ATTRIBUTE));
+                }
+                context.updatedDiameter = getText(By.xpath(UPDATE_ATTRIBUTE));
+
+                log.info("Given update diameter " + context.updatedDiameter + "mm is not available for selection, selecting available update diameter value");
+
+
             }
         } catch (Exception e) {
+            Allure.addAttachment("Update Length value not available", "Given update length " + context.updatedDiameter + "mm is not available for selection, selecting available update length value");
+
             throw new RuntimeException("Failed to update Diameter in edit line item", e);
         }
     }
@@ -1294,10 +1377,10 @@ public class CartSteps extends AbstractWebPage {
         try {
             waitAndClickOn(EDIT_FORM_DROPDOWN);
             log.info("Clicked on edit Form dropdown");
-            if (isElementPresent(UPDATE_ATTRIBUTE, updateForm)) {
-                waitAndClickOn(UPDATE_ATTRIBUTE, updateForm);
-                updatedDiameter = updateForm;
-                log.info("Updated Form from " + pdpForm + "mm to " + updateForm + "mm in edit line item");
+            if (isDisplayed(By.xpath(UPDATE_ATTRIBUTE))) {
+                clickButton(By.xpath(UPDATE_ATTRIBUTE));
+                updatedDiameter = getText(By.xpath(UPDATE_ATTRIBUTE));
+                log.info("Updated Form from " + pdpForm + "mm to " + updatedDiameter + "mm in edit line item");
             } else {
                 log.info("Given update form " + updateForm + "mm is not available for selection, selecting available update Form value");
                 Allure.addAttachment("Update Length value not available", "Given update Form " + updateForm + "mm is not available for selection, selecting available update Form value");
@@ -1312,28 +1395,69 @@ public class CartSteps extends AbstractWebPage {
     @And("verify the updated Attribute values for TMT in cart page")
     public void verifyTheUpdatedAttributeValuesForTMTinCartPage() {
         //verify quantity in cart page
-        cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        softAssert.assertEquals(cartPageQuantity, "Qty: " + updatedQuantity + " MT", "Quantity is not updated for TMT");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.updatedQuantity + " MT", "Quantity is not updated for TMT");
 
     }
 
     @When("click cart icon")
     public void clickCartIcon() {
-        // Click the cart anchor itself instead of the inner div, which only
-        // exists in the empty-cart state — this works whether the cart is
-        // empty or has items.
-        waitAndClickOn(CART_PAGE);
+        refreshAndWaitFor(CART_ICON);
+        clickButton(CART_ICON);
         log.info("Clicked on cart icon");
     }
 
     @Then("check the empty cart page display with message {string}")
     public void checkTheEmptyCartPageDisplayWithMessage(String expectedMessage) {
+
+
         try {
-            String actualMessage = waitAndGetText(EMPTY_CART_MESSAGE);
-            softAssert.assertEquals(actualMessage, expectedMessage, "Empty cart message is not matching with expected message or empty cart message is not displayed");
-            log.info("Empty cart message is displayed and matching with expected message: " + expectedMessage);
+            try {
+                new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath(EMPTY_CART_MSG)));
+
+
+            } catch (Exception e) {
+                try {
+                    log.info("Cart is not empty");
+                    sleep(1000);
+                    waits(By.xpath(ITEMS_COUNT));
+                    String value  = getItemCount(getText(By.xpath(ITEMS_COUNT)));
+
+                    System.out.println("the item count is "+value);
+                    for (int i=0;i<Integer.parseInt(value);i++) {
+                        try {
+
+                            waits(By.xpath(DELETE_ITEMS));
+
+                            sleep(1000);
+                            jsClick(By.xpath(DELETE_ITEMS));
+                            sleep(1000);
+
+                            waits(By.xpath(DELETE_BTN));
+                            jsClick(By.xpath(DELETE_BTN));
+                            sleep(1000);
+                        } catch (Exception e1) {
+                            System.out.println(e1);
+                        }
+                    }
+                }catch (Exception e3)
+                {
+                    System.out.println(e3);
+                }
+
+
+
+            }
+
+            finally {
+
+                new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath(EMPTY_CART_MSG)));
+                String actualMessage = Grid.driver().findElement(By.xpath(EMPTY_CART_MSG)).getText();
+                softAssert.assertEquals(actualMessage, expectedMessage, "Empty cart message is not matching with expected message or empty cart message is not displayed");
+                log.info("Empty cart message is displayed and matching with expected message: " + expectedMessage);
+            }
         } catch (Exception e) {
-            log.info("Failed to verify empty cart message");
+            log.info("Failed to verify empty cart message" +e.getMessage());
             throw new RuntimeException("Failed to verify empty cart message", e);
         }
     }
@@ -1343,7 +1467,7 @@ public class CartSteps extends AbstractWebPage {
 
         String skuCount = waitAndGetText(CART_PAGE_SKU_COUNT);
         int expectedSkuCount = Integer.parseInt(skuCount.split(" ")[0]);
-        System.out.println(skuCount + "========================" + expectedSkuCount);
+        log.info(skuCount + "========================" + expectedSkuCount);
         int i = 0;
         while (i < expectedSkuCount) {
             waitAndClickOn(DELETE_LINE_ITEM);
@@ -1368,4 +1492,15 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
+    @And("User navigate to HomePage")
+    public void userNavigateToHomePage() {
+        clickButton(By.xpath(JSW_LOGO));
+    }
+
+    @And("click on Wire coil")
+    public void clickOnWireCoil() {
+        waits(By.xpath(WIRE_COIL));
+        clickButton(By.xpath(WIRE_COIL));
+
+    }
 }

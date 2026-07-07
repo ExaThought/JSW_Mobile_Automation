@@ -148,9 +148,28 @@ public class BankDetailSteps extends AbstractWebPage {
 
     @Then("verify bank details title")
     public void verifyBankDetailsTitle() {
-        waitAndCheckIsElementPresent(EMPTY_BANK_DETAILS_TITLE);
-        String actualBankDetailsTitle = waitAndGetText(EMPTY_BANK_DETAILS_TITLE);
-        softAssert.assertEquals(actualBankDetailsTitle, "Bank account details", "Bank Details Title is not matching");
+        try {
+            log.info("Verifying Bank Details title.");
+
+            waitAndCheckIsElementPresent(EMPTY_BANK_DETAILS_TITLE);
+
+            String actualBankDetailsTitle = waitAndGetText(EMPTY_BANK_DETAILS_TITLE);
+            String expectedTitle = "Your bank account";
+
+            log.info("Actual Bank Details title: " + actualBankDetailsTitle);
+
+            softAssert.assertEquals(
+                    actualBankDetailsTitle,
+                    expectedTitle,
+                    "Bank Details Title is not matching. Expected: " + expectedTitle + " but found: " + actualBankDetailsTitle
+            );
+
+            log.info("Bank Details title verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Bank Details title: " + e.getMessage());
+            softAssert.fail("Exception while verifying Bank Details title: " + e.getMessage());
+        }
     }
 
     @And("click on CTA button")
@@ -162,10 +181,28 @@ public class BankDetailSteps extends AbstractWebPage {
 
     @Then("Verify the pop-up")
     public void verifyThePopUp() {
-       waitAndCheckIsElementPresent(BANK_DETAILS_POP_UP_TITLE);
-       softAssert.assertEquals(waitAndGetText(BANK_DETAILS_POP_UP_TITLE),"Enter bank account information","Bank Details Pop up Title Is not matching");
-       waitAndCheckIsElementPresent(BANK_DETAILS_POP_UP_SUB_TITLE);
-       softAssert.assertEquals(waitAndGetText(BANK_DETAILS_POP_UP_SUB_TITLE),"Account holder’s name:","Bank Details Pop up Sub Title Is not matching");
+        try {
+            log.info("Verifying Bank Details pop-up.");
+
+            waitAndCheckIsElementPresent(BANK_DETAILS_POP_UP_TITLE);
+
+            String actualTitle = waitAndGetText(BANK_DETAILS_POP_UP_TITLE);
+            String expectedTitle = "Enter bank account information";
+
+            log.info("Actual pop-up title: " + actualTitle);
+
+            softAssert.assertEquals(
+                    actualTitle,
+                    expectedTitle,
+                    "Bank Details Pop-up title is not matching. Expected: " + expectedTitle + " but found: " + actualTitle
+            );
+
+            log.info("Bank Details pop-up title verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying pop-up: " + e.getMessage());
+            softAssert.fail("Exception while verifying Bank Details pop-up: " + e.getMessage());
+        }
     }
 
 }

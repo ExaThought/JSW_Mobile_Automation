@@ -30,6 +30,11 @@
             <version>${sauron.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-picocontainer</artifactId>
+            <version>7.8.1</version>   <!-- must match your cucumber-java version -->
+        </dependency>
+        <dependency>
             <groupId>com.qapitol.sauron4</groupId>
             <artifactId>cucumber</artifactId>
             <version>${sauron.version}</version>

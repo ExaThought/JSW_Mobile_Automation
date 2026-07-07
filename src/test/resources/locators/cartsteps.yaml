@@ -7,7 +7,7 @@ elements:
       web: //a[@title='TATA Hot Rolled Coil 2062:2011 E350A']
   quantity:
     en_US:
-      web: xpath=(//input[@id='inputQty'])[1]
+      web: xpath=//input[@id="quantity-input"]
   addToCart:
     en_US:
       web: xpath=//div[contains(text(),'Add to cart')]/parent::button/child::div
@@ -22,19 +22,19 @@ elements:
       web: xpath=(//div[contains(text(),'Delete')])[1]
   editLineItem:
     en_US:
-      web: xpath=(//div[contains(text(),'Edit')])[1]
+      web: xpath=(//button[contains(text(),'Edit')])[1]
   deleteCta:
     en_US:
       web: xpath=//span[contains(text(),'Delete')]
   cement:
     en_US:
-      web: xpath=//a[contains(text(),'Cement')]//parent::div[@class='nav-active-link-jsw']
+      web: xpath=(//li//a[@href="/category/cement"])[1]
   cementPDP:
     en_US:
       web: xpath=(//div[@class='card-title'])[2]
   cementQuantity:
     en_US:
-      web: xpath=(//input[@id="inputQty"])[2]
+      web: xpath=(//input[@id="quantity-input"])[1]
   stainlessSteelPlp:
     en_US:
       web: xpath=//a[contains(text(),'Stainless Steel')]//parent::div[@class='nav-active-link-jsw']
@@ -82,25 +82,25 @@ elements:
       web: xpath=//div[@class='rc-subimitted h-100 d-flex justify-content-center align-items-center flex-column']//following-sibling::div[contains(text(),'submitted')]
   cartPage:
     en_US:
-      web: xpath=//a[@href='/cart-detail']
+      web: xpath=(//span[text()="Cart"])[2]
   plpFirstProduct:
     en_US:
       web: xpath= (//span[contains(text(),"Brand:")])[{0}]
   attributeValue:
     en_US:
-      web: xpath=//button[normalize-space()="{0}"]
+      web: xpath=(//span[text()='Diameter (mm)']/../following-sibling::div//button[@data-slot="button"])[1]
   thickness:
     en_US:
-      web: xpath=//div[contains(text(),"Thickness (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+      web: xpath=(//span[text()="Thickness (mm)"]/../following-sibling::div//button[not(@disabled)])[1]
   length:
     en_US:
       web: xpath=//div[contains(text(),"Length (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
   diameter:
     en_US:
-      web: xpath=//div[contains(text(),"Diameter (mm)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
+      web: xpath=(//span[text()='Diameter (mm)']/../following-sibling::div//button[@data-slot="button"])[1]
   tmt:
     en_US:
-      web: xpath=//a[contains(text(),'TMT')]//parent::div[@class='nav-active-link-jsw']
+      web: xpath=(//li//a[@href="/category/TMT-Bar-steel"])[1]
   form:
     en_US:
       web: xpath=//div[contains(text(),"Form")]/parent::div/following-sibling::div/child::div/child::button[{0}]
@@ -118,19 +118,19 @@ elements:
       web: xpath=//div[contains(text(),"Sectional weight (kg/m)")]/parent::div/following-sibling::div/child::div/child::button[{0}]
   editQuantity:
     en_US:
-      web: xpath=//div[contains(text(),'Enter quantity')]/following-sibling::div/child::input
+      web: xpath=//label[contains(text(),'Enter quantity')]/following-sibling::input
   editSave:
     en_US:
-      web: xpath=//span[contains(text(),'Done')]
+      web: xpath=//button[contains(text(),'Done')]
   editWidthDropdown:
     en_US:
-      web: xpath=//div[contains(text(),'Width (mm)')]/following-sibling::input
+      web: xpath=//label[contains(text(),'Width (mm)')]/following-sibling::button
   editThicknessDropdown:
     en_US:
-      web: xpath=//div[contains(text(),'Thickness (mm)')]/following-sibling::input
+      web: xpath=//label[contains(text(),'Thickness (mm)')]/following-sibling::div/button
   editLengthDropdown:
     en_US:
-      web: xpath=//div[contains(text(),'Length (mm)')]/following-sibling::input
+      web: xpath=//label[contains(text(),'Length (mm)')]/following-sibling::button
   editWidth:
     en_US:
       web: xpath=//div[contains(text(),"Width (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
@@ -139,25 +139,25 @@ elements:
       web: xpath=//div[contains(text(),"Thickness (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
   editLength:
     en_US:
-      web: xpath=//div[contains(text(),"Length (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+      web: xpath=(//div[text()="Length (mm)"]/following-sibling::div[2]//div[@class="p-1 hover-bg"])[1]
   pdpProductName:
     en_US:
-      web: xpath=(//span[contains(text(),'Brand:')]/parent::div/parent::div/child::h1)
+      web: xpath=//div[contains(text(),'Qty')]/../preceding-sibling::a
   galvanizedSheet:
     en_US:
       web: xpath=(//a[contains(text(),'Galvanized sheets')])
   updateAttribute:
     en_US:
-      web: xpath=//div[@class='card-body']/child::div[contains(text(),"{0}")]
+      web: xpath=(//div[@data-side="bottom"]//button/span)[2]
   cartPageAttributeValue:
     en_US:
-      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[1]
+      web: xpath=//div[contains(text(),'Qty')]/../preceding-sibling::div/span
   cartPageSpangleTypeValue:
     en_US:
-      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[2]
+      web: xpath=//span[contains(text(),'Spangle type:')]
   cartPageCoatingGradeValue:
     en_US:
-      web: xpath=(//div[contains(@class,'line-item-attributes')]/child::div/child::div)[3]
+      web: xpath=//span[contains(text(),'Coating grade:')]
   editCartPageEnterQuantity:
     en_US:
       web: xpath=//div[contains(text(),'Enter quantity')]
@@ -169,10 +169,10 @@ elements:
       web: xpath=//div[contains(text(),'Qty:')]
   editDiameterDropdown:
     en_US:
-      web: xpath=//div[normalize-space()='Diameter (mm)']/following-sibling::input
+      web: xpath=//label[normalize-space()='Diameter (mm)']/following-sibling::div//button
   editFormDropdown:
     en_US:
-      web: xpath=//div[normalize-space()='Form']/following-sibling::input
+      web: xpath=//label[normalize-space()='TMT Form']/following-sibling::div//button
   cartCount:
     en_US:
       web: xpath=//div[@class='count']

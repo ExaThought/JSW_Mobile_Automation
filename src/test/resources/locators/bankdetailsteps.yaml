@@ -15,7 +15,7 @@ elements:
 
   bankAccountDetailsTab:
     en_US:
-      web: //ul[@role='tablist']//a[contains(text(),'Bank account details')]
+      web: //button[text()='Bank account details']
 
 
 
@@ -23,19 +23,19 @@ elements:
 
   gstinNameValue:
     en_US:
-      web: //span[contains(normalize-space(),'GSTIN name')]/following-sibling::div
+      web: //div[text()='GSTIN name:']/following-sibling::div
 
   accountHolderNameValue:
     en_US:
-      web: //span[contains(normalize-space(),'Account holder’s name')]/following-sibling::div
+      web: (//div[@data-slot="card-content"]//div[@class='flex'][2]//div)[2]
 
   bankAccountNumberValue:
     en_US:
-      web: //div[contains(normalize-space(),'Bank account number')]/following-sibling::div
+      web: //span[text()='Bank account number']/following-sibling::span
 
   ifscCodeValue:
     en_US:
-      web: //div[normalize-space()='IFSC code']/following::div[contains(@class,'text-align-right')][1]
+      web: //span[text()='IFSC code']/following-sibling::span
 
   replaceBankAccountButton:
     en_US:
@@ -46,13 +46,13 @@ elements:
         web: //div[normalize-space()='Enter bank account information']
   emptyBankDetailsTitle:
     en_US:
-      web: xpath=(//div[contains(text(),'Bank account details')])[2]
+      web: xpath=(//h2[contains(text(),'Your bank account')])
   addBankDetailsCTAButton:
     en_US:
-      web: xpath=//button[starts-with(@class,'primary-btn')]/child::div
+      web: xpath=//h2[text()='Your bank account']/following-sibling::button
   bankDetailsPopUpTitle:
     en_US:
-      web: xpath=//div[@class='d-flex flex-column']/child::div[1]
+      web: xpath=//h2[text()='Enter bank account information']
   bankDetailsPopUpSubTitle:
     en_US:
       web: xpath=//div[@class='d-flex flex-column']/child::div/child::div/child::div[1]

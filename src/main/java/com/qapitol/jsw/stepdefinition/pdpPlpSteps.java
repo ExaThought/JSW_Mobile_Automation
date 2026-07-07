@@ -10,6 +10,7 @@ import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.Add_TO_CART_BUTTON;
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class pdpPlpSteps extends AbstractWebPage {
@@ -17,6 +18,9 @@ public class pdpPlpSteps extends AbstractWebPage {
     private  final String RESET_BUTTON="resetSelectionButton";
     private final String ADD_TO_CART_BUTTON="addToCart";
     private final String ATTRIBUTES_SECTION="attributeValue";
+    private final String THICKNESS = "(//span[text()='Thickness (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
+    private final String WIDTH = "(//span[text()='Width (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
+    private final String LENGTH = "(//span[text()=\"Length (mm)\"]/../following-sibling::div/button[not(@disabled)])[1]";
     private final String QANTITY_INPUT_FIELD="quantity";
     private final String CART_QUANTITY="cartPageQuantity";
     private final String BRAND_NAME="brandName";
@@ -26,6 +30,7 @@ public class pdpPlpSteps extends AbstractWebPage {
     public void clickOnResetButtonInPdpPage() {
         waitAndCheckIsElementVisible(RESET_BUTTON);
         waitAndCheckIsElementClickable(RESET_BUTTON);
+        moveToElement(RESET_BUTTON);
         waitAndClickOn(RESET_BUTTON);
         log.info("Clicked on reset button in PDP page");
     }
@@ -39,8 +44,8 @@ public class pdpPlpSteps extends AbstractWebPage {
 
     @Then("check Add to cart is enabled")
     public void checkAddToCartIsEnabled() {
-        WebElement addToCart= Grid.driver().findElement(Add_TO_CART_BUTTON);
-        softAssert.assertTrue(waitAndCheckIsElementClickable(ADD_TO_CART_BUTTON), "Add to cart button is not enabled after selecting all attributes");
+
+        softAssert.assertTrue( waitUntilEnabled(Add_TO_CART_BUTTON), "Add to cart button is not enabled after selecting all attributes");
          log.info("Add to cart button is enabled after selecting all attributes");
     }
 
@@ -59,22 +64,22 @@ public class pdpPlpSteps extends AbstractWebPage {
 
     @And("select thickness for pdp {string}")
     public void selectThickness(String thickness) {
-        waitAndCheckIsElementVisible(ATTRIBUTES_SECTION);
-        waitAndClickOn(ATTRIBUTES_SECTION,thickness);
-        log.info("Selected thickness: " + thickness);
+        waits(By.xpath(THICKNESS));
+        clickButton(By.xpath(THICKNESS));
+        log.info("Selected thickness: ");
     }
 
     @And("select width {string}")
     public void selectWidth(String width) {
-        waitAndCheckIsElementVisible(ATTRIBUTES_SECTION);
-        waitAndClickOn(ATTRIBUTES_SECTION, width);
+        waits(By.xpath(WIDTH));
+        clickButton(By.xpath(WIDTH));
         log.info("Selected width: " + width);
     }
 
     @And("select length {string}")
     public void selectLength(String length) {
-        waitAndCheckIsElementVisible(ATTRIBUTES_SECTION);
-        waitAndClickOn(ATTRIBUTES_SECTION, length);
+        waits(By.xpath(LENGTH));
+        clickButton(By.xpath(LENGTH));
         log.info("Selected length: " + length);
     }
 

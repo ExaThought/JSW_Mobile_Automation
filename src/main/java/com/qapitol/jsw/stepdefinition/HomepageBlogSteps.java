@@ -9,28 +9,49 @@ import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import static com.qapitol.jsw.stepdefinition.SessionSteps.MANAGE_POPUP_CLOSE;
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class HomepageBlogSteps extends AbstractWebPage {
     private static final String BLOG_SECTION_TITLE = "blogSectionTitle";
-    private static final String BLOG_TITLE = "blogTitle";
+    private static final String BLOG_TITLE = "//h1[text()='Blogs']";
     private static final String FIRST_BLOG_READ_MORE_BUTTON = "firstBlogReadMoreButton";
-    private static final String BLOG_POSTED_ON_TEXT = "blogPostedOnText";
+    private static final String BLOG_POSTED_ON_TEXT = "(//h1[text()='Blogs']/following-sibling::div//h3)[1]";
     private static final String BLOG_YOUTUBE_ICON = "blogYoutubeIcon";
+
 
 
     @Then("user should see Blogs section title in homepage")
     public void userShouldSeeBlogsSectionTitleInHomepage() {
-        sleep(2000);
-        WebElement locater= Grid.driver().findElement(CategoryPages.BLOG_SECTION);
-        CustomUtil.scrollingToViewAndClickUsingJS(locater);
-        sleep(2000);
-        waitAndCheckIsElementVisible(BLOG_SECTION_TITLE);
+        try {
+            log.info("Navigating to Blogs section from homepage.");
 
-        softAssert.assertTrue(
-                isElementPresent(BLOG_SECTION_TITLE),
-                "Blogs section title is not displayed on homepage"
-        );
+            waits(CategoryPages.BLOG_SECTION);
+
+            WebElement blogSection = Grid.driver().findElement(CategoryPages.BLOG_SECTION);
+            clickButton(blogSection);
+
+            log.info("Clicked on Blogs section.");
+
+            if (isPopDisplayed(By.xpath(MANAGE_POPUP_CLOSE))) {
+                log.info("Manage popup is displayed. Closing it.");
+                clickButton(By.xpath(MANAGE_POPUP_CLOSE));
+            }
+
+            waits(By.xpath(BLOG_TITLE));
+
+            softAssert.assertTrue(
+                    isDisplayed(By.xpath(BLOG_TITLE)),
+                    "Blogs section title is not displayed on homepage."
+            );
+
+            log.info("Blogs section title is displayed successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Blogs section title: " + e.getMessage());
+            softAssert.fail("Exception while verifying Blogs section title: " + e.getMessage());
+        }
     }
 
     @Then("user navigate to blog")
@@ -39,18 +60,32 @@ public class HomepageBlogSteps extends AbstractWebPage {
         WebElement locator = Grid.driver().findElement(CategoryPages.BLOG_SECTION);
         CustomUtil.scrollingToViewAndClickUsingJS(locator);
         sleep(2000);
-        waitAndCheckIsElementClickable(FIRST_BLOG_READ_MORE_BUTTON);
-        waitAndClickOn(BLOG_TITLE);
+        clickButton(CategoryPages.BLOG_SECTION);
+//        waitAndCheckIsElementClickable(FIRST_BLOG_READ_MORE_BUTTON);
+//        waitAndClickOn(BLOG_TITLE);
     }
 
 
     @And("user should see the vlogs page title")
     public void userShouldSeeTheVlogsPageTitle() {
-        waitAndCheckIsElementVisible(BLOG_POSTED_ON_TEXT);
-        softAssert.assertTrue(
-                isElementPresent(BLOG_POSTED_ON_TEXT),
-                "'Posted on' text is not displayed on blog page"
-        );
+        try {
+            log.info("Verifying Vlogs page title is displayed.");
+
+            waits(By.xpath(BLOG_POSTED_ON_TEXT));
+
+            boolean isDisplayed = isDisplayed(By.xpath(BLOG_POSTED_ON_TEXT));
+
+            softAssert.assertTrue(
+                    isDisplayed,
+                    "Vlogs page title is not displayed on blog page."
+            );
+
+            log.info("Vlogs page title is displayed successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Vlogs page title: " + e.getMessage());
+            softAssert.fail("Exception while verifying Vlogs page title: " + e.getMessage());
+        }
     }
     @And("user should see youtube video icon")
     public void userShouldSeeYoutubeVideoIcon() {

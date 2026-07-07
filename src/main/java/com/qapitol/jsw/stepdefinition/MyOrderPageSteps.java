@@ -64,7 +64,7 @@ public class MyOrderPageSteps extends AbstractWebPage {
     }
     @And("user clicks on My orders tab")
     public void user_clicks_on_my_orders_tab() {
-
+        log.info("User clicks on My Order tab");
         waitAndCheckIsElementVisible(MY_ORDERS_TAB);
         waitAndClickOn(MY_ORDERS_TAB);
 
@@ -73,7 +73,7 @@ public class MyOrderPageSteps extends AbstractWebPage {
 
     @And("user clicks on Active order tab")
     public void user_clicks_on_active_order_tab() {
-
+        log.info("user click on Active order tab");
         waitAndCheckIsElementVisible("activeOrderTab");
         waitAndClickOn("activeOrderTab");
 
@@ -81,12 +81,28 @@ public class MyOrderPageSteps extends AbstractWebPage {
 
     @Then("verify payment details present on page after navigation")
     public void verify_order_placed_text_is_present() {
-        waitAndCheckIsElementVisible("orderPlacedText");
-        String actualText = waitAndGetText("orderPlacedText");
+        try {
+            log.info("Verifying Payment Details text after navigation.");
 
-        Assert.assertEquals(actualText.trim(), "Payment details",
-                "Order placed text is not present");
+            waitAndCheckIsElementVisible("orderPlacedText");
 
+            String actualText = waitAndGetText("orderPlacedText").trim();
+            String expectedText = "Payment details";
+
+            log.info("Actual text found: " + actualText);
+
+            Assert.assertEquals(
+                    actualText,
+                    expectedText,
+                    "Payment details text is not present. Expected: " + expectedText + " but found: " + actualText
+            );
+
+            log.info("Payment details text verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying payment details text: " + e.getMessage());
+            Assert.fail("Exception while verifying payment details text: " + e.getMessage());
+        }
     }
 
     @Then("verify created order number is present in active orders")

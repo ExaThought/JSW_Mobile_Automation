@@ -6,15 +6,15 @@ Feature: Check forget password
 
   @sanity
   Scenario: Check forget password with Invalid email ID
-    And open Login page to enter email and password
+    And user open the CCP web portal
     And enter invalid email id "sr@.js"
     Then user should not able to  proceed to login with  proper error message
     Then continue button should be disabled for user
 
   @sanity
   Scenario: Check forget password with valid email ID
-    And open Login page to enter email and password
-    And User enter valid email "testpre_prod12as@gmail.com"
+    And user open the CCP web portal
+    And User enter valid email "v_nirmal.kumar@jsw.in"
     And user click on the continue button
     And user click on forget password link
     And user click on submit button

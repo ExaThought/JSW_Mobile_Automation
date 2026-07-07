@@ -47,29 +47,59 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
         }
         Object chromeOptionCapsObj = desiredCapabilities.getCapability(ChromeOptions.CAPABILITY);
         if (chromeOptionCapsObj instanceof Map) {
-            ChromeOptions customChromeOptions = getChromeOptions((Map<String, Object>) chromeOptionCapsObj, userProfilePath);
+            boolean isHeadless = getTestSession() instanceof WebTestSession
+                    && ((WebTestSession) getTestSession()).isBrowserRunHeadless();
+            ChromeOptions customChromeOptions = getChromeOptions(
+                    (Map<String, Object>) chromeOptionCapsObj, userProfilePath, isHeadless);
             desiredCapabilities.setCapability(ChromeOptions.CAPABILITY, customChromeOptions);
         }
         return desiredCapabilities;
     }
 
-    private ChromeOptions getChromeOptions(Map<String, Object> chromeOptionCapsObj, String userProfilePath) {
+    private ChromeOptions getChromeOptions(Map<String, Object> chromeOptionCapsObj, String userProfilePath,
+                                           boolean isHeadless) {
         ChromeOptions customChromeOptions = new ChromeOptions();
 
-        Map<String, Object> existingOptionsMap = chromeOptionCapsObj;
-        if (existingOptionsMap.containsKey("args")) {
-            List<String> existingArgs = (List<String>) existingOptionsMap.get("args");
-            List<String> newArgs = new ArrayList<>(existingArgs);
-            if (nonNull(userProfilePath)) {
-                newArgs.add("user-data-dir=" + userProfilePath);
-            }
-            Map<String, Object> prefs = new HashMap<>();
-            prefs.put("profile.default_content_setting_values.notifications", 2);
-            customChromeOptions.setExperimentalOption("prefs", prefs);
-            customChromeOptions.addArguments("--disable-gpu");              // Disables GPU hardware acceleration
-            customChromeOptions.addArguments(newArgs);
-            customChromeOptions.addArguments(newArgs);
+        List<String> args = new ArrayList<>();
+        if (chromeOptionCapsObj.containsKey("args")) {
+            args.addAll((List<String>) chromeOptionCapsObj.get("args"));
         }
+
+        if (nonNull(userProfilePath)) {
+           // args.add("--user-data-dir=" + userProfilePath);
+        } else {
+            addArgIfMissing(args, "--incognito");
+        }
+
+        if (isHeadless) {
+            addArgIfMissing(args, "--headless=new");
+            addArgIfMissing(args, "--disable-gpu");
+        }
+
+        addArgIfMissing(args, "--no-sandbox");
+        addArgIfMissing(args, "--disable-dev-shm-usage");
+        addArgIfMissing(args, "--disable-blink-features=AutomationControlled");
+        addArgIfMissing(args, "--window-size=1920,1080");
+        addArgIfMissing(args, "--disable-extensions");
+        addArgIfMissing(args, "--remote-allow-origins=*");
+
+        customChromeOptions.addArguments(args);
+
+        Map<String, Object> prefs = new HashMap<>();
+        if (chromeOptionCapsObj.get("prefs") instanceof Map) {
+            prefs.putAll((Map<String, Object>) chromeOptionCapsObj.get("prefs"));
+        }
+        prefs.put("profile.default_content_setting_values.notifications", 2);
+        customChromeOptions.setExperimentalOption("prefs", prefs);
+
         return customChromeOptions;
+    }
+
+    private static void addArgIfMissing(List<String> args, String flag) {
+        boolean present = args.stream().anyMatch(arg ->
+                arg.equals(flag) || arg.startsWith(flag + "="));
+        if (!present) {
+            args.add(flag);
+        }
     }
 }

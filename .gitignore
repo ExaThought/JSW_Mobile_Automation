@@ -2,6 +2,15 @@
 allure-results
 sauronFiles
 target
+# Chrome user-data dirs / browser profiles (never commit these)
+profiles/
+**/profiles/
+# Chrome junk that can leak in even outside profiles/
+**/Crashpad/
+**/SingletonLock
+**/SingletonCookie
+**/SingletonSocket
+*.crashpad
 
 runtime_data.json
 .jenkins.env

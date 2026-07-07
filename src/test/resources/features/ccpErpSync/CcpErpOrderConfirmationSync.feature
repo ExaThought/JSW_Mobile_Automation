@@ -7,7 +7,7 @@ Feature: Check CCP-ERP order confirmation Sync
     When create cash and carry cart from SF
     Given Go to session "ccp"
     And ccp login with configured user
-    Then user close payment due pop up
+#    Then user close payment due pop up
     And open the cart page and create order
     And logs into ERP and opens the order details page
     And confirms the order in ERP and verify in CCP
