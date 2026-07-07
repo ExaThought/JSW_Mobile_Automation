@@ -255,7 +255,9 @@ public class CustomUtil {
 
     public static void hoverOverElement(By locator)
     {
-        new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(locator));
+
+        new WebDriverWait(Grid.driver(),Duration.ofMillis(2000)).until(ExpectedConditions.visibilityOfElementLocated(locator));
+
 
         WebElement element = Grid.driver().findElement(locator);
 

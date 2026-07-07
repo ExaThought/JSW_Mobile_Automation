@@ -27,4 +27,9 @@ public class ScenarioContext
     public int skuCount;
     public String cartValue;
     public String cartPdpProductName;
+    public String categoryName;
+    public String gradeName;
+    public String brandName;
+    public String subGradeName;
+
 }

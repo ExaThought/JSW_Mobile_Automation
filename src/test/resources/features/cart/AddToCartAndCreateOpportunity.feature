@@ -1,4 +1,4 @@
-@AddToCartAndCreateOpportunity @regression @base
+@AddToCartAndCreateOpportunity @regression
 Feature: Check Add-To-Cart and Create opportunity from Cart
 
   Background:
@@ -166,7 +166,6 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
   Scenario: Verify TMT product add to cart
     When click on TMT product
     And click on TMT plp "1" product
-#    And click on reset button in pdp page
     And select diameter, form, quantity "50" for TMT
     And add to cart
     And click view cart

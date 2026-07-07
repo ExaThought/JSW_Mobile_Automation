@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.context.ScenarioContext;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -7,7 +8,13 @@ import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.Add_TO_CART_BUTTON;
 import static com.qapitol.jsw.utils.CustomUtil.*;
@@ -15,6 +22,7 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class pdpPlpSteps extends AbstractWebPage {
 
+    private ScenarioContext context;
     private  final String RESET_BUTTON="resetSelectionButton";
     private final String ADD_TO_CART_BUTTON="addToCart";
     private final String ATTRIBUTES_SECTION="attributeValue";
@@ -25,6 +33,26 @@ public class pdpPlpSteps extends AbstractWebPage {
     private final String CART_QUANTITY="cartPageQuantity";
     private final String BRAND_NAME="brandName";
     private final String PDP_DESCRIPTION="pdpDescription";
+    private final String CATEGORY_FILTER = "//h3/following-sibling::div//button[@data-slot=\"checkbox\"]";
+    private final String CATEGORY_NAME = "//span[text()='Category']/../following-sibling::div//label";
+    private final String PROD_CATEGORY = "(//span[text()='MS Hot rolled'])";
+    private final String GRADE_FILTER_CHECKBOX = "(//span[text()='Grade']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
+    private final String GRADE_FILTER_NAME = "(//span[text()='Grade']/../following-sibling::div//label)[1]";
+    private final String SUB_BRAND_CHECKBOX = "(//span[text()='Sub brand']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
+    private final String SUB_BRAND_NAME = "(//span[text()='Sub brand']/../following-sibling::div//label)[1]";
+    private final String BRAND_CHECKBOX = "(//span[text()='Brand']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
+    private final String BRAND_LABEL = "(//span[text()='Brand']/../following-sibling::div//label)[1]";
+    private final String SUB_GRADE_CHECKBOX = "(//span[text()='Sub grade']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
+    private final String SUB_GRADE_NAME = "(//span[text()='Sub grade']/../following-sibling::div//label)[1]";
+    private final String PROD_NAME = "//span[text()='Brand: ']/../preceding-sibling::p";
+    private final String PROD_BRAND_NAME = "//span[text()='Brand: ']/following-sibling::span";
+    private final String SELECTED_FILTER_NAME = "(//span[text()='%s'])[2]";
+
+    public pdpPlpSteps(ScenarioContext context)
+    {
+        this.context = context;
+    }
+
 
     @And("click on reset button in pdp page")
     public void clickOnResetButtonInPdpPage() {
@@ -109,5 +137,147 @@ public class pdpPlpSteps extends AbstractWebPage {
         Assert.assertFalse(description.isEmpty(), "Product description is empty in PDP page");
         log.info("Product description is not empty in PDP page: " + description);
     }
+
+    @And("User selects the first category")
+    public void userSelectsTheFirstCategory() {
+        waits(By.xpath(CATEGORY_FILTER));
+        String name = getText(By.xpath(CATEGORY_NAME));
+        log.info("User select the first category "+name);
+        context.categoryName = name;
+        clickButton(By.xpath(CATEGORY_FILTER));
+    }
+
+    @Then("User verifies category")
+    public void userVerifiesTheCategory() {
+        sleep(500);
+        waits(By.xpath(String.format(SELECTED_FILTER_NAME,context.categoryName)));
+        String name = getText(By.xpath(String.format(SELECTED_FILTER_NAME,context.categoryName)));
+        softAssert.assertTrue(context.categoryName.contains(name),"Displaying wrong category");
+    }
+
+    @And("User select the Grade")
+    public void userSelectTheGrade() {
+        waits(By.xpath(GRADE_FILTER_CHECKBOX));
+        String name = getText(By.xpath(GRADE_FILTER_NAME));
+        log.info("User select the first GRADE "+name);
+        context.gradeName = name;
+        clickButton(By.xpath(GRADE_FILTER_CHECKBOX));
+    }
+
+    @Then("User verifies Grade")
+    public void userVerifiesTheGrade() {
+        log.info("User verifies the Grade " + context.gradeName);
+        {
+            sleep(1000);
+            By prodNameLocator = By.xpath(PROD_NAME);
+            waits(prodNameLocator);
+
+            List<String> names = Grid.driver().findElements(prodNameLocator)
+                    .stream()
+                    .map(WebElement::getText)
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+
+            log.info("Product Names: " + names);
+
+           for(String name:names)
+           {
+               if(name.toLowerCase().contains((context.gradeName).toLowerCase()))
+               {
+                   softAssert.assertTrue(true);
+               }else {
+                   softAssert.assertTrue(false,"Wrong prod displayed "+name);
+               }
+           }
+
+        }
+
+    }
+
+    @And("User select the Brand")
+    public void userSelectTheBrand() {
+        waits(By.xpath(BRAND_CHECKBOX));
+        String name = getText(By.xpath(BRAND_LABEL));
+        log.info("User select the first BRAND "+name);
+        context.brandName = name;
+        clickButton(By.xpath(BRAND_CHECKBOX));
+    }
+
+    @Then("User verifies Brand")
+    public void userVerifiesTheBrand() {
+        log.info("User verifies the Brand "+context.brandName);
+        {
+            sleep(1000);
+            By prodNameLocator = By.xpath(PROD_BRAND_NAME);
+            waits(prodNameLocator);
+
+            List<String> names = Grid.driver().findElements(prodNameLocator)
+                    .stream()
+                    .map(WebElement::getText)
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+
+            log.info("Product Names: " + names);
+
+            for(String name:names)
+            {
+                if(name.toLowerCase().contains((context.brandName).toLowerCase()))
+                {
+                    softAssert.assertTrue(true);
+                }else {
+                    softAssert.assertTrue(false,"Wrong prod displayed "+name);
+                }
+            }
+
+        }
+    }
+
+    @And("User select the Sub grade")
+    public void userSelectTheSubGrade() {
+        waits(By.xpath(SUB_GRADE_CHECKBOX));
+        String name = getText(By.xpath(SUB_GRADE_NAME));
+        log.info("User select the first BRAND "+name);
+        context.subGradeName = name;
+        clickButton(By.xpath(SUB_GRADE_CHECKBOX));
+    }
+
+    @Then("User verifies Sub Grade")
+    public void userVerifiesTheSubGrade() {
+        log.info("User verifies the Grade "+context.subGradeName);
+        {
+            sleep(1000);
+            By prodNameLocator = By.xpath(PROD_NAME);
+            waits(prodNameLocator);
+
+            List<String> names = Grid.driver().findElements(prodNameLocator)
+                    .stream()
+                    .map(WebElement::getText)
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+
+            log.info("Product Names: " + names);
+
+            for(String name:names)
+            {
+                if(name.toLowerCase().contains((context.subGradeName).toLowerCase()))
+                {
+                    softAssert.assertTrue(true);
+                }else {
+                    softAssert.assertTrue(false,"Wrong prod displayed "+name);
+                }
+            }
+
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 }
 
