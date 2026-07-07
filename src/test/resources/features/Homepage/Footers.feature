@@ -1,4 +1,4 @@
-@footer @regression @base
+@footer @regression
 Feature: Validate Footer links and navigation
 
   Background:

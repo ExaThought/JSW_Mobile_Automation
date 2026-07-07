@@ -7,6 +7,7 @@ import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.cucumber.messages.types.Scenario;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -45,14 +46,35 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     @And("user open the CCP web portal")
     public void user_open_the_ccp_web_portal() {
-//        waitAndCheckIsElementClickable(CCP_ReGISTER_CTA);
-//        waitAndClickOn(CCP_ReGISTER_CTA); // click on login CTA button
-//        waitAndCheckIsElementClickable(CCP_ReGISTER_vIA_OTP);
-//        waitAndClickOn(CCP_ReGISTER_vIA_OTP); //Click on Login with OTP}
-        waits(By.xpath(LOGIN_CTA_BUTTON));
-        clickButton(By.xpath(LOGIN_CTA_BUTTON));
-        waits(By.xpath(CONTINUE_EMAIL_BTN));
-        clickButton(By.xpath(CONTINUE_EMAIL_BTN));
+        try {
+            log.info("Opening the CCP web portal.");
+
+            waits(By.xpath(LOGIN_CTA_BUTTON));
+
+            softAssert.assertTrue(
+                    isDisplayed(By.xpath(LOGIN_CTA_BUTTON)),
+                    "Login CTA button is not displayed."
+            );
+
+            clickButton(By.xpath(LOGIN_CTA_BUTTON));
+            log.info("Clicked on Login CTA button.");
+
+            waits(By.xpath(CONTINUE_EMAIL_BTN));
+
+            softAssert.assertTrue(
+                    isDisplayed(By.xpath(CONTINUE_EMAIL_BTN)),
+                    "Continue with Email button is not displayed."
+            );
+
+            clickButton(By.xpath(CONTINUE_EMAIL_BTN));
+            log.info("Clicked on Continue with Email button.");
+
+            log.info("Successfully navigated to the CCP web portal.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while opening the CCP web portal: " + e.getMessage());
+            softAssert.fail("Failed to open the CCP web portal: " + e.getMessage());
+        }
     }
     public void waitForSearchOverlayToDisappear() {
         try {
@@ -160,13 +182,50 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
             waitAndCheckIsElementVisible(CCP_GSTIN);
 
-            if (ApiUtils.isGstinExists(gstin)) {
+
+
+            if (gstin == null || gstin.isEmpty() || gstin.equals("INVALIDGSTIN")) {
+
                 waitAndSetText(CCP_GSTIN, gstin);
-                log.info("Entered GSTIN: " + gstin);
+                log.info("Entered invalid GSTIN for negative scenario: " + gstin);
+
+            }  else if (ApiUtils.isGstinNotExists(gstin)) {
+
+                waitAndSetText(CCP_GSTIN, gstin);
+                log.info("Entered new GSTIN: " + gstin);
+
             } else {
-                log.info("GSTIN does not exist: " + gstin);
-                softAssert.fail("Provided GSTIN does not exist: " + gstin);
+
+                log.info("GSTIN already exists, not entering: " + gstin);
+                softAssert.fail("Provided GSTIN already exists: " + gstin);
             }
+
+            waitAndCheckIsElementVisible(CCP_MOBILE);
+            waitAndSetText(CCP_MOBILE, mobile);
+            log.info("Entered mobile number: " + mobile);
+
+            log.info("Registration details entered successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while entering registration details: " + e.getMessage());
+            softAssert.fail("Failed to enter registration details: " + e.getMessage());
+        }
+    }
+    @And("enter full name {string} mobile number {string} and existing gst {string}")
+    public void enterFullNameMobileNumberAndExistingGst(String fullName, String mobile, String gstin) {
+        try {
+            log.info("Entering registration details.");
+
+            waitAndCheckIsElementVisible(CCP_FULL_NAME);
+            waitAndSetText(CCP_FULL_NAME, fullName);
+            log.info("Entered full name: " + fullName);
+
+            waitAndCheckIsElementVisible(CCP_GSTIN);
+
+
+
+            waitAndSetText(CCP_GSTIN, gstin);
+
 
             waitAndCheckIsElementVisible(CCP_MOBILE);
             waitAndSetText(CCP_MOBILE, mobile);
@@ -250,17 +309,32 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     @Then("next button should be enabled")
     public void nextButtonShouldBeEnabled() {
-        String locatorValue = getLocator(CCP_REGISTER_NEXT);
-        WebDriver driver = Grid.driver();
-        WebElement nextBtn = driver.findElement(By.xpath(locatorValue));
+        try {
+            log.info("Verifying Next button is enabled.");
 
-        boolean isEnabled = nextBtn.isEnabled()
-                && !"true".equalsIgnoreCase(nextBtn.getAttribute("disabled"))
-                && !"true".equalsIgnoreCase(nextBtn.getAttribute("aria-disabled"))
-                && (nextBtn.getAttribute("class") == null || !nextBtn.getAttribute("class").toLowerCase().contains("disabled"));
+            waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
 
-        softAssert.assertTrue(isEnabled,
-                "Next button is DISABLED but EXPECTED to be ENABLED!");
+            WebElement nextButton = Grid.driver().findElement(By.xpath(getLocator(CCP_REGISTER_NEXT)));
+
+            boolean isEnabled = nextButton.isEnabled()
+                    && !"true".equalsIgnoreCase(nextButton.getAttribute("disabled"))
+                    && !"true".equalsIgnoreCase(nextButton.getAttribute("aria-disabled"))
+                    && (nextButton.getAttribute("class") == null
+                    || !nextButton.getAttribute("class").toLowerCase().contains("disabled"));
+
+            log.info("Next button enabled status: " + isEnabled);
+
+            softAssert.assertTrue(
+                    isEnabled,
+                    "Next button is disabled but was expected to be enabled."
+            );
+
+            log.info("Verified Next button is enabled successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Next button state: " + e.getMessage());
+            softAssert.fail("Failed to verify Next button is enabled: " + e.getMessage());
+        }
     }
 
 

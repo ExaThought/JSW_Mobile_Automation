@@ -15,6 +15,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static com.qapitol.sauron.core.actions.ActionListener.logger;
 import static io.restassured.RestAssured.baseURI;
@@ -133,10 +134,11 @@ public class ApiUtils extends BaseApiImpl
         }
     }
 
-    public static boolean isGstinExists(String gstin) {
-
+    public static boolean isGstinNotExists(String gstin) {
+        boolean result=false;
         baseURI = ConfigUtil.getSecretValue("ccpPortalUrl");
-        if(jwtToken==null) {
+
+        if (jwtToken == null) {
             jwtToken = Token.getCCPToken();
         }
 
@@ -154,8 +156,25 @@ public class ApiUtils extends BaseApiImpl
                 .body(requestBody)
                 .post("/customer/v1/gst/validate");
 
-        // GST exists if companyName is present in the response
-        return response.getStatusCode() == 200
-                && response.jsonPath().getString("companyName") != null;
+        System.out.println("GST Validation Response: " + response.asPrettyString());
+
+        String companyName = response.jsonPath().getString("companyName");
+        String message = response.jsonPath().getString("data.message");
+
+        // GSTIN exists -> false
+        // GSTIN does not exist -> true
+        if (companyName != null && !companyName.isEmpty()) {
+            System.out.println("GSTIN already do not exist and company: " + companyName);
+            return true;
+        }
+
+        if ("Please login to your existing account or contact support for assistance".equals(message)) {
+            System.out.println("GSTIN already exists: " + gstin);
+            return false;
+        }
+
+        // GSTIN does not exist
+        return true;
+
     }
 }

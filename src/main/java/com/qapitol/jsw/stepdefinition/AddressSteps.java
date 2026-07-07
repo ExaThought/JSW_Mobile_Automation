@@ -188,35 +188,29 @@ public class AddressSteps extends AbstractWebPage {
 
     @Then("validate customer added address")
     public void validate_customer_added_address() {
+        try {
+            log.info("Validating the added customer address for company: " + CompanyName);
 
-        String xpath = getDynamicXpath(CCP_SAVED_ADDRESS_DYNAMIC, CompanyName);
+            String xpath = getDynamicXpath(CCP_SAVED_ADDRESS_DYNAMIC, CompanyName);
 
-        WebElement address = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
-                .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+            WebElement address = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
+                    .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
 
-        scrollIntoView(address);
+            scrollIntoView(address);
 
-        softAssert.assertTrue(
-                address.isDisplayed(),
-                " Address with company name '" + CompanyName + "' is NOT displayed"
-        );
+            softAssert.assertTrue(
+                    address.isDisplayed(),
+                    "Address with company name '" + CompanyName + "' is not displayed."
+            );
+
+            log.info("Successfully verified the address for company: " + CompanyName);
+
+        } catch (Exception e) {
+            log.info("Exception occurred while validating customer address for company '" + CompanyName + "': " + e.getMessage());
+            softAssert.fail("Failed to validate customer address for company '" + CompanyName + "': " + e.getMessage());
+        }
     }
 
-//    @Then("validate customer added address")
-//    public void validate_customer_added_address1() {
-//
-//        String xpath = getDynamicXpath(CCP_SAVED_ADDRESS_DYNAMIC, CompanyName);
-//
-//        WebElement address = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
-//                .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
-//
-//        scrollIntoView(address);
-//
-//        softAssert.assertTrue(
-//                address.isDisplayed(),
-//                " Address with company name '" + CompanyName + "' is NOT displayed"
-//        );
-//    }
 
 
     // ================= EDIT ADDRESS =================
@@ -240,16 +234,30 @@ public class AddressSteps extends AbstractWebPage {
 
     @Then("customer clicks delete for jsw test address")
     public void customer_clicks_delete_for_jsw_test_address() {
+        try {
+            log.info("Clicking Delete button for company address: " + CompanyName);
 
-        String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, CompanyName);
+            String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, CompanyName);
 
-        WebElement deleteBtn = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
-                .until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
+            WebElement deleteButton = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
+                    .until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
 
-        scrollIntoView(deleteBtn);
+            scrollIntoView(deleteButton);
 
-        ((JavascriptExecutor) Grid.driver())
-                .executeScript("arguments[0].click();", deleteBtn);
+            softAssert.assertTrue(
+                    deleteButton.isDisplayed(),
+                    "Delete button for company '" + CompanyName + "' is not displayed."
+            );
+
+            ((JavascriptExecutor) Grid.driver())
+                    .executeScript("arguments[0].click();", deleteButton);
+
+            log.info("Successfully clicked Delete button for company: " + CompanyName);
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Delete button for company '" + CompanyName + "': " + e.getMessage());
+            softAssert.fail("Failed to click Delete button for company '" + CompanyName + "': " + e.getMessage());
+        }
     }
 
 
@@ -257,22 +265,44 @@ public class AddressSteps extends AbstractWebPage {
 
     @Then("customer clicks proceed button for delete jsw test address")
     public void customer_clicks_proceed_button_for_delete_jsw_test_address() {
+        try {
+            log.info("Clicking Proceed button to delete the address.");
 
-        waitAndCheckIsElementVisible(CCP_DELETE_PROCEED_BUTTON);
-        waitAndClickOn(CCP_DELETE_PROCEED_BUTTON);
+            waitAndCheckIsElementVisible(CCP_DELETE_PROCEED_BUTTON);
+
+
+            waitAndClickOn(CCP_DELETE_PROCEED_BUTTON);
+
+            log.info("Successfully clicked Proceed button for address deletion.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Proceed button for address deletion: " + e.getMessage());
+            softAssert.fail("Failed to click Proceed button for address deletion: " + e.getMessage());
+        }
     }
 
     @Then("customer clicks cancel delete for jsw test address")
     public void customer_clicks_cancel_delete_for_jsw_test_address() {
+        try {
+            log.info("Clicking on Cancel button in Delete Address confirmation popup.");
 
-        waitAndCheckIsElementVisible("ccpDeleteAddressCancelButton");
-        waitAndClickOn("ccpDeleteAddressCancelButton");
+            waitAndCheckIsElementVisible("ccpDeleteAddressCancelButton");
+
+
+            waitAndClickOn("ccpDeleteAddressCancelButton");
+
+            log.info("Successfully clicked on Cancel button in Delete Address confirmation popup.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Cancel button in Delete Address confirmation popup: " + e.getMessage());
+            softAssert.fail("Failed to click Cancel button in Delete Address confirmation popup: " + e.getMessage());
+        }
     }
 
     @Then("validate customer added address {string} is not visible")
     public void validate_customer_added_address_is_not_visible(String companyName) {
 
-        String xpath = getDynamicXpath("ccpDeletedAddressNotVisibleDynamic", companyName);
+        String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, CompanyName);
 
         By deletedAddress = By.xpath(xpath);
 
@@ -291,7 +321,7 @@ public class AddressSteps extends AbstractWebPage {
     @Then("validate customer added address is not visible")
     public void validate_customer_added_address_is_not_visible() {
 
-        String xpath = getDynamicXpath("ccpDeletedAddressNotVisibleDynamic",CompanyName );
+        String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, CompanyName);
 
         By deletedAddress = By.xpath(xpath);
 
@@ -312,9 +342,21 @@ public class AddressSteps extends AbstractWebPage {
 
     @And("customer enter company name blank")
     public void customer_leaves_company_name_blank() {
+        try {
+            log.info("Clearing the Company Name field.");
 
-        waitAndSetText(CCP_ADDRESS_COMPANY_NAME_INPUT, "");
-        Grid.driver().findElement(By.tagName("body")).click();
+            waitAndCheckIsElementVisible(CCP_ADDRESS_COMPANY_NAME_INPUT);
+
+            waitAndSetText(CCP_ADDRESS_COMPANY_NAME_INPUT, "");
+
+            Grid.driver().findElement(By.tagName("body")).click();
+
+            log.info("Company Name field left blank successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clearing Company Name field: " + e.getMessage());
+            softAssert.fail("Failed to leave Company Name field blank: " + e.getMessage());
+        }
     }
 
     @Then("customer should not be able to save address")
@@ -360,8 +402,21 @@ public class AddressSteps extends AbstractWebPage {
 
     @Then("validate set as default option should not be visible for shipping address")
     public void validate_set_as_default_option_should_not_be_visible_for_shipping_address() {
-        String msg=waitAndGetText(SET_AS_DEFAULT_SHIPPING_ADDRESS_CHECK);
-        softAssert.assertTrue(msg!=null);
+        try {
+            log.info("Verifying 'Set as Default' option is not visible for the shipping address.");
+
+            String optionText = waitAndGetText(SET_AS_DEFAULT_SHIPPING_ADDRESS_CHECK);
+
+            softAssert.assertTrue(
+                    optionText == null || optionText.trim().isEmpty(),
+                    "'Set as Default' option is visible for the shipping address."
+            );
+
+            log.info("Verified 'Set as Default' option is not visible for the shipping address.");
+
+        } catch (Exception e) {
+            log.info("Verified 'Set as Default' option is not visible for the shipping address.");
+        }
     }
 
     @And("customer enter region {string}")

@@ -1,4 +1,4 @@
-@ledger @regression @base
+@ledger @regression
 Feature: Validate ledger details
 
   Background:

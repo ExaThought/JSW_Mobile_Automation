@@ -14,6 +14,7 @@ import org.testng.Assert;
 
 import java.time.Duration;
 
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class BankDetailSteps extends AbstractWebPage {
@@ -41,6 +42,8 @@ public class BankDetailSteps extends AbstractWebPage {
     private static final String ADD_BANK_DETAILS_CTA_BUTTON = "addBankDetailsCTAButton";
     private static final String BANK_DETAILS_POP_UP_TITLE = "bankDetailsPopUpTitle";
     private static final String BANK_DETAILS_POP_UP_SUB_TITLE="bankDetailsPopUpSubTitle";
+    private static final String REPLACE_BANK_ACCOUNT = "//button[normalize-space()='Replace bank account']";
+    private static final String ENTER_BANK_ACCOUNT_HEADING = "//h2[normalize-space()='Enter bank account information']";
 
 
     // ================= COMMON METHODS =================
@@ -75,8 +78,20 @@ public class BankDetailSteps extends AbstractWebPage {
 
     @And("user clicks on Bank account details tab")
     public void userClicksOnBankAccountDetailsTab() {
-        waitAndCheckIsElementClickable(BANK_ACCOUNT_DETAILS_TAB);
-        clickOn(BANK_ACCOUNT_DETAILS_TAB);
+        try {
+            log.info("Clicking on Bank Account Details tab.");
+
+            waitAndCheckIsElementClickable(BANK_ACCOUNT_DETAILS_TAB);
+
+
+            clickOn(BANK_ACCOUNT_DETAILS_TAB);
+
+            log.info("Successfully clicked on Bank Account Details tab.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Bank Account Details tab: " + e.getMessage());
+            softAssert.fail("Failed to click Bank Account Details tab: " + e.getMessage());
+        }
     }
 
 
@@ -84,66 +99,128 @@ public class BankDetailSteps extends AbstractWebPage {
 
     @Then("user should see GSTIN Name in Bank details")
     public void validateGSTINNameInBankDetails() {
+        try {
+            log.info("Verifying GSTIN Name in Bank Details.");
 
-        String gstinName = getTextValue(GSTIN_NAME_VALUE);
+            String gstinName = getTextValue(GSTIN_NAME_VALUE);
 
-        softAssert.assertFalse(gstinName.isEmpty(),
-                " GSTIN Name is empty");
+            log.info("GSTIN Name: " + gstinName);
 
+            softAssert.assertFalse(
+                    gstinName == null || gstinName.trim().isEmpty(),
+                    "GSTIN Name is empty."
+            );
 
+            log.info("GSTIN Name verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying GSTIN Name: " + e.getMessage());
+            softAssert.fail("Exception while verifying GSTIN Name: " + e.getMessage());
+        }
     }
 
     @Then("user should see Account holder name in Bank details")
     public void validateAccountHolderNameInBankDetails() {
+        try {
+            log.info("Verifying Account Holder Name in Bank Details.");
 
-        String holderName = getTextValue(ACCOUNT_HOLDER_NAME_VALUE);
+            String holderName = getTextValue(ACCOUNT_HOLDER_NAME_VALUE);
 
-        softAssert.assertFalse(holderName.isEmpty(),
-                " Account Holder Name is empty");
+            log.info("Account Holder Name: " + holderName);
 
+            softAssert.assertFalse(
+                    holderName == null || holderName.trim().isEmpty(),
+                    "Account Holder Name is empty."
+            );
 
+            log.info("Account Holder Name verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Account Holder Name: " + e.getMessage());
+            softAssert.fail("Exception while verifying Account Holder Name: " + e.getMessage());
+        }
     }
 
     @Then("user should see Bank account number in Bank details")
     public void validateBankAccountNumberInBankDetails() {
+        try {
+            log.info("Verifying Bank Account Number in Bank Details.");
 
-        String accountNumber = getTextValue(BANK_ACCOUNT_NUMBER_VALUE);
+            String accountNumber = getTextValue(BANK_ACCOUNT_NUMBER_VALUE);
 
-        softAssert.assertFalse(accountNumber.isEmpty(),
-                " Bank Account Number is empty");
+            log.info("Bank Account Number: " + accountNumber);
 
+            softAssert.assertFalse(
+                    accountNumber == null || accountNumber.trim().isEmpty(),
+                    "Bank Account Number is empty."
+            );
 
+            log.info("Bank Account Number verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Bank Account Number: " + e.getMessage());
+            softAssert.fail("Exception while verifying Bank Account Number: " + e.getMessage());
+        }
     }
 
     @Then("user should see IFSC code in Bank details")
     public void validateIFSCCodeInBankDetails() {
+        try {
+            log.info("Verifying IFSC Code in Bank Details.");
 
-        String ifscCode = getTextValue(IFSC_CODE_VALUE);
+            String ifscCode = getTextValue(IFSC_CODE_VALUE);
 
-        softAssert.assertFalse(ifscCode.isEmpty(),
-                " IFSC Code is empty");
+            log.info("IFSC Code: " + ifscCode);
 
+            softAssert.assertFalse(
+                    ifscCode == null || ifscCode.trim().isEmpty(),
+                    "IFSC Code is empty."
+            );
+
+            log.info("IFSC Code verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying IFSC Code: " + e.getMessage());
+            softAssert.fail("Exception while verifying IFSC Code: " + e.getMessage());
+        }
     }
 
     @When("user clicks on Replace bank account option")
     public void userClicksOnReplaceBankAccount() {
+        try {
+            log.info("Clicking on Replace Bank Account option.");
 
-        clickOn("replaceBankAccountButton");
+            waits(By.xpath(REPLACE_BANK_ACCOUNT));
+            clickButton(By.xpath(REPLACE_BANK_ACCOUNT));
 
+            log.info("Successfully clicked on Replace Bank Account option.");
 
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Replace Bank Account option: " + e.getMessage());
+            softAssert.fail("Failed to click Replace Bank Account option: " + e.getMessage());
+        }
     }
 
     @Then("user should see Enter bank account information page")
     public void userShouldSeeEnterBankAccountInformationPage() {
+        try {
+            log.info("Verifying Enter Bank Account Information popup is displayed.");
 
-        String headingText = getTextValue("enterBankAccountHeading");
+            String headingText = getText(By.xpath(ENTER_BANK_ACCOUNT_HEADING));
 
-        Assert.assertFalse(
-                headingText.isEmpty(),
-                " Enter bank account information heading not visible"
-        );
+            log.info("Popup heading: " + headingText);
 
+            softAssert.assertFalse(
+                    headingText == null || headingText.trim().isEmpty(),
+                    "Enter Bank Account Information heading is not visible."
+            );
 
+            log.info("Enter Bank Account Information page verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Enter Bank Account Information page: " + e.getMessage());
+            softAssert.fail("Exception while verifying Enter Bank Account Information page: " + e.getMessage());
+        }
     }
 
     @Then("verify bank details title")

@@ -51,7 +51,7 @@ elements:
 
   ccpEditButtonForSavedAddress:
     en_US:
-      web:  //h3[text()='${companyName}']/../../following-sibling::div[2]//button
+      web:  //h3[normalize-space()='${companyName}']/../../following-sibling::div[2]//button
 
 
 
@@ -59,7 +59,7 @@ elements:
 
   ccpDeleteButtonForSavedAddress:
     en_US:
-      web: //h3[text()='${companyName}']/../following-sibling::button
+      web: //h3[normalize-space()='${companyName}']/../following-sibling::button
 
   # ================= DELETE CONFIRM MODAL =================
 

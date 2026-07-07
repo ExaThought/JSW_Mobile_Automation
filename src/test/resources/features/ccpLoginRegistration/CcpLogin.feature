@@ -10,14 +10,7 @@ Feature: Check Login
     And user click on continue button
     And enter valid password "Welcome@1234#"
     Then user should able to login
-#    Then user close payment due pop up
 
-#   @sanity @emailLogin @emailLoginWithInvalidCredentials
-#  Scenario: Check Login with Invalid email ID and password
-#    And enter invalid email "testnewurl@yopmail.com"
-#     And user click on continue button
-#    And enter invalid password "Jsw@2029"
-#    Then user should not able to login with error message
 
 
   @sanity @emailLogin @emailLoginWithInvalidCredentials

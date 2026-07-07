@@ -16,7 +16,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "indresh.kumarallen@gmail.com"
     Then new user continue to Registration
-    And enter full name "Indresh Kumar" mobile number "9876543210" and gst "36AAJFA6214D1ZU"
+    And enter full name "Indresh Kumar" mobile number "9876543210" and gst "24AAACG8896M1ZX"
     When user clicks on terms and conditions checkbox
     Then next button should be enabled
 
@@ -25,7 +25,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "user@example.com"
     Then new user continue to Registration
-    And enter full name "" mobile number "9876543210" and gst "29AXAPS0611A1Z1"
+    And enter full name "" mobile number "9876543210" and gst "24AAACG8896M1ZX"
     Then next button should be disabled
 
   @sanity @registrationNegative
@@ -33,7 +33,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "user@example.com"
     Then new user continue to Registration
-    And enter full name "Indresh Kumar" mobile number "" and gst "29AXAPS0611A1Z1"
+    And enter full name "Indresh Kumar" mobile number "" and gst "24AAACG8896M1ZX"
     Then next button should be disabled
 
   @sanity @registrationNegative
@@ -49,7 +49,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "indresh.kumarallen@gmail.com"
     Then new user continue to Registration
-    And enter full name "Indresh Kumar" mobile number "12345" and gst "29AXAPS0611A1Z1"
+    And enter full name "Indresh Kumar" mobile number "12345" and gst "24AAACG8896M1ZX"
     Then user should not able to proceed with phone number error
     And next button should be disabled
 
@@ -67,7 +67,7 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "indresh.kumarallen@gmail.com"
     Then new user continue to Registration
-    And enter full name "Indresh Kumar" mobile number "9876543210" and gst "29AXAPS0611A1Z1"
+    And enter full name "Indresh Kumar" mobile number "9876543210" and gst "24AAACG8896M1ZX"
     And remove checkbox
     And next button should be disabled
 
@@ -76,7 +76,8 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "user@example.com"
     Then new user continue to Registration
-    And enter full name "John Doe" mobile number "9677345321" and gst "29AXAPS0611A1Z1"
+    And enter full name "John Doe" mobile number "9677345321" and gst "24AAACG8896M1ZX"
+    And User click on Next Button
     Then User verifies the error message
 
 
@@ -84,8 +85,8 @@ Feature: Check CCP registration
     And user open the CCP web portal
     And enter new valid email id "user@example.com"
     Then new user continue to Registration
-    And enter full name "John Doe" mobile number "7123687236" and gst "37CBHPR1105B1Z4"
-    And next button should be disabled
+    And enter full name "John Doe" mobile number "7123687236" and existing gst "37CBHPR1105B1Z4"
+    Then next button should be disabled
     Then User verifies the error message
 
 

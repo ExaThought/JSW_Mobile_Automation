@@ -1,4 +1,4 @@
-@buym @base
+@buym
 Feature: validate Buy-again
 
   Background:
