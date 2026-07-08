@@ -92,7 +92,7 @@ Feature: Check Edit and Delete line item from Cart
     And update Quantity "75"
     And Save edit changes
     Then verify the updated Attribute values for Cement in cart page
-#    Then Delete the line item from cart
+
 
   @CoatedSteelEditAndDeleteCart
   Scenario: Verify Coated Steel Sheet Product Add to Cart
@@ -140,47 +140,6 @@ Feature: Check Edit and Delete line item from Cart
     And verify the updated Attribute values for TMT in cart page
 
 
-  #  @ColourCoated
-#  Scenario: Verify Colour Coated Sheet Product Add to Cart
-#    When move the mouse to Mild steel category
-#    And click to Colour Coated category
-#    And open Colour Coated pdp
-#    And select thickness "2" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
-
-
-#  @Angles
-#  Scenario: Verify Angles product add to cart
-#    When move the mouse to Structural category
-#    And click on Angles product
-#    And open Angles pdp
-#    And select all the Angles attribute
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
-#
-#  @Channels
-#  Scenario: Verify Channels product add to cart
-#    When move the mouse to Structural category
-#    And click on Channels product
-#    And open Channels pdp
-#    And select all the Channels attribute
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
-
-    #Product not available currently
-#  @BeamsAndColumns
-#  Scenario: Verify Beams & Columns product add to cart
-#    When move the mouse to Structural category
-#    And click on Beams & Columns product
-#    And open Beams & Columns pdp
-#    And select all the Beams & Columns attribute
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
 
 
 

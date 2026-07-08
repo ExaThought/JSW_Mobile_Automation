@@ -5,7 +5,7 @@ Feature: Verify empty bank details in profile
   Background:
     Given Go to session "ccp"
     And ccp login with "emailnoti@yopmail.com" and "Jsw@2025"
-#    And user close payment due pop up
+
 
   Scenario: Check bank details design when user did not add bank details
     And user clicks on Account Drop Down

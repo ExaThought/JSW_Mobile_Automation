@@ -6,11 +6,6 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And ccp login with configured user
 
 
-#  @addToCart @checkout
-#  Scenario: check PDP validation and Add-to-cart
-#    And user will add Stainless Steel product to cart
-#    Then check user able to delete line item from cart
-#    And user checkout the RCV2
 
   @HRSheets
   Scenario: Verify HR Sheet Product Add to Cart
@@ -25,7 +20,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page with cart count "1"
-#    Then Delete the line item from cart
+
 
   @HRCoil
   Scenario: verify HR Coil Product Add to Cart
@@ -63,7 +58,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then Verify the Attribute values for HR Coil in cart page with cart count "2"
-#  Then check the empty cart page display with message "Your cart is empty"
+
 
   @multiSKUCart
   Scenario: Check multi product add to cart and delete one by one from cart
@@ -172,47 +167,6 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then verify the Attribute values for TMT in cart page with cart count "1"
 
 
-  #  @ColourCoated
-#  Scenario: Verify Colour Coated Sheet Product Add to Cart
-#    When move the mouse to Mild steel category
-#    And click to Colour Coated category
-#    And open Colour Coated pdp
-#    And select thickness "2" width "1250" length "2500" coating grade "120" spangle type "Regular" quantity "50" for Colour Coated Sheet
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
-#
-#
-#  @Angles
-#  Scenario: Verify Angles product add to cart
-#    When move the mouse to Structural category
-#    And click on Angles product
-#    And open Angles pdp
-#    And select all the Angles attribute
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
-#
-#  @Channels
-#  Scenario: Verify Channels product add to cart
-#    When move the mouse to Structural category
-#    And click on Channels product
-#    And open Channels pdp
-#    And select all the Channels attribute
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
-
-    #Product not available currently
-#  @BeamsAndColumns
-#  Scenario: Verify Beams & Columns product add to cart
-#    When move the mouse to Structural category
-#    And click on Beams & Columns product
-#    And open Beams & Columns pdp
-#    And select all the Beams & Columns attribute
-#    And add to cart
-#    And click view cart
-#    Then Delete the line item from cart
 
 
 

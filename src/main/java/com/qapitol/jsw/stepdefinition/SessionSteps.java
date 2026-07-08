@@ -181,7 +181,7 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndClickOn(CCP_LOGIN_CTA);
         log.info("successfully clicked on Login button");
         sleep(100);
-        if(isPopDisplayed(By.xpath(CLOE_POPUP)))
+        if(isDisplayed(By.xpath(CLOE_POPUP)))
         {
             clickButton(By.xpath(CLOE_POPUP));
         }
@@ -191,7 +191,7 @@ public  class SessionSteps extends AbstractWebPage {
 //            clickButton(By.xpath(MANAGE_POPUP_CLOSE));
 //        }
 
-        if(isPopDisplayed(By.xpath(PAYMENT_REMINDER_POPUP)))
+        if(isDisplayed(By.xpath(PAYMENT_REMINDER_POPUP)))
         {
             clickButton(By.xpath(PAYMENT_REMINDER_POPUP));
         }

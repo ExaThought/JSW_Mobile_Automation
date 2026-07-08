@@ -5,10 +5,7 @@ import com.qapitol.sauron.core.Grid;
 import io.appium.java_client.AppiumBy;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -60,19 +57,7 @@ public class CustomUtil {
         });
     }
 
-    public static String getText(By locator)
-    {
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), java.time.Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.elementToBeClickable(locator));
-        return Grid.driver().findElement(locator).getText();
-    }
 
-    public static String getText(WebElement locator)
-    {
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), java.time.Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.elementToBeClickable(locator));
-        return locator.getText();
-    }
 
     public static void enterText(By locator,String data)
     {
@@ -178,71 +163,7 @@ public class CustomUtil {
         }
     }
 
-    public static  void clickButton(By locator)
-    {
-       new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(locator));
-       WebElement element = Grid.driver().findElement(locator);
-       element.click();
 
-    }
-
-    public static  void clickButton(WebElement locator)
-    {
-        new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOf(locator));;
-        locator.click();
-
-    }
-
-    public static boolean isDisplayed(By locator)
-    {
-        try{
-           new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(locator));
-            WebElement element = Grid.driver().findElement(locator);
-            if(element.isDisplayed())
-            {
-                return true;
-            }else {
-                return false;
-            }
-        }catch (Exception e)
-        {
-            return  false;
-        }
-    }
-
-    public static boolean isDisplayed(WebElement element)
-    {
-        try{
-            new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOf(element));
-
-            if(element.isDisplayed())
-            {
-                return true;
-            }else {
-                return false;
-            }
-        }catch (Exception e)
-        {
-            return  false;
-        }
-    }
-
-    public static boolean isPopDisplayed(By locator)
-    {
-        try{
-            new WebDriverWait(Grid.driver(),Duration.ofMillis(500)).until(ExpectedConditions.visibilityOfElementLocated(locator));
-            WebElement element = Grid.driver().findElement(locator);
-            if(element.isDisplayed())
-            {
-                return true;
-            }else {
-                return false;
-            }
-        }catch (Exception e)
-        {
-            return  false;
-        }
-    }
 
     public static void doubleClickAction(By locator) {
         new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(locator));
@@ -415,6 +336,70 @@ public class CustomUtil {
 
     public static boolean matches(String productName, String searchText) {
         return normalize(productName).toLowerCase().contains(normalize(searchText).toLowerCase());
+    }
+    /**
+     * Resolves a supported element target into a WebElement.
+     *
+     * @param target supported element reference (By, WebElement, String XPath)
+     * @return resolved WebElement
+     * @throws IllegalArgumentException when target type is not supported
+     */
+    public static WebElement resolveElement(Object target) {
+        if (target instanceof WebElement) {
+            return (WebElement) target;
+        }
+
+        if (target instanceof By) {
+            return Grid.driver().findElement((By) target);
+        }
+
+        throw new IllegalArgumentException(
+                "Unsupported type: " + target.getClass().getSimpleName());
+    }
+    /**
+     * @param target element identifier. Supported types are By, WebElement, and String XPath.
+     * @throws IllegalArgumentException if an unsupported target type is provided
+     */
+
+    public static void clickButton(Object target) {
+        WebElement element = resolveElement(target);
+        new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.elementToBeClickable(element));
+        element.click();
+    }
+
+    /**
+     * Checks whether a UI element is displayed.
+     *
+     * <p>Supported target types:
+     * <ul>
+     *   <li>By - Selenium locator</li>
+     *   <li>WebElement - already located element</li>
+     *   <li>String - XPath expression</li>
+     * </ul>
+     *
+     * @param target element reference
+     * @return true if element exists and is visible, otherwise false
+     */
+    public static boolean isDisplayed(Object target) {
+        try {
+            WebElement element= resolveElement(target);
+
+                new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOf(element));
+
+                if(element.isDisplayed())
+                {
+                    return true;
+                }else {
+                    return false;
+                }
+            }catch (Exception e)
+            {
+                return  false;
+            }
+    }
+
+    public static String getText(Object target) {
+        return resolveElement(target).getText().trim();
     }
 
 }

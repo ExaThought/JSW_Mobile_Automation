@@ -4,7 +4,7 @@ Feature: validate Address
   Background:
     Given Go to session "ccp"
     And ccp login with configured user
-    And user close payment due pop up
+
 
   @sanity
   Scenario: Check and validate  navigation for  Address page

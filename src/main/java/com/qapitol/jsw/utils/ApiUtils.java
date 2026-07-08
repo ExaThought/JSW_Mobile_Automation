@@ -9,6 +9,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -50,22 +51,37 @@ public class ApiUtils extends BaseApiImpl
 
     public static String getUserId(String token) {
 
-        // Decode JWT payload
-        String payload = token.split("\\.")[1];
-        String json = new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8);
-
-        // Extract userId
-        String key = "\"userId\":\"";
-        int start = json.indexOf(key);
-
-        if (start == -1) {
-            return null;
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("JWT token is null or empty");
         }
+        try {
+            String[] parts = token.split("\\.");
 
-        start += key.length();
-        int end = json.indexOf("\"", start);
+            if (parts.length < 2) {
+                throw new IllegalArgumentException("Invalid JWT token format");
+            }
 
-        return json.substring(start, end);
+            String payload = parts[1];
+
+            String json = new String(
+                    Base64.getUrlDecoder().decode(payload),
+                    StandardCharsets.UTF_8
+            );
+
+            JSONObject jsonObject = new JSONObject(json);
+
+            if (!jsonObject.has("userId")) {
+                throw new IllegalArgumentException(
+                        "userId not found in JWT payload"
+                );
+            }
+
+            return jsonObject.getString("userId");
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Failed to parse JWT token"+ e.getMessage());
+            throw e;
+        }
     }
 
     public static void deleteAllCartItems() {
@@ -154,7 +170,14 @@ public class ApiUtils extends BaseApiImpl
                 .accept("application/json")
                 .header("access_token", jwtToken)
                 .body(requestBody)
-                .post("/customer/v1/gst/validate");
+                .post("/customer/v1/gst/validate")
+                .then()
+                .statusCode(200)
+                .extract()
+                .response();
+        if (response.asString() == null || response.asString().isEmpty()) {
+            throw new RuntimeException("GST validation API returned empty response");
+        }
 
         System.out.println("GST Validation Response: " + response.asPrettyString());
 

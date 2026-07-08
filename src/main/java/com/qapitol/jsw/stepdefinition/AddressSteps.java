@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.context.ScenarioContext;
 import com.qapitol.sauron.web.AbstractWebPage;
 import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.en.And;
@@ -19,7 +20,7 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class AddressSteps extends AbstractWebPage {
 
-    // ================= LOCATOR KEYS =================
+
 
     private static final String CCP_USER_MENU_TESTACCO = "ccpUserMenuTestacco";
     private static final String CCP_USER_MENU_PROFILE_OPTION = "ccpUserMenuProfileOption";
@@ -36,7 +37,7 @@ public class AddressSteps extends AbstractWebPage {
 
     private static final String CCP_ADDRESS_SAVE_CHANGES_BUTTON = "ccpAddressSaveChangesButton";
 
-    // Dynamic keys
+
     private static final String CCP_SAVED_ADDRESS_DYNAMIC = "ccpSavedAddressCompanyNameDynamic";
     private static final String CCP_EDIT_BUTTON_DYNAMIC = "ccpEditButtonForSavedAddress";
     private static final String CCP_DELETE_BUTTON_DYNAMIC = "ccpDeleteButtonForSavedAddress";
@@ -48,10 +49,16 @@ public class AddressSteps extends AbstractWebPage {
     private static final String ACCOUNT_BUTTON="(//span[text()=\"Account\"])[2]";
     private static final String REGION ="ccpAddressRegionInput";
     private static final String STATE = "ccpAddressStateInput";
-    private String CompanyName;
+    public ScenarioContext context;
+
+    public AddressSteps(ScenarioContext context)
+    {
+        this.context = context;
+    }
 
 
-    // ================= COMMON HELPERS =================
+
+
 
     public WebElement getElement(String key) {
         By locator = By.xpath(getLocator(key));
@@ -69,7 +76,7 @@ public class AddressSteps extends AbstractWebPage {
     }
 
 
-    // ================= USER MENU =================
+
 
     @And("user clicks on Account Drop Down")
     public void userClicksOnAccountDropDown() {
@@ -105,7 +112,7 @@ public class AddressSteps extends AbstractWebPage {
     }
 
 
-    // ================= ADDRESSES TAB =================
+
 
     @And("user clicks on Addresses tab")
     public void userClicksOnAddressesTab() {
@@ -127,7 +134,7 @@ public class AddressSteps extends AbstractWebPage {
     }
 
 
-    // ================= ADD ADDRESS FLOW =================
+
 
     @And("customer clicks on Add address button")
     public void user_clicks_on_add_address_button() {
@@ -139,7 +146,7 @@ public class AddressSteps extends AbstractWebPage {
     @And("customer enter company name")
     public void enter_company_name() {
         String name = generateAutoGenName();
-        CompanyName = name;
+        context.CompanyName = name;
         log.info("Customer enters the company name");
         waitAndSetText(CCP_ADDRESS_COMPANY_NAME_INPUT, name);
     }
@@ -171,7 +178,7 @@ public class AddressSteps extends AbstractWebPage {
     }
 
 
-    // ================= SAVE ADDRESS =================
+
 
     @Then("customer clicks on Save changes button")
     public void customer_clicks_on_save_changes_button() {
@@ -184,14 +191,14 @@ public class AddressSteps extends AbstractWebPage {
 
 
 
-    // ================= VALIDATE SAVED ADDRESS =================
+
 
     @Then("validate customer added address")
     public void validate_customer_added_address() {
         try {
-            log.info("Validating the added customer address for company: " + CompanyName);
+            log.info("Validating the added customer address for company: " + context.CompanyName);
 
-            String xpath = getDynamicXpath(CCP_SAVED_ADDRESS_DYNAMIC, CompanyName);
+            String xpath = getDynamicXpath(CCP_SAVED_ADDRESS_DYNAMIC, context.CompanyName);
 
             WebElement address = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
                     .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
@@ -200,25 +207,25 @@ public class AddressSteps extends AbstractWebPage {
 
             softAssert.assertTrue(
                     address.isDisplayed(),
-                    "Address with company name '" + CompanyName + "' is not displayed."
+                    "Address with company name '" + context.CompanyName + "' is not displayed."
             );
 
-            log.info("Successfully verified the address for company: " + CompanyName);
+            log.info("Successfully verified the address for company: " + context.CompanyName);
 
         } catch (Exception e) {
-            log.info("Exception occurred while validating customer address for company '" + CompanyName + "': " + e.getMessage());
-            softAssert.fail("Failed to validate customer address for company '" + CompanyName + "': " + e.getMessage());
+            log.info("Exception occurred while validating customer address for company '" + context.CompanyName + "': " + e.getMessage());
+            softAssert.fail("Failed to validate customer address for company '" + context.CompanyName + "': " + e.getMessage());
         }
     }
 
 
 
-    // ================= EDIT ADDRESS =================
+
 
     @Then("customer clicks edit for jsw test address")
     public void customer_clicks_edit_for_jsw_test_address() {
 
-        String xpath = getDynamicXpath(CCP_EDIT_BUTTON_DYNAMIC, CompanyName);
+        String xpath = getDynamicXpath(CCP_EDIT_BUTTON_DYNAMIC, context.CompanyName);
 
         WebElement editBtn = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
                 .until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
@@ -230,14 +237,14 @@ public class AddressSteps extends AbstractWebPage {
     }
 
 
-    // ================= DELETE ADDRESS =================
+
 
     @Then("customer clicks delete for jsw test address")
     public void customer_clicks_delete_for_jsw_test_address() {
         try {
-            log.info("Clicking Delete button for company address: " + CompanyName);
+            log.info("Clicking Delete button for company address: " + context.CompanyName);
 
-            String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, CompanyName);
+            String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, context.CompanyName);
 
             WebElement deleteButton = new WebDriverWait(Grid.driver(), Duration.ofSeconds(20))
                     .until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
@@ -246,22 +253,22 @@ public class AddressSteps extends AbstractWebPage {
 
             softAssert.assertTrue(
                     deleteButton.isDisplayed(),
-                    "Delete button for company '" + CompanyName + "' is not displayed."
+                    "Delete button for company '" + context.CompanyName + "' is not displayed."
             );
 
             ((JavascriptExecutor) Grid.driver())
                     .executeScript("arguments[0].click();", deleteButton);
 
-            log.info("Successfully clicked Delete button for company: " + CompanyName);
+            log.info("Successfully clicked Delete button for company: " + context.CompanyName);
 
         } catch (Exception e) {
-            log.info("Exception occurred while clicking Delete button for company '" + CompanyName + "': " + e.getMessage());
-            softAssert.fail("Failed to click Delete button for company '" + CompanyName + "': " + e.getMessage());
+            log.info("Exception occurred while clicking Delete button for company '" + context.CompanyName + "': " + e.getMessage());
+            softAssert.fail("Failed to click Delete button for company '" + context.CompanyName + "': " + e.getMessage());
         }
     }
 
 
-    // ================= DELETE CONFIRMATION =================
+
 
     @Then("customer clicks proceed button for delete jsw test address")
     public void customer_clicks_proceed_button_for_delete_jsw_test_address() {
@@ -302,7 +309,7 @@ public class AddressSteps extends AbstractWebPage {
     @Then("validate customer added address {string} is not visible")
     public void validate_customer_added_address_is_not_visible(String companyName) {
 
-        String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, CompanyName);
+        String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, context.CompanyName);
 
         By deletedAddress = By.xpath(xpath);
 
@@ -321,7 +328,7 @@ public class AddressSteps extends AbstractWebPage {
     @Then("validate customer added address is not visible")
     public void validate_customer_added_address_is_not_visible() {
 
-        String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, CompanyName);
+        String xpath = getDynamicXpath(CCP_DELETE_BUTTON_DYNAMIC, context.CompanyName);
 
         By deletedAddress = By.xpath(xpath);
 
@@ -333,12 +340,12 @@ public class AddressSteps extends AbstractWebPage {
 
         softAssert.assertTrue(
                 isInvisible,
-                " Address with company name '" + CompanyName + "' is still visible after deletion"
+                " Address with company name '" + context.CompanyName + "' is still visible after deletion"
         );
     }
 
 
-    // ================= NEGATIVE VALIDATION =================
+
 
     @And("customer enter company name blank")
     public void customer_leaves_company_name_blank() {

@@ -2,16 +2,6 @@
 Feature: Check CCP order creation from sf to ccp
 
 
-#  @testCaseId=id-001 @dataFile="ccpErpSync.yaml"
-#  Scenario: Verify Order Confirmation from ccp and copy order number
-#    When create cash and carry cart from SF for active order
-#    Given Go to session "ccp"
-#    And ccp login with configured user
-##    Then user close payment due pop up
-#    And open the cart page and create an order
-#    And user clicks on My orders button
-#    And user clicks on Active order tab
-#    Then verify created order number is present in active orders
 
 
   Scenario: Verify navigation of active order details page

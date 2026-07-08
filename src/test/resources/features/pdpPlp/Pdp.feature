@@ -70,12 +70,6 @@
       Then check Add to cart is enabled
 
 
-#    Scenario: Verify image gallery loads on PDP
-#      When move the mouse to Mild steel category
-#      And move to Hot rolled category
-#      And click on HR Coil product
-#      And open HR Coil plp "2" product
-#      Then check image gallery loads on PDP page
 
 
     Scenario: Verify product description is not empty

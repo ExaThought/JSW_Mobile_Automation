@@ -31,5 +31,6 @@ public class ScenarioContext
     public String gradeName;
     public String brandName;
     public String subGradeName;
+    public String CompanyName;
 
 }

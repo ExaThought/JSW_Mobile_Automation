@@ -6,7 +6,7 @@ Feature: Validate All Tabs under My Account Drop Down
     Given Go to session "ccp"
     And ccp login with configured user
 
-@base
+
   Scenario: Validate Profile details under My Account details
     And user clicks on Account Drop Down
     Then User select MyOrder tab under My Account

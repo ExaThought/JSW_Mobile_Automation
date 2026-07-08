@@ -44,7 +44,7 @@ public class HomepageBlogSteps extends AbstractWebPage {
 
             log.info("Clicked on Blogs section.");
 
-            if (isPopDisplayed(By.xpath(MANAGE_POPUP_CLOSE))) {
+            if (isDisplayed(By.xpath(MANAGE_POPUP_CLOSE))) {
                 log.info("Manage popup is displayed. Closing it.");
                 clickButton(By.xpath(MANAGE_POPUP_CLOSE));
             }
