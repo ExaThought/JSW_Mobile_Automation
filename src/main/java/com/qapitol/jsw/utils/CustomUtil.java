@@ -406,4 +406,15 @@ public class CustomUtil {
         return By.cssSelector(trimmed);
     }
 
+
+    private static String normalize(String text) {
+        return text == null
+                ? ""
+                : text.toUpperCase().replaceAll("[^A-Z0-9]", "");
+    }
+
+    public static boolean matches(String productName, String searchText) {
+        return normalize(productName).toLowerCase().contains(normalize(searchText).toLowerCase());
+    }
+
 }

@@ -182,11 +182,11 @@ public class pdpPlpSteps extends AbstractWebPage {
 
            for(String name:names)
            {
-               if(name.toLowerCase().contains((context.gradeName).toLowerCase()))
+               if(matches(name,context.gradeName))
                {
                    softAssert.assertTrue(true);
                }else {
-                   softAssert.assertTrue(false,"Wrong prod displayed "+name);
+                   softAssert.assertTrue(false,"Wrong prod displayed---"+name+"---"+context.gradeName);
                }
            }
 
@@ -221,11 +221,11 @@ public class pdpPlpSteps extends AbstractWebPage {
 
             for(String name:names)
             {
-                if(name.toLowerCase().contains((context.brandName).toLowerCase()))
+                if(matches(name,context.brandName))
                 {
                     softAssert.assertTrue(true);
                 }else {
-                    softAssert.assertTrue(false,"Wrong prod displayed "+name);
+                    softAssert.assertTrue(false,"Wrong prod displayed----"+name+"----"+context.brandName);
                 }
             }
 
@@ -259,11 +259,11 @@ public class pdpPlpSteps extends AbstractWebPage {
 
             for(String name:names)
             {
-                if(name.toLowerCase().contains((context.subGradeName).toLowerCase()))
+                if(matches(name,context.subGradeName))
                 {
                     softAssert.assertTrue(true);
                 }else {
-                    softAssert.assertTrue(false,"Wrong prod displayed "+name);
+                    softAssert.assertTrue(false,"Wrong prod displayed----"+name+"---"+context.subGradeName);
                 }
             }
 

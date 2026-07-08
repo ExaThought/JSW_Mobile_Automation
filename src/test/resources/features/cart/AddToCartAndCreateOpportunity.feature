@@ -4,7 +4,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
   Background:
     Given Go to session "ccp"
     And ccp login with configured user
-#    And user close payment due pop up
+
 
 #  @addToCart @checkout
 #  Scenario: check PDP validation and Add-to-cart
@@ -40,7 +40,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then Verify the Attribute values for HR Coil in cart page with cart count "1"
-#    Then Delete the line item from cart
+
 
 
   Scenario: Add same product twice and verify quantity merge or duplicate handling
@@ -109,7 +109,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for CR coil in cart page
-#    Then Delete the line item from cart
+
 
   @CRSheet
   Scenario: Verify CR Sheet Product Add to Cart
@@ -124,7 +124,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for CR Sheet in cart page
-#    Then Delete the line item from cart
+
 
   @Cement
   Scenario: Verify Cement Product Add to Cart
@@ -137,7 +137,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for Cement in cart page
-#    Then Delete the line item from cart
+
 
   @CoatedSteel
   Scenario: Verify Coated Steel Sheet Product Add to Cart
@@ -148,7 +148,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for Coated Steel Sheet in cart page
-#    Then Delete the line item from cart
+
 
   @Wire
   Scenario: Verify wire product add to cart
@@ -160,7 +160,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for Wire in cart page
-#    Then Delete the line item from cart
+
 
   @TMT
   Scenario: Verify TMT product add to cart
@@ -170,7 +170,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then verify the Attribute values for TMT in cart page with cart count "1"
-#    Then Delete the line item from cart
+
 
   #  @ColourCoated
 #  Scenario: Verify Colour Coated Sheet Product Add to Cart

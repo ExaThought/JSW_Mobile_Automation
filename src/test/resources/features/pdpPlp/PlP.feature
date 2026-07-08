@@ -58,3 +58,26 @@ Feature: Check PlP filter
     Then User verifies Sub Grade
 
 
+  Scenario: Verify filter in Cement product
+    And User navigate to HomePage
+    When click on Cement product
+    And User select the Brand
+    Then User verifies Brand
+
+
+  Scenario: Verify filters in TMT
+    When click on TMT product
+    And User select the Brand
+    Then User verifies Brand
+
+
+  Scenario:  Verify multiple filters in TMT
+    When click on TMT product
+    And User select the Brand
+    Then User verifies Brand
+    And User select the Sub grade
+    Then User verifies Sub Grade
+
+
+
+
