@@ -23,73 +23,60 @@
     <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
 
 
-<!--    <test name="Homepage">-->
-<!--        <parameter name="test.group" value="homepage"/>-->
-<!--        <parameter name="sessions" value="sessions.yaml"/>-->
-<!--        <parameter name="cucumber.features" value="src/test/resources/features"/>-->
-<!--        <parameter name="cucumber.filter.tags"-->
-<!--                   value="@footer or @search or @paymentDue or @ledger or @bankDetails"/>-->
-<!--        <classes>-->
-<!--            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="Homepage">
+        <parameter name="test.group" value="homepage"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags"
+                   value="@footer or @search or @paymentDue or @ledger or @bankDetails"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-<!--    <test name="Cart">-->
-<!--        <parameter name="test.group" value="cart"/>-->
-<!--        <parameter name="sessions" value="sessions.yaml"/>-->
-<!--        <parameter name="cucumber.features" value="src/test/resources/features"/>-->
-<!--        <parameter name="cucumber.filter.tags"-->
-<!--                   value="@AddToCartAndCreateOpportunity or @CartVerification or @shipment or @PDPValidation or @EditAndDeleteCart"/>-->
-<!--        <classes>-->
-<!--            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="Cart">
+        <parameter name="test.group" value="cart"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags"
+                   value="@AddToCartAndCreateOpportunity or @CartVerification or @shipment or @PDPValidation or @EditAndDeleteCart"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-<!--    <test name="Profile">-->
-<!--        <parameter name="test.group" value="profile"/>-->
-<!--        <parameter name="sessions" value="sessions.yaml"/>-->
-<!--        <parameter name="cucumber.features" value="src/test/resources/features"/>-->
-<!--        <parameter name="cucumber.filter.tags"-->
-<!--                   value="@address or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword or @tokenCheck or @customerDetails"/>-->
-<!--        <classes>-->
-<!--            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="Profile">
+        <parameter name="test.group" value="profile"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags"
+                   value="@address or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword or @tokenCheck or @customerDetails"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-<!--    <test name="Orders">-->
-<!--        <parameter name="test.group" value="orders"/>-->
-<!--        <parameter name="sessions" value="sessions.yaml"/>-->
-<!--        <parameter name="cucumber.features" value="src/test/resources/features"/>-->
-<!--        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation or @ccpErpSyncRegression"/>-->
-<!--        <classes>-->
-<!--            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="Orders">
+        <parameter name="test.group" value="orders"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation or @ccpErpSyncRegression"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-<!--    <test name="GuestUser">-->
-<!--        <parameter name="test.group" value="Guest"/>-->
-<!--        <parameter name="sessions" value="sessions.yaml"/>-->
-<!--        <parameter name="cucumber.features" value="src/test/resources/features"/>-->
-<!--        <parameter name="cucumber.filter.tags" value="@SEOCheck or @GuestUser"/>-->
-<!--        <classes>-->
-<!--            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
+    <test name="GuestUser">
+        <parameter name="test.group" value="Guest"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags" value="@SEOCheck or @GuestUser"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
 
-<!--    <test name="test">-->
-<!--        <parameter name="test.group" value="orders"/>-->
-<!--        <parameter name="sessions" value="sessions.yaml"/>-->
-<!--        <parameter name="cucumber.features" value="src/test/resources/features"/>-->
-<!--        <parameter name="cucumber.filter.tags" value="@base"/>-->
-<!--        <classes>-->
-<!--            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>-->
-<!--        </classes>-->
-<!--    </test>-->
-
-
-
-    <test name="base">
-
+    <test name="test">
         <parameter name="test.group" value="orders"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
@@ -98,6 +85,9 @@
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
     </test>
+
+
+
 
 
 </suite>
