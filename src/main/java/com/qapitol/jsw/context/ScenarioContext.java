@@ -32,5 +32,8 @@ public class ScenarioContext
     public String brandName;
     public String subGradeName;
     public String CompanyName;
+    public String secondaryUserFullName;
+    public String secondaryUserMobileNo;
+    public String secondaryUserEmail;
 
 }

@@ -29,6 +29,8 @@ public class HomepageBlogSteps extends AbstractWebPage {
     private static final String REQ_QTY = "(//div[contains(text(),'Requirements ID')])[1]/../../following-sibling::div//div[contains(text(),'items')]";
     private static final String ITEM_COLLAPSE = "(//div[@class=\"d-none d-md-inline collapse-icon\"])[1]";
     private static final String PRODUCTS = "//div[text()='Product']/../../following-sibling::div//div[text()='Quantity:']/following-sibling::div";
+    private static final String USER_PERMISSION = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/my-profile?tab=users-permissions\"]";
+    private static final String USER_PERMISSION_TEXT = "//h2[text()='Users & permissions']";
 
 
 
@@ -170,6 +172,27 @@ public class HomepageBlogSteps extends AbstractWebPage {
         waits(By.xpath(MY_REQ));
         clickButton(By.xpath(MY_REQ));
     }
+
+    @Then("User select  User and Permission tab under My Account")
+    public void userSelectUserAndPermissionTabUnderMyAccount() {
+        log.info("User select the User Permission tab under My Account Drop Down");
+        waits(By.xpath(USER_PERMISSION));
+        clickButton(By.xpath(USER_PERMISSION));
+    }
+
+    @Then("User verifies  User and Permission page")
+    public void userVerifiesUserPermission() {
+        log.info("User verifies user permission page");
+        waits(By.xpath(USER_PERMISSION_TEXT));
+        softAssert.assertTrue(isDisplayed(By.xpath(USER_PERMISSION_TEXT)),"User has not landed in user permission page");
+
+    }
+
+
+
+
+
+
 
     @Then("User verifies the My Requirement page")
     public void userMyRequrimentPage() {

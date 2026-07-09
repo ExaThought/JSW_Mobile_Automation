@@ -59,7 +59,8 @@ public  class SessionSteps extends AbstractWebPage {
     public static final String PAYMENT_REMINDER_POPUP = "//h2[text()='Payment reminder']/../preceding-sibling::button";
     public static final String MASTER_CLASS_MSME_LINKS = "//h2[text()='MSME Masterclass']/../following-sibling::div//button";
     public static final String FORM_OUR_CUSTOMER = "//h2[text()='From our customers']/../following-sibling::div//button[@aria-label=\"Play video\"]/div";
-
+    public static final String USER_DATA_POPUP = "//button[text()='Yes, details are correct']";
+    public static final String CONTINUE_BTN = "//button[text()='Continue browsing']";
 
     public static String userEmail;
     public static String userPassword;
@@ -180,21 +181,33 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);
         log.info("successfully clicked on Login button");
-        sleep(100);
-        if(isDisplayed(By.xpath(CLOE_POPUP)))
-        {
-            clickButton(By.xpath(CLOE_POPUP));
-        }
 //        sleep(100);
-//        if(isPopDisplayed(By.xpath(MANAGE_POPUP_CLOSE)))
+//        if(isDisplayed(By.xpath(CLOE_POPUP)))
+//        {
+//            clickButton(By.xpath(CLOE_POPUP));
+//        }
+//        sleep(100);
+//        if(isDisplayed(By.xpath(MANAGE_POPUP_CLOSE)))
 //        {
 //            clickButton(By.xpath(MANAGE_POPUP_CLOSE));
 //        }
-
-        if(isDisplayed(By.xpath(PAYMENT_REMINDER_POPUP)))
+        sleep(1000);
+        if(isDisplayed(By.xpath(USER_DATA_POPUP)))
         {
-            clickButton(By.xpath(PAYMENT_REMINDER_POPUP));
+
+            sleep(500);
+            if(isDisplayed(By.xpath(USER_DATA_POPUP)))
+            {
+                clickButton(By.xpath(USER_DATA_POPUP));
+            }
+            waits(By.xpath(CONTINUE_BTN));
+            clickButton(By.xpath(CONTINUE_BTN));
         }
+        //
+//        if(isDisplayed(By.xpath(PAYMENT_REMINDER_POPUP)))
+//        {
+//            clickButton(By.xpath(PAYMENT_REMINDER_POPUP));
+//        }
     }
 
     @And("open Login page to enter email and password")

@@ -16,6 +16,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 import static com.qapitol.sauron.core.actions.ActionListener.logger;
@@ -200,4 +201,58 @@ public class ApiUtils extends BaseApiImpl
         return true;
 
     }
+
+    public static String generateNotRegisteredMobileNumber() {
+
+        String mobile;
+
+        do {
+            mobile = generateMobileNumber(); // Generates a 10-digit number starting with 6-9
+        } while (isMobileAlreadyRegistered(mobile));
+
+        return mobile;
+    }
+    public static String generateMobileNumber() {
+
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        StringBuilder mobile = new StringBuilder();
+        mobile.append(random.nextInt(6, 10)); // 6-9
+
+        for (int i = 0; i < 9; i++) {
+            mobile.append(random.nextInt(10));
+        }
+
+        return mobile.toString();
+    }
+
+    public static boolean isMobileAlreadyRegistered(String mobileNumber) {
+        if (jwtToken == null) {
+            jwtToken = Token.getCCPToken();
+        }
+        Response response=null;
+        try {
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("fullName", "Automation User");
+            requestBody.put("phoneNumber", mobileNumber);
+            requestBody.put("email", "automation" + System.currentTimeMillis() + "@yopmail.com");
+            requestBody.put("gstin", "07AAACB1534F4Z5");
+
+             response = RestAssured
+                    .given()
+                    .contentType(ContentType.JSON)
+                    .header("access_token", jwtToken)
+                    .body(requestBody)
+                    .post("/customer/validate/registration-details").then().statusCode(200).extract().response();
+
+            response.then().statusCode(200);
+
+
+        } catch (Exception e) {
+
+        }
+        return !response.jsonPath().getBoolean("success");
+    }
+
 }

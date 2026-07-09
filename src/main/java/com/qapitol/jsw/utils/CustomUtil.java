@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -44,8 +45,13 @@ public class CustomUtil {
     }
 
     public static void waits(By locator) {
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), java.time.Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.elementToBeClickable(locator));
+        try {
+            WebDriverWait wait = new WebDriverWait(Grid.driver(), java.time.Duration.ofSeconds(10));
+            wait.until(ExpectedConditions.elementToBeClickable(locator));
+        }catch (Exception e)
+        {
+
+        }
     }
 
     public static boolean waitUntilEnabled(By locator) {
@@ -400,6 +406,19 @@ public class CustomUtil {
 
     public static String getText(Object target) {
         return resolveElement(target).getText().trim();
+    }
+
+
+    public static String generateFirstName() {
+        String randomString = UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .replaceAll("[0-9]", "");
+
+        return "Autogen" + randomString.substring(0, 6);
+    }
+    public static String generateEmail() {
+        return "autogen" + System.currentTimeMillis() + "@yopmail.com";
     }
 
 }
