@@ -26,26 +26,68 @@ public class ForgetPasswordSteps  extends AbstractWebPage {
 
 
     @And("enter invalid email id {string}")
-    public void enterInvalidEmailId(String arg0) {
+    public void enterInvalidEmailId(String email) {
+        try {
+            log.info("Entering invalid email address.");
+
             waitAndCheckIsElementVisible(LOGIN_EMAIL);
-            waitAndSetText(LOGIN_EMAIL, arg0); // Give you Email
+
+
+            waitAndSetText(LOGIN_EMAIL, email);
+
+            log.info("Successfully entered invalid email address.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while entering invalid email address: " + e.getMessage());
+            softAssert.fail("Failed to enter invalid email address: " + e.getMessage());
+        }
     }
 
     @And("user click on the continue button")
     public void userClickOnTheContinueButton() {
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);// Login
+        try {
+            log.info("Clicking on Continue/Login button.");
+
+            waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+
+            waitAndClickOn(CCP_LOGIN_CTA);
+
+            log.info("Successfully clicked on Continue/Login button.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Continue/Login button: " + e.getMessage());
+            softAssert.fail("Failed to click Continue/Login button: " + e.getMessage());
+        }
     }
 
 
 
-    @Then("user should not able to  proceed to login with  proper error message")
+    @Then("user should not able to proceed to login with proper error message")
     public void userShouldNotAbleToProceedToLoginWithProperErrorMessage() {
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndCheckIsElementVisible(CCP_INVALID_EMAIL_ERROR_MESSAGE);
-        String FrontEndErrorMessage=waitAndGetText(CCP_INVALID_EMAIL_ERROR_MESSAGE);
-        softAssert.assertEquals(FrontEndErrorMessage,"You have entered a wrong email address");
+        try {
+            log.info("Verifying invalid email error message during login.");
 
+            waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+            waitAndCheckIsElementVisible(CCP_INVALID_EMAIL_ERROR_MESSAGE);
+
+            String actualErrorMessage = waitAndGetText(CCP_INVALID_EMAIL_ERROR_MESSAGE);
+            String expectedErrorMessage = "You have entered a wrong email address";
+
+            log.info("Actual invalid email error message: " + actualErrorMessage);
+
+            softAssert.assertEquals(
+                    actualErrorMessage,
+                    expectedErrorMessage,
+                    "Invalid email error message mismatch. Expected: "
+                            + expectedErrorMessage + " but found: " + actualErrorMessage
+            );
+
+            log.info("Invalid email error message verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying invalid email error message: " + e.getMessage());
+            softAssert.fail("Failed to verify invalid email error message: " + e.getMessage());
+        }
     }
 
     @Then("continue button should be disabled for user")
@@ -86,40 +128,82 @@ public class ForgetPasswordSteps  extends AbstractWebPage {
     }
 
     @And("User enter valid email {string}")
-    public void userEnterValidEmail(String arg0) {
-        waitAndCheckIsElementVisible(LOGIN_EMAIL);
-        waitAndSetText(LOGIN_EMAIL, arg0); // Give you Email
+    public void userEnterValidEmail(String email) {
+        try {
+            log.info("Entering valid email address.");
 
+            waitAndCheckIsElementVisible(LOGIN_EMAIL);
+
+
+            waitAndSetText(LOGIN_EMAIL, email);
+
+            log.info("Successfully entered the email address.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while entering the email address: " + e.getMessage());
+            softAssert.fail("Failed to enter the email address: " + e.getMessage());
+        }
     }
     @And("user click on forget password link")
     public void userClickOnForgetPasswordLink() {
-        waitAndCheckIsElementVisible(FORGOT_PASSWORD_LINK);
-        waitAndClickOn(FORGOT_PASSWORD_LINK);
+        try {
+            log.info("Clicking on Forgot Password link.");
+
+            waitAndCheckIsElementVisible(FORGOT_PASSWORD_LINK);
+
+            waitAndClickOn(FORGOT_PASSWORD_LINK);
+
+            log.info("Successfully clicked on Forgot Password link.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Forgot Password link: " + e.getMessage());
+            softAssert.fail("Failed to click Forgot Password link: " + e.getMessage());
+        }
     }
 
     @And("user click on submit button")
     public void userClickOnSubmitButton() {
-        // Wait until Submit button is visible
-        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
+        try {
+            log.info("Clicking on Submit button.");
 
-        // Click on Submit button
-        waitAndClickOn(LOGIN_VIA_OTP);
+            waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
+
+
+            waitAndClickOn(LOGIN_VIA_OTP);
+
+            log.info("Successfully clicked on Submit button.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while clicking Submit button: " + e.getMessage());
+            softAssert.fail("Failed to click Submit button: " + e.getMessage());
+        }
     }
 
     @Then("user should see forget password link sent message")
     public void userShouldSeeForgetPasswordLinkSentMessage() {
-        // Wait until success message is visible
-        waitAndCheckIsElementVisible(FORGOT_PASSWORD_SUCCESS_MSG);
+        try {
+            log.info("Verifying Forgot Password success message.");
 
-        // Get the text from the message element
-        String actualMessage = waitAndGetText(FORGOT_PASSWORD_SUCCESS_MSG);
+            waitAndCheckIsElementVisible(FORGOT_PASSWORD_SUCCESS_MSG);
 
-        // Validate the message
-        softAssert.assertEquals(
-                actualMessage,
-                "Password reset link has been sent to your registered email address",
-                "Forget password success message is not displayed correctly!"
-        );
+            String actualMessage = waitAndGetText(FORGOT_PASSWORD_SUCCESS_MSG);
+            String expectedMessage = "Password reset link has been sent to your registered email address";
+
+            log.info("Actual success message: " + actualMessage);
+
+            softAssert.assertEquals(
+                    actualMessage,
+                    expectedMessage,
+                    "Forgot Password success message mismatch. Expected: " + expectedMessage
+                            + " but found: " + actualMessage
+            );
+
+            log.info("Forgot Password success message verified successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Forgot Password success message: " + e.getMessage());
+            softAssert.fail("Failed to verify Forgot Password success message: " + e.getMessage());
+        }
     }
 }
 

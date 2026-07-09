@@ -9,28 +9,61 @@ import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import static com.qapitol.jsw.stepdefinition.SessionSteps.MANAGE_POPUP_CLOSE;
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class HomepageBlogSteps extends AbstractWebPage {
     private static final String BLOG_SECTION_TITLE = "blogSectionTitle";
-    private static final String BLOG_TITLE = "blogTitle";
+    private static final String BLOG_TITLE = "//h1[text()='Blogs']";
     private static final String FIRST_BLOG_READ_MORE_BUTTON = "firstBlogReadMoreButton";
-    private static final String BLOG_POSTED_ON_TEXT = "blogPostedOnText";
+    private static final String BLOG_POSTED_ON_TEXT = "(//h1[text()='Blogs']/following-sibling::div//h3)[1]";
     private static final String BLOG_YOUTUBE_ICON = "blogYoutubeIcon";
+    private static final String MY_ORDER = "//a[@href=\"/my-orders\"]";
+    private static final String LEDGER_TAB = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/ledger\"]";
+    private static final String TRACKING_MAT = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/track-material\"]";
+    private static final String FINANCE_DOC = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/financial-documents\"]";
+    private static final String MY_REQ = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/my-requirements\"]";
+    private static final String REQ_ID = "(//div[contains(text(),'Requirements ID')])[1]/following-sibling::div";
+    private static final String REQ_DATE = "(//div[contains(text(),'Requirements ID')])[1]/../../following-sibling::div//div[contains(text(),'Requirement submission date: 01')]";
+    private static final String REQ_QTY = "(//div[contains(text(),'Requirements ID')])[1]/../../following-sibling::div//div[contains(text(),'items')]";
+    private static final String ITEM_COLLAPSE = "(//div[@class=\"d-none d-md-inline collapse-icon\"])[1]";
+    private static final String PRODUCTS = "//div[text()='Product']/../../following-sibling::div//div[text()='Quantity:']/following-sibling::div";
+    private static final String USER_PERMISSION = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/my-profile?tab=users-permissions\"]";
+    private static final String USER_PERMISSION_TEXT = "//h2[text()='Users & permissions']";
+
 
 
     @Then("user should see Blogs section title in homepage")
     public void userShouldSeeBlogsSectionTitleInHomepage() {
-        sleep(2000);
-        WebElement locater= Grid.driver().findElement(CategoryPages.BLOG_SECTION);
-        CustomUtil.scrollingToViewAndClickUsingJS(locater);
-        sleep(2000);
-        waitAndCheckIsElementVisible(BLOG_SECTION_TITLE);
+        try {
+            log.info("Navigating to Blogs section from homepage.");
 
-        softAssert.assertTrue(
-                isElementPresent(BLOG_SECTION_TITLE),
-                "Blogs section title is not displayed on homepage"
-        );
+            waits(CategoryPages.BLOG_SECTION);
+
+            WebElement blogSection = Grid.driver().findElement(CategoryPages.BLOG_SECTION);
+            clickButton(blogSection);
+
+            log.info("Clicked on Blogs section.");
+
+            if (isDisplayed(By.xpath(MANAGE_POPUP_CLOSE))) {
+                log.info("Manage popup is displayed. Closing it.");
+                clickButton(By.xpath(MANAGE_POPUP_CLOSE));
+            }
+
+            waits(By.xpath(BLOG_TITLE));
+
+            softAssert.assertTrue(
+                    isDisplayed(By.xpath(BLOG_TITLE)),
+                    "Blogs section title is not displayed on homepage."
+            );
+
+            log.info("Blogs section title is displayed successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Blogs section title: " + e.getMessage());
+            softAssert.fail("Exception while verifying Blogs section title: " + e.getMessage());
+        }
     }
 
     @Then("user navigate to blog")
@@ -39,18 +72,32 @@ public class HomepageBlogSteps extends AbstractWebPage {
         WebElement locator = Grid.driver().findElement(CategoryPages.BLOG_SECTION);
         CustomUtil.scrollingToViewAndClickUsingJS(locator);
         sleep(2000);
-        waitAndCheckIsElementClickable(FIRST_BLOG_READ_MORE_BUTTON);
-        waitAndClickOn(BLOG_TITLE);
+        clickButton(CategoryPages.BLOG_SECTION);
+//        waitAndCheckIsElementClickable(FIRST_BLOG_READ_MORE_BUTTON);
+//        waitAndClickOn(BLOG_TITLE);
     }
 
 
     @And("user should see the vlogs page title")
     public void userShouldSeeTheVlogsPageTitle() {
-        waitAndCheckIsElementVisible(BLOG_POSTED_ON_TEXT);
-        softAssert.assertTrue(
-                isElementPresent(BLOG_POSTED_ON_TEXT),
-                "'Posted on' text is not displayed on blog page"
-        );
+        try {
+            log.info("Verifying Vlogs page title is displayed.");
+
+            waits(By.xpath(BLOG_POSTED_ON_TEXT));
+
+            boolean isDisplayed = isDisplayed(By.xpath(BLOG_POSTED_ON_TEXT));
+
+            softAssert.assertTrue(
+                    isDisplayed,
+                    "Vlogs page title is not displayed on blog page."
+            );
+
+            log.info("Vlogs page title is displayed successfully.");
+
+        } catch (Exception e) {
+            log.info("Exception occurred while verifying Vlogs page title: " + e.getMessage());
+            softAssert.fail("Exception while verifying Vlogs page title: " + e.getMessage());
+        }
     }
     @And("user should see youtube video icon")
     public void userShouldSeeYoutubeVideoIcon() {
@@ -90,4 +137,76 @@ public class HomepageBlogSteps extends AbstractWebPage {
                 "User is not redirected to YouTube page"
         );
     }
+
+    @Then("User select MyOrder tab under My Account")
+    public void userSelectMyOrderTabUnderMyAccount() {
+        log.info("User select the My Order tab under My Account Drop Down");
+        waits(By.xpath(MY_ORDER));
+        clickButton(By.xpath(MY_ORDER));
+    }
+
+    @Then("User select Ledger tab under My Account")
+    public void userSelectLedgerTabUnderMyAccount() {
+        log.info("User select the Ledger under My Account Drop Down");
+        waits(By.xpath(LEDGER_TAB));
+        clickButton(By.xpath(LEDGER_TAB));
+    }
+
+    @Then("User select Tracking Material tab under My Account")
+    public void userSelectTrackingMatrerialTabUnderMyAccount() {
+        log.info("User select the tracking material tab under My Account Drop Down");
+        waits(By.xpath(TRACKING_MAT));
+        clickButton(By.xpath(TRACKING_MAT));
+    }
+
+    @Then("User select  Financial Documents tab under My Account")
+    public void userSelectFinancialDocumentTabUnderMyAccount() {
+        log.info("User select the financial tab under My Account Drop Down");
+        waits(By.xpath(FINANCE_DOC));
+        clickButton(By.xpath(FINANCE_DOC));
+    }
+
+    @Then("User select  My Requirement tab under My Account")
+    public void userSelectMyRequirementTabUnderMyAccount() {
+        log.info("User select the My Requirement tab under My Account Drop Down");
+        waits(By.xpath(MY_REQ));
+        clickButton(By.xpath(MY_REQ));
+    }
+
+    @Then("User select  User and Permission tab under My Account")
+    public void userSelectUserAndPermissionTabUnderMyAccount() {
+        log.info("User select the User Permission tab under My Account Drop Down");
+        waits(By.xpath(USER_PERMISSION));
+        clickButton(By.xpath(USER_PERMISSION));
+    }
+
+    @Then("User verifies  User and Permission page")
+    public void userVerifiesUserPermission() {
+        log.info("User verifies user permission page");
+        waits(By.xpath(USER_PERMISSION_TEXT));
+        softAssert.assertTrue(isDisplayed(By.xpath(USER_PERMISSION_TEXT)),"User has not landed in user permission page");
+
+    }
+
+
+
+
+
+
+
+    @Then("User verifies the My Requirement page")
+    public void userMyRequrimentPage() {
+        log.info("User select the My Requirement Page");
+        waits(By.xpath(REQ_ID));
+        softAssert.assertTrue(isDisplayed(By.xpath(REQ_ID)));
+        waits(By.xpath(REQ_DATE));
+        softAssert.assertTrue(isDisplayed(By.xpath(REQ_DATE)));
+        waits(By.xpath(REQ_QTY));
+        softAssert.assertTrue(isDisplayed(By.xpath(REQ_QTY)));
+
+    }
+
+
+
+
 }

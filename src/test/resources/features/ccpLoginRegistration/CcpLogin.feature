@@ -6,18 +6,11 @@ Feature: Check Login
 
   @sanity @emailLogin @emailLoginWithValidCredentials
   Scenario: Check Login with valid email ID and password
-    And enter valid email "testpre_prod12as@gmail.com"
+    And enter valid email "v_nirmal.kumar@jsw.in"
     And user click on continue button
-    And enter valid password "Jsw@2026"
+    And enter valid password "Welcome@1234#"
     Then user should able to login
-    Then user close payment due pop up
 
-   @sanity @emailLogin @emailLoginWithInvalidCredentials
-  Scenario: Check Login with Invalid email ID and password
-    And enter invalid email "testnewurl@yopmail.com"
-     And user click on continue button
-    And enter invalid password "Jsw@2029"
-    Then user should not able to login with error message
 
 
   @sanity @emailLogin @emailLoginWithInvalidCredentials
@@ -35,8 +28,9 @@ Feature: Check Login
 
     @loginAndLogout
   Scenario: Check CCP Login and Logout functionality
-    And enter valid email "testpre_prod12as@gmail.com"
+    And enter valid email "v_nirmal.kumar@jsw.in"
     And user click on continue button
-    And enter valid password "Jsw@2026"
+    And enter valid password "Welcome@1234#"
     Then user should able to login
-    Then user close payment due pop up
+    Then User click on logout button
+

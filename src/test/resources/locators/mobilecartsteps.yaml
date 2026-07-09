@@ -142,7 +142,7 @@ elements:
       web: xpath=//div[contains(text(),"Thickness (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
   editLength:
     en_US:
-      web: xpath=//div[contains(text(),"Length (mm)")]/following-sibling::div[2]/child::div/child::div[{0}]
+      web: xpath=//div[contains(text(),'Length (mm)')]/following-sibling::div[2]/child::div/child::div[{0}]
   pdpProductName:
     en_US:
       web: xpath=//h1[contains(@class,'text-palette-supporting-gray-title')]

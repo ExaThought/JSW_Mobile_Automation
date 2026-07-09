@@ -5,15 +5,14 @@ elements:
 
   ccpUserMenuProfileOption:
     en_US:
-      web: //a[contains(@class,'user-dropdown-item') and normalize-space()='Profile']
+      web: //a[@href="/my-profile"]
 
   ccpProfileAddressesTab:
     en_US:
-      web: //a[@role='tab' and normalize-space()='Addresses']
-
+      web: //button[text()='Addresses']
   ccpProfileAddressesTabActive:
     en_US:
-      web: //a[@role='tab' and contains(@class,'active') and normalize-space()='Addresses']
+      web: //h2[text()='Bill to']/following-sibling::div[2]//h3
 
   ccpAddAddressButton:
     en_US:
@@ -25,51 +24,52 @@ elements:
 
   ccpAddressLine1Input:
     en_US:
-      web: //span[contains(normalize-space(),'Address line 1')]
-        /ancestor::div[contains(@class,'field-wrapper')]//input
+      web: //input[@id="streetLine1"]
 
   ccpAddressPinCodeInput:
     en_US:
-      web: //span[contains(normalize-space(),'Pin code')]
-        /ancestor::div[contains(@class,'field-wrapper')]//input
+      web: //input[@id="postalCode"]
 
   ccpAddressCityInput:
     en_US:
-      web: //span[contains(normalize-space(),'City')]
-        /ancestor::div[contains(@class,'field-wrapper')]//input
+      web: //input[@id="city"]
+  ccpAddressStateInput:
+    en_US:
+      web: //input[@id="state"]
+
+  ccpAddressRegionInput:
+    en_Us:
+      web: //input[@id="region"]
 
   ccpAddressSaveChangesButton:
     en_US:
-      web: (//button[@id='save-change' and normalize-space()='Save changes'])[2]
+      web: //button[text()='Save changes']
 
   ccpSavedAddressCompanyNameDynamic:
     en_US:
-      web: //div[contains(@class,'display-company-name')
-        and normalize-space()='${companyName}']
+      web: //div[@data-slot="card-content"]//h3
 
   ccpEditButtonForSavedAddress:
     en_US:
-      web: //div[contains(@class,'display-company-name')
-        and normalize-space()='${companyName}']
-        /ancestor::div[contains(@class,'address-list-item')]
-        //div[normalize-space()='Edit']
+      web:  //h3[normalize-space()='${companyName}']/../../following-sibling::div[2]//button
+
+
 
   # ================= DELETE ADDRESS =================
 
   ccpDeleteButtonForSavedAddress:
     en_US:
-      web: //div[contains(@class,'display-company-name')and normalize-space()='${companyName}']/ancestor::div[contains(@class,'address')]//img[contains(@class,'delete-icon')]
+      web: //h3[normalize-space()='${companyName}']/../following-sibling::button
 
   # ================= DELETE CONFIRM MODAL =================
 
   ccpDeleteAddressProceedButton:
     en_US:
-      web: //button[normalize-space()='Proceed' and contains(@class,'primary-outline-btn')]
+      web: //button[text()='Proceed']
 
   ccpDeleteAddressCancelButton:
     en_US:
-      web: //button[normalize-space()='Cancel'
-        and contains(@class,'primary-btn')]
+      web: //button[text()='Cancel']
 
   # ================= ERROR MESSAGE =================
 
@@ -82,4 +82,4 @@ elements:
       web: xpath=//input[@id='pincode']/parent::div/following-sibling::div/child::div
   setAsDefaultShippingAddressCheck:
     en_US:
-      web: xpath=//div[contains(text(),'Default')]/parent::div/parent::div/following-sibling::div
+      web: xpath=//label[text()='Use this as my ship to address']

@@ -4,7 +4,7 @@ Feature: Check invoice document and shipment page details
   Background:
     Given Go to session "ccp"
     And ccp login with "v_nirmal.kumar@jsw.in" and "Welcome@1234#"
-    And user close payment due pop up
+
 
 
   Scenario: Validation for invoice  documents for  deliverd  order

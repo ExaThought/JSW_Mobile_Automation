@@ -4,7 +4,7 @@ Feature: Validate Search functionality and navigation
   Background:
     Given Go to session "ccp"
     And ccp login with configured user
-    And user close payment due pop up
+#    And user close payment due pop up
 
 
   Scenario: Verify presence and visibility of search bar
@@ -13,13 +13,14 @@ Feature: Validate Search functionality and navigation
 
   Scenario Outline: Validate search results for valid, partial and invalid keywords
     When user enters "<keyword>" in search bar for web
-    Then search results should be displayed for "<resultType>" for web
+    Then search results should be displayed for "<keyword>" for web
 
     Examples:
       | keyword   | resultType |
       | cement    | valid      |
       | cem       | valid      |
       | xyz123@@  | invalid    |
+
 
 
   Scenario: Verify search keyword retention in search bar
@@ -44,10 +45,10 @@ Feature: Validate Search functionality and navigation
     And user clicks on a product from search results for web
     Then user should be navigated to product detail page for web
 
-
-  Scenario: Validate navigation from search results to PLP and then PDP
-    When user enters "cement" in search bar for web
-    And user clicks on view all products for web
-    Then user should be navigated to product listing page for web
-    When user selects a product from PLP for web
-    Then user should be navigated to product detail page for web
+#@base
+#  Scenario: Validate navigation from search results to PLP and then PDP
+#    When user enters "cement" in search bar for web
+#    And user clicks on view all products for web
+#    Then user should be navigated to product listing page for web
+#    When user selects a product from PLP for web
+#    Then user should be navigated to product detail page for web

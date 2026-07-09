@@ -60,7 +60,7 @@ elements:
 
   ccpHomePageBuyAgainLink:
     en_US:
-      web: //a[normalize-space()='Buy again']
+      web: (//span[contains(text(),'Buy Again')])[2]
 
 
 
@@ -79,13 +79,13 @@ elements:
 
   ccpHomePageLedgerButton:
     en_US:
-      web: //div[normalize-space()='Ledger']/ancestor::div[contains(@class,'show-widget-boxes')]
+      web: //h1[text()='Ledger']
 
 
 
   ccpLedgerPageTitle:
     en_US:
-      web: //div[normalize-space()='Usable ledger balance']
+      web: //h1[text()='Ledger']
 
   # ================= MATERIAL TRACKING =================
 
@@ -110,5 +110,5 @@ elements:
 
   ccpBuyAgainAddToCartCount:
     en_US:
-      web: //btn[contains(normalize-space(),'Add to cart') and contains(text(),'(')]
+      web: //p[contains(normalize-space(),'item(s)')]
 

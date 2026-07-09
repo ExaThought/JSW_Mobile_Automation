@@ -21,7 +21,7 @@ elements:
   # Suggestion rows inside the search popup overlay
   searchSuggestions:
     en_US:
-      web: //div[contains(@class,'search-popup-overlay')]//a[contains(@class,'suggestion-row')]
+      web: //input[@data-slot="input"]/../../../../../following-sibling::div//a
 
   # Inner elements of a suggestion row (relative xpaths used inside a card)
   searchResultName:
