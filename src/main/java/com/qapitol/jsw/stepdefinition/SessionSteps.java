@@ -192,16 +192,21 @@ public  class SessionSteps extends AbstractWebPage {
 //            clickButton(By.xpath(MANAGE_POPUP_CLOSE));
 //        }
         sleep(1000);
-        if(isDisplayed(By.xpath(USER_DATA_POPUP)))
-        {
+        try {
+            if (isDisplayed(By.xpath(USER_DATA_POPUP))) {
 
-            sleep(500);
-            if(isDisplayed(By.xpath(USER_DATA_POPUP)))
-            {
-                clickButton(By.xpath(USER_DATA_POPUP));
+                sleep(500);
+                if (isDisplayed(By.xpath(USER_DATA_POPUP))) {
+                    clickButton(By.xpath(USER_DATA_POPUP));
+
+                }
+                waits(By.xpath(CONTINUE_BTN));
+                clickButton(By.xpath(CONTINUE_BTN));
+                pageRefresh();
             }
-            waits(By.xpath(CONTINUE_BTN));
-            clickButton(By.xpath(CONTINUE_BTN));
+        }catch (Exception e)
+        {
+            pageRefresh();
         }
         //
 //        if(isDisplayed(By.xpath(PAYMENT_REMINDER_POPUP)))

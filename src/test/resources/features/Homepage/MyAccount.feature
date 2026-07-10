@@ -1,5 +1,5 @@
 
-@base
+
 Feature: Validate All Tabs under My Account Drop Down
 
   Background:
@@ -61,7 +61,7 @@ Feature: Validate All Tabs under My Account Drop Down
     Then User select  User and Permission tab under My Account
     Then User verifies  User and Permission page
 
-
+  @base
   Scenario: Validate Secondary user creation under Finance & Accounting Manager department
     And ccp login with "kang@yopmail.com" and "Jsw@2027"
     And user clicks on Account Drop Down
@@ -71,7 +71,7 @@ Feature: Validate All Tabs under My Account Drop Down
     And User Adds secondary user under Finance & Accounting Manager
     And User deletes the secondary user
 
-
+  @base
   Scenario: Validate Secondary user creation under Order & materials management department
     And ccp login with "kang@yopmail.com" and "Jsw@2027"
     And user clicks on Account Drop Down
@@ -80,7 +80,7 @@ Feature: Validate All Tabs under My Account Drop Down
     And User clicks the Add User button
     And User Adds secondary user under Order & materials management department
     And User deletes the secondary user
-
+  @base
   Scenario: Validate Secondary user creation with existing mobile number
     And ccp login with "kang@yopmail.com" and "Jsw@2027"
     And user clicks on Account Drop Down
@@ -90,7 +90,7 @@ Feature: Validate All Tabs under My Account Drop Down
     And User Adds secondary user under Order & materials management department with existing mobile number "9875876455"
 
 
-
+  @base
   Scenario: Validate add departments of Secondary user
     And ccp login with "kang@yopmail.com" and "Jsw@2027"
     And user clicks on Account Drop Down
@@ -101,7 +101,7 @@ Feature: Validate All Tabs under My Account Drop Down
     And User add Operations Manager
     And User verifies Operations Manager departments
 
-
+  @base
   Scenario: Validate add Permission of Secondary user
     And ccp login with "kang@yopmail.com" and "Jsw@2027"
     And user clicks on Account Drop Down
@@ -115,7 +115,7 @@ Feature: Validate All Tabs under My Account Drop Down
 
 
 
-
+  @base
   Scenario: Validate secondary user name updation
     And ccp login with "kang@yopmail.com" and "Jsw@2027"
     And user clicks on Account Drop Down

@@ -15,4 +15,4 @@ profiles/
 runtime_data.json
 .jenkins.env
 .jenkins.env.*
-.jenkins.envTAB
+.jenkins.envTABallure-report/
