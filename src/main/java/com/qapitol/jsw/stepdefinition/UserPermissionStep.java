@@ -9,9 +9,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.qapitol.jsw.utils.ApiUtils.generateNotRegisteredMobileNumber;
+import static com.qapitol.jsw.utils.ApiUtils.*;
 import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
@@ -86,9 +87,16 @@ public class UserPermissionStep extends AbstractWebPage
         clickButton(By.xpath(DEPARTMENT_DROP_DOWN));
         clickButton(By.xpath(FINANCE_ACCOUNTING_TOGGLE));
         clickButton(By.xpath(ADD_USER_POPUP_BTN));
+        sleep(2000);
         log.info("User clicks add user button");
         sleep(700);
         softAssert.assertTrue(isDisplayed(By.xpath(String.format(STATUS,context.secondaryUserFullName))),"Status not displayed");
+        Map<String, String> sfIds = fetchUserByMobile(context.secondaryUserMobileNo);
+        String contactSfid = sfIds.get("contactSfid");
+        String customerSfId = sfIds.get("customerSfId");
+        boolean result=verifyContactSfid(customerSfId, contactSfid);
+        log.info("verifies the secondary user creation in SF");
+        softAssert.assertTrue(result,"secondary user creation has not happened in SF");
 
     }
 
@@ -119,6 +127,12 @@ public class UserPermissionStep extends AbstractWebPage
         clickButton(By.xpath(ORDER_MANAGEMENT));
         clickButton(By.xpath(ADD_USER_POPUP_BTN));
         log.info("User clicks add user button");
+        sleep(2000);
+        Map<String, String> sfIds = fetchUserByMobile(context.secondaryUserMobileNo);
+        String contactSfid = sfIds.get("contactSfid");
+        String customerSfId = sfIds.get("customerSfId");
+        boolean result=verifyContactSfid(customerSfId, contactSfid);
+        log.info("verifies the secondary user creation in SF");
         sleep(700);
         softAssert.assertTrue(isDisplayed(By.xpath(String.format(STATUS,context.secondaryUserFullName))),"Status not displayed");
 
@@ -192,7 +206,7 @@ public class UserPermissionStep extends AbstractWebPage
         clickButton(By.xpath(DELETE_USER));
         waits(By.xpath(YES_DELETE_BTN));
         clickButton(By.xpath(YES_DELETE_BTN));
-        sleep(500);
+        sleep(1000);
         softAssert.assertFalse(isDisplayed(By.xpath(String.format(VIEW_EDIT_BUTTON,context.secondaryUserMobileNo))),"Secondary user not deleted "+context.secondaryUserMobileNo);
 
 
@@ -264,6 +278,8 @@ public class UserPermissionStep extends AbstractWebPage
         pageRefresh();
         sleep(500);
         softAssert.assertFalse(isDisplayed(By.xpath(String.format(VIEW_EDIT_BUTTON,context.secondaryUserMobileNo))),"Secondary user not deleted "+context.secondaryUserMobileNo);
+        softAssert.assertTrue(isSecondaryUserDeleted(context.secondaryUserMobileNo));
+        log.info("User completes the SF validation for mobile number "+context.secondaryUserMobileNo);
 
     }
 }

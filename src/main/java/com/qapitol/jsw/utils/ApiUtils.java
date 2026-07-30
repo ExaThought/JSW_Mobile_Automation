@@ -12,10 +12,7 @@ import io.restassured.response.Response;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
@@ -227,6 +224,7 @@ public class ApiUtils extends BaseApiImpl
     }
 
     public static boolean isMobileAlreadyRegistered(String mobileNumber) {
+        baseURI = ConfigUtil.getSecretValue("ccpPortalUrl");
         if (jwtToken == null) {
             jwtToken = Token.getCCPToken();
         }
@@ -253,6 +251,112 @@ public class ApiUtils extends BaseApiImpl
 
         }
         return !response.jsonPath().getBoolean("success");
+    }
+
+    public static Map<String, String> fetchUserByMobile(String mobileNumber) {
+
+
+        String jwtToken=null;
+        if (jwtToken == null) {
+            //secondary.user.email
+            System.out.println("The email is "+ConfigUtil.getSecretValue("secondary.user.email")+"  the password is"+ConfigUtil.getSecretValue("secondary.user.password"));
+            String pwd = Base64.getEncoder().encodeToString(ConfigUtil.getSecretValue("secondary.user.password").getBytes());
+            jwtToken = Token.getCCPToken(ConfigUtil.getSecretValue("secondary.user.email"),pwd);
+        }
+
+        Response response=null;
+        Map<String, String> sfIds = new HashMap<>();
+        try {
+            Thread.sleep(5000);
+             response = given()
+                    .header("authorization", jwtToken)
+                    .queryParam("includePermission", true)
+                    .queryParam("phoneNumber", mobileNumber)
+                    .when().log().all()
+                    .get(ConfigUtil.getSecretValue("middlewareUrl")+"xp-mi/public/v1/fetch-user")
+                    .then()
+                    .statusCode(200).log().all()
+                    .extract()
+                    .response();
+
+            String contactSfid = response.jsonPath().getString("data.user.contactSfid");
+            String customerSfId = response.jsonPath().getString("data.customerSfId");
+
+
+            sfIds.put("contactSfid", contactSfid);
+            sfIds.put("customerSfId", customerSfId);
+            System.out.println("-----"+sfIds);
+        }catch (Exception e)
+        {
+
+        }
+
+        return sfIds;
+    }
+
+    public static boolean verifyContactSfid(String customerSfId, String expectedContactSfid)
+    {
+        baseURI = ConfigUtil.getSecretValue("sfUrl");
+        if (jwtToken == null) {
+            jwtToken = Token.getCCPToken();
+        }
+        Response response=null;
+        boolean found=false;
+        try {
+            Thread.sleep(3000);
+             response = given()
+                    .header("x-api-key", "test")
+                    .header("Content-Type", "application/json")
+                    .when()
+                    .get("account-master/users/v1/" + customerSfId)
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .response();
+
+            List<Map<String, Object>> users = response.jsonPath().getList("data");
+            System.out.println("---"+users);
+             found = users.stream()
+                    .anyMatch(user -> expectedContactSfid.equals(user.get("contactSfId")));
+        }catch (Exception e)
+        {
+
+        }
+        return found;
+
+    }
+
+    public static boolean isSecondaryUserDeleted(String mobileNumber)
+    {
+
+
+        String jwtToken=null;
+        if (jwtToken == null) {
+            System.out.println("The email is "+ConfigUtil.getSecretValue("secondary.user.email")+"  the password is"+ConfigUtil.getSecretValue("secondary.user.password"));
+            String pwd = Base64.getEncoder().encodeToString(ConfigUtil.getSecretValue("secondary.user.password").getBytes());
+            jwtToken = Token.getCCPToken(ConfigUtil.getSecretValue("secondary.user.email"),pwd);
+        }
+
+        try {
+            Thread.sleep(3000);
+            Response response = RestAssured
+                    .given()
+                    .header("authorization", jwtToken)
+                    .queryParam("includePermission", true)
+                    .queryParam("phoneNumber", mobileNumber)
+                    .get(ConfigUtil.getSecretValue("middlewareUrl")+"xp-mi/public/v1/fetch-user").then().statusCode(200).extract().response();
+
+            if (response.statusCode() != 200) {
+                return false;
+            }
+
+            return response.jsonPath().get("data.departments") == null
+                    && response.jsonPath().get("data.permissions") == null;
+
+        } catch (Exception e) {
+            System.err.println("Failed to fetch user details: " + e.getMessage());
+            return false;
+        }
     }
 
 }
