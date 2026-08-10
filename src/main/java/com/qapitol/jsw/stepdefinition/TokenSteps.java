@@ -18,34 +18,42 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
-import static com.qapitol.jsw.utils.CustomUtil.scrollingToViewAndClickUsingJS;
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class TokenSteps extends AbstractWebPage {
 
-    private final String MILD_STEEL_TITLE = "mildSteelTitle";
-    private final String CART_PAGE="cartPage";
-    private final String MY_REQUIREMENT_PAGE="myRequirementPage";
-    private final String MY_ORDER_PAGE="myOrderPage";
-    private final String ORDER_SUMMARY_PAGE="orderSummaryPage";
-    private final String SEARCH_BOX="searchBox";
-    private final String SEARCH_INPUT="searchInput";
-    private final String HOME_PAGE_REGISTER_CTA="homePageRegisterCta";
-    private final String CONTINUE_WITH_EMAIL="continueWithEmailCta";
+    private static final String JSW_LOGO = "(//a[@href=\"/\"])[1]";
     private static final String LOGIN_VIA_OTP = "loginViaOtp";
     private static final String LOGIN_EMAIL = "ccpLoginEmail";
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
     private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
-    private static final String LEDGER_PAGE="ledgerPage";
-    private static final String TRACK_MATERIAL_PAGE="trackMaterialPage";
-
-
+    private static final String LEDGER_PAGE = "ledgerPage";
+    private static final String TRACK_MATERIAL_PAGE = "trackMaterialPage";
+    private final String MILD_STEEL_TITLE = "mildSteelTitle";
+    private final String CART_PAGE = "cartPage";
+    private final String MY_REQUIREMENT_PAGE = "myRequirementPage";
+    private final String MY_ORDER_PAGE = "myOrderPage";
+    private final String ORDER_SUMMARY_PAGE = "orderSummaryPage";
+    private final String SEARCH_BOX = "searchBox";
+    private final String SEARCH_INPUT = "searchInput";
+    private final String HOME_PAGE_REGISTER_CTA = "homePageRegisterCta";
+    private final String CONTINUE_WITH_EMAIL = "continueWithEmailCta";
+    private final String TMT_PRODUCT = "tmtProduct";
+    private final String LOGIN_CTA = "loginButton";
+    private final String ACCOUNT_LABEL = "accountLabel";
+    private final String USER_MENU_PROFILE_OPTION = "profileDetails";
+    private final String ACCOUNT_TAB = "(//span[text()='Account'])[2]";
+    private static final By ALL_CATEGORY = By.xpath("//span[contains(@class, 'hover') and contains(text(),'All categories')]");
+    private static final By MILD_STEEL_CATEGORY = By.xpath("//a[contains(@href, 'mild-steel')]");
+    private final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private String pageName;
     private String url;
+
     @When("user set expired token in local storage")
     public void user_set_expired_token_in_local_storage() {
         String expiredToken = Config.getConfigProperty("ccpExpiredToken");
-        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        JavascriptExecutor js = Grid.driver();
         // Inject expired/invalid token
         js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);
         js.executeScript(
@@ -56,7 +64,7 @@ public class TokenSteps extends AbstractWebPage {
 
     @An("user refresh the page")
     public void user_refresh_the_page() {
-        url= Grid.driver().getCurrentUrl();
+        url = Grid.driver().getCurrentUrl();
         Grid.driver().navigate().refresh();
         log.info("Page refreshed after setting expired token");
     }
@@ -64,8 +72,8 @@ public class TokenSteps extends AbstractWebPage {
     @Then("verify the user is navigate to Guest home page")
     public void verify_the_user_is_navigate_to_guest_home_page() {
 
-        softAssert.assertTrue(waitAndGetText(MILD_STEEL_TITLE).toLowerCase().contains("mild steel"), "User is not logged out or did not navigate to login page for token expiry from "+pageName);
-        softAssert.assertTrue(waitAndCheckIsElementVisible(HOME_PAGE_REGISTER_CTA),"User is not logged out or did not navigate to login page for token expiry from "+pageName);
+        softAssert.assertTrue(waitAndGetText(MILD_STEEL_TITLE).toLowerCase().contains("mild steel"), "User is not logged out or did not navigate to login page for token expiry from " + pageName);
+        softAssert.assertTrue(waitAndCheckIsElementVisible(HOME_PAGE_REGISTER_CTA), "User is not logged out or did not navigate to login page for token expiry from " + pageName);
         log.info("User navigate to Guest user home Page after token expiry  and product are visible");
 
         WebElement loginPageElement = Grid.driver().findElement(By.xpath("//button[@id='login-cta']"));
@@ -77,20 +85,20 @@ public class TokenSteps extends AbstractWebPage {
             if (currentUrl.contains("/login")) {
                 log.info("User successfully navigated to login page after token expiry");
             } else {
-                throw new AssertionError("User did not navigate to login page after token expiry, current URL: " + currentUrl +" from "+pageName);
+                throw new AssertionError("User did not navigate to login page after token expiry, current URL: " + currentUrl + " from " + pageName);
             }
         }
     }
 
     @Then("verify the user is logged out and navigate to login page")
     public void verify_the_user_is_logged_out_and_navigate_to_login_page() {
-       softAssert.assertTrue(waitAndCheckIsElementVisible(CONTINUE_WITH_EMAIL),"User is not logged out or did not navigate to login page for token expiry from "+pageName);
-       log.info("User navigate to login Page after token expiry and continue with email button is visible");
+        softAssert.assertTrue(waitAndCheckIsElementVisible(CONTINUE_WITH_EMAIL), "User is not logged out or did not navigate to login page for token expiry from " + pageName);
+        log.info("User navigate to login Page after token expiry and continue with email button is visible");
     }
 
     @When("user open the cart page")
     public void user_open_the_cart_page() {
-        pageName="Cart Page";
+        pageName = "Cart Page";
         waitAndCheckIsElementClickable(CART_PAGE);
         waitAndClickOn(CART_PAGE);
         log.info("User navigated to cart page successfully to test token expiry in cart page");
@@ -109,6 +117,7 @@ public class TokenSteps extends AbstractWebPage {
         waitAndClickOn(MY_ORDER_PAGE);
         log.info("User navigated to my order page successfully to test token expiry in my order page");
     }
+
     @When("user open the order summary page")
     public void user_open_the_order_summary_page() {
         waitAndCheckIsElementClickable(MY_ORDER_PAGE);
@@ -121,33 +130,37 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user search for {string}")
     public void user_search_for(String product) {
-        pageName="Search Page";
+        pageName = "Search Page";
         waitAndCheckIsElementClickable(SEARCH_BOX);
         waitAndClickOn(SEARCH_BOX);
         waitAndCheckIsElementVisible(SEARCH_INPUT);
         waitAndSetText(SEARCH_INPUT, product);
         Actions actions = new Actions(Grid.driver());
         actions.sendKeys(Keys.ENTER).perform();
-        log.info("User searched for "+product+" successfully");
+        log.info("User searched for " + product + " successfully");
 
     }
 
     @Then("verify the user is able to login successfully")
     public void verify_the_user_is_able_to_login_successfully() {
-
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
+        WebElement logo = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@href='/']")));
+        jsClick(logo);
         boolean result = false;
         try {
             result = wait.until(ExpectedConditions.urlToBe(url));
         } catch (Exception e) {
             result = false;
         }
-        softAssert.assertTrue(result,"User is not navigated to same page after login from "+pageName);
-        log.info("User is navigated to same page after login from "+pageName);
+        softAssert.assertTrue(result, "User is not navigated to same page after login from " + pageName);
+        log.info("User is navigated to same page after login from " + pageName);
     }
 
     @And("user again login with configured user")
     public void user_again_login_with_configured_user() {
+        WebElement LOGIN_BUTTON = Grid.driver().findElement(By.xpath("//button[text()='Login']"));
+        JavascriptExecutor js = Grid.driver();
+        js.executeScript("arguments[0].click();", LOGIN_BUTTON);
         user_again_login(UserConfig.getEmail(), UserConfig.getPassword());
     }
 
@@ -167,7 +180,7 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user open the ledger page")
     public void user_open_the_ledger_page() {
-        pageName="Ledger Page";
+        pageName = "Ledger Page";
         String locator = getLocator(LEDGER_PAGE);
         scrollingToViewAndClickUsingJS(Grid.driver().findElement(By.xpath(locator)));
         waitAndCheckIsElementClickable(LEDGER_PAGE);
@@ -184,4 +197,101 @@ public class TokenSteps extends AbstractWebPage {
         waitAndClickOn(TRACK_MATERIAL_PAGE);
         log.info("User navigated to Track Material page successfully to test token expiry in Track Material page");
     }
+
+    @When("user clicks on TMT product")
+    public void userClicksOnTMTProduct() {
+        scrollToCenter("//h2[text()='TMT']");
+        waitAndClickOn(TMT_PRODUCT);
+    }
+
+    @Then("verify the user is logged out")
+    public void verifyTheUserIsLoggedOut() {
+        softAssert.assertTrue(isElementPresent(LOGIN_CTA) || isElementPresent(LOGIN_VIA_OTP), "User is not logged out");
+    }
+
+    @And("user navigate to login page and again login with configured user")
+    public void userNavigateTOLoginPageAndAgainLoginWithConfiguredUser() {
+        if(isElementPresent(LOGIN_CTA)) {
+            waitAndClickOn(LOGIN_CTA);
+        }
+        user_again_login(UserConfig.getEmail(), UserConfig.getPassword());
+    }
+
+    @Then("verify user is able to login successfully")
+    public void verifyUserIsAbleToLoginSuccessfully() {
+        user_refresh_the_page();
+        if(isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
+            Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
+        }
+        WebElement account_label = Grid.driver().findElement(By.xpath(ACCOUNT_TAB));
+        softAssert.assertTrue(account_label.isDisplayed(), "Account section is not displayed");
+        jsClick(account_label);
+        softAssert.assertTrue(isElementPresent(USER_MENU_PROFILE_OPTION));
+    }
+
+    // @When("move the mouse to Mild steel category")
+    // public void moveTheMouseToMildSteelCategory() {
+    //     try {
+    //         refreshAndWaitFor(ALL_CATEGORY);
+    //         hoverOverElement(ALL_CATEGORY);
+    //         waits(MILD_STEEL_CATEGORY);
+    //         hoverOverElement(MILD_STEEL_CATEGORY);
+    //         log.info("cursor moved to mild steel category");
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("mouse failed to move to mild steel category", e);
+
+    //     }
+    // }
+
+    // @And("move to Cold rolled category")
+    // public void moveToColdRolledCategory() {
+    //     //Move mouse to Cold rolled category
+    //     actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCategory))).perform();
+    // }
+
+    // @And("click on CR Sheet product")
+    // public void clickOnCRSheetProduct() {
+    //     //Reading locator from page factory
+    //     actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledSheetsSubCategory))).click().perform();
+    // }
+
+    // @When("click on Cement product")
+    // public void clickOnCementProduct() {
+    //     try {
+    //         sleep(4000);
+    //         pageRefresh();
+    //         sleep(4000);
+    //         new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(ALL_CATEGORY));
+    //         actions.moveToElement(Grid.driver().findElement(ALL_CATEGORY)).perform();
+    //         waitAndClickOn(CEMENT_PLP);
+    //         log.info("Opened cement PLP page");
+    //     } catch (Exception e) {
+    //         log.fine("Failed to open PLP Cement");
+    //         throw new RuntimeException("Failed to open PLP Cement", e);
+    //     }
+    // }
+
+    // @And("click to Coated steel category")
+    // public void clickToCoatedSteelCategory() {
+    //     try {
+    //         actions.moveToElement(Grid.driver().findElement(By.xpath(coatedSteel))).click().perform();
+    //         log.info("cursor moved to Coated Steel");
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("mouse failed to move to coated steel", e);
+
+    //     }
+    // }
+
+    // @And("click on Wire product")
+    // public void clickOnWireProduct() {
+    //     try {
+    //         //Reading locator from page factory
+    //         waits(By.xpath(wireCategory));
+    //         actions.moveToElement(Grid.driver().findElement(By.xpath(wireCategory))).click().perform();
+    //         log.info("Clicked on Wire category");
+    //     } catch (Exception e) {
+    //         log.info("Failed to click on Wire category");
+    //         throw new RuntimeException("Failed to click on Wire category", e);
+    //     }
+    // }
 }

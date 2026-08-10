@@ -4,7 +4,7 @@ elements:
       web: xpath=//h2[@id='mild-steel']
   cartPage:
     en_US:
-      web: xpath=//a[@href='/cart-detail']
+      web: xpath=//a[contains(@href, '/cart-detail')]
   myRequirementPage:
     en_US:
       web: xpath=//a[@href='/my-requirements']
@@ -44,3 +44,15 @@ elements:
   trackMaterialPage:
     en_US:
       web: //div[contains(text(),'Track Materials')]
+  loginButton:
+    en_US:
+      web: //button[text()='Login']
+  accountLabel:
+    en_US:
+      web: (//span[text()='Account'])[2]
+  profileDetails:
+    en_US:
+      web: xpath=//span[text()='Profile Details']
+  confirmBusinessDetails:
+    en_US:
+      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Confirm your business details')]

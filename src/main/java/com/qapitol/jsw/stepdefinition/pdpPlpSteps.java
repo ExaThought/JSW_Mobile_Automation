@@ -6,13 +6,9 @@ import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,17 +18,16 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class pdpPlpSteps extends AbstractWebPage {
 
-    private ScenarioContext context;
-    private  final String RESET_BUTTON="resetSelectionButton";
-    private final String ADD_TO_CART_BUTTON="addToCart";
-    private final String ATTRIBUTES_SECTION="attributeValue";
+    private final String RESET_BUTTON = "resetSelectionButton";
+    private final String ADD_TO_CART_BUTTON = "addToCart";
+    private final String ATTRIBUTES_SECTION = "attributeValue";
     private final String THICKNESS = "(//span[text()='Thickness (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
     private final String WIDTH = "(//span[text()='Width (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
     private final String LENGTH = "(//span[text()=\"Length (mm)\"]/../following-sibling::div/button[not(@disabled)])[1]";
-    private final String QANTITY_INPUT_FIELD="quantity";
-    private final String CART_QUANTITY="cartPageQuantity";
-    private final String BRAND_NAME="brandName";
-    private final String PDP_DESCRIPTION="pdpDescription";
+    private final String QANTITY_INPUT_FIELD = "quantity";
+    private final String CART_QUANTITY = "cartPageQuantity";
+    private final String BRAND_NAME = "brandName";
+    private final String PDP_DESCRIPTION = "pdpDescription";
     private final String CATEGORY_FILTER = "//h3/following-sibling::div//button[@data-slot=\"checkbox\"]";
     private final String CATEGORY_NAME = "//span[text()='Category']/../following-sibling::div//label";
     private final String PROD_CATEGORY = "(//span[text()='MS Hot rolled'])";
@@ -47,9 +42,9 @@ public class pdpPlpSteps extends AbstractWebPage {
     private final String PROD_NAME = "//span[text()='Brand: ']/../preceding-sibling::p";
     private final String PROD_BRAND_NAME = "//span[text()='Brand: ']/following-sibling::span";
     private final String SELECTED_FILTER_NAME = "(//span[text()='%s'])[2]";
+    private final ScenarioContext context;
 
-    public pdpPlpSteps(ScenarioContext context)
-    {
+    public pdpPlpSteps(ScenarioContext context) {
         this.context = context;
     }
 
@@ -65,28 +60,28 @@ public class pdpPlpSteps extends AbstractWebPage {
 
     @Then("check Add to cart is disabled")
     public void checkAddToCartIsDisabled() {
-        WebElement addToCart= Grid.driver().findElement(Add_TO_CART_BUTTON);
-        softAssert.assertTrue(addToCart.isDisplayed(),"Add to cart button is enabled after clicking reset button");
+        WebElement addToCart = Grid.driver().findElement(Add_TO_CART_BUTTON);
+        softAssert.assertTrue(addToCart.isDisplayed(), "Add to cart button is enabled after clicking reset button");
         log.info("Add to cart button is disabled after clicking reset button");
     }
 
     @Then("check Add to cart is enabled")
     public void checkAddToCartIsEnabled() {
 
-        softAssert.assertTrue( waitUntilEnabled(Add_TO_CART_BUTTON), "Add to cart button is not enabled after selecting all attributes");
-         log.info("Add to cart button is enabled after selecting all attributes");
+        softAssert.assertTrue(waitUntilEnabled(Add_TO_CART_BUTTON), "Add to cart button is not enabled after selecting all attributes");
+        log.info("Add to cart button is enabled after selecting all attributes");
     }
 
     @Then("check image gallery loads on PDP page")
     public void checkImageGalleryLoadsOnPDPPage() {
         WebElement image = Grid.driver().findElement(By.xpath("//img[@class='big-image']"));
         boolean visible = image.isDisplayed();
-        boolean loaded = (Boolean)((JavascriptExecutor)Grid.driver()).executeScript(
+        boolean loaded = (Boolean) Grid.driver().executeScript(
                 "return arguments[0].complete && arguments[0].naturalWidth > 0;", image);
 
         softAssert.assertTrue(visible, "Image is not visible in PDP page");
         softAssert.assertTrue(loaded, "Image is not loaded successfully in PDP page");
-            log.info("Image gallery loads successfully on PDP page");
+        log.info("Image gallery loads successfully on PDP page");
     }
 
 
@@ -111,22 +106,52 @@ public class pdpPlpSteps extends AbstractWebPage {
         log.info("Selected length: " + length);
     }
 
-    @Then("check quantity enter below 10000 in PDP page")
-    public void checkQuantityEnterBelow10000InPDPPage() {
-        String pdpQuantity=waitAndGetText(CART_QUANTITY);
+    @Then("check quantity enter below 1000 in PDP page")
+    public void checkQuantityEnterBelow1000InPDPPage() {
+        // A 4-digit quantity (e.g. 1000) must be capped below 1000 (max 999).
+        // Parse the numeric part of the cart quantity text (e.g. "Qty: 1000 MT") and
+        // assert it is below 1000, instead of matching one hard-coded string.
+        String pdpQuantity = waitAndGetText(CART_QUANTITY);
+        String digits = pdpQuantity.replaceAll("[^0-9]", "");
+        Assert.assertFalse(digits.isEmpty(), "Could not read a numeric quantity from cart text: '" + pdpQuantity + "'");
 
-        if (pdpQuantity.equals("Qty: 1000 MT")){
-            log.info("Quantity is set to 1000 when user tries to enter above 10000");
-        } else {
-            log.info("Quantity is set to ="+pdpQuantity +"It should not set more than 9999");
-            throw new RuntimeException("Quantity is set to ="+pdpQuantity +"It should not set more than 9999");
-        }
+        int quantity = Integer.parseInt(digits);
+        Assert.assertTrue(quantity < 1001,
+                "Quantity should be capped below 1000 but the cart shows '" + pdpQuantity + "'");
+        log.info("Quantity correctly capped below 1000 in PDP page: " + pdpQuantity);
 
+        // Cleanup: remove the line item so the cart is left empty for the next run.
+        WebElement deleteBtn = Grid.driver().findElement(By.xpath("(//section/div/div/div/button[text()='Delete']) [position() < 2]"));
+        jsClick(deleteBtn);
+        WebElement deleteItemBtn = Grid.driver().findElement(By.xpath("//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']"));
+        jsClick(deleteItemBtn);
+    }
+
+    @Then("quantity field should treat only first 4 digits {string} as input in PDP page")
+    public void quantityFieldShouldTreatOnlyFirstFourDigits(String expectedQuantity) {
+        // The PDP quantity field must accept at most 4 digits. A 4-digit value (e.g. 1000 or 9999)
+        // is kept as-is; anything longer is truncated so only the first 4 digits are treated as
+        // input (e.g. 12345 -> 1234, 99999 -> 9999).
+        String pdpQuantity = waitAndGetText(CART_QUANTITY);            // e.g. "Qty: 1234 MT"
+        String actualDigits = pdpQuantity.replaceAll("[^0-9]", "");
+
+        Assert.assertEquals(actualDigits.length(), 4,
+                "Quantity field should keep exactly 4 digits but the cart shows '" + pdpQuantity + "'");
+        Assert.assertEquals(actualDigits, expectedQuantity,
+                "Quantity field should treat only the first 4 digits as input. Expected '"
+                        + expectedQuantity + "' but the cart shows '" + pdpQuantity + "'");
+        log.info("Quantity field correctly limited to 4 digits in PDP page: " + pdpQuantity);
+
+        // Cleanup: remove the line item so the cart is left empty for the next example.
+        WebElement deleteBtn = Grid.driver().findElement(By.xpath("(//section/div/div/div/button[text()='Delete']) [position() < 2]"));
+        jsClick(deleteBtn);
+        WebElement deleteItemBtn = Grid.driver().findElement(By.xpath("//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']"));
+        jsClick(deleteItemBtn);
     }
 
     @Then("check brand name is not empty in PDP page")
     public void checkBrandNameIsNotEmptyInPDPPage() {
-        String brandName=waitAndGetText(BRAND_NAME);
+        String brandName = waitAndGetText(BRAND_NAME);
         Assert.assertFalse(brandName.isEmpty(), "Brand name is empty in PDP page");
         log.info("Brand name is not empty in PDP page: " + brandName);
     }
@@ -142,7 +167,7 @@ public class pdpPlpSteps extends AbstractWebPage {
     public void userSelectsTheFirstCategory() {
         waits(By.xpath(CATEGORY_FILTER));
         String name = getText(By.xpath(CATEGORY_NAME));
-        log.info("User select the first category "+name);
+        log.info("User select the first category " + name);
         context.categoryName = name;
         clickButton(By.xpath(CATEGORY_FILTER));
     }
@@ -150,16 +175,16 @@ public class pdpPlpSteps extends AbstractWebPage {
     @Then("User verifies category")
     public void userVerifiesTheCategory() {
         sleep(500);
-        waits(By.xpath(String.format(SELECTED_FILTER_NAME,context.categoryName)));
-        String name = getText(By.xpath(String.format(SELECTED_FILTER_NAME,context.categoryName)));
-        softAssert.assertTrue(context.categoryName.contains(name),"Displaying wrong category");
+        waits(By.xpath(String.format(SELECTED_FILTER_NAME, context.categoryName)));
+        String name = getText(By.xpath(String.format(SELECTED_FILTER_NAME, context.categoryName)));
+        softAssert.assertTrue(context.categoryName.contains(name), "Displaying wrong category");
     }
 
     @And("User select the Grade")
     public void userSelectTheGrade() {
         waits(By.xpath(GRADE_FILTER_CHECKBOX));
         String name = getText(By.xpath(GRADE_FILTER_NAME));
-        log.info("User select the first GRADE "+name);
+        log.info("User select the first GRADE " + name);
         context.gradeName = name;
         clickButton(By.xpath(GRADE_FILTER_CHECKBOX));
     }
@@ -180,15 +205,13 @@ public class pdpPlpSteps extends AbstractWebPage {
 
             log.info("Product Names: " + names);
 
-           for(String name:names)
-           {
-               if(matches(name,context.gradeName))
-               {
-                   softAssert.assertTrue(true);
-               }else {
-                   softAssert.assertTrue(false,"Wrong prod displayed---"+name+"---"+context.gradeName);
-               }
-           }
+            for (String name : names) {
+                if (matches(name, context.gradeName)) {
+                    softAssert.assertTrue(true);
+                } else {
+                    softAssert.assertTrue(false, "Wrong prod displayed---" + name + "---" + context.gradeName);
+                }
+            }
 
         }
 
@@ -198,14 +221,14 @@ public class pdpPlpSteps extends AbstractWebPage {
     public void userSelectTheBrand() {
         waits(By.xpath(BRAND_CHECKBOX));
         String name = getText(By.xpath(BRAND_LABEL));
-        log.info("User select the first BRAND "+name);
+        log.info("User select the first BRAND " + name);
         context.brandName = name;
         clickButton(By.xpath(BRAND_CHECKBOX));
     }
 
     @Then("User verifies Brand")
     public void userVerifiesTheBrand() {
-        log.info("User verifies the Brand "+context.brandName);
+        log.info("User verifies the Brand " + context.brandName);
         {
             sleep(1000);
             By prodNameLocator = By.xpath(PROD_BRAND_NAME);
@@ -219,13 +242,11 @@ public class pdpPlpSteps extends AbstractWebPage {
 
             log.info("Product Names: " + names);
 
-            for(String name:names)
-            {
-                if(matches(name,context.brandName))
-                {
+            for (String name : names) {
+                if (matches(name, context.brandName)) {
                     softAssert.assertTrue(true);
-                }else {
-                    softAssert.assertTrue(false,"Wrong prod displayed----"+name+"----"+context.brandName);
+                } else {
+                    softAssert.assertTrue(false, "Wrong prod displayed----" + name + "----" + context.brandName);
                 }
             }
 
@@ -236,14 +257,14 @@ public class pdpPlpSteps extends AbstractWebPage {
     public void userSelectTheSubGrade() {
         waits(By.xpath(SUB_GRADE_CHECKBOX));
         String name = getText(By.xpath(SUB_GRADE_NAME));
-        log.info("User select the first BRAND "+name);
+        log.info("User select the first BRAND " + name);
         context.subGradeName = name;
         clickButton(By.xpath(SUB_GRADE_CHECKBOX));
     }
 
     @Then("User verifies Sub Grade")
     public void userVerifiesTheSubGrade() {
-        log.info("User verifies the Grade "+context.subGradeName);
+        log.info("User verifies the Grade " + context.subGradeName);
         {
             sleep(1000);
             By prodNameLocator = By.xpath(PROD_NAME);
@@ -257,26 +278,16 @@ public class pdpPlpSteps extends AbstractWebPage {
 
             log.info("Product Names: " + names);
 
-            for(String name:names)
-            {
-                if(matches(name,context.subGradeName))
-                {
+            for (String name : names) {
+                if (matches(name, context.subGradeName)) {
                     softAssert.assertTrue(true);
-                }else {
-                    softAssert.assertTrue(false,"Wrong prod displayed----"+name+"---"+context.subGradeName);
+                } else {
+                    softAssert.assertTrue(false, "Wrong prod displayed----" + name + "---" + context.subGradeName);
                 }
             }
 
         }
     }
-
-
-
-
-
-
-
-
 
 
 }

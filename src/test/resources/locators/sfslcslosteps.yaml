@@ -16,7 +16,7 @@ elements:
       web: //button[@id='login-to-continue']
   cartPage:
     en_US:
-      web: //div[@class='cart-icon-container full-cart']
+      web: //a[contains(@href, 'cart-detail')]
   cartLineItemCashBack:
     en_US:
       web: xpath=//img[@alt='Cashback Icon']/following-sibling::span[1]

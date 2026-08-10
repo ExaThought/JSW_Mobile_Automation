@@ -16,6 +16,7 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 public class HomepageBlogSteps extends AbstractWebPage {
     private static final String BLOG_SECTION_TITLE = "blogSectionTitle";
     private static final String BLOG_TITLE = "//h1[text()='Blogs']";
+    private static final String BLOG_SECTION = "//span[text()='Blogs']";
     private static final String FIRST_BLOG_READ_MORE_BUTTON = "firstBlogReadMoreButton";
     private static final String BLOG_POSTED_ON_TEXT = "(//h1[text()='Blogs']/following-sibling::div//h3)[1]";
     private static final String BLOG_YOUTUBE_ICON = "blogYoutubeIcon";
@@ -31,7 +32,6 @@ public class HomepageBlogSteps extends AbstractWebPage {
     private static final String PRODUCTS = "//div[text()='Product']/../../following-sibling::div//div[text()='Quantity:']/following-sibling::div";
     private static final String USER_PERMISSION = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/my-profile?tab=users-permissions\"]";
     private static final String USER_PERMISSION_TEXT = "//h2[text()='Users & permissions']";
-
 
 
     @Then("user should see Blogs section title in homepage")
@@ -72,9 +72,7 @@ public class HomepageBlogSteps extends AbstractWebPage {
         WebElement locator = Grid.driver().findElement(CategoryPages.BLOG_SECTION);
         CustomUtil.scrollingToViewAndClickUsingJS(locator);
         sleep(2000);
-        clickButton(CategoryPages.BLOG_SECTION);
-//        waitAndCheckIsElementClickable(FIRST_BLOG_READ_MORE_BUTTON);
-//        waitAndClickOn(BLOG_TITLE);
+        waitAndClickOn(BLOG_SECTION);
     }
 
 
@@ -99,6 +97,7 @@ public class HomepageBlogSteps extends AbstractWebPage {
             softAssert.fail("Exception while verifying Vlogs page title: " + e.getMessage());
         }
     }
+
     @And("user should see youtube video icon")
     public void userShouldSeeYoutubeVideoIcon() {
 
@@ -122,6 +121,7 @@ public class HomepageBlogSteps extends AbstractWebPage {
         waitAndCheckIsElementClickable(BLOG_YOUTUBE_ICON);
         waitAndClickOn(BLOG_YOUTUBE_ICON);
     }
+
     @Then("user should be redirected to youtube page")
     public void userShouldBeRedirectedToYoutubePage() {
 
@@ -184,14 +184,9 @@ public class HomepageBlogSteps extends AbstractWebPage {
     public void userVerifiesUserPermission() {
         log.info("User verifies user permission page");
         waits(By.xpath(USER_PERMISSION_TEXT));
-        softAssert.assertTrue(isDisplayed(By.xpath(USER_PERMISSION_TEXT)),"User has not landed in user permission page");
+        softAssert.assertTrue(isDisplayed(By.xpath(USER_PERMISSION_TEXT)), "User has not landed in user permission page");
 
     }
-
-
-
-
-
 
 
     @Then("User verifies the My Requirement page")
@@ -205,8 +200,6 @@ public class HomepageBlogSteps extends AbstractWebPage {
         softAssert.assertTrue(isDisplayed(By.xpath(REQ_QTY)));
 
     }
-
-
 
 
 }

@@ -6,7 +6,6 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And ccp login with configured user
 
 
-
   @HRSheets
   Scenario: Verify HR Sheet Product Add to Cart
     When click cart icon
@@ -23,7 +22,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
 
 
   @HRCoil
-  Scenario: verify HR Coil Product Add to Cart
+  Scenario: Verify HR Coil Product Add to Cart
     When click cart icon
     Then check the empty cart page display with message "Your cart is empty"
     And User navigate to HomePage
@@ -35,60 +34,6 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And add to cart
     And click view cart
     Then Verify the Attribute values for HR Coil in cart page with cart count "1"
-
-
-
-  Scenario: Add same product twice and verify quantity merge or duplicate handling
-    When click cart icon
-    Then check the empty cart page display with message "Your cart is empty"
-    And User navigate to HomePage
-    When move the mouse to Mild steel category
-    And move to Hot rolled category
-    And click on HR Coil product
-    And open HR Coil plp "1" product
-    And select thickness, width, quantity "50" for HR Coil
-    And add to cart
-    And click view cart
-    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
-    When move the mouse to Mild steel category
-    And move to Hot rolled category
-    And click on HR Coil product
-    And open HR Coil plp "1" product
-    And select thickness, width, quantity "50" for HR Coil
-    And add to cart
-    And click view cart
-    Then Verify the Attribute values for HR Coil in cart page with cart count "2"
-
-
-  @multiSKUCart
-  Scenario: Check multi product add to cart and delete one by one from cart
-    When click cart icon
-    Then check the empty cart page display with message "Your cart is empty"
-    And User navigate to HomePage
-    When move the mouse to Mild steel category
-    And move to Hot rolled category
-    And click on HR Coil product
-    And open HR Coil plp "1" product
-    And open HR Coil plp "1" product
-    And select thickness, width, quantity "50" for HR Coil
-    And add to cart
-    And click view cart
-    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
-    When move the mouse to Mild steel category
-    And move to Hot rolled category
-    And click on HR Sheet product
-    And open HR Sheet plp "1" product
-    And select thickness, width, length, quantity, for HR Sheet
-    And add to cart
-    And click view cart
-    Then verify the Attribute values for HR Sheet in cart page with cart count "2"
-    When click on TMT product
-    And click on TMT plp "1" product
-    And select diameter, form, quantity "50" for TMT
-    And add to cart
-    And click view cart
-    Then verify the Attribute values for TMT in cart page with cart count "3"
-
 
 
   @CRCoil
@@ -139,14 +84,14 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     When move the mouse to Mild steel category
     And click to Coated steel category
     And open Coated steel sheet pdp "1" product
-    And select thickness, width, length, coating grade, spangle type, quantity "50" for Colour Coated Sheet
+    And select thickness, width, length, coating grade, spangle type, quantity "50" for Coated Sheet
     And add to cart
     And click view cart
     Then verify the Attribute values for Coated Steel Sheet in cart page
 
 
   @Wire
-  Scenario: Verify wire product add to cart
+  Scenario: Verify Wire Product Add to Cart
     When move the mouse to Mild steel category
     And click on Wire product
     And open Wire pdp
@@ -158,7 +103,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
 
 
   @TMT
-  Scenario: Verify TMT product add to cart
+  Scenario: Verify TMT Product Add to Cart
     When click on TMT product
     And click on TMT plp "1" product
     And select diameter, form, quantity "50" for TMT
@@ -167,8 +112,119 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then verify the Attribute values for TMT in cart page with cart count "1"
 
 
+  @AddSameProductTwice
+  Scenario: Add same product twice and verify quantity merge or duplicate handling
+    When click cart icon
+    Then check the empty cart page display with message "Your cart is empty"
+    And User navigate to HomePage
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "1" product
+    And select thickness, width, quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "1" product
+    And select thickness, width, quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify attribute values for HR Coil in cart page with cart count "1"
 
 
+  @multiSKUCart
+  Scenario: Check multi product add to cart and delete one by one from cart
+    When click cart icon
+    Then check the empty cart page display with message "Your cart is empty"
+    And User navigate to HomePage
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "1" product
+    And select thickness, width, quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Sheet product
+    And open HR Sheet plp "1" product
+    And select thickness, width, length, quantity, for HR Sheet
+    And add to cart
+    And click view cart
+    Then verify the Attribute values for HR Sheet in cart page with cart count "2"
+    When click on TMT product
+    And click on TMT plp "1" product
+    And select diameter, form, quantity "50" for TMT
+    And add to cart
+    And click view cart
+    Then verify the Attribute values for TMT in cart page with cart count "3"
+    Then Verify the cart page SKU and cart icon count and delete one by one
 
 
+  @createOpportunity
+  Scenario: Create an opportunity by submitting the cart requirement
+    When click cart icon
+    Then check the empty cart page display with message "Your cart is empty"
+    And User navigate to HomePage
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "1" product
+    And select thickness, width, quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    And submit the requirement to create an opportunity
+    Then verify the opportunity is created with a valid requirement id
 
+
+  @cartPriceSummary
+  Scenario: Verify the cart price summary shows a valid order total
+    When click cart icon
+    Then check the empty cart page display with message "Your cart is empty"
+    And User navigate to HomePage
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "1" product
+    And select thickness, width, quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    Then verify the cart price summary shows a valid order total
+
+
+  @deleteLineItem
+  Scenario: Verify deleting the only line item empties the cart
+    When click cart icon
+    Then check the empty cart page display with message "Your cart is empty"
+    And User navigate to HomePage
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "1" product
+    And select thickness, width, quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    Then Delete the line item from cart
+
+
+  @cartPersistence
+  Scenario: Verify the cart retains items after a page refresh
+    When click cart icon
+    Then check the empty cart page display with message "Your cart is empty"
+    And User navigate to HomePage
+    When move the mouse to Mild steel category
+    And move to Hot rolled category
+    And click on HR Coil product
+    And open HR Coil plp "1" product
+    And select thickness, width, quantity "50" for HR Coil
+    And add to cart
+    And click view cart
+    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    Then cart should retain the items after page refresh

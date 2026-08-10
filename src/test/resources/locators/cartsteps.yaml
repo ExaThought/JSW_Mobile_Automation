@@ -19,16 +19,16 @@ elements:
       web: xpath=//button[contains(text(),'Submit requirement')]
   deleteLineItem:
     en_US:
-      web: xpath=(//div[contains(text(),'Delete')])[1]
+      web: xpath=(//section/div/div/div/button[text()='Delete']) [position() < 2]
   editLineItem:
     en_US:
       web: xpath=(//button[contains(text(),'Edit')])[1]
   deleteCta:
     en_US:
-      web: xpath=//span[contains(text(),'Delete')]
+      web: xpath=//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']
   cement:
     en_US:
-      web: xpath=(//li//a[@href="/category/cement"])[1]
+      web: xpath=//li//a[contains(@href,'/category/cement')]
   cementPDP:
     en_US:
       web: xpath=(//div[@class='card-title'])[2]
@@ -61,7 +61,7 @@ elements:
       web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
   mildSteel:
     en_US:
-      web: xpath=(//a[contains(., 'Mild steel')])[1]
+      web: xpath=//a[contains(@href, 'mild-steel')]
   colourCoated:
     en_US:
       web: xpath=(//a[contains(text(),'Colour coated')])[2]
@@ -100,7 +100,7 @@ elements:
       web: xpath=(//span[text()='Diameter (mm)']/../following-sibling::div//button[@data-slot="button"])[1]
   tmt:
     en_US:
-      web: xpath=(//li//a[@href="/category/TMT-Bar-steel"])[1]
+      web: xpath=//li//a[contains(@href, '/category/TMT-Bar-steel')]
   form:
     en_US:
       web: xpath=//div[contains(text(),"Form")]/parent::div/following-sibling::div/child::div/child::button[{0}]
@@ -145,7 +145,7 @@ elements:
       web: xpath=//div[contains(text(),'Qty')]/../preceding-sibling::a
   galvanizedSheet:
     en_US:
-      web: xpath=(//a[contains(text(),'Galvanized sheets')])
+      web: xpath=(//a[contains(@href, '/product-detail')]/div) [1]
   updateAttribute:
     en_US:
       web: xpath=(//div[@data-side="bottom"]//button/span)[2]
@@ -184,9 +184,22 @@ elements:
       web: xpath=//div[@class='cart-icon-container empty-cart']/child::div
   cartPageSKUCount:
     en_US:
-      web: xpath=//div[@class='typography-h6 typography-font-semibold']
+      web: xpath=//a[contains(@href,'cart-detail')]/div/div
   deleteCartTitle:
     en_US:
       web: //div[contains(text(),'Delete item')]
+  # TODO: confirm the price-summary XPaths against the current cart DOM.
+  cartSubtotal:
+    en_US:
+      web: xpath=//div[contains(text(),'Sub total') or contains(text(),'Subtotal')]
+  cartTax:
+    en_US:
+      web: xpath=//div[contains(text(),'GST') or contains(text(),'Tax')]
+  cartOrderTotal:
+    en_US:
+      web: xpath=//div[contains(text(),'Order total') or contains(text(),'Grand total')]/following-sibling::div
+  confirmBusinessDetails:
+    en_US:
+      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Confirm your business details')]
 
 

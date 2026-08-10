@@ -96,6 +96,32 @@ public class CustomUtil {
     }
 
     /**
+     * Visibility check performed via the JavaScript executor (computed style + bounding rect)
+     * instead of Selenium's isDisplayed(). Waits for the element to be present in the DOM, then
+     * asks the browser whether it is actually rendered and visible. Returns false if the element
+     * is absent or not visible (never throws).
+     */
+    public static boolean isElementVisibleJS(By locator) {
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
+                    .until(ExpectedConditions.presenceOfElementLocated(locator));
+            WebElement element = Grid.driver().findElement(locator);
+            Object visible = ((JavascriptExecutor) Grid.driver()).executeScript(
+                    "var e = arguments[0];" +
+                    "if (!e) { return false; }" +
+                    "var style = window.getComputedStyle(e);" +
+                    "var rect = e.getBoundingClientRect();" +
+                    "return (style.display !== 'none' && style.visibility !== 'hidden'" +
+                    "        && style.opacity !== '0' && rect.width > 0 && rect.height > 0);",
+                    element);
+            return Boolean.TRUE.equals(visible);
+        } catch (Exception e) {
+            logger.log(Level.FINEST, "isElementVisibleJS: not present/visible for " + locator, e);
+            return false;
+        }
+    }
+
+    /**
      * Scrolls element to center of viewport (safe from sticky headers/footers)
      */
     public static void scrollToCenter(By locator) {
