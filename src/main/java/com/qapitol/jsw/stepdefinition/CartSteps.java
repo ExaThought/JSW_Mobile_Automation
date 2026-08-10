@@ -885,7 +885,7 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
     }
 
-    @And("click on Wire product")
+    @And("click on wire product")
     public void clickOnWireProduct() {
         try {
             //Reading locator from page factory

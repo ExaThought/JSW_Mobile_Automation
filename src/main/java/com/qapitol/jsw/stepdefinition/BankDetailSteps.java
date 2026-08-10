@@ -10,7 +10,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
 
 import java.time.Duration;
 
@@ -19,21 +18,12 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class BankDetailSteps extends AbstractWebPage {
 
-    // ✅ Load YAML File
-    LocatorReader locatorReader =
-            new LocatorReader("locators/bankdetailsteps.yaml");
-
-    WebDriverWait wait =
-            new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
-
-
-    // ================= LOCATOR KEYS =================
-
     private static final String CCP_USER_MENU_TESTACCO = "ccpUserMenuTestacco";
     private static final String CCP_USER_MENU_PROFILE_OPTION = "ccpUserMenuProfileOption";
 
-    private static final String BANK_ACCOUNT_DETAILS_TAB = "bankAccountDetailsTab";
 
+    // ================= LOCATOR KEYS =================
+    private static final String BANK_ACCOUNT_DETAILS_TAB = "bankAccountDetailsTab";
     private static final String GSTIN_NAME_VALUE = "gstinNameValue";
     private static final String ACCOUNT_HOLDER_NAME_VALUE = "accountHolderNameValue";
     private static final String BANK_ACCOUNT_NUMBER_VALUE = "bankAccountNumberValue";
@@ -41,9 +31,14 @@ public class BankDetailSteps extends AbstractWebPage {
     private static final String EMPTY_BANK_DETAILS_TITLE = "emptyBankDetailsTitle";
     private static final String ADD_BANK_DETAILS_CTA_BUTTON = "addBankDetailsCTAButton";
     private static final String BANK_DETAILS_POP_UP_TITLE = "bankDetailsPopUpTitle";
-    private static final String BANK_DETAILS_POP_UP_SUB_TITLE="bankDetailsPopUpSubTitle";
+    private static final String BANK_DETAILS_POP_UP_SUB_TITLE = "bankDetailsPopUpSubTitle";
     private static final String REPLACE_BANK_ACCOUNT = "//button[normalize-space()='Replace bank account']";
     private static final String ENTER_BANK_ACCOUNT_HEADING = "//h2[normalize-space()='Enter bank account information']";
+    // ✅ Load YAML File
+    LocatorReader locatorReader =
+            new LocatorReader("locators/bankdetailsteps.yaml");
+    WebDriverWait wait =
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
 
 
     // ================= COMMON METHODS =================
@@ -225,28 +220,11 @@ public class BankDetailSteps extends AbstractWebPage {
 
     @Then("verify bank details title")
     public void verifyBankDetailsTitle() {
-        try {
-            log.info("Verifying Bank Details title.");
+        log.info("Verifying Bank Details title.");
+        waitAndCheckIsElementPresent(EMPTY_BANK_DETAILS_TITLE);
+        softAssert.assertTrue(waitAndCheckIsElementPresent(ADD_BANK_DETAILS_CTA_BUTTON), "Add a bank account CTA is not present");
+        softAssert.assertEquals(getTextValue(ADD_BANK_DETAILS_CTA_BUTTON), "Add a bank account", "CTA Text is not matching");
 
-            waitAndCheckIsElementPresent(EMPTY_BANK_DETAILS_TITLE);
-
-            String actualBankDetailsTitle = waitAndGetText(EMPTY_BANK_DETAILS_TITLE);
-            String expectedTitle = "Your bank account";
-
-            log.info("Actual Bank Details title: " + actualBankDetailsTitle);
-
-            softAssert.assertEquals(
-                    actualBankDetailsTitle,
-                    expectedTitle,
-                    "Bank Details Title is not matching. Expected: " + expectedTitle + " but found: " + actualBankDetailsTitle
-            );
-
-            log.info("Bank Details title verified successfully.");
-
-        } catch (Exception e) {
-            log.info("Exception occurred while verifying Bank Details title: " + e.getMessage());
-            softAssert.fail("Exception while verifying Bank Details title: " + e.getMessage());
-        }
     }
 
     @And("click on CTA button")
