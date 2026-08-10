@@ -28,7 +28,7 @@
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
         <parameter name="cucumber.filter.tags"
-                   value="@footer or @search or @paymentDue or @ledger or @bankDetails"/>
+                   value="@footer or @search or @paymentDue or @ledger or @bankDetails or @blog"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -50,7 +50,7 @@
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
         <parameter name="cucumber.filter.tags"
-                   value="@address or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword or @tokenCheck or @customerDetails"/>
+                   value="@address or @EmptyBankDetails or @loginRegression or @registrationRegression or @forgetPassword or @tokenCheckLogin or @customerDetails"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -70,7 +70,7 @@
         <parameter name="test.group" value="Guest"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@SEOCheck or @GuestUser"/>
+        <parameter name="cucumber.filter.tags" value="@SEOCheck or @GuestUserHomePage"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
