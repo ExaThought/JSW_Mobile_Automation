@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.apis.impl.BaseApiImpl;
 import com.qapitol.jsw.apitest.pojos.order.customerDetails.CustomerDetailsResponse;
+import com.qapitol.jsw.apitest.pojos.order.customerProfile.CustomerProfileResponse;
 import com.qapitol.jsw.apitest.pojos.order.paymentDue.PaymentDueResponse;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -357,6 +358,107 @@ public class ApiUtils extends BaseApiImpl
             System.err.println("Failed to fetch user details: " + e.getMessage());
             return false;
         }
+    }
+
+    // ---------------------------------------------------------------------
+    // Experience-middleware : customer profile (v3)
+    // ---------------------------------------------------------------------
+
+    private static final String CUSTOMER_PROFILE_PATH = "xp-mi/public/v3/customer-profile";
+
+    /**
+     * Builds the fully-qualified customer-profile endpoint for whichever environment is
+     * currently configured via the `middlewareUrl` property:
+     *   preprod -> https://experience-middleware.preprod.jswonemsme.com/xp-mi/public/v3/customer-profile
+     *   qa      -> https://experience-middleware.qa.jswone.in/xp-mi/public/v3/customer-profile
+     */
+    public static String customerProfileEndpoint() {
+        String baseUrl = ConfigUtil.resolveOrThrow("middlewareUrl");
+        if (!baseUrl.endsWith("/")) {
+            baseUrl = baseUrl + "/";
+        }
+        return baseUrl + CUSTOMER_PROFILE_PATH;
+    }
+
+    /**
+     * GET {middlewareUrl}xp-mi/public/v3/customer-profile using the token minted by
+     * {@link Token#getCCPToken()} (test-group user from the properties file).
+     *
+     * Mirrors the browser request exactly:
+     *   -H 'accept: application/json, text/plain, *&#47;*'
+     *   -H 'access_token: &lt;jwt&gt;'
+     *
+     * @return the raw RestAssured response, so callers can assert on status code as well as body.
+     */
+    public static Response fetchCustomerProfile() {
+        return fetchCustomerProfile(Token.getCCPToken());
+    }
+
+    /**
+     * Same as {@link #fetchCustomerProfile()} but with a caller-supplied token, for negative
+     * cases such as an expired or tampered access_token.
+     */
+    public static Response fetchCustomerProfile(String accessToken) {
+        String endpoint = customerProfileEndpoint();
+
+        // Per-request baseUri instead of the shared static baseURI, so a parallel test that
+        // set baseURI to ccpUrl/omsUrl cannot hijack this call.
+        Response response = RestAssured.given()
+                .baseUri(endpoint)
+                .header("accept", "application/json, text/plain, */*")
+                .header("access_token", accessToken)
+                .when().log().uri()
+                .get()
+                .then().log().ifError()
+                .extract().response();
+
+        logger.info("GET " + endpoint + " -> HTTP " + response.getStatusCode());
+        return response;
+    }
+
+    /**
+     * Typed variant - asserts HTTP 200 and deserializes into {@link CustomerProfileResponse}.
+     *
+     * @throws IllegalStateException if the call does not return 200, so a middleware failure
+     *                               surfaces at the point of failure rather than as a later NPE.
+     */
+    public static CustomerProfileResponse getCustomerProfile() {
+        Response response = fetchCustomerProfile();
+
+        if (response.getStatusCode() != 200) {
+            throw new IllegalStateException("customer-profile API returned HTTP "
+                    + response.getStatusCode() + " for " + customerProfileEndpoint()
+                    + " | body: " + response.asString());
+        }
+
+        try {
+            return new ObjectMapper().readValue(response.asString(), CustomerProfileResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse CustomerProfileResponse from: "
+                    + response.asString(), e);
+        }
+    }
+
+    /**
+     * Reads the {@code isTransacting} flag from the customer-profile response.
+     *
+     * The field is located by key rather than by a fixed path, so it is found wherever the
+     * middleware nests it inside {@code data}.
+     *
+     * @throws IllegalStateException if the field is absent from the response, so a contract
+     *                               change is reported instead of silently defaulting to false.
+     */
+    public static boolean isTransacting() {
+        CustomerProfileResponse profile = getCustomerProfile();
+        Boolean isTransacting = profile.findFirstBoolean("isTransacting");
+
+        if (isTransacting == null) {
+            throw new IllegalStateException("'isTransacting' not found in the customer-profile "
+                    + "response from " + customerProfileEndpoint() + " | data: " + profile.getData());
+        }
+
+        logger.info("isTransacting = " + isTransacting);
+        return isTransacting;
     }
 
 }

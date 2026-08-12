@@ -6,11 +6,10 @@ import org.openqa.selenium.By;
 public class CategoryPages {
 
     public static String mildSteelCategory = "//li//a[contains(@href,'mild-steel')]";
-    public static String hotRolledCategory = "//a[contains(@href,'hot-rolled-steel')]";
-    public static String msHotRolled = "//a[contains(@href,'hot-rolled-steel')]";
+    public static String hotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]";
+    public static String msHotRolled = "//li/a[contains(@href,'hot-rolled-steel')]";
     public static String hotRolledSheetsSubCategory = "//a[contains(@href,'hot-rolled-sheets')]";
     public static String hotRolledCoilsSubCategory = "//a[contains(@href,'hot-rolled-coils')]";
-    public static String plpFirstProduct = "(//span[contains(text(),'Brand:')])[1]";
     public static String length = "//div[contains(text(),'Length (mm)')]/parent::div/following-sibling::div/child::div/child::button[1]";
     public static String addToCart = "//button[contains(., 'Add to Cart')]";
     public static String coldRolledCategory = "(//li//a[@href=\"/category/cold-rolled-steel\"])[1]";

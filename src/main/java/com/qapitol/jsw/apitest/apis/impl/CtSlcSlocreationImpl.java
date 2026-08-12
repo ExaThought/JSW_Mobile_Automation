@@ -38,10 +38,15 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
     public static String requestNodelorNonNodel;
     public static String requestDeliveryType;
     public static double requestLineAmount=0;
+    /** Customer the cart was created for - used to explain an empty cart in the UI steps. */
+    public static String requestCustomerId;
 
 
     public CtSlcSloRes getSlcSloResponse(String orderType) throws IOException {
         try {
+            // These are static, so without an explicit reset the accumulators below carry over
+            // into the next scenario (requestedDeliveryCharges in particular uses +=).
+            resetRequestData();
 
             //Load the Payload
             CtSlcSloRequestPayload requestPayload = getPayloadJsonFileAsPOJO((String) Data.get().get(orderType), CtSlcSloRequestPayload.class);
@@ -50,6 +55,7 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
             opportunityId = "006" + java.util.UUID.randomUUID().toString().replaceAll("-", "").substring(0, 15);
             customerId = Data.get().get("CustomerId").toString();
             addressId = Data.get().get("AddressId").toString();
+            requestCustomerId = customerId;
 
             //Set RequestPayload
             requestPayload.setBillingAddressId(addressId);
@@ -126,5 +132,33 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
         } catch (BadRequestException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Clears every derived value before a new request is built. Without this the accumulators
+     * ({@code requestedDeliveryCharges}, {@code requestedCashBack}) keep the previous scenario's
+     * totals, and a scenario that does not set a field would silently assert against the
+     * previous scenario's value.
+     */
+    private static void resetRequestData() {
+        requestQuantity = 0;
+        requestedDeliveryCharges = 0;
+        requestedCashBack = 0;
+        requestProductPrice = 0;
+        requestAdvanceAmount = 0;
+        requestTotalAmount = 0;
+        requestProductTaxes = 0;
+        lineItemAmount = 0;
+        requestLineAmount = 0;
+        formatLineItemTotalAmount = null;
+        requestWidth = null;
+        requestThickness = null;
+        requestLength = null;
+        requestPaymentType = null;
+        requestedSourceSeller = null;
+        requestOrderType = null;
+        requestNodelorNonNodel = null;
+        requestDeliveryType = null;
+        requestCustomerId = null;
     }
 }

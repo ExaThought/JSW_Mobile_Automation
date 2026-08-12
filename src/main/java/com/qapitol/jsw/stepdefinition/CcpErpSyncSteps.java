@@ -5,6 +5,7 @@ import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
 import com.qapitol.jsw.pageFactory.CategoryPages;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.CustomUtil;
+import com.qapitol.jsw.utils.Token;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.When;
@@ -67,7 +68,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     @And("logs into ERP and opens the order details page")
     public void logs_into_erp_and_opens_the_order_details_page(){
         //Open the ERP
-        Grid.driver().get(ConfigUtil.getSecretValue("ErpLoginAuth"));
+        Grid.driver().get(Token.getErpLoginUrl());
         Grid.driver().manage().window().maximize();
         sleep(5000);
 

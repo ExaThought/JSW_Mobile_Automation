@@ -2,9 +2,9 @@ elements:
   loginButton:
     en_US:
       web: //button[text()='Login']
-  loginViaOtp:
+  continueWithEmailCta:
     en_US:
-      web: //button[@id='login-via-otp']
+      web: xpath=//button[contains(text(),'Continue with email')]
   ccpLoginEmail:
     en_US:
       web: //input[@id='email']
@@ -19,13 +19,22 @@ elements:
       web: xpath=(//img[@class="header-arrow-down" ])[1]
   ccpLogout:
     en_US:
-      web: xpath=//section[@class='drop-body header-custom-width']//div[contains(text(),'Logout')]
+      web: xpath=//button/span[normalize-space(.)='Logout']
   paymentDuePopUp:
     en_US:
-      web: xpath=//div[contains(text(),'Payment reminder')]
+      web: xpath=//*[contains(text(),'Payment reminder')]
   ccpHomePagePaymentDueClose:
     en_US:
-      web: //button[@aria-label='Close' and contains(@class,'close')]
+      web: xpath=//h2[contains(normalize-space(), 'Payment reminder')]/../preceding-sibling::button
   loginPopUpCloseButton:
     en_US:
       web: xpath=//img[@alt='close']
+  continueCTA:
+    en_US:
+      web: xpath=//button[normalize-space(.)='Continue']
+  confirmBusinessDetails:
+    en_US:
+      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Confirm your business details')]
+  accountLabel:
+    en_US:
+      web: xpath=(//span[text()='Account'])[2]

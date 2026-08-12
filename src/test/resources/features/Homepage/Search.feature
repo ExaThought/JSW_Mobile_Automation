@@ -45,10 +45,10 @@ Feature: Validate Search functionality and navigation
     And user clicks on a product from search results for web
     Then user should be navigated to product detail page for web
 
-#@base
-#  Scenario: Validate navigation from search results to PLP and then PDP
-#    When user enters "cement" in search bar for web
-#    And user clicks on view all products for web
-#    Then user should be navigated to product listing page for web
-#    When user selects a product from PLP for web
-#    Then user should be navigated to product detail page for web
+  @base
+  Scenario: Validate navigation from search results to PLP and then PDP
+    When user enters "cement" in search bar for web
+    And user clicks on view all products for web
+    Then user should be navigated to product listing page for web
+    When user selects a product from PLP for web
+    Then user should be navigated to product detail page for web

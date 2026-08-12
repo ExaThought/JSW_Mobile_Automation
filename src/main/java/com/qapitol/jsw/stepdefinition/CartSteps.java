@@ -3,6 +3,7 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.context.ScenarioContext;
 import com.qapitol.jsw.utils.CustomUtil;
+import com.qapitol.jsw.utils.CustomerProfileUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -24,7 +25,9 @@ import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class CartSteps extends AbstractWebPage {
-    private static final String THICKNESS = "(//span[text()='Thickness (mm)']/../following-sibling::div//button)[1]";
+    private static final String THICKNESS = "(//span[text()='Thickness (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))])[1]";
+    private static final String WIDTH_BUTTON = "(//span[text()='Width (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))]) [1]";
+    private static final String LENGTH_BUTTON = "(//span[text()='Length (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))]) [1]";
     private static final String QUANTITY = "quantity";
     private static final String ADD_TO_CART_CTA = "addToCart";
     private static final String VIEW_CART = "viewCart";
@@ -33,8 +36,6 @@ public class CartSteps extends AbstractWebPage {
     private static final String EDIT_LINE_ITEM = "editLineItem";
     private static final String DELETE_CTA_BUTTON = "deleteCta";
     private static final String CEMENT_PLP = "cement";
-    private static final String CEMENT_PDP = "cementPDP";
-    private static final String CEMENT_QUANTITY = "cementQuantity";
     private static final String STAINLESS_STEEL_PLP = "stainlessSteelPlp";
     private static final String STAINLESS_STEEL_PDP = "stainlessSteelPDP";
     private static final String STAINLESS_STEEL_THICKNESS = "stainlessSteelThickness";
@@ -43,18 +44,12 @@ public class CartSteps extends AbstractWebPage {
     private static final String RCV2_CHECKOUT = "rcCheckout";
     private static final String MY_REQUIREMENT_PAGE = "myRequirementPage";
     private static final String REQUIREMENT_ID = "requirementId";
-    private static final String MILD_STEEL = "mildSteel";
-    private static final String COLOUR_COATED = "colourCoated";
-    private static final String PDP_COATED_STEEL_SHEET = "colourCoatedPdp";
-    private static final String WIDTH = "width(mm)";
-    private static final String COATING_GRADE = "(//span[text()=\"Coating grade (gsm)\"]/../following-sibling::div/button)[1]";
     private static final String SUCCESS_PAGE_RCV2 = "rcCheckoutSuccessPage";
-    private static final String SPANGLE_TYPE = "(//span[text()=\"Spangle type\"]/../following-sibling::div/button)[1]";
     private static final String CART_PAGE = "cartPage";
     private static final String PLP_FIRST_PRODUCT = "plpFirstProduct";
     private static final String LENGTH = "length";
     private static final String DIAMETER = "(//span[text()='Diameter (mm)']/../following-sibling::div//button)[1]";
-    private static final String TMT = "tmt";
+    private static final String TMT_PRODUCT = "tmt";
     private static final String FORM = "(//span[text()='TMT Form']/../following-sibling::div//button[@data-slot=\"button\"])[1]";
     private static final String LEG_LENGTH = "legLength";
     private static final String FLANGE_WIDTH = "flangeWidth";
@@ -70,22 +65,15 @@ public class CartSteps extends AbstractWebPage {
     private static final String EDIT_LENGTH = "editLength";
     private static final String ATTRIBUTE = "attributeValue";
     private static final String PDP_PRODUCT_NAME = "pdpProductName";
-    private static final String COATED_STEEL = "coatedSteel";
     private static final String GALVANIZED_SHEET = "galvanizedSheet";
     private static final String UPDATE_ATTRIBUTE = "(//div[@data-side='bottom']//button[not(@disabled)]//span)[1]";
     private static final String CART_PAGE_ATTRIBUTE_VALUE = "cartPageAttributeValue";
-    private static final String EDIT_CART_PAGE_ENTER_QUANTITY = "editCartPageEnterQuantity";
     private static final String CART_PAGE_PRODUCT_NAME = "cartPageProductName";
     private static final String CART_PAGE_QUANTITY = "cartPageQuantity";
     private static final String EDIT_DIAMETER_DROPDOWN = "editDiameterDropdown";
     private static final String EDIT_FORM_DROPDOWN = "editFormDropdown";
-    private static final String CART_PAGE_SPANGLE = "cartPageSpangleTypeValue";
-    private static final String CART_PAGE_COATING_GRADE = "cartPageCoatingGradeValue";
     private static final String CART_COUNT = "//section//p[contains(normalize-space(.), 'item')]";
-    private static final String EMPTY_CART_MESSAGE = "emptyCartMessage";
-    private static final String EMPTY_CART_COUNT = "emptyCartCount";
     private static final String CART_PAGE_SKU_COUNT = "cartPageSKUCount";
-    private static final String DELETE_CART_TITLE = "deleteCartTitle";
     private static final String CART_SUBTOTAL = "cartSubtotal";
     private static final String CART_TAX = "cartTax";
     private static final String CART_ORDER_TOTAL = "cartOrderTotal";
@@ -93,29 +81,28 @@ public class CartSteps extends AbstractWebPage {
     private static final String DELETE_ITEMS = "(//div[@id='line-item-section']//*[text()='Delete' and not(ancestor::*[@data-index='-1'])])[1]";
     private static final String DELETE_BTN = "//button[@id=\"remove-btn\"]";
     private static final String EMPTY_CART_MSG = "//h2[text()='Your cart is empty']";
-    private static final String CUSTOM_WIDTH_MSG = "//label[text()=\"Custom width (mm):\"]/../following-sibling::div//span";
-    private static final String CUSTOM_WIDTH_TEXTBOX = "(//span[text()='Width (mm)']/../following-sibling::div//input)[1]";
     private static final String CUSTOM_LENGTH_MSG = "//label[text()=\"Custom length (mm):\"]/../following-sibling::div/span";
     private static final String CUSTOM_LENGTH_TEXTBOX = "//label[text()=\"Custom length (mm):\"]/following-sibling::input";
     private static final String QUANTITY_TEXTBOX = "//input[@id=\"quantity-input\"]";
     private static final String ADD_TO_CART_BTN = "//button[text()=\"Add to cart\"]";
     private static final String VIEWCART = "//button[text()=\"View cart\"]";
     private static final String JSW_LOGO = "(//a[@href=\"/\"])[1]";
-    private static final String DELETE_ITEM_MSG = "//div[contains(text(),'Are you sure you want to delete this item from the cart?')]";
     private static final String ITEMS_COUNT = "//div[@id=\"cart-delivery-address\"]/following-sibling::div/div[contains(text(),'item')]";
     private static final String WIRE_COIL = "(//li//a[@href=\"/category/wire-rod-coils\"])";
-    private static final String WIDTH_TEXTBOX = "(//span[text()='Width (mm)']/../following-sibling::div//input)[1]";
-    private static final String WIDTH_BUTTON = "(//span[text()='Width (mm)']/../following-sibling::div//button)[1]";
-    private static final String WIDTH_MSG = "//span[text()='Width (mm)']/../following-sibling::div//span";
-    private static final String EDIT_DIAMETER = "(//div[text()=\"Diameter (mm)\"]/following-sibling::div[2]//div[@class=\"p-1 hover-bg\"])[1]";
     private static final String ITEM_NAME = "//h1";
-    private static final String WIDTH_AVAILABLE = "(//span[text()='Width (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))])[1]";
-    private static final String COATING_GRADE_AVAILABLE = "(//span[contains(text(),'Coating grade')]/../following-sibling::div//button[not(contains(@class, 'disabled'))])[1]";
     private static final String FIRST_WIRE_ROD_PRODUCT = "(//h1[text()='Wire rods']/../../following-sibling::div/div/a/div) [1]";
     private static final By ALL_CATEGORY = By.xpath("//span[contains(@class, 'hover') and contains(text(),'All categories')]");
     private static final By MILD_STEEL_CATEGORY = By.xpath("//a[contains(@href, 'mild-steel')]");
-    private final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
+    private static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private static final String wireCategory = "//li/a[contains(@href, 'wire-rods')]";
+    private static final String hotRolledSheetsSubCategory = "//li/a[contains(@href, 'hot-rolled-sheets')]";
+    private static final String hotRolledCoilsSubCategory = "//li/a[contains(@href, 'hot-rolled-coils')]";
+    private static final String coldRolledSheetsSubCategory = "//li/a[contains(@href, 'cold-rolled-steel-sheet')]";
+    private static final String coldRolledCoilsSubCategory = "//li/a[contains(@href, 'cold-rolled-coils')]";
+    private static final String galvanizedSheetCategory = "//li/a[contains(@href, 'coated-gi-sheet')]";
+    public static final String msHotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]";
+    public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]";
+    public static final String coatedSteelCategory = "(//a[contains(@href,'/category/steel-coated')])[1]";
     static String oldRequirementId;
     static String newRequirementId;
     static String pdpThickness;
@@ -205,24 +192,6 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
-
-    @When("move the mouse to Mild steel category")
-    public void moveTheMouseToMildSteelCategory() {
-
-        try {
-            refreshAndWaitFor(ALL_CATEGORY);
-            hoverOverElement(ALL_CATEGORY);
-            waits(MILD_STEEL_CATEGORY);
-            hoverOverElement(MILD_STEEL_CATEGORY);
-            log.info("cursor moved to mild steel category");
-        } catch (Exception e) {
-            throw new RuntimeException("mouse failed to move to mild steel category", e);
-
-        }
-
-
-    }
-
     @And("move to Hot rolled category")
     public void moveToHotRolledCategory() {
 
@@ -237,34 +206,12 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    private void clickOnHRSheetProduct() {
-        //Reading locator from page factory
-        try {
-            hoverOverElement(By.xpath(hotRolledCategory));
-            clickButton(By.xpath(hotRolledCategory));
-            log.info("cursor moved to hot rolled category");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to click on hot rolled sheet sub category", e);
-        }
-    }
-
-    private void clickOnHRCoilProduct() {
-        //Reading locator from page factory
-        try {
-            actions.moveToElement(Grid.driver().findElement(By.xpath(hotRolledCoilsSubCategory))).click().perform();
-            log.info("Clicked on hot rolled coil sub category");
-        } catch (Exception e) {
-            log.info("Failed to click on hot rolled coil sub category");
-            throw new RuntimeException("Failed to click on hot rolled coil sub category", e);
-        }
-    }
-
     @And("open HR Coil plp {string} product")
     public void openHRCoilPdp(String product) {
         try {
             sleep(3000);
-            waits(By.xpath(plpFirstProduct));
-            clickButton(By.xpath(plpFirstProduct));
+            waits(By.xpath(PLP_FIRST_PRODUCT));
+            clickButton(By.xpath(PLP_FIRST_PRODUCT));
             log.info("Opened HR Coil PDP page");
         } catch (Exception e) {
             log.info("Failed to click on  hot rolled coil category");
@@ -287,7 +234,6 @@ public class CartSteps extends AbstractWebPage {
             log.info("Failed to select thickness for HR Coil");
             throw new RuntimeException("Failed to select thickness for HR Coil", e);
         }
-
         // Select the first available width value on the HR Coil PDP.
         try {
             waits(By.xpath(WIDTH_BUTTON));
@@ -388,17 +334,14 @@ public class CartSteps extends AbstractWebPage {
         jsClick(deleteItemBtn);
     }
 
-    @And("open HR Sheet plp {string} product")
-    public void openHRSheetPdp(String product) {
-
-
-        //scrollingToViewAndClickUsingJS(locator);
+    @And("click on first product")
+    public void clickOnFirstProduct() {
         try {
-            WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
-            clickButton(locator);
-            log.info("Opened HR Sheet PDP page");
+            WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
+            jsClick(locator);
+            log.info("Clicked on first product");
         } catch (Exception e) {
-            throw new RuntimeException("Failed to click on first product of hot rolled sheet category", e);
+            throw new RuntimeException("Failed to click on first product", e);
         }
     }
 
@@ -419,9 +362,9 @@ public class CartSteps extends AbstractWebPage {
 
         // Enter a valid custom width on the HR Sheet PDP.
         try {
-            waits(By.xpath(WIDTH_AVAILABLE));
-            clickButton(By.xpath(WIDTH_AVAILABLE));
-            context.pdpWidth = getText(By.xpath(WIDTH_AVAILABLE));
+            waits(By.xpath(WIDTH_BUTTON));
+            clickButton(By.xpath(WIDTH_BUTTON));
+            context.pdpWidth = getText(By.xpath(WIDTH_BUTTON));
             log.info("Selected width value '" + context.pdpWidth + "' for HR Coil");
             Allure.addAttachment("Width selected", "Selected width value: " + context.pdpWidth);
         } catch (Exception e) {
@@ -567,24 +510,16 @@ public class CartSteps extends AbstractWebPage {
         actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCategory))).perform();
     }
 
-    private void clickOnCRCoilProduct() {
-        //Move mouse to Cold rolled coil sub category and click on it
-        actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCoilsSubCategory))).click().perform();
-    }
-
     @And("open CR Coil pdp {string} product")
     public void openCRCoilPdp(String product) {
         //Scroll and click on it to open CR Coil PDP
-        WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
         clickButton(locator);
     }
 
     @And("select thickness, width, quantity {string} for CR Coil")
     public void selectAllTheCRCoilAttribute(String quantity) {
-
-
         try {
-
             {
                 cartPdpProductName = getText(By.xpath(ITEM_NAME));
                 waits(By.xpath(THICKNESS));
@@ -600,9 +535,9 @@ public class CartSteps extends AbstractWebPage {
 
         //Select width for CR Coil
         try {
-            waits(By.xpath(WIDTH_AVAILABLE));
-            clickButton(By.xpath(WIDTH_AVAILABLE));
-            context.pdpWidth = getText(By.xpath(WIDTH_AVAILABLE));
+            waits(By.xpath(WIDTH_BUTTON));
+            clickButton(By.xpath(WIDTH_BUTTON));
+            context.pdpWidth = getText(By.xpath(WIDTH_BUTTON));
             log.info("Selected width value '" + context.pdpWidth + "' for HR Coil");
             Allure.addAttachment("Width selected", "Selected width value: " + context.pdpWidth);
         } catch (Exception e) {
@@ -650,14 +585,9 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
-    private void clickOnCRSheetProduct() {
-        //Reading locator from page factory
-        actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledSheetsSubCategory))).click().perform();
-    }
-
     @And("open CR Sheet pdp")
     public void openCRSheetPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
         clickButton(locator);
     }
 
@@ -665,53 +595,38 @@ public class CartSteps extends AbstractWebPage {
     public void selectAllTheCRSheetAttribute(String quantity) {
 
         try {
-
-            {
                 context.cartPdpProductName = getText(By.xpath(ITEM_NAME));
                 waits(By.xpath(THICKNESS));
                 clickButton(By.xpath(THICKNESS));
                 context.pdpThickness = getText(By.xpath(THICKNESS));
                 log.info("Thickness value " + context.pdpThickness + "mm is not available for selection, selecting available thickness value");
                 Allure.addAttachment("Thickness value not available", "Thickness value " + context.pdpThickness + "mm is not available for selection, selecting available thickness value");
-            }
         } catch (Exception e) {
             log.info("Failed to click cold rolled sheet thickness");
             throw new RuntimeException("Failed to click cold rolled sheet thickness", e);
         }
 
         try {
-            waits(By.xpath(WIDTH_AVAILABLE));
-            clickButton(By.xpath(WIDTH_AVAILABLE));
-            context.pdpWidth = getText(By.xpath(WIDTH_AVAILABLE));
-            log.info("Selected width value '" + context.pdpWidth + "' for HR Coil");
+            waits(By.xpath(WIDTH_BUTTON));
+            clickButton(By.xpath(WIDTH_BUTTON));
+            context.pdpWidth = getText(By.xpath(WIDTH_BUTTON));
+            log.info("Selected width value '" + context.pdpWidth + "' for CR Shet");
             Allure.addAttachment("Width selected", "Selected width value: " + context.pdpWidth);
         } catch (Exception e) {
-            log.info("Failed to select width for HR Coil");
-            throw new RuntimeException("Failed to select width for HR Coil", e);
+            log.info("Failed to select width for CR Shet");
+            throw new RuntimeException("Failed to select width for CR Shet", e);
         }
 
         try {
-
-            {
-
-                waits(By.xpath(CUSTOM_LENGTH_MSG));
-                String value = getText(By.xpath(CUSTOM_LENGTH_MSG));
-                String lengthValue = String.valueOf(CustomUtil.generateValueFromText(value));
-                log.info("Enter the Custom length value  " + lengthValue);
-                waits(By.xpath(CUSTOM_LENGTH_TEXTBOX));
-                enterText(By.xpath(CUSTOM_LENGTH_TEXTBOX), lengthValue);
-                WebElement element = Grid.driver().findElement(By.xpath(CUSTOM_LENGTH_TEXTBOX));
-                element.sendKeys(Keys.ENTER);
-                log.info("entering the custom length");
-                context.pdpLength = lengthValue;
-                log.info("Length value " + context.pdpLength + "mm is not available for selection, selecting available length value");
-                Allure.addAttachment("Length value not available", "Length value " + context.pdpLength + "mm is not available for selection, selecting available length value");
-
-            }
+            waits(By.xpath(LENGTH_BUTTON));
+            scrollingToViewAndClickUsingJS(Grid.driver().findElement(By.xpath(LENGTH_BUTTON)));
+            clickButton(By.xpath(LENGTH_BUTTON));
+            context.pdpLength = getText(By.xpath(LENGTH_BUTTON));
+            log.info("Selected length value '" + context.pdpLength + "' for CR Shet");
+            Allure.addAttachment("Length value not available", "Length value " + context.pdpLength + "mm is not available for selection, selecting available length value");
         } catch (Exception e) {
-            throw new RuntimeException("Failed to click cold rolled sheet length", e);
+            throw new RuntimeException("There are no available length for the selected CR Sheet", e);
         }
-
 
         try {
             waitAndCheckIsElementClickable(QUANTITY);
@@ -743,11 +658,15 @@ public class CartSteps extends AbstractWebPage {
     @When("click on Cement product")
     public void clickOnCementProduct() {
         try {
-            sleep(4000);
-            pageRefresh();
-            sleep(4000);
-            new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(ALL_CATEGORY));
-            actions.moveToElement(Grid.driver().findElement(ALL_CATEGORY)).perform();
+            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+
+            confirmBusinessDetailsIfDialogPresent();
+            if(transactingCustomer){
+                refreshAndWaitFor(ALL_CATEGORY);
+                confirmBusinessDetailsIfDialogPresent();
+                hoverOverElement(ALL_CATEGORY);
+            }
             waitAndClickOn(CEMENT_PLP);
             log.info("Opened cement PLP page");
         } catch (Exception e) {
@@ -772,9 +691,10 @@ public class CartSteps extends AbstractWebPage {
     @And("enter quantity {string} for Cement")
     public void selectAllTheCementAttribute(String quantity) {
         try {
+            sleep(500000);
             context.cartPdpProductName = getText(By.xpath(ITEM_NAME));
-            waitAndCheckIsElementClickable(CEMENT_QUANTITY);
-            waitAndSetText(CEMENT_QUANTITY, quantity);
+            waitAndCheckIsElementClickable(QUANTITY);
+            waitAndSetText(QUANTITY, quantity);
             log.info("Quantity " + quantity + " is entered for cement");
             context.pdpQuantity = quantity;
         } catch (Exception e) {
@@ -791,16 +711,6 @@ public class CartSteps extends AbstractWebPage {
         } catch (Exception e) {
             throw new RuntimeException("mouse failed to move to coated steel", e);
 
-        }
-    }
-
-    private void clickOnCoatedSteelSheetProduct() {
-        try {
-            clickButton(GALVANIZED_SHEET);
-            log.info("Click on galvanized sheet");
-        } catch (Exception e) {
-            log.info("Failed to click galvanized sheet");
-            throw new RuntimeException("Failed to click galvanized sheet", e);
         }
     }
 
@@ -835,8 +745,8 @@ public class CartSteps extends AbstractWebPage {
         try {
 
             {
-                clickButton(By.xpath(WIDTH_AVAILABLE));
-                context.pdpWidth = getText(By.xpath(WIDTH_AVAILABLE));
+                clickButton(By.xpath(WIDTH_BUTTON));
+                context.pdpWidth = getText(By.xpath(WIDTH_BUTTON));
                 log.info("Width value " + context.pdpWidth + "mm is not available for selection, selecting available width value");
                 Allure.addAttachment("Width value not available", "Width value " + context.pdpWidth + "mm is not available for selection, selecting available width value");
             }
@@ -883,6 +793,19 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertFalse(context.cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(context.cartAttributeValue, context.pdpThickness + " x " + context.pdpWidth + " x " + context.pdpLength + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
         softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+    }
+
+    /**
+     * Alias for {@link #clickOnWireProduct()}.
+     *
+     * <p>Cucumber step matching is case-sensitive and the feature files use both spellings:
+     * GuestUserToken and LoginUserToken use "wire", EditAndDeleteCart:114 uses "Wire". Binding both
+     * keeps either spelling from becoming an undefined step. @And is not repeatable in Cucumber
+     * 7.8.1, so this has to be a separate method rather than a second annotation.
+     */
+    @And("click on Wire product")
+    public void clickOnWireProductCapitalised() {
+        clickOnWireProduct();
     }
 
     @And("click on wire product")
@@ -973,20 +896,27 @@ public class CartSteps extends AbstractWebPage {
     @When("click on TMT product")
     public void clickOnTMTProduct() {
         try {
-            new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(ALL_CATEGORY));
-            actions.moveToElement(Grid.driver().findElement(ALL_CATEGORY)).perform();
-            waitAndClickOn(TMT);
-            log.info("Clicked on TMT category");
+            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+
+        confirmBusinessDetailsIfDialogPresent();
+        if(transactingCustomer){
+            refreshAndWaitFor(ALL_CATEGORY);
+            confirmBusinessDetailsIfDialogPresent();
+            hoverOverElement(ALL_CATEGORY);
+        }
+            waitAndClickOn(TMT_PRODUCT);
+            log.info("Clicked on TMT roduct");
         } catch (Exception e) {
-            log.info("Failed to click on TMT category");
-            throw new RuntimeException("Failed to click on TMT category", e);
+            log.info("Failed to click on TMT product");
+            throw new RuntimeException("Failed to click on TMT product", e);
         }
     }
 
     @And("click on TMT plp {string} product")
     public void openTMTPdp(String product) {
         try {
-            WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+            WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
             clickButton(locator);
             log.info("Opened TMT PDP page");
         } catch (Exception e) {
@@ -1069,7 +999,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("open Angles pdp")
     public void openAnglesPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
         scrollingToViewAndClickUsingJS(locator);
         waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
         waitAndClickOn(PLP_FIRST_PRODUCT, "1");
@@ -1101,7 +1031,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("open Channels pdp")
     public void openChannelsPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
         scrollingToViewAndClickUsingJS(locator);
         waitAndClickOn(PLP_FIRST_PRODUCT, "1");
     }
@@ -1134,7 +1064,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("open Beams & Columns pdp")
     public void openBeamsColumnsPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(plpFirstProduct));
+        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
         scrollingToViewAndClickUsingJS(locator);
         waitAndClickOn(PLP_FIRST_PRODUCT, "1");
     }
@@ -1476,43 +1406,49 @@ public class CartSteps extends AbstractWebPage {
         log.info("Cart persisted after refresh. SKU count: " + skuAfter);
     }
 
+    /**
+     * Unquoted alias for {@link #moveTheMouseToCategory(String)}.
+     *
+     * <p>{@code {string}} only matches quoted text, so the unquoted phrasing used by
+     * EditAndDeleteCart, Pdp and PlP (18 lines) had no matching step definition and failed as
+     * undefined. Delegating here keeps a single implementation for both phrasings.
+     */
+    @When("move the mouse to Mild steel category")
+    public void moveTheMouseToMildSteelCategoryUnquoted() {
+        moveTheMouseToCategory("Mild steel");
+    }
+
     @When("move the mouse to {string} category")
     public void moveTheMouseToCategory(String category) {
-        if(isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
-            Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
+        // Pull the customer's isTransacting flag from the preprod customer-profile API.
+        // Cached per scenario, so repeated calls to this step hit the API only once.
+        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+
+        confirmBusinessDetailsIfDialogPresent();
+        if(transactingCustomer){
+            refreshAndWaitFor(ALL_CATEGORY);
+            confirmBusinessDetailsIfDialogPresent();
+            hoverOverElement(ALL_CATEGORY);
         }
-        refreshAndWaitFor(ALL_CATEGORY);
-        hoverOverElement(ALL_CATEGORY);
 
         if (category.equalsIgnoreCase("mild steel")) {
+            confirmBusinessDetailsIfDialogPresent();
             waits(MILD_STEEL_CATEGORY);
             hoverOverElement(MILD_STEEL_CATEGORY);
             log.info("cursor moved to mild steel category");
             return;
+        } else {
+            By categoryLocator = getCategoryLocator(category);
+            waits(categoryLocator);
+            hoverOverElement(categoryLocator);
+            log.info("cursor moved to category: " + category);
         }
-
-        if (isMildSteelSubCategory(category)) {
-            waits(MILD_STEEL_CATEGORY);
-            hoverOverElement(MILD_STEEL_CATEGORY);
-
-            By subcategoryLocator = getCategoryLocator(category);
-            waits(subcategoryLocator);
-            hoverOverElement(subcategoryLocator);
-            log.info("cursor moved to subcategory '" + category + "' under mild steel");
-            return;
-        }
-
-        By categoryLocator = getCategoryLocator(category);
-        waits(categoryLocator);
-        hoverOverElement(categoryLocator);
-        log.info("cursor moved to category: " + category);
     }
 
     @And("click on {string} product")
     public void clickOnProduct(String product) {
-        if(isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
-            Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
-        }
+        confirmBusinessDetailsIfDialogPresent();
         switch (product.trim().toLowerCase()) {
             case "hr sheet":
                 clickHRSheetProduct();
@@ -1526,8 +1462,8 @@ public class CartSteps extends AbstractWebPage {
             case "cr coil":
                 clickCRCoilProduct();
                 break;
-            case "coated steel sheet":
-                clickCoatedSteelSheetProduct();
+            case "galvanized sheet":
+                clickGalvanizedSheetProduct();
                 break;
             case "wire":
                 clickWireProduct();
@@ -1539,8 +1475,7 @@ public class CartSteps extends AbstractWebPage {
 
     private void clickMildSteelSubCategory(By locator, String productName) {
         try {
-            waits(locator);
-            actions.moveToElement(Grid.driver().findElement(locator)).click().perform();
+            jsClick(locator);
             log.info("Clicked on " + productName + " product");
         } catch (Exception e) {
             log.info("Failed to click on " + productName + " product");
@@ -1568,25 +1503,13 @@ public class CartSteps extends AbstractWebPage {
         clickMildSteelSubCategory(By.xpath(wireCategory), "Wire");
     }
 
-    private void clickCoatedSteelSheetProduct() {
+    private void clickGalvanizedSheetProduct() {
         try {
             waitAndClickOn(GALVANIZED_SHEET);
-            log.info("Clicked on Coated steel sheet product");
+            log.info("Clicked on Galvanized steel sheet product");
         } catch (Exception e) {
-            log.info("Failed to click on Coated steel sheet product");
-            throw new RuntimeException("Failed to click on Coated steel sheet product", e);
-        }
-    }
-
-    private boolean isMildSteelSubCategory(String category) {
-        switch (category.trim().toLowerCase()) {
-            case "hot rolled":
-            case "cold rolled":
-            case "coated steel":
-            case "wire":
-                return true;
-            default:
-                return false;
+            log.info("Failed to click on Galvanized steel sheet product");
+            throw new RuntimeException("Failed to click on Galvanized steel sheet product", e);
         }
     }
 
@@ -1595,15 +1518,99 @@ public class CartSteps extends AbstractWebPage {
             case "mild steel":
                 return MILD_STEEL_CATEGORY;
             case "hot rolled":
-                return By.xpath(msHotRolled);
+                return By.xpath(msHotRolledCategory);
             case "cold rolled":
-                return By.xpath(coldRolledCategory);
-            case "coated steel":
-                return By.xpath(coatedSteel);
+                return By.xpath(msColdRolledCategory);
+            case "galvanized sheet":
+                return By.xpath(galvanizedSheetCategory);
             case "wire":
                 return By.xpath(wireCategory);
             default:
                 throw new IllegalArgumentException("Unknown category: " + category);
         }
+    }
+
+    private void confirmBusinessDetailsIfDialogPresent() {
+        if (isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
+            Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
+        }
+    }
+
+    @When("move the mouse to Mild steel category and to sub category Hot rolled")
+    public void moveTheMouseToMildSteelCategoryAndToSubCategoryHotRolled() {
+        confirmBusinessDetailsIfDialogPresent();
+        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+        if(transactingCustomer){
+        refreshAndWaitFor(ALL_CATEGORY);
+        hoverOverElement(ALL_CATEGORY);
+        }
+        hoverOverMildSteelCategory();
+        waits(By.xpath(msHotRolledCategory));
+        hoverOverElement(By.xpath(msHotRolledCategory));
+        log.info("cursor moved to subcategory 'Hot rolled' under mild steel");
+    }
+
+    // Step bindings for the sub-category clicks. Named distinctly from the private
+    // clickOn*Product() helpers above, which use Actions instead of a JS click.
+    @And("click on HR Sheet product")
+    public void selectHRSheetProduct() {
+        jsClick(By.xpath(hotRolledSheetsSubCategory));
+    }
+
+    @And("click on HR Coil product")
+    public void selectHRCoilProduct() {
+        jsClick(By.xpath(hotRolledCoilsSubCategory));
+    }
+
+    @When("move the mouse to Mild steel category and to sub category Cold rolled")
+    public void moveTheMouseToMildSteelCategoryAndToSubCategoryColdRolled() {
+        confirmBusinessDetailsIfDialogPresent();
+        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+        if(transactingCustomer){
+        refreshAndWaitFor(ALL_CATEGORY);
+        hoverOverElement(ALL_CATEGORY);
+        }
+        hoverOverMildSteelCategory();
+        waits(By.xpath(msColdRolledCategory));
+        hoverOverElement(By.xpath(msColdRolledCategory));
+        log.info("cursor moved to subcategory 'Cold rolled' under mild steel");
+    }
+
+    @And("click on CR Coil product")
+    public void selectCRCoilProduct() {
+        jsClick(By.xpath(coldRolledCoilsSubCategory));
+    }
+
+    @And("click on CR Sheet product")
+    public void selectCRSheetProduct() {
+        jsClick(By.xpath(coldRolledSheetsSubCategory));
+    }
+
+     @When("move the mouse to Mild steel category and to sub category Coated steel")
+    public void moveTheMouseToMildSteelCategoryAndToSubCategoryCoatedSteel() {
+        confirmBusinessDetailsIfDialogPresent();
+        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+        if(transactingCustomer){
+        refreshAndWaitFor(ALL_CATEGORY);
+        hoverOverElement(ALL_CATEGORY);
+        }
+        hoverOverMildSteelCategory();
+        waits(By.xpath(coatedSteelCategory));
+        hoverOverElement(By.xpath(coatedSteelCategory));
+        log.info("cursor moved to subcategory 'Coated steel' under mild steel");
+    }
+
+    @And("click on Galvanized sheet product")
+    public void selectGalvanizedSteelSheetProduct() {
+        jsClick(By.xpath(galvanizedSheetCategory));
+    }
+
+    private void hoverOverMildSteelCategory() {
+        waits(MILD_STEEL_CATEGORY);
+        hoverOverElement(MILD_STEEL_CATEGORY);
+        log.info("cursor moved to mild steel category");
     }
 }

@@ -82,6 +82,10 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
         addArgIfMissing(args, "--window-size=1920,1080");
         addArgIfMissing(args, "--disable-extensions");
         addArgIfMissing(args, "--remote-allow-origins=*");
+        // Auto-dismiss native permission prompts (location, camera, mic). These are browser
+        // chrome, not DOM, so Selenium cannot close them from a step definition. The flag
+        // works even in --incognito, where profile prefs are not always honoured.
+        addArgIfMissing(args, "--deny-permission-prompts");
 
         customChromeOptions.addArguments(args);
 
@@ -90,6 +94,8 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
             prefs.putAll((Map<String, Object>) chromeOptionCapsObj.get("prefs"));
         }
         prefs.put("profile.default_content_setting_values.notifications", 2);
+        // 2 = block. Stops the "<site> wants to know your location" prompt from appearing.
+        prefs.put("profile.default_content_setting_values.geolocation", 2);
         customChromeOptions.setExperimentalOption("prefs", prefs);
 
         return customChromeOptions;

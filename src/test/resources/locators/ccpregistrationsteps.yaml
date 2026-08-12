@@ -3,15 +3,9 @@ elements:
     en_US:
       web: //button[@id='login-cta']
 
-  registrationViaOtp:
-    en_US:
-      web: //button[@id='login-via-otp']
-
   ccpRegistrationEmail:
     en_US:
       web: //input[@id='email']
-
-
 
   ccpRegistrationCTA:
     en_US:

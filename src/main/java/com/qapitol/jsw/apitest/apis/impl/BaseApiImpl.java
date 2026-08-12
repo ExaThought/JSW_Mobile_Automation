@@ -30,6 +30,16 @@ public abstract class BaseApiImpl {
     protected ApiClientFactory centralCartCcpUrl() {
         return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
     }
+
+    /**
+     * Experience-middleware base URL. Resolves from the `middlewareUrl` property, so the
+     * same code hits preprod or qa depending on how the environment is configured:
+     *   preprod -> https://experience-middleware.preprod.jswonemsme.com/
+     *   qa      -> https://experience-middleware.qa.jswone.in/   (MIDDLEWARE_BASE_URL env var)
+     */
+    protected ApiClientFactory middlewareUrl() {
+        return ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("middlewareUrl"));
+    }
     protected ApiClientFactory getOmsUrl() {
         return ApiClientFactory.getInstance(Objects.requireNonNull(ConfigUtil.getSecretValue("omsBaseUrl")));
     }

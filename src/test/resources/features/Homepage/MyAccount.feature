@@ -1,5 +1,4 @@
-
-
+@myAccount @regression
 Feature: Validate All Tabs under My Account Drop Down
 
   Background:

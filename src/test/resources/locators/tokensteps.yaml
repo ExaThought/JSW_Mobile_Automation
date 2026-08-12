@@ -14,21 +14,22 @@ elements:
   orderSummaryPage:
     en_US:
       web: xpath=(//div[contains(text(),'View details')])[1]
+  # Both keys previously hung off //span[contains(normalize-space(),'Search')], which matches the
+  # span AND every ancestor span, and whose first match is a 0x0 duplicate. Resolve the trigger
+  # button and the overlay input directly instead. Read the first VISIBLE match - the header
+  # renders two copies of this button.
   searchBox:
     en_US:
-      web: xpath=//input[@id='SearchText']
+      web: xpath=//span[text()='Search']/../following-sibling::button
   searchInput:
     en_US:
-      web: xpath=//input[@id='SearchInput']
+      web: xpath=//input[@data-slot='input']
   homePageRegisterCta:
     en_US:
       web: xpath=//span[contains(text(),'Register')]
   continueWithEmailCta:
     en_US:
       web: xpath=//button[contains(text(),'Continue with email')]
-  loginViaOtp:
-    en_US:
-      web: //button[@id='login-via-otp']
   ccpLoginEmail:
     en_US:
       web: //input[@id='email']
@@ -40,10 +41,10 @@ elements:
       web: //button[@id='login-to-continue']
   ledgerPage:
     en_US:
-      web: //div[contains(text(),'Ledger')]
+      web: //a[contains(@href,'ledger')]/span
   trackMaterialPage:
     en_US:
-      web: //div[contains(text(),'Track Materials')]
+      web: //a[contains(@href,'track-material')]
   loginButton:
     en_US:
       web: //button[text()='Login']
@@ -56,3 +57,6 @@ elements:
   confirmBusinessDetails:
     en_US:
       web: xpath=//div[@role='dialog']/h2[contains(text(), 'Confirm your business details')]
+  continueCTA:
+    en_US:
+      web: xpath=//button[normalize-space(.)='Continue']

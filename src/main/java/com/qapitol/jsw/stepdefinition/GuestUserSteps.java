@@ -26,12 +26,7 @@ public class GuestUserSteps extends AbstractWebPage {
     private final String LOGIN_REGISTER_PAGE = "loginRegistrationPage";
     private final String MY_REQUIREMENT = "myRequirements";
     private final String MY_ORDERS = "myOrders";
-    private final String BLOGS_SECTION = "blogsArticles";
-    private final String BLOGS_VIEW_ALL = "blogsArticleViewAll";
-    private final String BLOGS_PAGE_VERIFICATION = "blogsPageVerification";
     private final String LOGIN_PAGE = "loginPage";
-    private final String PLAYED_VIDEO = "playedVideo";
-
 
     String pageName;
 
@@ -101,9 +96,9 @@ public class GuestUserSteps extends AbstractWebPage {
         js.executeScript("arguments[0].scrollIntoView(true);", msmeMasterclass_Video_Section);
         WebElement first_Item = Grid.driver().findElement(By.xpath("(//h2[text()='MSME Masterclass']/../../div/div/div/button/picture/img)[1]"));
         js.executeScript("arguments[0].click();", first_Item);
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(30));
+        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(50));
         wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.xpath("//iframe[@title='video']")));
-
+        Grid.driver().switchTo().frame(Grid.driver().findElement(By.xpath("//iframe[@title='video']")));
         WebElement videoSource = Grid.driver().findElement(By.xpath("//video/source[@type='video/mp4']"));
         softAssert.assertTrue(videoSource.isEnabled(),
                 "MSME Masterclass video is not played on clicking the video thumbnail");
@@ -112,14 +107,14 @@ public class GuestUserSteps extends AbstractWebPage {
     @And("clicks on the Blogs label of the top navbar")
     public void userClicksOnTheBlogsLabelOfTheTopNavbar() {
         //homepageBlogSteps.userNavigateToBlog();
-        WebElement Blogs = Grid.driver().findElement(By.xpath("//span[contains(@class, 'group-hover') and text()='Blogs']"));
+        WebElement Blogs = Grid.driver().findElement(By.xpath("//a[normalize-space()='Blogs' or contains(@href,'/blogs')]"));
         Blogs.click();
     }
 
     @Then("Blogs Page should be displayed with multiple blogs")
     public void BlogsPageShouldBeDisplayedWithMultipleBlogs() {
-        //homepageBlogSteps.userShouldSeeTheVlogsPageTitle();
-        List<WebElement> Blogs_Container = Grid.driver().findElements(By.xpath("//div[@class='common-container']/div/button"));
+        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(30));
+        List<WebElement> Blogs_Container = wait.until(ExpectedConditions.visibilityOfAllElements(Grid.driver().findElements(By.xpath("//div[@class='common-container']/div/button']"))));
         Assert.assertFalse(Blogs_Container.isEmpty(), "Blogs are not present");
     }
 }

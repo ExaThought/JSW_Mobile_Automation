@@ -7,7 +7,7 @@ elements:
       web: //a[@title='TATA Hot Rolled Coil 2062:2011 E350A']
   quantity:
     en_US:
-      web: xpath=//input[@id="quantity-input"]
+      web: xpath=//input[@id='quantity-input']
   addToCart:
     en_US:
       web: xpath=//div[contains(text(),'Add to cart')]/parent::button/child::div
@@ -28,7 +28,7 @@ elements:
       web: xpath=//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']
   cement:
     en_US:
-      web: xpath=//li//a[contains(@href,'/category/cement')]
+      web: xpath=//a[@href='/category/cement' and normalize-space() = 'Cement']
   cementPDP:
     en_US:
       web: xpath=(//div[@class='card-title'])[2]
@@ -67,7 +67,7 @@ elements:
       web: xpath=(//a[contains(text(),'Colour coated')])[2]
   coatedSteel:
     en_US:
-      web: xpath=(//a[contains(text(),'Coated Steel')])[2]
+      web: (//a[contains(@href,'/category/steel-coated')])[1]
   colourCoatedPdp:
     en_US:
       web: xpath=(//a[contains(text(),'Sheets')])[1]
@@ -85,7 +85,7 @@ elements:
       web: xpath=(//span[text()="Cart"])[2]
   plpFirstProduct:
     en_US:
-      web: xpath= (//span[contains(text(),"Brand:")])[{0}]
+      web: xpath= (//a[contains(@href, '/product-detail')]/div) [1]
   attributeValue:
     en_US:
       web: xpath=(//span[text()='Diameter (mm)']/../following-sibling::div//button[@data-slot="button"])[1]
@@ -100,7 +100,7 @@ elements:
       web: xpath=(//span[text()='Diameter (mm)']/../following-sibling::div//button[@data-slot="button"])[1]
   tmt:
     en_US:
-      web: xpath=//li//a[contains(@href, '/category/TMT-Bar-steel')]
+      web: xpath=(//a[contains(@href, '/category/TMT-Bar-steel')]) [1]
   form:
     en_US:
       web: xpath=//div[contains(text(),"Form")]/parent::div/following-sibling::div/child::div/child::button[{0}]
@@ -145,7 +145,7 @@ elements:
       web: xpath=//div[contains(text(),'Qty')]/../preceding-sibling::a
   galvanizedSheet:
     en_US:
-      web: xpath=(//a[contains(@href, '/product-detail')]/div) [1]
+      web: xpath=(//a[contains(@href,'galvanized-sheets')])[1]
   updateAttribute:
     en_US:
       web: xpath=(//div[@data-side="bottom"]//button/span)[2]
@@ -191,7 +191,7 @@ elements:
   # TODO: confirm the price-summary XPaths against the current cart DOM.
   cartSubtotal:
     en_US:
-      web: xpath=//div[contains(text(),'Sub total') or contains(text(),'Subtotal')]
+      web: xpath=//div[@id='payment-breakup' and not(@class) or @class='']/div/div/div/p[normalize-space(.) = 'Sub total' or normalize-space(.) = 'Subtotal']
   cartTax:
     en_US:
       web: xpath=//div[contains(text(),'GST') or contains(text(),'Tax')]
