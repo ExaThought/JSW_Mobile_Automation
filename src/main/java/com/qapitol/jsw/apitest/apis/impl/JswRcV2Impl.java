@@ -4,7 +4,6 @@ package com.qapitol.jsw.apitest.apis.impl;
 import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.pojos.order.centralCartDeleteApiRequest.CentralCartDeleteApiReq;
 import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiRequest.CentralCartFetchApiReq;
-import com.qapitol.jsw.apitest.pojos.order.centralCartFetchApiResponse.CentralCartFetchApiRes;
 import com.qapitol.jsw.apitest.pojos.order.jswServiceRcv2Request.Rcv2Req;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
 import com.qapitol.sauron.data.Data;
@@ -17,7 +16,6 @@ import static java.util.Objects.nonNull;
 public class JswRcV2Impl extends BaseApiImpl {
     private Rcv2Req rcv2RequestBody;
     private AddToCartRes addToCartApiResponse;
-    private CentralCartDeleteApiReq deleteApiReq;
     private String cartId;
     private String requestedSfCustomerId;
     private String requestedCartType;

@@ -28,7 +28,18 @@ public abstract class BaseApiImpl {
         return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("appBaseUrl"));
     }
     protected ApiClientFactory centralCartCcpUrl() {
-        return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
+        return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("centralCartCcpUrl"));
+    }
+
+    /**
+     * Base URL for the Salesforce -> CT sales-opp sync (data-sync/import/sales-opp).
+     *
+     * Kept separate from {@link #ccpUrl()} because on QA the endpoint lives on its own host
+     * and authenticates with a service X-API-KEY rather than a user access_token. On pre-prod
+     * the property resolves to the same address as ccpUrl, so behaviour there is unchanged.
+     */
+    protected ApiClientFactory salesOppUrl() {
+        return ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("salesOppUrl"));
     }
 
     /**

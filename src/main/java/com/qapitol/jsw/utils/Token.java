@@ -7,6 +7,8 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static io.restassured.RestAssured.*;
 
@@ -18,16 +20,58 @@ public class Token extends BaseApiImpl {
 
     /** Refresh this many seconds before the JWT actually expires. */
     private static final long OMS_TOKEN_REFRESH_SKEW_SECONDS = 300;
+    private static final long CCP_TOKEN_REFRESH_SKEW_SECONDS = 300;
 
     private static volatile String cachedOmsToken;
     private static volatile long cachedOmsTokenExpiryEpochSeconds;
+
+    /**
+     * CCP tokens cached per email. Keyed by email rather than held in one field because
+     * getCCPToken(email, password) is also used for the secondary user - a single shared slot
+     * would hand a secondary-user token to a primary-user call.
+     */
+    private static final ConcurrentMap<String, CachedToken> CCP_TOKEN_CACHE = new ConcurrentHashMap<>();
+
+    /** A token plus the epoch second at which it should be considered stale. */
+    private static final class CachedToken {
+        private final String token;
+        private final long expiryEpochSeconds;
+
+        private CachedToken(String token, long expiryEpochSeconds) {
+            this.token = token;
+            this.expiryEpochSeconds = expiryEpochSeconds;
+        }
+
+        private boolean isUsable(long skewSeconds) {
+            // expiry 0 means the exp claim could not be read - treat as never reusable.
+            return expiryEpochSeconds > 0
+                    && (System.currentTimeMillis() / 1000) < (expiryEpochSeconds - skewSeconds);
+        }
+    }
 
     public static String getCCPToken(){
         String email = UserConfig.getEmail();
         String password = Base64.getEncoder().encodeToString(UserConfig.getPassword().getBytes());
         return getCCPToken(email, password);
     }
+
+    /**
+     * CCP JWT for the given user. Cached until shortly before the token's own {@code exp} claim,
+     * so a scenario that needs the token several times logs in once.
+     */
     public static String getCCPToken(String email, String password){
+        CachedToken cached = CCP_TOKEN_CACHE.get(email);
+        if (cached != null && cached.isUsable(CCP_TOKEN_REFRESH_SKEW_SECONDS)) {
+            return cached.token;
+        }
+
+        String token = requestCCPToken(email, password);
+        CCP_TOKEN_CACHE.put(email, new CachedToken(token, readExpiry(token)));
+        return token;
+    }
+
+    /** Performs the actual login call, bypassing the cache. */
+    private static String requestCCPToken(String email, String password){
         baseURI=ConfigUtil.getSecretValue("ccpPortalUrl");
         String storeKey="msme";
 
@@ -42,6 +86,19 @@ public class Token extends BaseApiImpl {
         return given().log().all().body(requestPayload).header("content-type","application/json")
                 .when().log().all().post(ConfigUtil.getSecretValue("ccpTokenUrl"))
                 .then().log().all().statusCode(200).extract().jsonPath().getString("jwtToken");
+    }
+
+    /**
+     * Drops cached CCP tokens, forcing the next call to log in again. Use when a scenario needs a
+     * genuinely fresh token, or after changing the configured user mid-run.
+     */
+    public static void clearCcpTokenCache() {
+        CCP_TOKEN_CACHE.clear();
+    }
+
+    /** Drops the cached token for one user only. */
+    public static void clearCcpTokenCache(String email) {
+        CCP_TOKEN_CACHE.remove(email);
     }
 
     // ---------------------------------------------------------------------

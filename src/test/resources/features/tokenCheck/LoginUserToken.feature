@@ -65,15 +65,15 @@ Feature: Check Token for all the page
      Then verify user is able to login successfully
 
 # This scenario is and will be commented until the OTP handling is solved
-  # Scenario:Verify Expired token in bank details page
-  #   And user clicks on customer account menu
-  #   And user able to navigate on customer Profile section
-  #   And user clicks on Bank account details tab
-  #   When user set expired token in local storage
-  #   And user refresh the page
-  #   Then verify the user is logged out
-  #   And user navigate to login page and again login with configured user
-  #   Then verify user is able to login successfully
+#   Scenario:Verify Expired token in bank details page
+#     And user clicks on customer account menu
+#     And user able to navigate on customer Profile section
+#     And user clicks on Bank account details tab
+#     When user set expired token in local storage
+#     And user refresh the page
+#     Then verify the user is logged out
+#     And user navigate to login page and again login with configured user
+#     Then verify user is able to login successfully
 
    @tokenCheck1
    Scenario: Verify Expired token in HR Sheet PLP page
@@ -143,7 +143,7 @@ Feature: Check Token for all the page
     Then verify user is able to login successfully
 
    Scenario: Verify Expired token in TMT PLP page
-     When click on TMT product 
+     When click on TMT product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -151,10 +151,9 @@ Feature: Check Token for all the page
      Then verify user is able to login successfully
 
    Scenario: Verify Expired token in HR Sheet PDP page
-     When move the mouse to "Mild steel" category
-     And move the mouse to "Hot rolled" category
-     And click on "HR Sheet" product
-     And open HR Sheet plp "1" product
+     When move the mouse to Mild steel category and to sub category Hot rolled
+     And click on HR Sheet product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -162,10 +161,9 @@ Feature: Check Token for all the page
      Then verify user is able to login successfully
 
    Scenario: Verify Expired token in HR Coil PDP page
-     When move the mouse to "Mild steel" category
-     And move the mouse to "Hot rolled" category
-     And click on "HR Coil" product
-     And open HR Sheet plp "1" product
+     When move the mouse to Mild steel category and to sub category Hot rolled
+     And click on HR Coil product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -173,10 +171,9 @@ Feature: Check Token for all the page
      Then verify user is able to login successfully
 
    Scenario: Verify Expired token in CR Coil PDP page
-     When move the mouse to "Mild steel" category
-     And move the mouse to "Cold rolled" category
+     When move the mouse to Mild steel category and to sub category Cold rolled
      And click on "CR Coil" product
-     And open HR Sheet plp "1" product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -184,9 +181,9 @@ Feature: Check Token for all the page
      Then verify user is able to login successfully
 
    Scenario: Verify Expired token in CR Sheet PDP page
-     When move the mouse to "Mild steel" category
+     When move the mouse to Mild steel category and to sub category Cold rolled
      And click on "CR Sheet" product
-     And open HR Sheet plp "1" product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -195,7 +192,7 @@ Feature: Check Token for all the page
 
    Scenario: verify Expired token in cement PDP page
      When click on Cement product
-     And open HR Sheet plp "1" product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -203,10 +200,9 @@ Feature: Check Token for all the page
      Then verify user is able to login successfully
 
    Scenario: Verify Expired token in Coated steel PDP page
-     When move the mouse to "Mild steel" category
-     And click to Coated steel category
-     And click on "Coated steel sheet" product
-     And open HR Sheet plp "1" product
+     When move the mouse to Mild steel category and to sub category Coated steel
+     And click on Galvanized sheet product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -215,8 +211,8 @@ Feature: Check Token for all the page
 
    Scenario: Verify Expired token in Wire PDP page
      When move the mouse to "Mild steel" category
-     And click on "Wire" product
-     And open HR Sheet plp "1" product
+     And click on wire product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out
@@ -225,7 +221,7 @@ Feature: Check Token for all the page
 
    Scenario: Verify Expired token in TMT PDP page
      When click on TMT product
-     And open HR Sheet plp "1" product
+     And click on first product
      When user set expired token in local storage
      And user refresh the page
      Then verify the user is logged out

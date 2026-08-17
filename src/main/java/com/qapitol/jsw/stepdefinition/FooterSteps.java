@@ -3,13 +3,11 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
@@ -23,12 +21,15 @@ public class FooterSteps extends AbstractWebPage {
 
     private final LocatorReader locatorReader =
             new LocatorReader("locators/footersteps.yaml");
-    private static final String MILD_STEEL = "(//a[text()='Mild steel'])[2]";
-    private static final String STRUCTURE_STEEL = "(//a[text()='%s'])[2]";
-    private static final String BUY_ONLINE = "(//p[text()='%s'])[2]";
-    private static final String SUPPORT_PHONE = "(//a[@href=\"tel: +917208055523\"])[2]";
-    private static final String SUPPORT_EMAIL = "(//a[@href=\"mailto:support@jswonemsme.com\"])[2]";
-    private static final String TEXT_VALUE = "(//*[normalize-space(text())='%s'])[1]";
+    // No positional index. Verified on QA (qa-ssr.msme.jswone.in) and preprod: the footer is
+    // rendered twice and each of these resolves to FOUR copies, of which only the fourth has a
+    // non-zero box. The previous "[2]" therefore always selected a hidden 0x0 node and every
+    // isDisplayed() check returned false. Resolution is delegated to CustomUtil.firstVisible /
+    // isAnyVisible / clickFirstVisible, which filter matches by rendered state instead of position.
+    private static final String STRUCTURE_STEEL = "//a[text()='%s']";
+    private static final String BUY_ONLINE = "//p[text()='%s']";
+    private static final String SUPPORT_PHONE = "//a[@href=\"tel: +917208055523\"]";
+    private static final String SUPPORT_EMAIL = "//a[@href=\"mailto:support@jswonemsme.com\"]";
 
     // Captured BEFORE click so the Then step can assert the destination
     // independently of any text-mapping table.
@@ -44,8 +45,10 @@ public class FooterSteps extends AbstractWebPage {
     @Then("the {string} section should be visible in the footer for web")
     public void the_section_should_be_visible_in_the_footer_for_web(String sectionKey)
             throws InterruptedException {
-        waits(By.xpath(String.format(BUY_ONLINE,sectionKey)));
-        Assert.assertTrue(isDisplayed(By.xpath(String.format(BUY_ONLINE,sectionKey))));
+        softAssert.assertTrue(
+                isAnyVisible(By.xpath(String.format(BUY_ONLINE, sectionKey))),
+                "Footer section heading not visible: " + sectionKey
+        );
     }
 
     // ------------------- Footer Link Visibility -------------------
@@ -57,12 +60,8 @@ public class FooterSteps extends AbstractWebPage {
 
             By footerLink = By.xpath(String.format(STRUCTURE_STEEL, linkName));
 
-            waits(footerLink);
-
-            boolean displayed = isDisplayed(footerLink);
-
             softAssert.assertTrue(
-                    displayed,
+                    isAnyVisible(footerLink),
                     "Footer link not visible: " + linkName
             );
 
@@ -80,8 +79,8 @@ public class FooterSteps extends AbstractWebPage {
     public void the_support_phone_number_should_be_visible_for_web()
             throws InterruptedException {
 
-        Assert.assertTrue(
-                isDisplayed(By.xpath(SUPPORT_PHONE)),
+        softAssert.assertTrue(
+                isAnyVisible(By.xpath(SUPPORT_PHONE)),
                 "Support phone number not visible"
         );
     }
@@ -90,17 +89,29 @@ public class FooterSteps extends AbstractWebPage {
     public void the_support_email_address_should_be_visible_for_web()
             throws InterruptedException {
 
-        Assert.assertTrue(
-                isDisplayed(By.xpath(SUPPORT_EMAIL)),
+        softAssert.assertTrue(
+                isAnyVisible(By.xpath(SUPPORT_EMAIL)),
                 "Support email address not visible"
         );
     }
 
     // ------------------- Scroll & Click -------------------
 
+    /**
+     * Resolves a footer locator key to the element the user can actually see.
+     *
+     * <p>findElement() returned the first of four copies, which is always a hidden 0x0 duplicate.
+     * That made element.isDisplayed() false in scrollToElementAndClick(), so it burned its ten
+     * retries and never clicked, and it made getAttribute("href") read the hidden node.
+     */
     private WebElement findFooterElement(String yamlKey) {
         String xpath = locatorReader.getXpath("elements." + yamlKey + ".en_US.web");
-        return Grid.driver().findElement(By.xpath(xpath));
+        return firstVisible(By.xpath(xpath));
+    }
+
+    /** True when the element behind a footer locator key is rendered. Never throws. */
+    private boolean isFooterElementVisible(String yamlKey) {
+        return isAnyVisible(By.xpath(locatorReader.getXpath("elements." + yamlKey + ".en_US.web")));
     }
 
     private void scrollToElementAndClick(String yamlKey) {
@@ -173,14 +184,14 @@ public class FooterSteps extends AbstractWebPage {
 
             By footerLink = By.xpath(String.format(STRUCTURE_STEEL, linkName));
 
-            waits(footerLink);
-
             softAssert.assertTrue(
-                    isDisplayed(footerLink),
+                    isAnyVisible(footerLink),
                     "Footer link not displayed: " + linkName
             );
 
-            clickButton(footerLink);
+            // clickFirstVisible, not clickButton: clickButton resolves the first match, which is a
+            // hidden 0x0 copy, so the click silently lands on nothing.
+            clickFirstVisible(footerLink);
 
             log.info("Successfully clicked on footer link: " + linkName);
 
@@ -228,9 +239,11 @@ public class FooterSteps extends AbstractWebPage {
     @Then("the {string} should be visible in the footer for web")
     public void verify_element_visible(String key) throws InterruptedException {
 
-        Assert.assertTrue(
-                waitAndCheckIsElementVisible(key),
-                "Element not visible: " + key
+        // isFooterElementVisible, not waitAndCheckIsElementVisible: the latter resolves the first
+        // match, which is a hidden duplicate for every element in this footer.
+        softAssert.assertTrue(
+                isFooterElementVisible(key),
+                "Element not visible in footer: " + key
         );
     }
 
@@ -251,9 +264,12 @@ public class FooterSteps extends AbstractWebPage {
     public void click_app_icon(String appName) {
 
         String key = getAppKey(appName);
-        // App-store badges are <img> with no parent anchor on preprod, so
-        // there's nothing to capture. The scenario that depends on actual
-        // navigation is tagged @ignore in the feature file.
+        // On QA both badges ARE wrapped in <a target="_blank"> pointing at the real store
+        // listing, so the handle and href must be captured before the click - exactly as the
+        // social icons do. Without this, originalWindow stays null and verify_app_redirect's
+        // "any handle that isn't originalWindow" filter can select the original tab.
+        expectedHref = findFooterElement(key).getAttribute("href");
+        originalWindow = Grid.driver().getWindowHandle();
         scrollToElementAndClick(key);
     }
 
@@ -263,6 +279,7 @@ public class FooterSteps extends AbstractWebPage {
             case "youtube": return "socialYoutubeIcon";
             case "linkedin": return "socialLinkedInIcon";
             case "instagram": return "socialInstagramIcon";
+            case "facebook": return "socialFacebookIcon";
             default: throw new IllegalArgumentException("Invalid social icon: " + name);
         }
     }
@@ -311,9 +328,8 @@ public class FooterSteps extends AbstractWebPage {
     @Then("the user should be redirected to the correct app store {string}")
     public void verify_app_redirect(String store) {
 
-        // App badges on preprod are <img> tags without a parent anchor, so
-        // clicking them never opens a new tab. Wait briefly and fail with
-        // a clear message — the linked feature scenario is @ignored.
+        // The badges are anchored on QA, so a new tab is expected. If none opens, the anchor
+        // has regressed - keep the explicit failure message rather than passing silently.
         try {
             new WebDriverWait(Grid.driver(), Duration.ofSeconds(5))
                     .until(d -> d.getWindowHandles().size() > 1);

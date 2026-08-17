@@ -1,6 +1,4 @@
-
-
-@regression
+@regression @PLPValidation
 Feature: Check PlP filter
 
 

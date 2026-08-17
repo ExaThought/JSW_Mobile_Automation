@@ -19,22 +19,16 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 public class pdpPlpSteps extends AbstractWebPage {
 
     private final String RESET_BUTTON = "resetSelectionButton";
-    private final String ADD_TO_CART_BUTTON = "addToCart";
-    private final String ATTRIBUTES_SECTION = "attributeValue";
     private final String THICKNESS = "(//span[text()='Thickness (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
     private final String WIDTH = "(//span[text()='Width (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
     private final String LENGTH = "(//span[text()=\"Length (mm)\"]/../following-sibling::div/button[not(@disabled)])[1]";
-    private final String QANTITY_INPUT_FIELD = "quantity";
     private final String CART_QUANTITY = "cartPageQuantity";
     private final String BRAND_NAME = "brandName";
     private final String PDP_DESCRIPTION = "pdpDescription";
     private final String CATEGORY_FILTER = "//h3/following-sibling::div//button[@data-slot=\"checkbox\"]";
     private final String CATEGORY_NAME = "//span[text()='Category']/../following-sibling::div//label";
-    private final String PROD_CATEGORY = "(//span[text()='MS Hot rolled'])";
     private final String GRADE_FILTER_CHECKBOX = "(//span[text()='Grade']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
     private final String GRADE_FILTER_NAME = "(//span[text()='Grade']/../following-sibling::div//label)[1]";
-    private final String SUB_BRAND_CHECKBOX = "(//span[text()='Sub brand']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
-    private final String SUB_BRAND_NAME = "(//span[text()='Sub brand']/../following-sibling::div//label)[1]";
     private final String BRAND_CHECKBOX = "(//span[text()='Brand']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
     private final String BRAND_LABEL = "(//span[text()='Brand']/../following-sibling::div//label)[1]";
     private final String SUB_GRADE_CHECKBOX = "(//span[text()='Sub grade']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";

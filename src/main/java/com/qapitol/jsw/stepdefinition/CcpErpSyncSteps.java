@@ -2,9 +2,7 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.apitest.apis.impl.CcpErpSyncImpl;
 import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
-import com.qapitol.jsw.pageFactory.CategoryPages;
 import com.qapitol.jsw.utils.ConfigUtil;
-import com.qapitol.jsw.utils.CustomUtil;
 import com.qapitol.jsw.utils.Token;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -14,8 +12,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
-
-
 import java.io.IOException;
 
 import static com.qapitol.jsw.utils.CustomUtil.clickButton;
@@ -33,10 +29,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     public static final String CCP_CREATE_ORDER_CTA = "ccpCreateOrderCTA";
     public static final String CCP_MY_ORDER_PAGE="ccpMyOrderPage";
     public static final String ORDER_CONFIRMATION ="orderConfirmStatus";
-    private final String CONTINUE_BUTTON = "continueToLoginButton";
     SessionSteps sessionSteps=new SessionSteps();
-
-
     String ccpOrderNumber;
     String userName;
     String password;

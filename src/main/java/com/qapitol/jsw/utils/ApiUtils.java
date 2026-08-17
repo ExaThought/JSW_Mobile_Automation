@@ -8,14 +8,12 @@ import com.qapitol.jsw.apitest.pojos.order.customerProfile.CustomerProfileRespon
 import com.qapitol.jsw.apitest.pojos.order.paymentDue.PaymentDueResponse;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Logger;
 
 import static com.qapitol.sauron.core.actions.ActionListener.logger;
 import static io.restassured.RestAssured.baseURI;

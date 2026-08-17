@@ -25,7 +25,6 @@ import static java.util.Objects.nonNull;
 public class CentralCartRcImpl extends BaseApiImpl {
     private CentralCartRcAddToCartReq centralCartRcAddToCartReq;
     private AddToCartRes addToCartApiResponse;
-    private CentralCartDeleteApiReq deleteApiReq;
     private String cartId;
     private String requestedSfCustomerId;
     private String requestedCartType;

@@ -1,7 +1,7 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.UserConfig;
-import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -45,7 +45,7 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user set expired token in local storage")
     public void user_set_expired_token_in_local_storage() {
-        String expiredToken = Config.getConfigProperty("ccpExpiredToken");
+        String expiredToken = ConfigUtil.getSecretValue("ccpExpiredToken");
         JavascriptExecutor js = Grid.driver();
         // Inject expired/invalid token
         js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);
@@ -207,7 +207,10 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user clicks on TMT product")
     public void userClicksOnTMTProduct() {
-        scrollToCenter("//h2[text()='TMT']");
+        // Same trap as CartSteps.selectCRSheetProduct(): this is an XPath, so it must be wrapped in
+        // By.xpath(). As a bare String it built //div[normalize-space()='//h2[text()='TMT']'] and
+        // threw InvalidSelectorException on the nested quotes.
+        scrollToCenter(By.xpath("//h2[text()='TMT']"));
         waitAndClickOn(TMT_PRODUCT);
     }
 

@@ -18,9 +18,7 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 public class mlogoutSteps extends AbstractWebPage {
 
     private static final String PROFILE_ICON = "profileIcon";
-    private static final String LOGOUT_BUTTON = "logoutButton";
     private static final String LOGIN_PAGE_IDENTIFIER = "continuetoLogout";
-    private static final String LOGIN_BUTTON = "loginButton";
 
     LocatorReader locatorReader =
             new LocatorReader("locators/mlogoutsteps.yaml");

@@ -17,33 +17,71 @@ elements:
   cartPage:
     en_US:
       web: //a[contains(@href, 'cart-detail')]
+  # ---------------------------------------------------------------------------
+  # Cart detail page.
+  #
+  # The cart was rewritten from Bootstrap-style utility classes (s-pt-8,
+  # d-flex justify-content-between, line-item-attributes) to Tailwind, which killed
+  # every class- and id-anchored locator here at once. These are all anchored on
+  # VISIBLE TEXT instead - the only thing that survived that rewrite - so they hold
+  # across restyling. Do not re-anchor them on generated class names.
+  #
+  # The page renders a mobile and a desktop copy of the summary blocks, so anything
+  # under #payment-breakup or in the billing block matches twice: keep the [1] index.
+  # ---------------------------------------------------------------------------
   cartLineItemCashBack:
     en_US:
-      web: xpath=//img[@alt='Cashback Icon']/following-sibling::span[1]
+      web: xpath=(//span[contains(text(),'cashback will be credited')]/parent::span)[1]
   cartLineItemProductAmount:
     en_US:
-      web: xpath=//div[@id="line-item-section"]//div[@class='s-pt-8 text-right']/child::div[1]
+      web: xpath=(//section//div[contains(@class,'text-right')]/p[1])[1]
+  cartLineItemUnitPrice:
+    en_US:
+      web: xpath=(//section//div[contains(@class,'text-right')]/p[2])[1]
   cartLineItemQuantity:
     en_US:
-      web: xpath=//div[@class='d-flex justify-content-between align-items-center s-pt-8 s-pb-12 s-py-md-16']/child::div[1]
+      web: xpath=(//div[starts-with(normalize-space(text()),'Qty:')])[1]
+  cartLineItemName:
+    en_US:
+      web: xpath=(//a[contains(@href,'product-detail')]/p)[1]
+  # Positive signal that the cart rendered line items, e.g. "1 item(s)".
+  cartItemCount:
+    en_US:
+      web: xpath=//p[contains(normalize-space(),'item(s)')]
+  # Positive signal that the cart is genuinely empty. Checked only when cartItemCount
+  # is absent, so a DOM change to one does not make the other lie. Element-agnostic
+  # because the empty state was not in the captured DOM and could not be verified.
+  cartEmptyMessage:
+    en_US:
+      web: xpath=//*[contains(normalize-space(text()),'Your cart is empty')]
   cartShipTo:
     en_US:
-      web: xpath=//div[contains(text(),'Delivery address:')]/child::span
+      web: xpath=//span[normalize-space()='Delivery address:']/parent::p
   cartBillTo:
     en_US:
-      web: xpath=//div[contains(text(),'Billing address')]/following-sibling::div
+      web: xpath=(//p[normalize-space()='Billing address']/following-sibling::p)[4]
   cartLineItemAttributes:
     en_US:
-      web: //div[@class='line-item-attributes s-pt-4 s-pt-md-8 d-flex flex-wrap']/child::div/child::div
-  cartCashbackDescription:
+      web: xpath=(//a[contains(@href,'product-detail')]/following-sibling::div[1]/span)[1]
+  # --- Payment breakup panel ---
+  cartItemTotal:
     en_US:
-      web: xpath=(//div[@class='cashback-description typography-sub-heading s-mt-4'])[1]
+      web: xpath=(//p[normalize-space()='Item total']/ancestor::div[1]/following-sibling::p)[1]
+  cartGstAmount:
+    en_US:
+      web: xpath=(//p[normalize-space()='GST amount']/ancestor::div[1]/following-sibling::p)[1]
+  cartFreightCharges:
+    en_US:
+      web: xpath=(//p[starts-with(normalize-space(),'Freight charges')]/ancestor::div[1]/following-sibling::p)[1]
+  cartSubTotal:
+    en_US:
+      web: xpath=(//p[normalize-space()='Sub total']/ancestor::div[1]/following-sibling::p)[2]
   ErpPaymentType:
     en_US:
-      web: xpath=//p[contains(text(),'Payment type')]/following-sibling::div[@class='MuiBox-root css-0']
+      web: xpath=//p[contains(text(),'Payment type')]/following-sibling::div
   erpOrderNumber:
     en_US:
-      web: xpath=(//p[contains(text(),'Buyer')]/following-sibling::div)[1]
+      web: xpath=//p[contains(text(),'Buyer order')]/following-sibling::div
   erpOrderCategory:
     en_US:
       web: xpath=//p[contains(text(),'Order category')]/following-sibling::div
@@ -73,5 +111,5 @@ elements:
       web: xpath=//div[contains(text(),'Order number')]/following-sibling::div
   ccpCreateOrderCTA:
     en_US:
-      web: xpath=//button[contains(text(),'Confirm order')]
+      web: xpath=//button[normalize-space()='Confirm order']
 

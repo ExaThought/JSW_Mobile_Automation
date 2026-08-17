@@ -54,7 +54,7 @@ public class SaveAndLoadCookies {
             String value = token.nextToken();
             String domain = token.nextToken();
             String path = token.nextToken();
-            String expiryStr = token.nextToken();
+            token.nextToken();
             boolean isSecure = Boolean.parseBoolean(token.nextToken());
             boolean isHttpOnly = true;
             String sameSite = "None";

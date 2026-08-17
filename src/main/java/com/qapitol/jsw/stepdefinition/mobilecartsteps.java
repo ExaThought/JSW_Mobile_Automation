@@ -1,15 +1,11 @@
 package com.qapitol.jsw.stepdefinition;
 
-import com.qapitol.jsw.pageFactory.CategoryPages;
 import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.mobile.pages.AbstractMobilePage;
-import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.qameta.allure.Allure;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -21,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.qapitol.jsw.utils.CustomUtil.*;
-import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class mobilecartsteps extends AbstractMobilePage {
     private static final String THICKNESS = "thickness";
@@ -220,8 +215,8 @@ public class mobilecartsteps extends AbstractMobilePage {
     }
 
     private void scrollToElemnt(String headerText) {
-        // Delegate to CustomUtil
-        scrollToCenter(headerText);
+        // Delegate to CustomUtil. This is the one call site that genuinely passes visible text.
+        scrollToCenterByText(headerText);
     }
 
     private void scrollAboveSticy(WebElement element) {

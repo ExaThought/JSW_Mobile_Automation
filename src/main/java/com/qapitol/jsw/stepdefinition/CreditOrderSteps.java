@@ -1,19 +1,15 @@
 package com.qapitol.jsw.stepdefinition;
 
-import com.qapitol.jsw.pageFactory.CategoryPages;
-import com.qapitol.jsw.utils.CustomUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
-import java.awt.*;
 import java.time.Duration;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.VIEW_ORDER_DOCUMENTS_BTN;
@@ -24,7 +20,6 @@ public class CreditOrderSteps extends AbstractWebPage {
     private static final String MY_ORDERS_TAB = "myOrdersTab";
     private static final String DELIVERED_ORDER_TAB = "deliveredOrderTab";
     private static final By VIEW_DETAILS_BUTTON = By.xpath("(//span[text()='Order number:']/../following-sibling::a/div)[1]");
-    private static final String VIEW_ORDER_DOCUMENTS_BUTTON = "viewOrderDocumentsButton";
     private static final String VIEW_ORDER_DOCUMENT="//a[@title=\"View order documents\"]";
 
 
@@ -107,8 +102,6 @@ public class CreditOrderSteps extends AbstractWebPage {
     public void user_clicks_on_view_order_documents_button() {
         sleep(3000);
         new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(VIEW_ORDER_DOCUMENTS_BTN));
-        WebElement locater= Grid.driver().findElement(VIEW_ORDER_DOCUMENTS_BTN);
-
         moveToAction(VIEW_ORDER_DOCUMENTS_BTN);
         sleep(3000);
         jsClick(VIEW_ORDER_DOCUMENTS_BTN);

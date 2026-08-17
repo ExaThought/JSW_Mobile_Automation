@@ -19,7 +19,6 @@ public class CombinationTest extends BaseApiImpl {
         //Get the request Body
         CentralCartRcAddToCartReq requestBody = getPayloadJsonFileAsPOJO((String) Data.get().get("CENTRAL_CART_RC_ADD_TO_CART"), CentralCartRcAddToCartReq.class);
         requestBody.getCartIdentifier().setDeviceType(deviceType);
-        CentralCartAddToCartApiImpl centralCartAddToCartApi = new CentralCartAddToCartApiImpl();
         RequestApi requestApi=centralCartCcpUrl().create(RequestApi.class);
         cartResponse=requestApi.rcAddToCart(requestBody);
     }

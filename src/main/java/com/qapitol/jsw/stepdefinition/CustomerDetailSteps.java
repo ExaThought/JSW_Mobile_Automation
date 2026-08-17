@@ -2,7 +2,6 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
-import com.qapitol.sauron.data.Data;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;

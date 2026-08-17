@@ -1,0 +1,9 @@
+# Headless session for API-only suites.
+#
+# Sauron's OSSConfigInitializer requires a sessions definition - omitting the "sessions"
+# parameter makes it fail with a NullPointerException before any test runs. So an API suite
+# still has to declare one; running it headless keeps a browser window off the screen.
+- name: "ccp"
+  local: true
+  platform: "chrome"
+  browserRunHeadless: true

@@ -61,7 +61,7 @@ elements:
       web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
   mildSteel:
     en_US:
-      web: xpath=//a[contains(@href, 'mild-steel')]
+      web: xpath=(//a[contains(@href, 'mild-steel') or contains(@href, 'steel')]) [1]
   colourCoated:
     en_US:
       web: xpath=(//a[contains(text(),'Colour coated')])[2]

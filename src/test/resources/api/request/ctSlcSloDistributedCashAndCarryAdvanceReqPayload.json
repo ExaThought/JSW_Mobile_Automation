@@ -1,0 +1,114 @@
+{
+  "slo": false,
+  "shipToType": "primary",
+  "shippingAddressSFId": "a03Bh00000JpyYjIAJ",
+  "shippingAddressId": "dvB5WQ0T",
+  "selfPickup": false,
+  "salesforceOpportunityURL": "https://jswoneplatforms--uat.sandbox.my.salesforce.com/006Bh00000GHy50IAD",
+  "salesforceOpportunityId": "006Hz00000ABPZ6NEB",
+  "salesAssociate": "Veera Venu",
+  "remarks": "NA",
+  "ratesValidity": "30 days",
+  "priceType": "ex-works",
+  "poDetails": "PO-0152538",
+  "paymentTerms": "100% advance",
+  "orderType": "Distributed",
+  "orderPaymentType": "Cash & Carry - Advance",
+  "opportunityString": "2,1(0)C0,0",
+  "opportunityOwnerEmail": "v_veera.venu@jsw.in",
+  "lineItems": [
+    {
+      "type": "ON_CATALOG",
+      "sourceSeller": {
+        "sourceSellerVendorMasterId": "V2497-3445-JODL-4157",
+        "SourceSellerSKUPrice": "100.00",
+        "SourceSellerMobile": "9320911128",
+        "sourceSellerId": "JD001",
+        "sourceSellerGST": "27AAABM4636G6Z7",
+        "SourceSellerEmail": "rahul@gmail.com",
+        "sourceSellerCompanyName": "QapitolSeller (JODL)",
+        "sourceSellerAddress": {
+          "sourceSellerShipFromAddress": {
+            "state": "MAHARASHTRA",
+            "pincode": "400098",
+            "city": "Mumbai City North",
+            "addressLine1": "BKC Maharashtra"
+          },
+          "sourceSellerBillFromAddress": {
+            "State": "MAHARASHTRA",
+            "Pincode": "400098",
+            "City": "Mumbai City North",
+            "AddressLine1": "BKC Maharashtra"
+          }
+        }
+      },
+      "sellerVendorMasterId": "V1146-1147-JOPL-1147",
+      "sellerId": "JD001",
+      "sapLineItemId": 10,
+      "salesForceSkuId": "SKUR-373605",
+      "productKey": "JSWONE-FE550D-TMT",
+      "orderedQuantity": 2000.0,
+      "NCOReason": "",
+      "name": "JSW One Fe550D TMT Rebar",
+      "MMID": "1077-11628",
+      "meta": {
+        
+      },
+      "isNCO": false,
+      "finalSellingPrice": 112.0,
+      "channelKey": "JODLMH001",
+      "attributes": {
+        "TMT_FORM": "U-Bend",
+        "DIAMETER_MM": "8"
+      },
+      "distributorListPrice": 1120.0
+    }
+  ],
+  "ledgerBalance": 0.0,
+  "isPBDistributor": false,
+  "isDirect": false,
+  "isBillingAddressValidated": true,
+  "deliveryType": "Seller Delivery",
+  "customFields": {
+    "tdc_requirements": {
+      "tdc_text": "null"
+    },
+    "sellerPaymentTerms": {
+      "terms": "null"
+    },
+    "estimatedDeliveryTimeline": {
+      
+    },
+    "creditDetails": {
+      "isCreditRequired": "false"
+    },
+    "committedDeliveryTimeline": {
+      "terms": "null"
+    }
+  },
+  "customerId": "1834a7bb-e285-4744-911d-e15b4e2b1bc0",
+  "creditLimitBypass": false,
+  "businessUnit": "Distributor",
+  "blockOrderSummaryFlag": false,
+  "billingAddressSFId": "a03Bh00000Jpx8RIAR",
+  "billingAddressId": "dvB5WQ0T",
+  "advancePercentage": 10,
+  "advancePayment": 264.32,
+  "shippingAddressVerified": true,
+  "shippingAddress": {
+    "urp": true,
+    "streetLine": "Pune City West",
+    "status": "Approved",
+    "state": "MAHARASHTRA",
+    "shippingAddressSFId": "a03Bh00000JpyYjIAJ",
+    "postalCode": "411043",
+    "city": "MAHARASHTRA"
+  },
+  "retailerName": "",
+  "priority": "Normal",
+  "payTo": "JOPL Nodal",
+  "gstCompliance": "PPOB",
+  "encryptedAddress": "NFRILTVUSCBGTE9PUlwsIE5PLjIzXCwgUEFDSUZJQ0EgVEVDSCBQQVJLXCwgUkFKSVYgR0FOREhJIFNBTEFJXCwgTkFWQUxVUlwsIENIRU5OQUlcLCBUQU1JTCBOQURVXCwgNjAzMTAzfFBBQ0lGSUNBIFRFQ0ggUEFSS3xOTy4yM3w0VEgtNVRIIEZMT09SfFJBSklWIEdBTkRISSBTQUxBSXxOQVZBTFVSfHxDSEVOTkFJfFRBTUlMIE5BRFV8NjAzMTAzfDRUSC01VEggRkxPT1JcLCBOTy4yM1wsIFBBQ0lGSUNBIFRFQ0ggUEFSS1wsIFJBSklWIEdBTkRISSBTQUxBSVwsIE5BVkFMVVJcLCBDSEVOTkFJXCwgVEFNSUwgTkFEVVwsIDYwMzEwM3w2MDMxMDN8UFVEVVBBS0tBTXxLQU5DSElQVVJBTXxQVURVUEFLS0FNfFRBTUlMIE5BRFUsVE58SU4sSU5ELElORElB",
+  "channelOfOrder": "System Administrator",
+  "addressStatus": "Active"
+}

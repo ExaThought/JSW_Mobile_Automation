@@ -22,7 +22,7 @@ public class CentralCartNegativeImpl extends BaseApiImpl {
         addToCartRequest.getCartIdentifier().setCartJourneyType(cartJourneyType);
         addToCartRequest.getCartIdentifier().setCartType(cartType);
         cartResponse=centralCartAddToCartApi.getAddToCartResponse(addToCartRequest);
-        int responseErrorCode=cartResponse.getError().getCode();
+        cartResponse.getError().getCode();
         if(cartResponse.getData()!=null){
             String cartId=cartResponse.getData().getCartId();
             System.out.println("CartId="+cartId);

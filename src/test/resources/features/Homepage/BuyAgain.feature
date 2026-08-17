@@ -129,18 +129,3 @@ Feature: validate Buy-again
   Scenario: Verify Master Class for MSME YouTube Links
     And ccp login with configured user
     Then Verify youtube links for Master class for MSME section
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

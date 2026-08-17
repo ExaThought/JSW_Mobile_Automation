@@ -3,11 +3,9 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -25,11 +23,8 @@ public class SearchSteps extends AbstractWebPage {
 
     // YAML keys
     private static final String SEARCH_INPUT = "searchInput";
-    private static final String SEARCH_MODAL_INPUT = "searchModalInput";
     private static final String SEARCH_SUGGESTIONS = "searchSuggestions";
     private static final String PRODUCT_CARD = "productCard";
-    private static final String PRODUCT_NAME = "productName";
-    private static final String PRODUCT_IMAGE = "productImage";
 
     LocatorReader locatorReader =
             new LocatorReader("locators/searchsteps.yaml");

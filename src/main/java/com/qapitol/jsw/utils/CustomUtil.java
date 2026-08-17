@@ -2,21 +2,14 @@ package com.qapitol.jsw.utils;
 
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
-import io.appium.java_client.AppiumBy;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -24,11 +17,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.qapitol.jsw.utils.ApiUtils.getCustomerDetails;
-import static com.qapitol.jsw.utils.ApiUtils.jwtToken;
 import static com.qapitol.sauron.core.actions.ActionListener.logger;
-import static io.restassured.RestAssured.baseURI;
-import static io.restassured.RestAssured.given;
 
 public class CustomUtil {
     /**
@@ -140,6 +129,25 @@ public class CustomUtil {
     }
 
     /**
+     * True when at least one match for the locator is actually rendered.
+     *
+     * <p>Use instead of {@code isDisplayed(By)} wherever a locator can resolve to hidden duplicates:
+     * isDisplayed() inspects only the first match, so it reports false while a visible copy exists.
+     * Never throws - a locator that matches nothing returns false after the wait elapses.
+     *
+     * @param locator locator that may resolve to both hidden and visible copies
+     * @return true if a rendered match was found within the wait window
+     */
+    public static boolean isAnyVisible(By locator) {
+        try {
+            firstVisible(locator);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
      * Clicks the first rendered element matching the locator, using a real Actions click.
      *
      * <p>Prefer this over jsClick for anything in the header or category navigation. A real click
@@ -166,6 +174,23 @@ public class CustomUtil {
      */
     public static void scrollToViewAndClick(By locator) {
         WebElement element = firstVisible(locator);
+        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+        try {
+            new Actions(Grid.driver()).moveToElement(element).click().perform();
+        } catch (Exception e) {
+            logger.log(Level.FINEST, "Actions click intercepted - falling back to JS click", e);
+            js.executeScript("arguments[0].click();", element);
+        }
+    }
+
+    /**
+     * Scrolls the given element into view and clicks it, falling back to a JavaScript
+     * click if the real click is intercepted. This overload accepts a resolved WebElement.
+     *
+     * @param element the element to scroll to and click
+     */
+    public static void scrollToViewAndClick(WebElement element) {
         JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
         js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
         try {
@@ -219,11 +244,20 @@ public class CustomUtil {
     }
 
     /**
-     * Scrolls element to center of viewport using dynamic XPath
+     * Scrolls the div whose visible text equals {@code text} to the centre of the viewport.
+     *
+     * <p>The argument is TEXT CONTENT, not an XPath. It used to be an overload of
+     * {@link #scrollToCenter(By)} named scrollToCenter(String), which made it the silent winner of
+     * overload resolution whenever a caller passed a String XPath constant - producing selectors
+     * like {@code //div[normalize-space()='//li/a[contains(@href, 'x')]']}, which is not valid
+     * XPath and throws InvalidSelectorException. Renaming it removes that trap.
+     *
+     * @param text exact visible text of the target div, after whitespace normalisation
      */
-    public static void scrollToCenter(String xpathText) {
-        By by = By.xpath("//div[normalize-space()='" + xpathText + "']");
-        scrollToCenter(by);
+    public static void scrollToCenterByText(String text) {
+        // XPath 1.0 has no escape syntax, so pick a quote character the text does not contain.
+        String quoted = text.contains("'") ? "\"" + text + "\"" : "'" + text + "'";
+        scrollToCenter(By.xpath("//div[normalize-space()=" + quoted + "]"));
     }
 
 
