@@ -17,6 +17,7 @@ import com.qapitol.jsw.apitest.pojos.order.centralCartSizeRequest.CentralCartSiz
 import com.qapitol.jsw.apitest.pojos.order.centralCartSizeResponse.CentralCartSizeRes;
 import com.qapitol.jsw.apitest.pojos.order.centralCartSlcAddToCartRequest.CentralCartSlcAddToCartReq;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload.CtSlcSloRequestPayload;
+import com.qapitol.jsw.apitest.pojos.order.customerProfile.CustomerProfileResponse;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
 import com.qapitol.jsw.apitest.pojos.order.jswServiceRcv2Request.Rcv2Req;
 import com.qapitol.jsw.apitest.pojos.order.centralCartAddToCartResponse.AddToCartRes;
@@ -29,6 +30,8 @@ import com.qapitol.jsw.apitest.pojos.order.updateLineItemRequestPayload.UpdateLi
 import javax.ws.rs.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static javax.ws.rs.core.MediaType.WILDCARD;
 
 @Consumes(APPLICATION_JSON)
 public interface RequestApi {
@@ -119,6 +122,18 @@ public interface RequestApi {
     @Path("jswretail/v1/seller")
     @Produces(APPLICATION_JSON)
     AppResponse getAppResponse();
+
+    /**
+     * Experience-middleware customer profile.
+     * Base URL comes from the `middlewareUrl` property, so this one declaration serves both:
+     *   https://experience-middleware.preprod.jswonemsme.com/xp-mi/public/v3/customer-profile
+     *   https://experience-middleware.qa.jswone.in/xp-mi/public/v3/customer-profile
+     * The `access_token` header is injected by LoginApiImpl via Token.getCCPToken().
+     */
+    @GET
+    @Path("xp-mi/public/v3/customer-profile")
+    @Produces({APPLICATION_JSON, TEXT_PLAIN, WILDCARD})
+    CustomerProfileResponse getCustomerProfile();
 
     @GET
     @Path("joms/api/internal/v1/customer-balance-and-due-summary/{gstNumber}")

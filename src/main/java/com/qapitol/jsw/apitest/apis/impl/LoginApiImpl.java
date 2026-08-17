@@ -38,7 +38,15 @@ public class LoginApiImpl implements LoginService {
         }
         if (omsUrl.equalsIgnoreCase(apiClientFactory.getAddress())) {
             String AUTHORIZATION = "Authorization";
-            return Map.of(AUTHORIZATION, Objects.requireNonNull(ConfigUtil.getSecretValue("omsAuthToken")));
+            // Logs in via Token.getOmsToken() when the OMS login properties are configured,
+            // otherwise falls back to the statically configured omsAuthToken.
+            return Map.of(AUTHORIZATION, Token.getOmsAuthorizationHeader());
+        }
+        // Experience-middleware (xp-mi) - same access_token contract as CCP.
+        String middlewareUrl = ConfigUtil.getSecretValue("middlewareUrl");
+        if (middlewareUrl != null && middlewareUrl.equalsIgnoreCase(apiClientFactory.getAddress())) {
+            String ACCESS_TOKEN = "access_token";
+            return Map.of(ACCESS_TOKEN, Token.getCCPToken());
         }
         return Map.of();
     }

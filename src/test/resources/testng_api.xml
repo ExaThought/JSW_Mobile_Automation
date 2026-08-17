@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<!--
+  API-only suite. Deliberately has NO "sessions" parameter, so Sauron never creates a
+  WebDriver session and no browser window opens - the scenarios run purely through
+  RestAssured / the Sauron API client.
+
+  Run with:
+    mvn -o test "-DsuiteXmlFile=testng_api.xml"
+-->
+<suite verbose="1" name="Jsw API automation" parallel="false" thread-count="1"
+       data-provider-thread-count="1" annotations="JDK">
+
+    <listeners>
+        <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
+    </listeners>
+
+    <parameter name="data.env" value="qa"/>
+    <parameter name="data.testId" value="testCaseId"/>
+    <parameter name="api.retry.count" value="3"/>
+    <parameter name="executionTimeout" value="10000"/>
+    <parameter name="cucumber.publish.quiet" value="true"/>
+    <parameter name="cucumber.plugin"
+               value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
+    <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
+
+    <test name="CustomerProfileApi">
+        <parameter name="test.group" value="profile"/>
+        <parameter name="cucumber.features" value="src/test/resources/features/api"/>
+        <parameter name="cucumber.filter.tags" value="@customerProfileApi"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
+</suite>

@@ -39,7 +39,7 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
     private static final String CHECKBOX="checkBox";
     private static final String LOGIN_CTA_BUTTON = "//button[text()='Login']";
-    private static final String CONTINUE_EMAIL_BTN = "//button[@id=\"login-via-otp\"]";
+    private static final String CONTINUE_EMAIL_BTN = "//button[contains(text(), 'Continue with email')]";
     private static final String ACCOUNT_ALREADY_EXISTS_ERROR_MSG="//span[@id=\"aae-desktop-title\"]";
     private static final String GST_INFO_ICON = "//div[@class=\"gstin-success-icon\"]";
 
@@ -53,7 +53,7 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
             softAssert.assertTrue(
                     isDisplayed(By.xpath(LOGIN_CTA_BUTTON)),
-                    "Login CTA button is not displayed."
+                    "Login CTA button is not displayed OR Login CTA text is not correct"
             );
 
             clickButton(By.xpath(LOGIN_CTA_BUTTON));

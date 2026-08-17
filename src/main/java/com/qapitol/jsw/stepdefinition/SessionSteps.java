@@ -29,11 +29,8 @@ import static com.qapitol.jsw.utils.CustomUtil.*;
 
 public  class SessionSteps extends AbstractWebPage {
     private static final String LOGIN_CTA_BUTTON = "loginButton";
-    private static final String LOGIN_VIA_OTP = "loginViaOtp";
     private static final String LOGIN_EMAIL = "ccpLoginEmail";
     private static final String LOGIN_PASSWORD = "ccpLoginPassword";
-    private static final String CCP_LOGIN_CTA = "ccpLoginCTA";
-    public static final String CCP_DROP_DOWN="ccpDropDown";
     private static final String CCP_LOG_OUT="ccpLogout";
     private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
     private static final String PAYMENT_DUE_POP_UP="paymentDuePopUp";
@@ -61,6 +58,10 @@ public  class SessionSteps extends AbstractWebPage {
     public static final String FORM_OUR_CUSTOMER = "//h2[text()='From our customers']/../following-sibling::div//button[@aria-label=\"Play video\"]/div";
     public static final String USER_DATA_POPUP = "//button[text()='Yes, details are correct']";
     public static final String CONTINUE_BTN = "//button[text()='Continue browsing']";
+    public static final String CONTINUE_WITH_EMAIL_CTA = "continueWithEmailCta";
+    public static final String CONTINUE_CTA = "continueCTA";
+    public static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
+    public static final String ACCOUNT_LABEL = "accountLabel";
 
     public static String userEmail;
     public static String userPassword;
@@ -85,6 +86,7 @@ public  class SessionSteps extends AbstractWebPage {
         log.info(String.format("Browser already running and switched to session named %s", sessionName));
         log.exiting();
     }
+    
     public void initCCPSession(String url) {
         log.entering();
         try {
@@ -163,34 +165,22 @@ public  class SessionSteps extends AbstractWebPage {
         log.info("Landing in home page");
         pageRefresh();
         sleep(3000);
-
-
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON);
         log.info("successfully clicked Login CTA button");
-        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP);
+        waitAndCheckIsElementVisible(CONTINUE_WITH_EMAIL_CTA);
+        waitAndClickOn(CONTINUE_WITH_EMAIL_CTA);
         waitAndCheckIsElementVisible(LOGIN_EMAIL);
         waitAndSetText(LOGIN_EMAIL, emailId);
         log.info("successfully entered Email");
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);
+        waitAndCheckIsElementVisible(CONTINUE_CTA);
+        waitAndClickOn(CONTINUE_CTA);
         waitAndCheckIsElementVisible(LOGIN_PASSWORD);
         log.info("successfully entered to password");
         waitAndSetText(LOGIN_PASSWORD, pass);
-        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
-        waitAndClickOn(CCP_LOGIN_CTA);
+        waitAndCheckIsElementVisible(CONTINUE_CTA);
+        waitAndClickOn(CONTINUE_CTA);
         log.info("successfully clicked on Login button");
-//        sleep(100);
-//        if(isDisplayed(By.xpath(CLOE_POPUP)))
-//        {
-//            clickButton(By.xpath(CLOE_POPUP));
-//        }
-//        sleep(100);
-//        if(isDisplayed(By.xpath(MANAGE_POPUP_CLOSE)))
-//        {
-//            clickButton(By.xpath(MANAGE_POPUP_CLOSE));
-//        }
         sleep(1000);
         try {
             if (isDisplayed(By.xpath(USER_DATA_POPUP))) {
@@ -208,11 +198,13 @@ public  class SessionSteps extends AbstractWebPage {
         {
             pageRefresh();
         }
-        //
-//        if(isDisplayed(By.xpath(PAYMENT_REMINDER_POPUP)))
-//        {
-//            clickButton(By.xpath(PAYMENT_REMINDER_POPUP));
-//        }
+        if (!isElementPresent(LOGIN_CTA_BUTTON)){
+            log.info("CCP User is already logged in, logging out to continue with fresh login");
+            if (isElementPresent(PAYMENT_DUE_POP_UP)){
+                waitAndCheckIsElementVisible(PAYMENT_DUE_CLOSE);
+                waitAndClickOn(PAYMENT_DUE_CLOSE);
+            }
+        }
     }
 
     @And("open Login page to enter email and password")
@@ -224,16 +216,16 @@ public  class SessionSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON);
         log.info("successfully clicked Login CTA button");
-        waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
-        waitAndClickOn(LOGIN_VIA_OTP);
+        waitAndCheckIsElementVisible(CONTINUE_WITH_EMAIL_CTA);
+        waitAndClickOn(CONTINUE_WITH_EMAIL_CTA);
     }
 
 
     @Then("account logout")
      public  void ccpLogOut(){
-        waitAndCheckIsElementVisible(CCP_DROP_DOWN);
-        waitAndCheckIsElementClickable(3,CCP_DROP_DOWN);
-        waitAndClickOn(CCP_DROP_DOWN);
+        waitAndCheckIsElementVisible(ACCOUNT_LABEL);
+        waitAndCheckIsElementClickable(3,ACCOUNT_LABEL);
+        waitAndClickOn(ACCOUNT_LABEL);
         waitAndCheckIsElementVisible(CCP_LOG_OUT);
         waitAndCheckIsElementClickable(3,CCP_LOG_OUT);
         waitAndClickOn(CCP_LOG_OUT);
@@ -264,8 +256,6 @@ public  class SessionSteps extends AbstractWebPage {
     public CustomerDetailsResponse getCustomerDetail(){
         return ApiUtils.getCustomerDetails(userEmail,userPassword);
     }
-
-
 }
 
 

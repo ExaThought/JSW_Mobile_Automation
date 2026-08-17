@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -30,6 +31,19 @@ import static io.restassured.RestAssured.baseURI;
 import static io.restassured.RestAssured.given;
 
 public class CustomUtil {
+    /**
+     * Scrolls the element into view. Despite the name it does NOT click, and it swallows every
+     * exception, so a failure here is silent.
+     *
+     * <p>Retained as-is because ~13 call sites in CartSteps and TokenSteps were written against
+     * this behaviour and pass today; changing it would turn those into double-clicks. For a
+     * scroll that actually clicks, use {@link #scrollToViewAndClick(By)}.
+     *
+     * @param locator element to scroll into view
+     * @deprecated misleading name - use {@link #scrollToViewAndClick(By)} to scroll and click,
+     *             or call this only where a scroll alone is intended.
+     */
+    @Deprecated
     public static void scrollingToViewAndClickUsingJS(WebElement locator) {
         try {
             JavascriptExecutor js = Grid.driver();
@@ -93,6 +107,99 @@ public class CustomUtil {
 
         JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
         js.executeScript("arguments[0].click();", element);
+    }
+
+    /**
+     * First rendered element matching the locator.
+     *
+     * <p>The header and navigation render each element twice - once collapsed to 0x0 and once
+     * visible - so findElement() returns the invisible copy. ExpectedConditions does not help here:
+     * visibilityOfElementLocated() re-checks only that same first match until it times out, and
+     * visibilityOfAllElementsLocatedBy() demands every match be visible, which the 0x0 duplicate
+     * never is. Hence the explicit filter below.
+     *
+     * @param locator locator that may resolve to both hidden and visible copies
+     * @return the first match that is displayed with a non-zero bounding box
+     * @throws org.openqa.selenium.TimeoutException if no match becomes visible within 15 seconds
+     */
+    public static WebElement firstVisible(By locator) {
+        return new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
+                .until(driver -> {
+                    for (WebElement candidate : driver.findElements(locator)) {
+                        try {
+                            org.openqa.selenium.Dimension size = candidate.getSize();
+                            if (candidate.isDisplayed() && size.getWidth() > 0 && size.getHeight() > 0) {
+                                return candidate;
+                            }
+                        } catch (StaleElementReferenceException e) {
+                            // React re-rendered this node mid-check; the next poll picks up the new one.
+                        }
+                    }
+                    return null;
+                });
+    }
+
+    /**
+     * Clicks the first rendered element matching the locator, using a real Actions click.
+     *
+     * <p>Prefer this over jsClick for anything in the header or category navigation. A real click
+     * produces genuine pointer events, which the Radix-based components this app is built on
+     * require - they listen on pointerdown, and a JavaScript .click() never fires that.
+     *
+     * @param locator locator that may resolve to both hidden and visible copies
+     */
+    public static void clickFirstVisible(By locator) {
+        WebElement element = firstVisible(locator);
+        ((JavascriptExecutor) Grid.driver())
+                .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+        new Actions(Grid.driver()).moveToElement(element).click().perform();
+    }
+
+    /**
+     * Scrolls the first rendered match into view and clicks it, falling back to a JavaScript
+     * click if the real click is intercepted.
+     *
+     * <p>Use this rather than {@link #scrollingToViewAndClickUsingJS(WebElement)}, which despite
+     * its name only scrolls.
+     *
+     * @param locator locator of the element to scroll to and click
+     */
+    public static void scrollToViewAndClick(By locator) {
+        WebElement element = firstVisible(locator);
+        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+        try {
+            new Actions(Grid.driver()).moveToElement(element).click().perform();
+        } catch (Exception e) {
+            logger.log(Level.FINEST, "Actions click intercepted - falling back to JS click", e);
+            js.executeScript("arguments[0].click();", element);
+        }
+    }
+
+    /**
+     * Visibility check performed via the JavaScript executor (computed style + bounding rect)
+     * instead of Selenium's isDisplayed(). Waits for the element to be present in the DOM, then
+     * asks the browser whether it is actually rendered and visible. Returns false if the element
+     * is absent or not visible (never throws).
+     */
+    public static boolean isElementVisibleJS(By locator) {
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
+                    .until(ExpectedConditions.presenceOfElementLocated(locator));
+            WebElement element = Grid.driver().findElement(locator);
+            Object visible = ((JavascriptExecutor) Grid.driver()).executeScript(
+                    "var e = arguments[0];" +
+                    "if (!e) { return false; }" +
+                    "var style = window.getComputedStyle(e);" +
+                    "var rect = e.getBoundingClientRect();" +
+                    "return (style.display !== 'none' && style.visibility !== 'hidden'" +
+                    "        && style.opacity !== '0' && rect.width > 0 && rect.height > 0);",
+                    element);
+            return Boolean.TRUE.equals(visible);
+        } catch (Exception e) {
+            logger.log(Level.FINEST, "isElementVisibleJS: not present/visible for " + locator, e);
+            return false;
+        }
     }
 
     /**
