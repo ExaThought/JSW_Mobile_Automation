@@ -1,0 +1,98 @@
+{
+  "cart_identifier": {
+    "cart_type": "ENQUIRY_CART",
+    "cart_journey_type": "REQUIREMENTS_CART_V2",
+    "store_front": "MSME",
+    "device_type": "MOBILE"
+  },
+  "customer_details": {
+    "sf_customer_id": "0019D00000Q5W0XQAV",
+    "ct_customer_id": "f8252d23-bd62-43d9-ae6a-02b91446cefc"
+  },
+  "shipping_details": {
+    "cart_address": [
+      {
+        "sf_address_id": "cvsuw9",
+        "ct_address_id": "cvsuw9",
+        "address_type": "SHIPPING",
+        "street_line1": "Address1",
+        "street_line2": "Address2",
+        "pin_code": "571130",
+        "city": "Mumbai",
+        "region": "Mumbai",
+        "state": "Maharashtra",
+        "company": "MS Steel",
+        "mobile": "9787878787",
+        "name": "jsw-customer",
+        "email": "jsw-customer@gmail.com"
+      },
+      {
+        "sf_address_id": "cvsuw9",
+        "ct_address_id": "cvsuw9",
+        "address_type": "BILLING",
+        "street_line1": "Address1",
+        "street_line2": "Address2",
+        "pin_code": "560004",
+        "city": "Mumbai",
+        "region": "Mumbai",
+        "state": "Maharashtra",
+        "company": "MS Steel",
+        "mobile": "9787878787",
+        "name": "jsw-customer",
+        "email": "jsw-customer@gmail.com"
+      }
+    ],
+    "delivery_type": "DELIVERY"
+  },
+  "cart_currency": "INR",
+  "line_items": [
+    {
+      "product_mmid": "1000-10005",
+      "attributes": [
+        {
+          "name": "thickness",
+          "value": 3,
+          "unit": "mm"
+        },
+        {
+          "name": "width",
+          "value": 1500,
+          "unit": "mm"
+        },
+        {
+          "name": "length",
+          "value": 2500,
+          "unit": "mm"
+        }
+      ],
+      "purchased_quantity": {
+        "quantity": 25,
+        "uom": "mt"
+      }
+    },
+    {
+      "product_mmid": "1000-10005",
+      "attributes": [
+        {
+          "name": "thickness",
+          "value": 2,
+          "unit": "mm"
+        },
+        {
+          "name": "width",
+          "value": 1500,
+          "unit": "mm"
+        },
+        {
+          "name": "length",
+          "value": 2500,
+          "unit": "mm"
+        }
+      ],
+      "purchased_quantity": {
+        "quantity": 20,
+        "uom": "mt"
+      }
+    }
+  ]
+}

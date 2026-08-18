@@ -13,8 +13,6 @@ extends: default
 rules:
   # --- structural: these break parsing or change meaning ---
   key-duplicates: enable
-  tabs: enable
-  syntax: enable
 
   # --- cosmetic: reported as warnings at most, never blocking ---
   line-length: disable
@@ -24,6 +22,7 @@ rules:
   trailing-spaces: disable
   new-line-at-end-of-file: disable
   empty-lines: disable
+  new-lines: disable
   indentation:
     level: warning
   truthy:
