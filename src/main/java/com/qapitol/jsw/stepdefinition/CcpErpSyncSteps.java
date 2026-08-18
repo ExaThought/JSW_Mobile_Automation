@@ -97,7 +97,7 @@ public class CcpErpSyncSteps extends AbstractWebPage {
     public void create_cash_and_carry_cart_advance_from_sf() throws IOException {
         //create SLC
         CtSlcSlocreationImpl ctSlcSloCreation=new CtSlcSlocreationImpl();
-        String orderType="CT_SLC_CASH_AND_CARRY_ADVANCE";
+        String orderType="CT_SLC_SLO_CASH_AND_CARRY_ADVANCE";
         ctSlcSloCreation.getSlcSloResponse(orderType);
     }
 

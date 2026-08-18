@@ -1,0 +1,140 @@
+name: Claude Code Review
+
+# Runs Claude Code's code-review plugin against pull requests and posts the result as a
+# tracked-progress comment on the PR.
+#
+# Triggers
+#   - a PR is opened (non-draft) or marked ready for review  -> automatic
+#   - someone comments "/claude-review" on the PR            -> re-run on demand
+#
+# `synchronize` is deliberately NOT in the trigger list: it fires on every push to the branch,
+# which re-reviews the whole diff each time a reviewer asks for a small change. Add it below if
+# you want that, but expect the token spend to scale with pushes rather than with PRs.
+#
+# Required repository secret: ANTHROPIC_API_KEY
+#   Settings -> Secrets and variables -> Actions -> New repository secret.
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+  issue_comment:
+    types: [created]
+
+# One review at a time per PR. A newer push or a re-run request supersedes an in-flight review
+# rather than racing it and posting two comments.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Review pull request
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Draft PRs are skipped - "ready for review" is the point at which a review is wanted.
+    # The issue_comment branch also checks the comment is on a PR, because issue_comment fires
+    # for plain issues too and there would be no diff to review.
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       contains(github.event.comment.body, '/claude-review'))
+
+    permissions:
+      contents: read          # read the diff
+      pull-requests: write    # post and update the review comment
+      issues: write           # issue_comment-triggered runs comment through the issues API
+      id-token: write         # OIDC for the action
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          # Full history so the review can diff against the base branch rather than a shallow tip.
+          fetch-depth: 0
+
+      - name: Run Claude code review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+          # Posts a single comment that updates as the review progresses, instead of a wall of
+          # separate comments.
+          track_progress: true
+
+          prompt: |
+            /review
+
+            This repository is a UI + API test automation framework, not application code.
+            Review the diff with that in mind: the deliverable is a suite that fails only when the
+            product is broken, and that says clearly what broke when it does. Flag anything that
+            makes a test pass when it should not, or fail for a reason other than a product defect.
+
+            Stack: Java 11, Maven, TestNG, Cucumber 7, Selenium 4, Sauron (proprietary engine),
+            Allure. Step definitions live in src/main/java/com/qapitol/jsw/stepdefinition,
+            locators in src/test/resources/locators/<stepclass-lowercased>.yaml, feature files in
+            src/test/resources/features, API payloads in src/test/resources/api/request.
+
+            Apply these project-specific rules. Each one has cost a real debugging session here,
+            so treat a match as a finding rather than a style preference.
+
+            LOCATORS
+            - Reject locators anchored on generated class names. This app emits Tailwind utility
+              classes and MUI/emotion hashes (for example `css-1xnox0e`, `s-pt-8 text-right`,
+              `MuiTableBody-root`). They change on any restyle and have already silently broken
+              the cart, footer and ERP locators. Anchor on visible text, href, or a stable id.
+            - The header and footer are each rendered TWICE, and the first copy measures 0x0.
+              Resolution must go through CustomUtil.isAnyVisible / firstVisible / clickFirstVisible,
+              which filter by rendered state. Flag any use of findElement, waitAndCheckIsElementVisible
+              or isElementVisibleJS on a header/footer locator, since those all take the first match.
+
+            ASSERTIONS
+            - Flag assertions that cannot fail: assertTrue(true), assertNotNull(waitAndGetText(...))
+              (a missing element throws before the assert, a present one is never null), and
+              `expected.contains(actualText)` without a blank check, since "anything".contains("")
+              is always true.
+            - Inside a soft assertion's arguments, a throwing getter suppresses every remaining
+              soft assert in that step. Reads must go through a null-returning helper such as
+              safeGetText, not waitAndGetText.
+            - Floating-point comparisons need a delta. Amounts derived from quantity x price drift
+              (15 x 10416.67 computes to 184375.05899999998 against a rendered 1,84,375.06).
+            - Flag empty catch blocks and catch blocks that only log. A swallowed failure surfaces
+              later as an empty cart or a missing order number, far from its cause.
+
+            WAITS
+            - Flag new Thread.sleep / sleep(...) used in place of a conditional wait, and any sleep
+              placed immediately before a call that already blocks (such as driver.get).
+
+            CONFIGURATION AND TEST DATA
+            - Property reads must use ConfigUtil.getSecretValue(). Raw Config.getConfigProperty()
+              does NOT resolve the ${VAR:default} placeholders these files use, so it injects the
+              literal placeholder text into the browser or the request.
+            - Environment parity: a change to global_qa.properties needs the matching change in
+              global_preprod.properties, and vice versa. The same applies to
+              data/qa/** and data/preprod/**.
+            - Every orderType key set in a step definition must exist in
+              data/<env>/default-data.yaml for BOTH environments, and must map to a file that
+              actually exists in src/test/resources/api/request/. A missing key resolves to null
+              and fails as "FileNotFoundException: .../null.json".
+            - Flag any new plaintext credential, JWT or API key. Secrets belong in
+              ${ENV_VAR:default} form so CI can inject them.
+
+            CUCUMBER
+            - Every step text in a .feature file must have a matching glue annotation. An
+              undefined step silently skips the rest of the scenario.
+            - The number of {string} placeholders in an annotation must equal the Java method's
+              parameter count, or the step throws at runtime rather than at compile time.
+            - Flag duplicated validations across scenarios. The Background performs a full login
+              per scenario, so splitting read-only visibility checks multiplies logins for no
+              extra coverage.
+
+            OUTPUT
+            - Report findings most severe first, with file and line.
+            - Do not run the test suite. It needs a browser and a live QA environment, neither of
+              which exists in CI.
+            - If the diff is sound, say so briefly rather than inventing findings.
+
+          # --max-turns bounds a runaway review. Raise it for very large PRs.
+          claude_args: |
+            --max-turns 40

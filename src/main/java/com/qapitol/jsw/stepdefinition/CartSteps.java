@@ -85,16 +85,20 @@ public class CartSteps extends AbstractWebPage {
     private static final String CART_ORDER_TOTAL = "cartOrderTotal";
     private static final By CART_ICON = By.xpath("(//span[text()='Cart'])[2]");
     private static final String DELETE_ITEMS = "(//div[@id='line-item-section']//*[text()='Delete' and not(ancestor::*[@data-index='-1'])])[1]";
-    private static final String DELETE_BTN = "//button[@id=\"remove-btn\"]";
+    private static final String DELETE_BTN = "//button[@id='remove-btn']";
     private static final String EMPTY_CART_MSG = "//h2[text()='Your cart is empty']";
     private static final String CUSTOM_LENGTH_MSG = "//label[text()=\"Custom length (mm):\"]/../following-sibling::div/span";
     private static final String CUSTOM_LENGTH_TEXTBOX = "//label[text()=\"Custom length (mm):\"]/following-sibling::input";
-    private static final String QUANTITY_TEXTBOX = "//input[@id=\"quantity-input\"]";
-    private static final String ADD_TO_CART_BTN = "//button[text()=\"Add to cart\"]";
-    private static final String VIEWCART = "//button[text()=\"View cart\"]";
+    private static final String QUANTITY_TEXTBOX = "//input[@id='quantity-input']";
+    private static final String ADD_TO_CART_BTN = "//button[text()='Add to cart']";
+    /** How long an optional PDP attribute is given to render before it is treated as absent. */
+    private static final int OPTIONAL_ATTRIBUTE_WAIT_SECONDS = 5;
+    /** How long the Add to cart button is given to become enabled after the quantity is entered. */
+    private static final int ADD_TO_CART_ENABLED_WAIT_SECONDS = 15;
+    private static final String VIEWCART = "//button[text()='View cart']";
     private static final String JSW_LOGO = "(//a[@href=\"/\"])[1]";
-    private static final String ITEMS_COUNT = "//div[@id=\"cart-delivery-address\"]/following-sibling::div/div[contains(text(),'item')]";
-    private static final String WIRE_COIL = "(//li//a[@href=\"/category/wire-rod-coils\"])";
+    private static final String ITEMS_COUNT = "//div[@id='cart-delivery-address']/following-sibling::div/div[contains(text(),'item')]";
+    private static final String WIRE_COIL = "(//li//a[@href='/category/wire-rod-coils'])";
     private static final String ITEM_NAME = "//h1";
     private static final String FIRST_WIRE_ROD_PRODUCT = "(//h1[text()='Wire rods']/../../following-sibling::div/div/a/div) [1]";
     private static final By ALL_CATEGORY = By.xpath("//span[contains(@class, 'hover') and contains(text(),'All categories')]");
@@ -110,6 +114,7 @@ public class CartSteps extends AbstractWebPage {
     public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]";
     public static final String coatedSteelCategory = "(//a[contains(@href,'/category/steel-coated')])[1]";
     public static final By quantityTextbox = By.xpath("//input[@id='quantity-input']");
+    public static final By quantityLabel = By.xpath("//label[contains(normalize-space(), 'Specify quantity')]");
     static String oldRequirementId;
     static String newRequirementId;
     static String pdpThickness;
@@ -313,18 +318,93 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
+    /**
+     * Adds the configured product to the cart.
+     *
+     * <p>Scrolls to the quantity box first, then back down to the Add to cart button. That round
+     * trip is deliberate: the button stays disabled until the PDP has priced the selection, and
+     * the price call is triggered by the quantity field. Scrolling through it lets the field blur
+     * and commit before the button is read, so the enabled check reflects a settled page rather
+     * than one mid-request.
+     *
+     * <p>The button is then polled for {@link #ADD_TO_CART_ENABLED_WAIT_SECONDS} and only clicked
+     * once it is genuinely enabled. Previously this clicked immediately and swallowed every
+     * exception, so a disabled button produced a click that did nothing and a green step - the
+     * failure only surfaced later as an empty cart.
+     */
     @And("add to cart")
     public void addToCart() {
         try {
+            // Scroll to quantity, then back to the button.
+            if (waitForElementPresent(QUANTITY_TEXTBOX)) {
+                scrollToCenter(By.xpath(QUANTITY_TEXTBOX));
+                sleep(500);
+            } else {
+                log.info("Quantity field not present before add to cart - continuing anyway");
+            }
             scrollToCenter(By.xpath(ADD_TO_CART_BTN));
+
+            if (!waitForAddToCartEnabled()) {
+                String message = "Add to cart button did not become enabled within "
+                        + ADD_TO_CART_ENABLED_WAIT_SECONDS + "s for '" + context.cartPdpProductName
+                        + "'. The PDP keeps it disabled until a valid attribute + quantity"
+                        + " combination is priced - check the skipped attributes and the quantity"
+                        + " logged above.";
+                log.info(message);
+                Allure.addAttachment("Add to cart not enabled", message);
+                softAssert.fail(message);
+                return;
+            }
+
             jsClick(By.xpath(ADD_TO_CART_BTN));
             sleep(500);
-            //  clickButton(By.xpath(ADD_TO_CART_BTN));
             log.info("Clicked on add to cart button");
-            //skuCount = 1;
             context.skuCount = 1;
         } catch (Exception e) {
-            log.info("Failed to click on add to cart button" + e.getMessage());
+            // Reported rather than swallowed: a silent failure here shows up much later as an
+            // empty cart, which is a far harder thing to diagnose.
+            String message = "Failed to click add to cart: " + e.getMessage();
+            log.info(message);
+            softAssert.fail(message);
+        }
+    }
+
+    /** True once the Add to cart button is present, displayed and enabled. */
+    private boolean waitForAddToCartEnabled() {
+        for (int attempt = 0; attempt < ADD_TO_CART_ENABLED_WAIT_SECONDS * 2; attempt++) {
+            if (isAddToCartEnabled()) {
+                return true;
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Reads the button's enabled state.
+     *
+     * <p>isEnabled() alone is not enough - the PDP marks the button disabled with a class as well
+     * as (or instead of) the disabled attribute, so both are checked.
+     */
+    private boolean isAddToCartEnabled() {
+        try {
+            List<WebElement> buttons = Grid.driver().findElements(By.xpath(ADD_TO_CART_BTN));
+            if (buttons.isEmpty()) {
+                return false;
+            }
+            WebElement button = buttons.get(0);
+            if (!button.isDisplayed() || !button.isEnabled()) {
+                return false;
+            }
+            String cssClass = button.getAttribute("class");
+            return cssClass == null || !cssClass.toLowerCase(Locale.ROOT).contains("disabled");
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -1305,7 +1385,7 @@ public class CartSteps extends AbstractWebPage {
         selectProductAttributes("CR Coil", quantity);
     }
 
-    @And("select thickness, width, length, quantity {string}, for HR Sheet")
+    @And("select thickness, width, length, quantity {string} for HR Sheet")
     public void selectAllTheHrAttribute(String quantity) {
         // HR Sheet scenarios have always used a fixed quantity of 2 and expect a 2-SKU cart.
         selectProductAttributes("HR Sheet", quantity);
@@ -1401,19 +1481,23 @@ public class CartSteps extends AbstractWebPage {
                 case THICKNESS:
                     context.pdpThickness = selectFirstEnabledOption(THICKNESS, "thickness", productName);
                     break;
+                // Width and length are OPTIONAL. A SKU can ship with a single fixed width, or with
+                // every width out of stock, in which case the PDP renders no enabled option button
+                // at all - that is a property of the product, not a defect, so it must not fail the
+                // scenario. Thickness, diameter and form stay mandatory.
                 case WIDTH:
-                    context.pdpWidth = selectFirstEnabledOption(WIDTH_BUTTON, "width", productName);
+                    context.pdpWidth = selectOptionalOption(WIDTH_BUTTON, "width", productName);
                     break;
                 case LENGTH:
-                    context.pdpLength = selectFirstEnabledOption(LENGTH_BUTTON, "length", productName);
+                    context.pdpLength = selectOptionalOption(LENGTH_BUTTON, "length", productName);
                     break;
                 case CUSTOM_LENGTH:
-                    context.pdpLength = enterCustomLength(productName);
+                    context.pdpLength = enterCustomLengthIfPresent(productName);
                     break;
                 case LENGTH_OR_CUSTOM:
-                    context.pdpLength = isOptionAvailable(LENGTH_BUTTON)
+                    context.pdpLength = waitForOptionAvailable(LENGTH_BUTTON)
                             ? selectFirstEnabledOption(LENGTH_BUTTON, "length", productName)
-                            : enterCustomLength(productName);
+                            : enterCustomLengthIfPresent(productName);
                     break;
                 default:
                     throw new IllegalStateException("Unhandled PDP attribute: " + attribute);
@@ -1422,6 +1506,89 @@ public class CartSteps extends AbstractWebPage {
 
         enterQuantityViaJs(quantity, productName);
         confirmBusinessDetailsIfDialogPresent();
+        jsClick(quantityLabel);
+        sleep(1000);
+    }
+
+    /**
+     * Selects an attribute that the PDP may legitimately not offer.
+     *
+     * <p>The option locators already filter out disabled buttons
+     * ({@code button[not(contains(@class,'disabled'))]}), so "every option disabled" and "no
+     * option rendered" both arrive here as an empty match. Either way the attribute is not
+     * selectable and the run continues - a SKU with one fixed width, or with all widths out of
+     * stock, is a property of the catalogue rather than a test failure.
+     *
+     * @return the selected text, or null when the attribute was skipped.
+     */
+    private String selectOptionalOption(String optionXpath, String attributeName, String productName) {
+        if (!waitForOptionAvailable(optionXpath)) {
+            String message = "No enabled " + attributeName + " option on the PDP for '" + productName
+                    + "' after waiting " + OPTIONAL_ATTRIBUTE_WAIT_SECONDS + "s - skipping it."
+                    + " Expected when the SKU has a single fixed " + attributeName
+                    + " or when every option is out of stock.";
+            log.info(message);
+            Allure.addAttachment(attributeName + " skipped for " + productName, message);
+            return null;
+        }
+        return selectFirstEnabledOption(optionXpath, attributeName, productName);
+    }
+
+    /**
+     * Types a custom length when the PDP offers the field, and skips it when it does not.
+     *
+     * <p>Same reasoning as {@link #selectOptionalOption}: custom length is part of the
+     * width/length family and its absence is a catalogue property.
+     *
+     * @return the length entered, or null when the field was not present.
+     */
+    private String enterCustomLengthIfPresent(String productName) {
+        if (!waitForElementPresent(CUSTOM_LENGTH_TEXTBOX)) {
+            String message = "No custom length field on the PDP for '" + productName
+                    + "' after waiting " + OPTIONAL_ATTRIBUTE_WAIT_SECONDS + "s - skipping it.";
+            log.info(message);
+            Allure.addAttachment("Custom length skipped for " + productName, message);
+            return null;
+        }
+        return enterCustomLength(productName);
+    }
+
+    /**
+     * Polls for an enabled option to render before concluding the attribute is not offered.
+     *
+     * <p>A bare findElements() check races the PDP: the attribute panel renders after the price
+     * call resolves, so an immediate look would skip attributes that were merely slow.
+     */
+    private boolean waitForOptionAvailable(String optionXpath) {
+        return pollFor(() -> isOptionAvailable(optionXpath));
+    }
+
+    /** As {@link #waitForOptionAvailable}, but for a field that has no enabled/disabled state. */
+    private boolean waitForElementPresent(String xpath) {
+        return pollFor(() -> {
+            try {
+                List<WebElement> found = Grid.driver().findElements(By.xpath(xpath));
+                return !found.isEmpty() && found.get(0).isDisplayed();
+            } catch (Exception e) {
+                return false;
+            }
+        });
+    }
+
+    /** Re-evaluates a condition every 500ms up to {@link #OPTIONAL_ATTRIBUTE_WAIT_SECONDS}. */
+    private boolean pollFor(java.util.function.BooleanSupplier condition) {
+        for (int attempt = 0; attempt < OPTIONAL_ATTRIBUTE_WAIT_SECONDS * 2; attempt++) {
+            if (condition.getAsBoolean()) {
+                return true;
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
     }
 
     /** Clicks the first enabled option for an attribute and returns the selected text. */

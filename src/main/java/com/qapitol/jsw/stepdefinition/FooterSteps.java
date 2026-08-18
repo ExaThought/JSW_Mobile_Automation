@@ -19,13 +19,7 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class FooterSteps extends AbstractWebPage {
 
-    private final LocatorReader locatorReader =
-            new LocatorReader("locators/footersteps.yaml");
-    // No positional index. Verified on QA (qa-ssr.msme.jswone.in) and preprod: the footer is
-    // rendered twice and each of these resolves to FOUR copies, of which only the fourth has a
-    // non-zero box. The previous "[2]" therefore always selected a hidden 0x0 node and every
-    // isDisplayed() check returned false. Resolution is delegated to CustomUtil.firstVisible /
-    // isAnyVisible / clickFirstVisible, which filter matches by rendered state instead of position.
+    private final LocatorReader locatorReader = new LocatorReader("locators/footersteps.yaml");
     private static final String STRUCTURE_STEEL = "//a[text()='%s']";
     private static final String BUY_ONLINE = "//p[text()='%s']";
     private static final String SUPPORT_PHONE = "//a[@href=\"tel: +917208055523\"]";
@@ -147,34 +141,6 @@ public class FooterSteps extends AbstractWebPage {
 
         throw new RuntimeException("Element not clickable: " + yamlKey);
     }
-
-    // ------------------- Map feature names to YAML keys -------------------
-
-    private String getFooterYamlKey(String linkName) {
-
-        switch (linkName.trim().toLowerCase()) {
-
-            case "mild steel": return "mildSteelLink";
-            case "structural steel": return "structuralSteelLink";
-            case "tmt": return "tmtLink";
-            case "cement": return "cementLink";
-
-            case "about us": return "aboutUsLink";
-            case "blogs": return "blogsLink";
-            case "sitemap": return "siteMapLink";
-            case "one-helix": return "jswOneTmtLink";
-
-            case "help & support": return "helpSupportLink";
-
-            case "terms & conditions": return "termsAndConditions";
-            case "privacy policy": return "privacyPolicy";
-            case "return policy": return "returnPolicy";
-
-            default:
-                throw new IllegalArgumentException("Unknown footer link: " + linkName);
-        }
-    }
-
     // ------------------- Footer Link Click -------------------
 
     @When("the user clicks on the footer link {string} for web")
@@ -227,14 +193,6 @@ public class FooterSteps extends AbstractWebPage {
             softAssert.fail("Exception while verifying redirection: " + e.getMessage());
         }
     }
-    private String extractPath(String hrefOrUrl) {
-        if (hrefOrUrl == null) return "";
-        // Strip the origin so we compare just the path
-        int idx = hrefOrUrl.indexOf("://");
-        if (idx < 0) return hrefOrUrl; // already a path
-        int pathStart = hrefOrUrl.indexOf('/', idx + 3);
-        return pathStart < 0 ? "/" : hrefOrUrl.substring(pathStart);
-    }
 
     @Then("the {string} should be visible in the footer for web")
     public void verify_element_visible(String key) throws InterruptedException {
@@ -264,10 +222,6 @@ public class FooterSteps extends AbstractWebPage {
     public void click_app_icon(String appName) {
 
         String key = getAppKey(appName);
-        // On QA both badges ARE wrapped in <a target="_blank"> pointing at the real store
-        // listing, so the handle and href must be captured before the click - exactly as the
-        // social icons do. Without this, originalWindow stays null and verify_app_redirect's
-        // "any handle that isn't originalWindow" filter can select the original tab.
         expectedHref = findFooterElement(key).getAttribute("href");
         originalWindow = Grid.driver().getWindowHandle();
         scrollToElementAndClick(key);
