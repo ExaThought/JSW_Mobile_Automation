@@ -8,9 +8,12 @@ elements:
   ccpLoginPassword:
     en_US:
       web: //input[@id='password']
+  loginViaOtp:
+    en_US:
+      web: //button[contains(normalize-space(),'Continue with email')]
   ccpLoginCTA:
     en_US:
-      web: //button[@id='login-to-continue']
+      web: //button[@type='submit' and normalize-space()='Continue']
   errorMessage:
     en_US:
       web: //div[contains(text(),'Credentials are not valid. Please try again')]

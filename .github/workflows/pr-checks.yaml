@@ -48,10 +48,32 @@ jobs:
       # picture in one run instead of fixing one thing and discovering the next.
       # ---------------------------------------------------------------------
 
+      # Not offline. "-o" cannot work on a GitHub-hosted runner: ~/.m2 starts empty and
+      # "cache: maven" only restores what a previous SUCCESSFUL run saved, so the first run has
+      # nothing to read and every later run inherits that failure.
+      #
+      # The Sauron artifacts live on a private Nexus (master.jswone.in) that answers 401 rather
+      # than refusing the connection, so a runner can reach it with credentials. settings.xml in
+      # the repo root already declares both server ids; it only needs the values.
+      #
+      # Create repository secrets NEXUS_USERNAME and NEXUS_PASSWORD. Until they exist this step
+      # warns and passes, so the four static checks below still gate the PR instead of every
+      # build failing on infrastructure the PR author cannot fix.
       - name: Compile
         id: compile
         if: always()
-        run: mvn -o -B clean compile
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          if [ -z "$NEXUS_USERNAME" ] || [ -z "$NEXUS_PASSWORD" ]; then
+            echo "::warning title=Compile skipped::NEXUS_USERNAME/NEXUS_PASSWORD are not configured, so the Sauron snapshots cannot be resolved. Add them as repository secrets to enable the compile gate."
+            exit 0
+          fi
+          mvn -B -ntp -s settings.xml \
+            "-Dnexus-username=$NEXUS_USERNAME" \
+            "-Dnexus-password=$NEXUS_PASSWORD" \
+            clean compile
 
       - name: Locator keys resolve
         id: locators

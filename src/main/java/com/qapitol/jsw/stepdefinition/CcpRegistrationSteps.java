@@ -18,7 +18,8 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     // Updated registration locator names
     public static final String CCP_REGISTRATION_EMAIL = "ccpRegistrationEmail";
-    public static final String CCP_REGISTRATION_PASSWORD = "ccpRegistrationPassword";
+    // CCP_REGISTRATION_PASSWORD ("ccpRegistrationPassword") removed: never referenced, and no such
+    // key exists in ccpregistrationsteps.yaml. Adding the key would have created a dead locator.
     public static final String CCP_REGISTRATION_CTA = "ccpRegistrationCTA";
     public static final String CCP_REGISTRATION_ERROR_MESSAGE = "registrationErrorMessage";
     public static final String CCP_INVALID_REGISTRATION_EMAIL_ERROR = "invalidRegistrationEmailErrorMessage";
@@ -30,7 +31,8 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public static final String CCP_INVALID_PHONE_ERROR = "invalidPhoneNumberErrorMessage";
     public static final String CCP_INVALID_GSTIN_ERROR = "invalidGSTINErrorMessage";
     public static final String CCP_ReGISTER_CTA = "registrationButton";
-    public static final String CCP_ReGISTER_vIA_OTP = "registrationViaOtp";
+    // CCP_ReGISTER_vIA_OTP ("registrationViaOtp") removed for the same reason: declaration only,
+    // no matching key. If a registration-via-OTP step is written later, add the key then.
     private static final By SEARCH_OVERLAY = By.cssSelector(".search-overlay");
     private static final String CHECKBOX="checkBox";
     private static final String LOGIN_CTA_BUTTON = "//button[text()='Login']";
