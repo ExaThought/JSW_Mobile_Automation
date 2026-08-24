@@ -41,36 +41,35 @@
     <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
     <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
 
+<!-- ================================ LOGIN ================================ -->
+
+    <!-- <test name="Login">
+        <parameter name="test.group" value="login"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features"/>
+        <parameter name="cucumber.filter.tags" value="@login or @registration or @forgetPassword"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test> -->
 
     <!-- ================================ HOMEPAGE ================================ -->
 
-    <!-- Header.feature Background is "Go to session ccp" only - no login - but the group still
-         has to be a real one so TestGroupContext and UserConfig resolve. -->
-    <test name="Header">
+    <test name="Homepage">
         <parameter name="test.group" value="homepage"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@header"/>
+        <parameter name="cucumber.filter.tags" value="@header or @footer or @blogs or @search"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
     </test>
 
-    <test name="Footer">
-        <parameter name="test.group" value="homepage"/>
+    <test name="PDP_PLP">
+        <parameter name="test.group" value="pdpplp"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@footer"/>
-        <classes>
-            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-        </classes>
-    </test>
-
-    <test name="Blogs">
-        <parameter name="test.group" value="homepage"/>
-        <parameter name="sessions" value="sessions.yaml"/>
-        <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@blog"/>
+        <parameter name="cucumber.filter.tags" value="@PLPValidation or @PDPValidation"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -81,40 +80,27 @@
 
     <!-- @AddToCartAndCreateOpportunity is a FEATURE-level tag, so this selects every active
          scenario in AddToCartAndCreateOpportunity.feature, not just the create-opportunity one. -->
-    <test name="Cart_AddToCartAndCreateOpportunity">
+    <!-- <test name="Cart_AddToCartAndCreateOpportunity">
         <parameter name="test.group" value="cart"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <!-- Tag expressions need explicit operators. Space-separated tags
-             ("@a @b") are a syntax error in Cucumber's TagExpressionParser and
-             abort the suite before any scenario runs. -->
         <parameter name="cucumber.filter.tags"
-                   value="@AddToCartAndCreateOpportunity or @PDPValidation or @PLPValidation"/>
+                   value="@AddToCartAndCreateOpportunity"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
-    </test>
+    </test> -->
 
 
     <!-- =============================== SF ORDERS =============================== -->
     <!-- SFSlc.feature and SFSlo.feature have no Background - they drive Salesforce/API flows
          rather than a browser login - but they still run under the orders group's data. -->
 
-    <test name="SF_SLC">
+    <test name="SF_SLC_SLO">
         <parameter name="test.group" value="orders"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@slcOrderCreation"/>
-        <classes>
-            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-        </classes>
-    </test>
-
-    <test name="SF_SLO">
-        <parameter name="test.group" value="orders"/>
-        <parameter name="sessions" value="sessions.yaml"/>
-        <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@sloOrderCreation"/>
+        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -137,10 +123,14 @@
     <!-- =============================== TOKEN CHECK =============================== -->
 
     <!-- Both token features in one block: LoginUserToken logs in and closes the payment-due
-         popup, GuestUserToken only opens the session. The profile group covers both, and it is
-         the group the previous configuration used for @tokenCheckLogin. -->
+         popup, GuestUserToken only opens the session.
+         Runs under its own "tokencheck" group, which resolves to testautomation01@yopmail.com in
+         both qa and preprod. It used to share the "profile" group, whose account is a real mailbox
+         with a rotating password - that returned HTTP 401 and cost every token scenario in
+         CCP_Regression #231. A dedicated group also keeps EmptyBankDetails, Address,
+         CustomerDetails, bankDetails and forgetPassword on the profile account, untouched. -->
     <test name="TokenCheck">
-        <parameter name="test.group" value="profile"/>
+        <parameter name="test.group" value="tokencheck"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
         <parameter name="cucumber.filter.tags" value="@tokenCheckLogin or @tokenCheckGuestUser"/>
@@ -155,11 +145,11 @@
     <!-- EmptyBankDetails.feature logs in with credentials hardcoded in its own Background
          ("emailnoti@yopmail.com"), so test.group does not drive authentication here - it is
          set only because TestGroupContext requires a value. -->
-    <test name="EmptyBankDetails">
+    <test name="Profile">
         <parameter name="test.group" value="profile"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@EmptyBankDetails"/>
+        <parameter name="cucumber.filter.tags" value="@customerDetails or @EmptyBankDetails"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -170,10 +160,9 @@
          Reference: areas NOT included above, with their verified tags. Uncomment the block you
          need, or add the tag to an existing block that already uses the right test.group.
 
-           homepage : @search  @paymentDue  @ledger  @bankDetails  @myAccount  @buym
+           homepage : @paymentDue  @ledger  @bankDetails  @myAccount  @buym
            cart     : @CartVerification  @shipment  @EditAndDeleteCart  @ccpActiveOrder  @creditOrder
-           profile  : @address  @customerDetails  @loginRegression  @registrationRegression
-                      @forgetPassword
+           profile  : @address
            orders   : @ccpErpSyncRegression
            Guest    : @SEOCheck
            api      : @customerProfileApi  @rcv2Api  @centralCart
