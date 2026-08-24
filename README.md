@@ -11,10 +11,22 @@ ships as `${ENV_VAR:}` with an empty default and is injected at run time. `ci/ch
 runs on every PR and fails the build if a real value reappears in a tracked file, so this is
 enforced rather than merely requested.
 
-Supply these as environment variables — GitHub Actions repository secrets, Jenkins credentials
-bindings, or a local shell export. A missing one fails immediately through
-`ConfigUtil.resolveOrThrow` / `UserConfig.requireGroupValue`, and the message names the variable
-to set.
+Each can be supplied **either** way — a JVM system property wins over an environment variable,
+which wins over the (empty) default:
+
+```bash
+# environment variable - what CI should use
+export QA_CART_PASSWORD='...'
+mvn test -DsuiteXmlFile=src/test/resources/testng_bdd.xml
+
+# or on the command line - handy locally, and for a Jenkins job you cannot yet edit
+mvn test -DsuiteXmlFile=src/test/resources/testng_bdd.xml -DQA_CART_PASSWORD='...'
+```
+
+A missing one fails immediately through `ConfigUtil.resolveOrThrow` / `UserConfig.requireGroupValue`,
+and the message names the variable to set. Without that guard an unset password resolves to the
+empty string, the suite posts a blank credential, and the run reports HTTP 401 — which looks like
+a bad account rather than absent configuration.
 
 ### Build
 

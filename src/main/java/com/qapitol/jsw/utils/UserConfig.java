@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.jsw.config.EnvConfig;
 import com.qapitol.jsw.config.TestGroupContext;
 import com.qapitol.sauron.common.configuration.Config;
 import org.testng.ITestResult;
@@ -21,19 +22,51 @@ public class UserConfig {
             Set.of("homepage", "cart", "profile", "orders", "msite", "Guest", "tokencheck");
 
     public static String getEmail() {
-        return ConfigUtil.getSecretValue(emailKey());
+        return requireGroupValue(emailKey());
     }
 
     public static String getPassword() {
-        return ConfigUtil.getSecretValue(passwordKey());
+        return requireGroupValue(passwordKey());
     }
 
     public static String getEmail(String group) {
-        return ConfigUtil.getSecretValue(group + ".user.email");
+        return requireGroupValue(group + ".user.email");
     }
 
     public static String getPassword(String group) {
-        return ConfigUtil.getSecretValue(group + ".user.password");
+        return requireGroupValue(group + ".user.password");
+    }
+
+    /**
+     * A group credential, or a failure naming what is missing and where to put it.
+     *
+     * <p>{@link #getGroup()} validates that the group NAME is known, but nothing checked that the
+     * group's credentials actually resolve. Two ways that bit:
+     *
+     * <ul>
+     *   <li>a group in {@link #VALID_GROUPS} and in a suite XML but with no
+     *       {@code <group>.user.*} keys returned null, which surfaced three frames later as a
+     *       bare {@code NullPointerException} in {@code SessionSteps.ccpLogin}</li>
+     *   <li>now that every password ships as {@code ${ENV_VAR:}}, an unset variable resolves to
+     *       the EMPTY STRING - so the suite Base64-encodes nothing, posts a blank password and
+     *       reports HTTP 401. The 401 names no key and looks like a bad account rather than
+     *       absent configuration.</li>
+     * </ul>
+     *
+     * <p>Delegates to {@link ConfigUtil#resolveOrThrow(String)} so the environment variable is
+     * named by the one place that knows how the placeholder is parsed, then adds the group
+     * context that call site cannot know.
+     */
+    private static String requireGroupValue(String key) {
+        try {
+            return ConfigUtil.resolveOrThrow(key);
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException(e.getMessage()
+                    + " This is a test.group credential read from "
+                    + EnvConfig.propertiesFileFor(EnvConfig.current())
+                    + "; every group named in a suite XML needs both <group>.user.email and"
+                    + " <group>.user.password to resolve.", e);
+        }
     }
 
     /**

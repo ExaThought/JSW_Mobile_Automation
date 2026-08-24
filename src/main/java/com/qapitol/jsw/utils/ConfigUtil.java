@@ -18,11 +18,25 @@ public class ConfigUtil {
             String[] parts = content.split(":", 2);
             String secretName = parts[0];
             String defaultValue = parts.length > 1 ? parts[1] : null;
-            // First try environment variable
-            String secretText = System.getenv(secretName);
+
+            // A JVM system property wins, then the environment variable, then the default.
+            //
+            // -D is supported because the defaults are now empty: every secret has to come from
+            // outside, and an OS variable is the awkward way to do that. Exporting six of them
+            // before a local run is easy to get wrong, and a Jenkins job that cannot yet be
+            // edited can still pass them on the Maven command line:
+            //
+            //     mvn test -DsuiteXmlFile=... -DQA_CART_PASSWORD=... -DOMS_TOKEN=...
+            //
+            // System property first so an explicit -D on the command line beats a stale exported
+            // value in the shell that invoked it.
+            String secretText = System.getProperty(secretName);
+            if (secretText == null || secretText.isEmpty()) {
+                secretText = System.getenv(secretName);
+            }
 
             // If not present, fallback to default
-            rawValue = secretText != null ? secretText : defaultValue;
+            rawValue = (secretText != null && !secretText.isEmpty()) ? secretText : defaultValue;
         }
         //  Clean up: trim spaces and strip quotes
         if (rawValue != null) {
@@ -50,8 +64,9 @@ public class ConfigUtil {
             throw new IllegalStateException("No value for '" + key + "'."
                     + (envVar == null
                         ? " It is not defined in any global_*.properties for this environment."
-                        : " Set the " + envVar + " environment variable - it ships with an empty"
-                          + " default so that secrets are injected rather than committed.")
+                        : " Supply " + envVar + " as an environment variable or -D" + envVar
+                          + "=<value> - it ships with an empty default so that secrets are"
+                          + " injected rather than committed.")
                     + " See README.md \"Required secrets\".");
         }
         return value;
