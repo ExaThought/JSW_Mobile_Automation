@@ -1,11 +1,4 @@
 elements:
-  # All footer locators are scoped to the `.footer-out` wrapper so they
-  # don't accidentally match hidden duplicate elements in the header /
-  # mobile-menu / dropdowns earlier in the DOM. Navigation links are
-  # matched by @href (stable across copy changes); social icons by their
-  # @id; section headings by exact text.
-
-  # -------- Section headings --------
   buyOnlineSection:
     en_US:
       web: xpath=//div[contains(@class,'footer-out')]//*[normalize-space(text())='Buy online']
@@ -57,9 +50,6 @@ elements:
     en_US:
       web: xpath=//div[contains(@class,'footer-out')]//a[@href='/sitemap']
 
-  # The footer no longer has a "JSW One TMT" link — "One-Helix" replaced
-  # it. Point this key at One-Helix so the existing scenario keeps a real
-  # clickable target.
   jswOneTmtLink:
     en_US:
       web: xpath=//div[contains(@class,'footer-out')]//a[@href='/lp/one-helix']
@@ -90,26 +80,37 @@ elements:
     en_US:
       web: xpath=//div[contains(@class,'footer-out')]//a[@href='/return-policy']
 
-  # -------- Social icons (stable @id) --------
   socialYoutubeIcon:
     en_US:
-      web: xpath=//div[contains(@class,'footer-out')]//a[@id='social-Youtube']
+      web: xpath=//footer//a[.//img[@alt='youtube']]
 
   socialLinkedInIcon:
     en_US:
-      web: xpath=//div[contains(@class,'footer-out')]//a[@id='social-LinkedIn']
+      web: xpath=//footer//a[.//img[@alt='linkedin']]
 
   socialInstagramIcon:
     en_US:
-      web: xpath=//div[contains(@class,'footer-out')]//a[@id='social-Instagram']
+      web: xpath=//footer//a[.//img[@alt='instagram']]
 
-  # -------- App store badges --------
-  # Note: on preprod these are <img> tags WITHOUT a parent anchor, so
-  # clicking them won't navigate. Visibility checks will pass.
+  # Present in the footer but previously had no key and no case in getSocialKey().
+  socialFacebookIcon:
+    en_US:
+      web: xpath=//footer//a[.//img[@alt='facebook']]
+
   googlePlayIcon:
     en_US:
-      web: xpath=//div[contains(@class,'footer-out')]//img[@alt='google play store']
+      web: xpath=//footer//a[.//img[@alt='play-store']]
 
   appStoreIcon:
     en_US:
-      web: xpath=//div[contains(@class,'footer-out')]//img[@alt='app store']
+      web: xpath=//footer//a[.//img[@alt='app-store']]
+
+  # -------- Banking partner / footer branding --------
+  bankingPartnerLogo:
+    en_US:
+      web: xpath=//footer//a[.//img[@alt='RBL Bank']]
+
+  # Unlike the header logo this one is not wrapped in an anchor, so it is visibility-only.
+  footerLogo:
+    en_US:
+      web: xpath=//footer//img[@alt='JSW MSME']

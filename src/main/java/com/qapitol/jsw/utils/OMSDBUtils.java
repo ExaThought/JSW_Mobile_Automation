@@ -1,15 +1,11 @@
 package com.qapitol.jsw.utils;
 
-import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.logging.SauronLogger;
 import com.qapitol.sauron.logging.SimpleLogger;
 import org.testng.Assert;
 
-import java.io.InputStream;
 import java.sql.*;
 import java.util.HashMap;
-import java.util.Properties;
-import java.util.logging.Logger;
 
 public class OMSDBUtils {
 	static final String JDBC_DRIVER = "org.postgresql.Driver";
@@ -23,10 +19,10 @@ public class OMSDBUtils {
 	private static OMSDBUtils omsdbUtil;
 
 	public OMSDBUtils() {
-		this.DB_URL = Config.getConfigProperty("OMS_URL");
-		this.schemaName = Config.getConfigProperty("OMS_SCHEMA_NAME");
-		this.userId = Config.getConfigProperty("OMS_USERID");
-		this.password = Config.getConfigProperty("OMS_PWD");
+		this.DB_URL = ConfigUtil.getSecretValue("OMS_URL");
+		this.schemaName = ConfigUtil.getSecretValue("OMS_SCHEMA_NAME");
+		this.userId = ConfigUtil.getSecretValue("OMS_USERID");
+		this.password = ConfigUtil.getSecretValue("OMS_PWD");
 		this.setDBConnection();
 	}
 

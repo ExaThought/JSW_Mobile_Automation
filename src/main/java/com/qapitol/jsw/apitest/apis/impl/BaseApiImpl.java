@@ -27,8 +27,26 @@ public abstract class BaseApiImpl {
     protected ApiClientFactory appUrl(){
         return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("appBaseUrl"));
     }
+    /**
+     * Central-cart internal API.
+     *
+     * <p>resolveOrThrow, not getSecretValue: the property is not configured on every environment,
+     * and passing null to getInstance produced an unrelated failure much later. This names the
+     * missing property at the point of use instead.
+     */
     protected ApiClientFactory centralCartCcpUrl() {
-        return ApiClientFactory.getInstance(Config.getConfigProperty("centralCartCcpUrl"));
+        return ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("centralCartCcpUrl"));
+    }
+
+    /**
+     * Base URL for the Salesforce -> CT sales-opp sync (data-sync/import/sales-opp).
+     *
+     * Kept separate from {@link #ccpUrl()} because on QA the endpoint lives on its own host
+     * and authenticates with a service X-API-KEY rather than a user access_token. On pre-prod
+     * the property resolves to the same address as ccpUrl, so behaviour there is unchanged.
+     */
+    protected ApiClientFactory salesOppUrl() {
+        return ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("salesOppUrl"));
     }
 
     /**

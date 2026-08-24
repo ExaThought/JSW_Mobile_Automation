@@ -1,0 +1,36 @@
+# yamllint configuration for the PR "YAML valid" check.
+#
+# The goal is to catch files that will not PARSE - a duplicate key, a tab, a broken indent - not
+# to reformat 41 locator files. Cosmetic rules are therefore off: the locator yamls are generated
+# and edited by hand under time pressure, and a line-length or comment-spacing failure blocking a
+# merge would get the whole check disabled within a week.
+#
+# Duplicate keys are an error on purpose. In a locator file the later entry silently wins, so two
+# definitions of the same key means half the team is looking at an xpath that is never used.
+
+extends: default
+
+rules:
+  # --- structural: these break parsing or change meaning ---
+  key-duplicates: enable
+
+  # --- cosmetic: reported as warnings at most, never blocking ---
+  line-length: disable
+  comments: disable
+  comments-indentation: disable
+  document-start: disable
+  trailing-spaces: disable
+  new-line-at-end-of-file: disable
+  empty-lines: disable
+  new-lines: disable
+  indentation:
+    level: warning
+  truthy:
+    # GitHub Actions uses `on:` as a key, which yamllint reads as the boolean `on`.
+    level: warning
+  braces: disable
+  brackets: disable
+  colons:
+    level: warning
+  commas:
+    level: warning

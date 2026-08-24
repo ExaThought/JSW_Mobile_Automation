@@ -21,7 +21,9 @@ public class HomeSectionSteps
 
     private final LocatorReader locatorReader;
     public static final String section_content = "fromOurCustomerssectionContent";
-    public static final String carousel_image = "carousalConent";
+    // carousel_image ("carousalConent") removed: the key was misspelled and never referenced.
+    // The real key, ImagecarouselContent, is already used directly in the carouselLocatorKeys
+    // list below, so this constant was a superseded leftover.
 
     FooterSteps fs = new FooterSteps();
 

@@ -1,10 +1,10 @@
 package com.qapitol.jsw.utils;
 
 import com.qapitol.jsw.stepdefinition.SessionSteps;
-import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 import org.openqa.selenium.JavascriptExecutor;
 import org.testng.asserts.SoftAssert;
 
@@ -30,7 +30,13 @@ public class Hooks {
     }
 
     @After
-    public void afterScenario() {
+    public void afterScenario(Scenario scenario) {
+        // Capture diagnostics FIRST. The teardown below logs out, injects an expired token and
+        // refreshes, so anything captured after it would show a logged-out page, not the failure.
+        if (scenario != null && scenario.isFailed()) {
+            FailureDiagnostics.captureAll(scenario.getName());
+        }
+
         try{
         System.out.println("=== SCENARIO ENDED ===");
         // Assert all soft assertions at the end of each scenario
@@ -50,7 +56,7 @@ public class Hooks {
             } catch (Exception e) {
                 log.info("No log out is found");
                 try {
-                    String expiredToken = Config.getConfigProperty("ccpExpiredToken");
+                    String expiredToken = ConfigUtil.getSecretValue("ccpExpiredToken");
                     JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
                     // Inject expired/invalid token
                     js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);

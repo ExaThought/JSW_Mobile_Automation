@@ -4,12 +4,10 @@ import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -38,18 +36,13 @@ public class mledgersteps extends AbstractWebPage {
     private static final String CART_TAB = "cartTab";
     private static final String ORDER_TAB = "orderTab";
     private static final String PAYMENT_REMINDER_CLOSE_BTN = "paymentReminderCloseBtn";
-    private static final String LEDGER_PAGE_TITLE = "ledgerPageTitle";
     private static final String PAYMENTS_DUE_NOW_SECTION = "paymentsDueNowSection";
     private static final String PAYMENTS_DUE_NOW_LABEL = "paymentsDueNowLabel";
-    private static final String PAYMENTS_DUE_NOW_AMOUNT = "paymentsDueNowAmount";
     private static final String DUE_LATER_SECTION = "dueLaterSection";
     private static final String DUE_LATER_LABEL = "dueLaterLabel";
-    private static final String DUE_LATER_AMOUNT = "dueLaterAmount";
     private static final String USABLE_LEDGER_BALANCE_SECTION = "usableLedgerBalanceSection";
     private static final String USABLE_LEDGER_BALANCE_LABEL = "usableLedgerBalanceLabel";
-    private static final String USABLE_LEDGER_BALANCE_AMOUNT = "usableLedgerBalanceAmount";
     private static final String VIEW_DOWNLOAD_LEDGER_LINK = "viewDownloadLedgerLink";
-    private static final String OTHER_ACTIONS_SECTION = "otherActionsSection";
     private static final String OTHER_ACTIONS_LABEL = "otherActionsLabel";
     private static final String PAYMENT_INSTRUCTIONS_OPTION = "paymentInstructionsOption";
     private static final String FINANCIAL_DOCUMENTS_OPTION = "financialDocumentsOption";
@@ -57,15 +50,10 @@ public class mledgersteps extends AbstractWebPage {
     private static final String DATE_RANGE_OPTION = "dateRangeOption";
     private static final String USABLE_CREDIT_LIMIT_SECTION = "usableCreditLimitSection";
     private static final String USABLE_CREDIT_LIMIT_LABEL = "usableCreditLimitLabel";
-    private static final String USABLE_CREDIT_LIMIT_AMOUNT = "usableCreditLimitAmount";
     private static final String NO_TRANSACTIONS_MESSAGE = "noTransactionsMessage";
 
     // Ledger statement specific locators
     private static final String LEDGER_STATEMENT_TAB = "ledgerStatementTab";
-    private static final String DATE_PICKER_FROM = "datePickerFrom";
-    private static final String DATE_PICKER_TO = "datePickerTo";
-    private static final String CALENDAR_PREV_MONTH_BTN = "calendarPrevMonthBtn";
-    private static final String CALENDAR_DAY = "calendarDay";
     private static final String DOWNLOAD_STATEMENT_BTN = "downloadStatementBtn";
     private static final String STATEMENT_DATA_LIST = "statementDataList";
     private static final String DOWNLOAD_SUCCESS_TOAST = "downloadSuccessToast";
@@ -79,8 +67,6 @@ public class mledgersteps extends AbstractWebPage {
     private static final String DOWNLOAD_DOCUMENT_BTN = "downloadDocumentBtn";
     private static final String DOWNLOAD_MONTH_BTN = "dateTypeDropdown";
     private static final String DOCUMENTS_NOT_AVAILABLE_TOAST = "documentsNotAvailableToast";
-    private static final String LEDGER_STATEMENT_FROM = "ledgerStatementFrom";
-    private static final String LEDGER_STATEMENT_TO = "ledgerStatementTo";
 
     // Flatpickr calendar locators
     private static final String FLATPICKR_CALENDAR_OPEN = "flatpickrCalendarOpen";

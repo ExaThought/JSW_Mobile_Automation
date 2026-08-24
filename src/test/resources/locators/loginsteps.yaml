@@ -8,14 +8,25 @@ elements:
   ccpLoginPassword:
     en_US:
       web: //input[@id='password']
+  loginViaOtp:
+    en_US:
+      web: //button[contains(normalize-space(),'Continue with email')]
   ccpLoginCTA:
     en_US:
-      web: //button[@id='login-to-continue']
+      web: //button[@type='submit' and normalize-space()='Continue']
   errorMessage:
     en_US:
-      web: //div[contains(text(),'Credentials are not valid. Please try again')]
+      web: //p[contains(text(),'Credentials are not valid. Please try again')]
   invalidEmailErrorMessage:
     en_US:
-      web: //div[contains(text(),'You have entered a wrong email address')]
+      web: //p[contains(text(),'You have entered a wrong email address')]
+
+
+  accountMenu:
+    en_US:
+      web: //header//span[normalize-space()='Account']
+  headerLoginCta:
+    en_US:
+      web: //header//button[normalize-space()='Login']
 
 

@@ -2,12 +2,10 @@ package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
 
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class LedgerSteps extends AbstractWebPage {
-
 
     private static final String PAYMENT_DUE_LABEL = "paymentDueLabel";
     private static final String PAYMENT_DUE_AMOUNT = "paymentDueAmount";
@@ -21,9 +19,6 @@ public class LedgerSteps extends AbstractWebPage {
     private static final String FINANCIAL_DOCUMENTS_BUTTON = "financialDocumentsButton";
     private static final String PAYMENT_INSTRUCTIONS_BUTTON = "paymentInstructionsButton";
     private static final String HELP_SUPPORT_BUTTON = "helpSupportButton";
-
-
-
 
     @Then("user should see payment due label")
     public void validatePaymentDueLabel() {

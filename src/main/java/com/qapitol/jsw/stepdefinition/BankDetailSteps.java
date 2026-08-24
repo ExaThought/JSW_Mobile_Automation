@@ -31,7 +31,6 @@ public class BankDetailSteps extends AbstractWebPage {
     private static final String EMPTY_BANK_DETAILS_TITLE = "emptyBankDetailsTitle";
     private static final String ADD_BANK_DETAILS_CTA_BUTTON = "addBankDetailsCTAButton";
     private static final String BANK_DETAILS_POP_UP_TITLE = "bankDetailsPopUpTitle";
-    private static final String BANK_DETAILS_POP_UP_SUB_TITLE = "bankDetailsPopUpSubTitle";
     private static final String REPLACE_BANK_ACCOUNT = "//button[normalize-space()='Replace bank account']";
     private static final String ENTER_BANK_ACCOUNT_HEADING = "//h2[normalize-space()='Enter bank account information']";
     // ✅ Load YAML File

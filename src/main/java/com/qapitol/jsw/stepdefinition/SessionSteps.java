@@ -11,15 +11,10 @@ import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
-
-
-
 import java.time.Duration;
 import java.util.logging.Level;
 
@@ -205,6 +200,7 @@ public  class SessionSteps extends AbstractWebPage {
                 waitAndClickOn(PAYMENT_DUE_CLOSE);
             }
         }
+        refreshAndWaitForPageLoad();
     }
 
     @And("open Login page to enter email and password")

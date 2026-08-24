@@ -250,13 +250,13 @@
                 </configuration>
             </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.archetype</groupId>
-                <artifactId>archetype-packaging</artifactId>
-                <version>3.1.1</version>
-            </extension>
-        </extensions>
+        <!-- The archetype-packaging build extension was removed here. It is only required when
+             <packaging>maven-archetype</packaging>, and this project is <packaging>jar</packaging>
+             with no archetype descriptor - a leftover from whatever template it was scaffolded
+             from. Build extensions are resolved before the POM is even read, so an unresolvable
+             one aborts the build with "The build could not read 1 project" rather than a normal
+             dependency error. It resolved locally only because a past online build had cached it
+             in ~/.m2; a fresh CI runner has nothing to fall back on. -->
     </build>
     <repositories>
         <repository>

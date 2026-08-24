@@ -4,18 +4,27 @@ import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.pojos.order.appTesting.AppResponse;
 import com.qapitol.jsw.apitest.pojos.order.rcv2CartSizeResponse.Rcv2CartSize;
 import com.qapitol.jsw.apitest.pojos.order.rcv2AddToCartRequestPayload.Rcv2AddToCartRequest;
+import com.qapitol.jsw.apitest.pojos.order.rcv2DeleteLineItemRequestPayload.CartIdentifier;
+import com.qapitol.jsw.apitest.pojos.order.rcv2DeleteLineItemRequestPayload.CustomerDetails;
 import com.qapitol.jsw.apitest.pojos.order.rcv2DeleteLineItemRequestPayload.DeleteLineItemRequest;
+import com.qapitol.jsw.apitest.pojos.order.rcv2Response.LineItem;
 import com.qapitol.jsw.apitest.pojos.order.rcv2Response.Rcv2Response;
 import com.qapitol.jsw.apitest.pojos.order.updateLineItemRequestPayload.UpdateLineItemPayload;
+import com.qapitol.jsw.utils.ApiUtils;
+import com.qapitol.jsw.utils.Token;
 import com.qapitol.sauron.data.Data;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.nonNull;
 
 public class CartRCV2ApiImp extends BaseApiImpl {
+
+    /** The cart the CCP requirements journey uses - the pair the portal itself sends. */
+    private static final String REQUIREMENTS_CART_TYPE = "enquiry_v2";
+    private static final String REQUIREMENTS_CART_JOURNEY_TYPE = "REQUIREMENTS_CART_V2";
 
     public Rcv2Response getAddToCartResponse(String payload) throws IOException {
 
@@ -116,15 +125,75 @@ public class CartRCV2ApiImp extends BaseApiImpl {
 
     public Rcv2Response emptyCart() throws IOException {
         Rcv2Response cart = getCartResponse();
-        if (cart != null && cart.getData() != null && cart.getData().getLineItemList() != null
-                && !cart.getData().getLineItemList().isEmpty()) {
-            List<String> itemIds = new java.util.ArrayList<>();
-            for (com.qapitol.jsw.apitest.pojos.order.rcv2Response.LineItem item : cart.getData().getLineItemList()) {
-                itemIds.add(item.getLineItemIdentifier().getCtLineItemId());
-            }
+        List<String> itemIds = collectLineItemIds(cart);
+        if (!itemIds.isEmpty()) {
             return getDeleteLineItemResponse("RCV2_DELETE_LINE_ITEM", itemIds);
         }
         return cart;
+    }
+
+    /**
+     * Deletes every line item from the logged-in user's requirements cart in a single call.
+     *
+     * <p>Self-contained, unlike {@link #emptyCart()}, which reads the payload file name and the
+     * customer id out of {@code Data.get()}. That map only exists for scenarios declaring a
+     * {@code @dataFile}, so UI features cannot use it. Here the request is built in code and the
+     * customer id comes from the {@code userId} claim of the CCP login token - so it always acts
+     * on the cart of whoever the run actually logged in as, rather than a configured id that can
+     * drift out of step with the account and empty a different customer's cart.
+     *
+     * <p>The {@code access_token} header is not set here: {@code LoginApiImpl} injects it for the
+     * {@code ccpUrl} address from {@code Token.getCCPToken()}, which performs the CCP login.
+     *
+     * @return the number of line items deleted; 0 when the cart was already empty.
+     */
+    public int emptyCartForLoggedInUser() {
+        List<String> lineItemIds = collectLineItemIds(getCartResponse());
+        if (lineItemIds.isEmpty()) {
+            return 0;
+        }
+
+        CustomerDetails customerDetails = new CustomerDetails();
+        customerDetails.setCustomerId(ApiUtils.getUserId(Token.getCCPToken()));
+
+        CartIdentifier cartIdentifier = new CartIdentifier();
+        cartIdentifier.setCartType(REQUIREMENTS_CART_TYPE);
+        cartIdentifier.setCartJourneyType(REQUIREMENTS_CART_JOURNEY_TYPE);
+
+        DeleteLineItemRequest requestBody = new DeleteLineItemRequest();
+        requestBody.setCustomerDetails(customerDetails);
+        requestBody.setCartIdentifier(cartIdentifier);
+        // The whole list in one request, matching what the portal sends. Deleting one id per call
+        // leaves the cart half-emptied when a later call fails.
+        requestBody.setLineItemIdList(lineItemIds);
+
+        ccpUrl().create(RequestApi.class).rcv2DeleteLineItem(requestBody);
+        log.info("Requested deletion of " + lineItemIds.size() + " cart line item(s): " + lineItemIds);
+        return lineItemIds.size();
+    }
+
+    /** Number of line items currently in the cart. */
+    public int getCartLineItemCount() {
+        return collectLineItemIds(getCartResponse()).size();
+    }
+
+    /**
+     * Line item ids in the cart. Empty when the cart has none, and also when the response carries
+     * no data at all - an unreadable cart is treated as nothing to delete rather than as a crash,
+     * because the caller re-reads the cart afterwards to confirm the outcome.
+     */
+    private List<String> collectLineItemIds(Rcv2Response cart) {
+        List<String> ids = new ArrayList<>();
+        if (cart == null || cart.getData() == null || cart.getData().getLineItemList() == null) {
+            return ids;
+        }
+        for (LineItem item : cart.getData().getLineItemList()) {
+            if (item.getLineItemIdentifier() != null
+                    && item.getLineItemIdentifier().getCtLineItemId() != null) {
+                ids.add(item.getLineItemIdentifier().getCtLineItemId());
+            }
+        }
+        return ids;
     }
 
     public Rcv2CartSize getCartSizeResponse() {

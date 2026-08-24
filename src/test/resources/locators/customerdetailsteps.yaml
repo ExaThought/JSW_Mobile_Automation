@@ -7,6 +7,14 @@ elements:
     en_US:
       web: //a[contains(@class,'user-dropdown-item') and normalize-space()='Profile']
 
+  personalDetailsSection:
+    en_US:
+      web: //h2[text()='Personal details']
+
+  companyDetailsSection:
+    en_US:
+      web: //h2[text()='Company details']
+
 
   # ================= PROFILE DETAILS =================
 

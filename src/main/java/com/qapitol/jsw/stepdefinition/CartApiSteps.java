@@ -12,10 +12,8 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 import org.testng.Assert;
-
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,12 +29,9 @@ public class CartApiSteps {
     private String payload;
     private  List<String>ctLineItemId;
     
-
-
     private Rcv2Response addToCartResponse;
     private Rcv2Response getCartResponse;
     private Rcv2Response deleteLineItemResponse;
-    private Rcv2Response deleteCartResponse;
     private Rcv2Response updateLineItemResponse;
     private Rcv2CartSize rcv2CartSizeResponse;
     
@@ -262,7 +257,5 @@ public class CartApiSteps {
             Assert.fail("No SKU found containing keyword: " + keyword);
         }
     }
-
-
 
 }

@@ -1,0 +1,28 @@
+elements:
+  jswLogo:
+    en_US:
+      web: xpath=//header//a[.//*[name()='title' and normalize-space(text())='JSW Logo']]
+  primaryNavItems:
+    en_US:
+      web: xpath=//header//a[starts-with(@href,'/category/')]
+  headerSearch:
+    en_US:
+      web: xpath=//header//span[normalize-space()='Search']
+  locationSelectorGuest:
+    en_US:
+      web: xpath=//button[contains(normalize-space(),'Select location')]
+  locationSelectorLoggedIn:
+    en_US:
+      web: xpath=//span[normalize-space()='Deliver to']
+  cartIcon:
+    en_US:
+      web: xpath=//header//a[@href='/cart-detail']
+  cartItemCountBadge:
+    en_US:
+      web: xpath=//header//a[@href='/cart-detail']//*[normalize-space(text())!='' and translate(normalize-space(text()),'0123456789','')='']
+  loginCta:
+    en_US:
+      web: xpath=//header//button[normalize-space()='Login']
+  accountMenu:
+    en_US:
+      web: xpath=//header//span[normalize-space()='Account']

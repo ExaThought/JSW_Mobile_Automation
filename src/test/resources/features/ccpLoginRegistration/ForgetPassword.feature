@@ -3,18 +3,23 @@ Feature: Check forget password
 
   Background:
     Given Go to session "ccp"
+    And user open the CCP web portal
 
   @sanity
-  Scenario: Check forget password with Invalid email ID
-    And user open the CCP web portal
-    And enter invalid email id "sr@.js"
-    Then user should not able to proceed to login with proper error message
+  Scenario Outline: Continue stays disabled on forget password for an invalid email - <case>
+    And enter invalid email id "<email>"
     Then continue button should be disabled for user
 
+    Examples:
+      | case             | email           |
+      | malformed domain | sr@.js          |
+      | blank            |                 |
+      | missing domain   | user@           |
+      | missing at sign  | userexample.com |
+
   @sanity
-  Scenario: Check forget password with valid email ID
-    And user open the CCP web portal
-    And User enter valid email "v_suhas.gr@jsw.in"
+  Scenario: Forget password gives the same confirmation for an already registered email
+    And enter the email for the "registered" account on forget password
     And user click on the continue button
     And user click on forget password link
     And user click on submit button

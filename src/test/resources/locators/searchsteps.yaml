@@ -1,42 +1,54 @@
 elements:
-  # -------- SEARCH --------
-  # Homepage trigger that opens the search modal
+  # ---------------------------------------------------------------------------
+  # Search.
+  #
+  # Verified against QA (qa-ssr.msme.jswone.in). The page carries NO <input> at all
+  # until the search modal opens, so the previous searchInput (//input[@id='SearchText']),
+  # searchModalInput (//input[@id='SearchInput']) and searchPlaceholder locators all
+  # matched 0 nodes. Anything anchored on those was asserting against nothing.
+  # ---------------------------------------------------------------------------
+
+  # The header control is a BUTTON that opens the search modal, not a text field.
+  # Verified: 2 nodes, 1 visible (the header is rendered twice - see homeheadersteps.yaml).
+  searchTrigger:
+    en_US:
+      web: //span[normalize-space()='Search']/../following-sibling::button
+
   searchInput:
     en_US:
-      web: //input[@id='SearchText']
+      web: //span[normalize-space()='Search']/../following-sibling::button
 
-  # Real search input rendered inside the modal once it opens
   searchModalInput:
     en_US:
-      web: //input[@id='SearchInput']
+      web: //input[@data-slot="input"]
 
+  # Verified: 2 nodes, 1 visible.
   searchPlaceholder:
     en_US:
-      web: //span[contains(@class,'static-text') and text()='Search']
+      web: //span[normalize-space()='Search']
 
-  rotatingPlaceholder:
-    en_US:
-      web: //span[contains(@class,'rotating-text')]
-
-  # Suggestion rows inside the search popup overlay
+  # Suggestion rows inside the search popup overlay. NOT verified live (needs the modal open).
   searchSuggestions:
     en_US:
       web: //input[@data-slot="input"]/../../../../../following-sibling::div//a
 
-  # Inner elements of a suggestion row (relative xpaths used inside a card)
-  searchResultName:
-    en_US:
-      web: .//span[contains(@class,'suggestion-text')]
-
-  searchResultImage:
-    en_US:
-      web: .//img[contains(@class,'suggestion-image')]
-
-  # -------- PRODUCTS --------
   productCard:
     en_US:
       web: //a[contains(@href,'/product-detail')]
 
+  plpResultCount:
+    en_US:
+      web: //h1[contains(normalize-space(),'results for "cement"') or contains(normalize-space(),'result for "cement"')]
+
+  plpErrorState:
+    en_US:
+      web: //*[contains(text(),'Something went wrong')]
+
+  plpNoResultsMessage:
+    en_US:
+      web: //*[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no results') or contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no products')]
+
+  # -------- Inner elements of a result card (relative xpaths, used inside a card) --------
   productName:
     en_US:
       web: .//p[contains(@class,'typography')]

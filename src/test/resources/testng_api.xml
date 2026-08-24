@@ -15,7 +15,8 @@
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
     </listeners>
 
-    <parameter name="data.env" value="qa"/>
+    <!-- env / data.env are set by GlobalConfigProperties from -Denv (default: qa).
+         Override here only if this suite must pin one environment. -->
     <parameter name="data.testId" value="testCaseId"/>
     <parameter name="api.retry.count" value="3"/>
     <parameter name="executionTimeout" value="10000"/>
@@ -26,6 +27,8 @@
 
     <test name="CustomerProfileApi">
         <parameter name="test.group" value="profile"/>
+        <!-- Required: Sauron NPEs in OSSConfigInitializer without it. Headless, so no window. -->
+        <parameter name="sessions" value="sessions_headless.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features/api"/>
         <parameter name="cucumber.filter.tags" value="@customerProfileApi"/>
         <classes>

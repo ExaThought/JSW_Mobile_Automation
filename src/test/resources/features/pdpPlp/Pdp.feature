@@ -10,7 +10,7 @@ Feature: Check PDP page
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Sheet product
-    And open HR Sheet plp "1" product
+    And click on first product
     And select thickness, width, length, quantity, for HR Sheet
     And click on reset button in pdp page
     Then check Add to cart is disabled
@@ -19,7 +19,7 @@ Feature: Check PDP page
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Sheet product
-    And open HR Sheet plp "1" product
+    And click on first product
     And select thickness for pdp "2.5"
     Then check Add to cart is disabled
     And select width "1500"
@@ -33,7 +33,7 @@ Feature: Check PDP page
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Coil product
-    And open HR Coil plp "1" product
+    And click on first product
     And select thickness, width, quantity "<enteredQuantity>" for HR Coil
     And add to cart
     And click view cart
@@ -50,14 +50,14 @@ Feature: Check PDP page
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Sheet product
-    And open HR Sheet plp "1" product
+    And click on first product
     Then check brand name is not empty in PDP page
 
   Scenario: Verify when entering quantity = 0
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Coil product
-    And open HR Coil plp "1" product
+    And click on first product
     And select thickness, width, quantity "0" for HR Coil
     Then check Add to cart is disabled
 
@@ -65,7 +65,7 @@ Feature: Check PDP page
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Coil product
-    And open HR Coil plp "1" product
+    And click on first product
     And select thickness, width, quantity "100" for HR Coil
     Then check Add to cart is enabled
 
@@ -73,5 +73,5 @@ Feature: Check PDP page
     When move the mouse to Mild steel category
     And move to Hot rolled category
     And click on HR Coil product
-    And open HR Coil plp "1" product
+    And click on first product
     Then check product description is not empty in PDP page

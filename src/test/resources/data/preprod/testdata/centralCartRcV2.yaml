@@ -1,0 +1,26 @@
+- testCaseId: "id-001"
+  cart_journey_type: "REQUIREMENTS_CART_V2"
+  cart_type: "ENQUIRY_CART"
+  store_front: "MSME"
+  device_type: "WEBSITE"
+
+- testCaseId: "id-002"
+  cart_journey_type: "REQUIREMENTS_CART_V2"
+  cart_type: "ENQUIRY_CART"
+  store_front: "MSME"
+  device_type: "MOBILE"
+
+- testCaseId: "id-003"
+  cart_journey_type: "REQUIREMENTS_CART_V2"
+  cart_type: "ENQUIRY_CART"
+  store_front: "CONSTRUCT"
+  device_type: "WEBSITE"
+
+- testCaseId: "id-004"
+  cart_journey_type: "REQUIREMENTS_CART_V2"
+  cart_type: "ENQUIRY_CART"
+  store_front: "CONSTRUCT"
+  device_type: "MOBILE"
+
+- testCaseId: "id-005"
+  delivery_type: "SELF_PICKUP"

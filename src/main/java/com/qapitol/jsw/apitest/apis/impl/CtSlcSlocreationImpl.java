@@ -6,6 +6,7 @@ import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload.CtSlcSloRequestPayload;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloRequestPayload.LineItem;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
+import com.qapitol.jsw.utils.DataContractValidator;
 import com.qapitol.sauron.data.Data;
 
 
@@ -49,13 +50,18 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
             resetRequestData();
 
             //Load the Payload
-            CtSlcSloRequestPayload requestPayload = getPayloadJsonFileAsPOJO((String) Data.get().get(orderType), CtSlcSloRequestPayload.class);
+            String payloadFileName = resolvePayloadFileName(orderType);
+            CtSlcSloRequestPayload requestPayload = getPayloadJsonFileAsPOJO(payloadFileName, CtSlcSloRequestPayload.class);
 
             //Read the data from Yaml
             opportunityId = "006" + java.util.UUID.randomUUID().toString().replaceAll("-", "").substring(0, 15);
             customerId = Data.get().get("CustomerId").toString();
             addressId = Data.get().get("AddressId").toString();
             requestCustomerId = customerId;
+
+            // Fail here, not three steps later on an "empty cart" locator timeout, when the cart
+            // is about to be created for a different customer than the browser will log in as.
+            DataContractValidator.assertApiCustomerMatchesLoggedInUser(customerId);
 
             //Set RequestPayload
             requestPayload.setBillingAddressId(addressId);
@@ -77,8 +83,9 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
             }
 
 
-            //Request API
-            RequestApi requestApi = ccpUrl().create(RequestApi.class);
+            //Request API - salesOppUrl, not ccpUrl: QA serves this endpoint from its own host
+            //with an X-API-KEY. On pre-prod the property resolves back to ccpUrl.
+            RequestApi requestApi = salesOppUrl().create(RequestApi.class);
             CtSlcSloRes responseBody = requestApi.requestCtCashAndCarrySlcSlo(requestPayload);
 
             //Set the Request data to verify in the CCP portal
@@ -97,8 +104,10 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
                     requestedSourceSeller=item.getSourceSeller().getSourceSellerCompanyName();
                     requestLineAmount=Double.parseDouble(item.getSourceSeller().getSourceSellerSKUPrice());
 
+                    // cashbackDetails is optional - payloads for SKUs with no cashback offer omit
+                    // the whole block, so this must not assume it is present.
                     requestedCashBack=0;
-                    if(item.getCashbackDetails().getCashbackRate() != null){
+                    if(item.getCashbackDetails() != null && item.getCashbackDetails().getCashbackRate() != null){
                         Double cashBack = item.getCashbackDetails().getCashbackRate();
                         requestedCashBack += cashBack;
                     }
@@ -132,6 +141,32 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
         } catch (BadRequestException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Maps an orderType key to its payload file name via data/&lt;env&gt;/default-data.yaml.
+     *
+     * An unmapped key used to reach Jackson as a null file name and surface as
+     * "FileNotFoundException: ...\api\request\null.json", which names neither the key that was
+     * missing nor the file that should have defined it. Renaming a key in default-data.yaml
+     * without updating every step definition is easy to do and was costing a full run to
+     * diagnose, so it fails here with both.
+     *
+     * @param orderType the key a step definition set, e.g. "CT_SLC_SLO_CREDIT".
+     * @return the payload file name, without the .json extension.
+     * @throws IllegalStateException when the key has no entry, or its entry is empty.
+     */
+    private String resolvePayloadFileName(String orderType) {
+        Object mapped = orderType == null ? null : Data.get().get(orderType);
+        String fileName = mapped == null ? null : String.valueOf(mapped).trim();
+
+        if (fileName == null || fileName.isEmpty() || "null".equalsIgnoreCase(fileName)) {
+            throw new IllegalStateException("No payload file is mapped to orderType key '" + orderType
+                    + "'. Add it to src/test/resources/data/<env>/default-data.yaml, or point the step"
+                    + " definition at an existing key. Keys currently defined there must also exist as"
+                    + " src/test/resources/api/request/<name>.json.");
+        }
+        return fileName;
     }
 
     /**

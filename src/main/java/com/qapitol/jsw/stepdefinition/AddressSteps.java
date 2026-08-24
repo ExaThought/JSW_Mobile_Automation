@@ -8,28 +8,20 @@ import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
-import static com.qapitol.jsw.pageFactory.CategoryPages.ALL_CATEGORY;
 import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class AddressSteps extends AbstractWebPage {
 
-
-
-    private static final String CCP_USER_MENU_TESTACCO = "ccpUserMenuTestacco";
     private static final String CCP_USER_MENU_PROFILE_OPTION = "ccpUserMenuProfileOption";
-
     private static final String CCP_PROFILE_ADDRESSES_TAB = "ccpProfileAddressesTab";
     private static final String CCP_PROFILE_ADDRESSES_TAB_ACTIVE = "ccpProfileAddressesTabActive";
-
     private static final String CCP_ADD_ADDRESS_BUTTON = "ccpAddAddressButton";
-
     private static final String CCP_ADDRESS_COMPANY_NAME_INPUT = "ccpAddressCompanyNameInput";
     private static final String CCP_ADDRESS_LINE1_INPUT = "ccpAddressLine1Input";
     private static final String CCP_ADDRESS_PINCODE_INPUT = "ccpAddressPinCodeInput";

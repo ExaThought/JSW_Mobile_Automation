@@ -1,0 +1,110 @@
+{
+  "slo": false,
+  "shipToType": "primary",
+  "shippingAddressSFId": "a03Bh00000Jpx8RIAR",
+  "shippingAddressId": "dvB5WQ0T",
+  "selfPickup": false,
+  "salesforceOpportunityURL": "https://jswoneplatforms--uat.sandbox.my.salesforce.com/006Bh00000FZVl5IAH",
+  "salesforceOpportunityId": "006Hz00000K4EGHI30",
+  "salesAssociate": "Integration User",
+  "remarks": "NA",
+  "ratesValidity": "24 hours",
+  "priceType": "FOR",
+  "poDetails": "PO-0150678",
+  "paymentTerms": "100% advance",
+  "orderType": "Distributed",
+  "orderPaymentType": "Credit",
+  "opportunityString": "3,0(0)C0,0",
+  "opportunityOwnerEmail": "pratyush.varma@jsw.in",
+  "lineItems": [
+    {
+      "type": "ON_CATALOG",
+      "sourceSeller": {
+        "sourceSellerVendorMasterId": "V1988-2624-JODL-3122",
+        "SourceSellerSKUPrice": "100.00",
+        "SourceSellerMobile": "9967745635",
+        "sourceSellerId": "JD001",
+        "sourceSellerGST": "27SGTCJ4323N1ZG",
+        "SourceSellerEmail": "v_sagar.kanherkar@jsw.in",
+        "sourceSellerCompanyName": "gitanjali steel (JODL)",
+        "sourceSellerAddress": {
+          "sourceSellerShipFromAddress": {
+            
+          },
+          "sourceSellerBillFromAddress": {
+            
+          }
+        }
+      },
+      "sellerVendorMasterId": "V1146-1147-JODL-1147",
+      "sellerId": "JD001",
+      "sapLineItemId": 10,
+      "salesForceSkuId": "SKUR-371145",
+      "productKey": "2062_2011-E250A-03",
+      "orderedQuantity": 2000.0,
+      "NCOReason": "",
+      "name": "MS HR Sheet 2062:2011 E250A",
+      "MMID": "1000-10000",
+      "meta": {
+        "pricing_mode": "FOR",
+        "for_freight": 0.0
+      },
+      "isNCO": false,
+      "finalSellingPrice": 112.0,
+      "channelKey": "V1725-2098-JODL-2561",
+      "attributes": {
+        "WIDTH_MM": "1500",
+        "THICKNESS_MM": "8",
+        "LENGTH_MM": "6300"
+      }
+    }
+  ],
+  "ledgerBalance": 0.0,
+  "isPBDistributor": false,
+  "isDirect": false,
+  "isBillingAddressValidated": true,
+  "deliveryType": "Self pickup",
+  "customFields": {
+    "tdc_requirements": {
+      "tdc_text": "null"
+    },
+    "specialDeliveryInstructions": {
+      "terms": "10"
+    },
+    "sellerPaymentTerms": {
+      "terms": "null"
+    },
+    "estimatedDeliveryTimeline": {
+      "text": "3 days"
+    },
+    "creditDetails": {
+      "CreditUtilisation": 7.999984424E9,
+      "creditAmount": 264.32,
+      "creditAvailable": 1.0E9,
+      "creditDays": "1",
+      "creditExpirationDate": "2027-01-07",
+      "creditInstrument": "CF-TC",
+      "creditLimitReferenceId": "CF-JOFL-JODL-JSW",
+      "creditType": "Channel finance",
+      "isCreditRequired": "true",
+      "penalInterest": 11.0
+    },
+    "committedDeliveryTimeline": {
+      "terms": "null"
+    }
+  },
+  "customerId": "1834a7bb-e285-4744-911d-e15b4e2b1bc0",
+  "creditLimitBypass": false,
+  "businessUnit": "Manufacturing",
+  "blockOrderSummaryFlag": false,
+  "billingAddressSFId": "a03Bh00000Jpx8RIAR",
+  "billingAddressId": "dvB5WQ0T",
+  "advancePercentage": 0,
+  "advancePayment": 0.0,
+  "priority": "High",
+  "payTo": "JOPL Nodal",
+  "gstCompliance": "PPOB",
+  "encryptedAddress": "MTkvMVwsIFNJVEUgSVZcLCBJTkRVU1RSSUFMIEFSRUFcLCBTQUhJQkFCQUQgSU5EVVNUUklBTCBBUkVBXCwgR0hBWklBQkFEXCwgR0hBWklBQkFEXCwgVVRUQVIgUFJBREVTSFwsIDIwMTAxMHxTSVRFIElWfDE5LzF8fElORFVTVFJJQUwgQVJFQXxHSEFaSUFCQUR8fEdIQVpJQUJBRHxVVFRBUiBQUkFERVNIfDIwMTAxMHwxOS8xXCxTSVRFIElWXCxJTkRVU1RSSUFMIEFSRUFcLFNBSElCQUJBRCBJTkRVU1RSSUFMIEFSRUF8MjAxMDEwfElFU0FISUJBQkFEfEdIQVpJQUJBRHxJLkUuIFNBSElCQUJBRHxVUCxVVFRBUiBQUkFERVNIfElOLElORCxJTkRJQQ",
+  "channelOfOrder": "System Administrator",
+  "addressStatus": "Active"
+}

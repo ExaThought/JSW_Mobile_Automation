@@ -14,10 +14,8 @@ import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class HomepageBlogSteps extends AbstractWebPage {
-    private static final String BLOG_SECTION_TITLE = "blogSectionTitle";
     private static final String BLOG_TITLE = "//h1[text()='Blogs']";
     private static final String BLOG_SECTION = "//span[text()='Blogs']";
-    private static final String FIRST_BLOG_READ_MORE_BUTTON = "firstBlogReadMoreButton";
     private static final String BLOG_POSTED_ON_TEXT = "(//h1[text()='Blogs']/following-sibling::div//h3)[1]";
     private static final String BLOG_YOUTUBE_ICON = "blogYoutubeIcon";
     private static final String MY_ORDER = "//a[@href=\"/my-orders\"]";
@@ -28,8 +26,6 @@ public class HomepageBlogSteps extends AbstractWebPage {
     private static final String REQ_ID = "(//div[contains(text(),'Requirements ID')])[1]/following-sibling::div";
     private static final String REQ_DATE = "(//div[contains(text(),'Requirements ID')])[1]/../../following-sibling::div//div[contains(text(),'Requirement submission date: 01')]";
     private static final String REQ_QTY = "(//div[contains(text(),'Requirements ID')])[1]/../../following-sibling::div//div[contains(text(),'items')]";
-    private static final String ITEM_COLLAPSE = "(//div[@class=\"d-none d-md-inline collapse-icon\"])[1]";
-    private static final String PRODUCTS = "//div[text()='Product']/../../following-sibling::div//div[text()='Quantity:']/following-sibling::div";
     private static final String USER_PERMISSION = "//span[text()='Account']/../../following-sibling::div//a[@href=\"/my-profile?tab=users-permissions\"]";
     private static final String USER_PERMISSION_TEXT = "//h2[text()='Users & permissions']";
 
