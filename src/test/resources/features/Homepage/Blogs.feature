@@ -1,4 +1,4 @@
-@blog 
+@blogs 
 Feature: Validate Blog Section
 
   Background:

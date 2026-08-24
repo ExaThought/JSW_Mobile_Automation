@@ -19,7 +19,7 @@ public class UserConfig {
      * suite runs under it, and adding it here without a suite would suggest otherwise.
      */
     private static final Set<String> VALID_GROUPS =
-            Set.of("homepage", "cart", "profile", "orders", "msite", "Guest", "tokencheck");
+            Set.of("login", "homepage", "pdpplp", "cart", "profile", "orders", "msite", "Guest", "tokencheck");
 
     public static String getEmail() {
         return requireGroupValue(emailKey());
