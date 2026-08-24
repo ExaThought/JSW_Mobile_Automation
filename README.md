@@ -4,29 +4,46 @@ Prerequestites
 1. Get credentials to access JSW nexus
 2. Create directory name `download_dir` in project directory.
 
-## Required secrets
+## Configuration and secrets
 
-**No credential belongs in this repository.** Every secret in `src/test/resources/global_*.properties`
-ships as `${ENV_VAR:}` with an empty default and is injected at run time. `ci/check-secrets.js`
-runs on every PR and fails the build if a real value reappears in a tracked file, so this is
-enforced rather than merely requested.
+Every value lives in `src/test/resources/global_<env>.properties` as `${ENV_VAR:default}`, and
+`ConfigUtil.getSecretValue` resolves the first non-empty of:
 
-Each can be supplied **either** way — a JVM system property wins over an environment variable,
-which wins over the (empty) default:
+1. `-DENV_VAR=value` on the Maven command line
+2. `ENV_VAR` in the environment — GitHub Actions secrets, Jenkins credentials bindings
+3. the committed default
+
+So a plain `mvn test` works with no setup, and any value can be overridden per-run:
 
 ```bash
-# environment variable - what CI should use
-export QA_CART_PASSWORD='...'
-mvn test -DsuiteXmlFile=src/test/resources/testng_bdd.xml
-
-# or on the command line - handy locally, and for a Jenkins job you cannot yet edit
-mvn test -DsuiteXmlFile=src/test/resources/testng_bdd.xml -DQA_CART_PASSWORD='...'
+mvn test -DsuiteXmlFile=src/test/resources/testng_bdd.xml -DQA_PROFILE_PASSWORD='...'
 ```
 
-A missing one fails immediately through `ConfigUtil.resolveOrThrow` / `UserConfig.requireGroupValue`,
-and the message names the variable to set. Without that guard an unset password resolves to the
-empty string, the suite posts a blank credential, and the run reports HTTP 401 — which looks like
-a bad account rather than absent configuration.
+A key with no default and nothing supplied fails through `ConfigUtil.resolveOrThrow` /
+`UserConfig.requireGroupValue`, naming both the property and the variable to set.
+
+> ### ⚠️ Credentials are currently committed
+>
+> The defaults in `global_common.properties`, `global_qa.properties` and
+> `global_preprod.properties` include real JWTs, API keys, a database password and the test-account
+> passwords — `ci/check-secrets.js` counts 36. **A PR review flagged this as a blocking security
+> issue.** They are still here because they are what makes the suite run: nothing else supplies
+> them yet, and blanking them broke every login-dependent scenario.
+>
+> To close it properly:
+>
+> 1. give the Jenkins job credentials bindings for the variables below (job configuration, not
+>    this repo)
+> 2. blank the defaults to `${ENV_VAR:}`
+> 3. re-enable the `No committed secrets` step in `.github/workflows/pr-checks.yaml`
+>
+> Anything ever committed here stays reachable in git history, in every clone and every fork —
+> deleting it from the working tree is not remediation. **Rotate these credentials regardless of
+> when step 2 happens.** The highest-risk one is `appTokenUrl` in `global_common.properties`: a
+> signed JWT for the **production** host `jswoneconstruct.in`, which nothing in the codebase
+> reads.
+
+The variables below override the committed defaults. They are what Jenkins should bind.
 
 ### Build
 
@@ -48,8 +65,8 @@ a bad account rather than absent configuration.
 
 ### Test-account passwords
 
-One pair per `test.group`, because groups run in parallel and must not share a login. The
-`<GROUP>.user.email` addresses are committed (they are not secrets); the passwords are not.
+One pair per `test.group`, because groups run in parallel and must not share a login. Both the
+address and the password currently carry a committed default — see the warning above.
 
 `QA_*` for `-Denv=qa`, `PREPROD_*` for `-Denv=preprod`:
 
@@ -83,14 +100,21 @@ finishes in about a minute:
 | Payload keys resolve | `ci/check-payload-keys.js` | An `orderType` → data-yaml → `api/request/*.json` chain with a broken link, per environment. |
 | YAML valid | `yamllint -c .yamllint.yaml` | Malformed locator/data/session YAML. |
 | Gherkin lint | `ci/lint-features.js` | Feature text with no matching step definition. |
-| No committed secrets | `ci/check-secrets.js` | JWTs, PEM keys, and credential-named keys holding a real value. |
 
-The first five exist because this framework resolves locator keys, payload keys and step text at
+These exist because this framework resolves locator keys, payload keys and step text at
 **runtime** — a rename compiles cleanly and fails mid-suite with a message naming neither the key
 nor the file. Run them locally before pushing:
 
 ```bash
-node ci/check-locator-keys.js && node ci/check-payload-keys.js && node ci/lint-features.js && node ci/check-secrets.js
+node ci/check-locator-keys.js && node ci/check-payload-keys.js && node ci/lint-features.js
+```
+
+`ci/check-secrets.js` is a sixth check that is written but **not wired into the workflow** — it
+reports the 36 credentials currently committed, so enabling it would fail every PR. Turn it on in
+the same change that blanks the defaults. Run it by hand any time:
+
+```bash
+node ci/check-secrets.js
 ```
 
 ## How to execute tests
