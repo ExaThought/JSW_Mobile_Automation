@@ -64,6 +64,16 @@ public class SfSlcSloSteps extends AbstractWebPage {
     private static final String ORDER_NUMBER_QUERY_PARAM = "order_num";
 
     /**
+     * Path of the cart page. Confirming an order navigates away from it, and the order summary can
+     * take up to about ten seconds to appear, so this is what "the order has not landed yet" looks
+     * like. Matched with contains() against the full URL from getCurrentUrl().
+     */
+    private static final String CART_DETAIL_PATH = "/cart-detail";
+
+    /** How long the order summary URL is allowed to take. Observed worst case is ~10s. */
+    private static final Duration ORDER_SUMMARY_TIMEOUT = Duration.ofSeconds(25);
+
+    /**
      * Absorbs the half-paisa drift between our double arithmetic and the server's rounding.
      * A rupee either matches or it does not, so this is tight enough to catch a real mismatch:
      * without it, any SKU price carrying paise fails on binary representation alone
@@ -341,8 +351,18 @@ public class SfSlcSloSteps extends AbstractWebPage {
 
     @And("Create an order and verify the order summery page")
     public void create_an_order_and_verify_the_order_summery_page() {
-        sleep(10000);
-        ccpOrderNumber = readOrderNumberFromCurrentUrl();
+        // Wait for the order summary rather than sleeping for a fixed 10s. A fixed pause is both
+        // wasteful when the redirect is quick and insufficient when it is not, and "insufficient" is
+        // exactly how this step ended up reading the cart URL and reporting a missing order number.
+        // This returns as soon as the summary is up, so the common case costs a fraction of the old
+        // sleep while the worst case gets more headroom than it had.
+        waitForOrderSummaryUrl();
+
+        // No assignment. readOrderNumberFromCurrentUrl() stores into ccpOrderNumber itself and
+        // returns null on failure; assigning that back would wipe a value an earlier step captured,
+        // which is the opposite of what the method's contract promises. It also re-checks for the
+        // cart URL, so a timeout above is reported there with the page actually on screen.
+        readOrderNumberFromCurrentUrl();
         AllureCustomLogReporter.addTestStepLog(requestOrderType+" "+orderType+" order number="+ccpOrderNumber);
     }
 
@@ -361,6 +381,38 @@ public class SfSlcSloSteps extends AbstractWebPage {
      *
      * @return the captured order number, or null when the URL carried none.
      */
+    /**
+     * Blocks until the confirm click has landed on the order summary page.
+     *
+     * Both conditions must hold: the URL has left {@link #CART_DETAIL_PATH} <em>and</em> it carries
+     * {@link #ORDER_NUMBER_QUERY_PARAM}. Waiting on the parameter alone would be satisfied by any
+     * page that happens to carry it; waiting on leaving the cart alone would be satisfied by an
+     * error page. Requiring both means a pass here guarantees the extraction below can succeed.
+     *
+     * A timeout is not thrown. {@link #readOrderNumberFromCurrentUrl()} re-reads the URL and reports
+     * the failure with the page that is actually on screen, which is more useful than a bare
+     * TimeoutException naming only the condition.
+     *
+     * @return true if the order summary loaded within {@link #ORDER_SUMMARY_TIMEOUT}
+     */
+    private boolean waitForOrderSummaryUrl() {
+        try {
+            new WebDriverWait(Grid.driver(), ORDER_SUMMARY_TIMEOUT).until(driver -> {
+                String url = driver.getCurrentUrl();
+                return url != null
+                        && !url.contains(CART_DETAIL_PATH)
+                        && url.contains(ORDER_NUMBER_QUERY_PARAM + "=");
+            });
+            log.info("Order summary URL is up: " + Grid.driver().getCurrentUrl());
+            return true;
+        } catch (TimeoutException e) {
+            log.info("Order summary URL did not appear within " + ORDER_SUMMARY_TIMEOUT.getSeconds()
+                    + "s. Leaving the diagnosis to readOrderNumberFromCurrentUrl(), which will name"
+                    + " the page the browser is actually on.");
+            return false;
+        }
+    }
+
     private String readOrderNumberFromCurrentUrl() {
         String currentUrl;
         try {
@@ -369,20 +421,43 @@ public class SfSlcSloSteps extends AbstractWebPage {
             softAssert.fail("Could not read the current URL to capture the order number: " + e.getMessage());
             return null;
         }
+        // Still on the cart means the confirm click has not landed on the order summary yet, so
+        // there is no order number in the URL to read. Skip the extraction - but fail here and
+        // return, never fall through.
+        //
+        // That last part is the whole point. An earlier version of this guard compared the absolute
+        // URL against the bare path with contentEquals(), so it never matched and the branch was
+        // dead. Simply repairing the comparison would have been worse than leaving it dead: on the
+        // skip path the method fell through to `return ccpOrderNumber`, handing back the PREVIOUS
+        // scenario's order number and logging it as freshly captured from the cart URL. A silent
+        // wrong pass. Skipping the read and reporting it is safe; skipping it quietly is not.
+        if (currentUrl != null && currentUrl.contains(CART_DETAIL_PATH)) {
+            softAssert.fail("Still on the cart page " + ORDER_SUMMARY_TIMEOUT.getSeconds()
+                    + "s after confirming the order (" + currentUrl + "). The order summary never"
+                    + " loaded, so no order number could be read. Either the order was not created"
+                    + " or the redirect is slower than the timeout."
+                    + " ccpOrderNumber is left as '" + ccpOrderNumber + "'.");
+            return null;
+        }
 
         String extracted = extractOrderNumberFromUrl(currentUrl);
         if (isBlank(extracted)) {
             softAssert.fail("No '" + ORDER_NUMBER_QUERY_PARAM + "' parameter in the current URL '"
                     + currentUrl + "'. Expected the order summary page,"
                     + " e.g. .../order-summary?" + ORDER_NUMBER_QUERY_PARAM + "=JOO-4M3UTSRQ1."
-                    + " The browser is most likely still on the cart rather than on the order summary.");
+                    + " ccpOrderNumber is left as '" + ccpOrderNumber + "' - if that is already a"
+                    + " real order number an earlier step captured it and nothing is lost.");
+            // Returning null must NOT be assigned back to ccpOrderNumber by the caller; the field
+            // is preserved on purpose so an SLC flow can still use a value captured earlier.
             return null;
         }
 
         ccpOrderNumber = extracted;
-        log.info("Captured order number '" + ccpOrderNumber + "' from URL: " + currentUrl);
-        AllureCustomLogReporter.addTestStepLog("Order number from URL = " + ccpOrderNumber);
-        return ccpOrderNumber;
+        // Log 'extracted', not the field: if these ever diverge, reporting the field would
+        // attribute a stale order number to the URL just read.
+        log.info("Captured order number '" + extracted + "' from URL: " + currentUrl);
+        AllureCustomLogReporter.addTestStepLog("Order number from URL = " + extracted);
+        return extracted;
     }
 
     /**
@@ -517,8 +592,6 @@ public class SfSlcSloSteps extends AbstractWebPage {
         Grid.driver().get(Token.getErpLoginUrl()); 
         Grid.driver().manage().window().maximize();
 
-        sleep(5000);
-
         //Open the Order in ERP
         Grid.driver().get(ConfigUtil.getSecretValue("omsUrl") + ERP_ORDER_LIST_SEGMENT + "/" + ccpOrderNumber);
 
@@ -543,7 +616,6 @@ public class SfSlcSloSteps extends AbstractWebPage {
         //Nodel and Non nodel Validation.
         //Blankness is checked first: "JOPL Nodal".contains("") is true, so an empty ERP cell
         //would otherwise read as a pass.
-        sleep(5000);
         String erpOrderPaymentType = safeGetText(ERP_ORDER_PAYMENT_TYPE);
         softAssert.assertTrue(!isBlank(erpOrderPaymentType)
                         && requestNodelorNonNodel != null

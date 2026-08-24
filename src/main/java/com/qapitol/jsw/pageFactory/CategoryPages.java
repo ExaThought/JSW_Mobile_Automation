@@ -11,11 +11,12 @@ public class CategoryPages {
     public static String hotRolledSheetsSubCategory = "//a[contains(@href,'hot-rolled-sheets')]";
     public static String hotRolledCoilsSubCategory = "//a[contains(@href,'hot-rolled-coils')]";
     public static String length = "//div[contains(text(),'Length (mm)')]/parent::div/following-sibling::div/child::div/child::button[1]";
-    public static String addToCart = "//button[contains(., 'Add to Cart')]";
+    public static String addToCart = "//button[@data-test-id='pdp-add-to-cart-button']";
     public static String coldRolledCategory = "(//li//a[@href=\"/category/cold-rolled-steel\"])[1]";
     public static String coldRolledCoilsSubCategory = "(//li//a[@href=\"/category/cold-rolled-coils\"])[1]";
     public static String coldRolledSheetsSubCategory = "(//li//a[@href=\"/category/cold-rolled-sheets\"])[1]";
-    public static String coatingGrade = "(//div[contains(text(),'Coating grade - AZ (GSM)')]//parent::div//following-sibling::div//child::div//child::button)[1]";
+    public static String COATING_GRADE = "//span[contains(normalize-space(), 'Coating grade (gsm)')]/../following-sibling::div/button[not(contains(@class, 'disabled'))]";
+    public static String SPANGLE_TYPE = "//span[contains(normalize-space(), 'Spangle type')]/../following-sibling::div/button[not(contains(@class, 'disabled'))]";
     public static String wireCategory = "//li//a[contains(@href,'steel-wire-rods')]";
     public static String structuralSteelCategory = "//div[@class='nav-active-link-jsw']/child::a[contains(text(),'Structural steel')]";
     public static String anglesSubCategory = "(//a[contains(text(),'Angles')])[2]";

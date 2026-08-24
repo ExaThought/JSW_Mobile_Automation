@@ -110,7 +110,7 @@ public class ApiUtils extends BaseApiImpl
                     System.out.println("Cart is empty");
                     return;
                 } else {
-                    System.out.println("cart is not empty");
+                    System.out.println("cart was not empty");
                 }
 
                 // Delete one by one
@@ -266,7 +266,6 @@ public class ApiUtils extends BaseApiImpl
         Response response=null;
         Map<String, String> sfIds = new HashMap<>();
         try {
-            Thread.sleep(5000);
              response = given()
                     .header("authorization", jwtToken)
                     .queryParam("includePermission", true)

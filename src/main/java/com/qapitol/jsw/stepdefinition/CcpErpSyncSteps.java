@@ -63,7 +63,6 @@ public class CcpErpSyncSteps extends AbstractWebPage {
         //Open the ERP
         Grid.driver().get(Token.getErpLoginUrl());
         Grid.driver().manage().window().maximize();
-        sleep(5000);
 
         //Open the Order in ERP
         Grid.driver().get(ConfigUtil.getSecretValue("omsUrl") + "order-list/" + ccpOrderNumber);

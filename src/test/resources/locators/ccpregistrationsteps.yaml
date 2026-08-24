@@ -7,19 +7,15 @@ elements:
     en_US:
       web: //input[@id='email']
 
-  ccpRegistrationCTA:
-    en_US:
-      web: //button[@id='login-to-continue']
-
   registrationErrorMessage:
     en_US:
       web:
         - //div[contains(text(),'Credentials are not valid')]
-        - //div[contains(text(),'Credentials are not valid. Please try again')]
+        - //p[contains(text(),'Credentials are not valid. Please try again')]
 
   invalidRegistrationEmailErrorMessage:
     en_US:
-      web: //div[contains(text(),'You have entered a wrong email address')]
+      web: //p[contains(text(),'You have entered a wrong email address')]
 
   fullName:
     en_US:
@@ -35,7 +31,7 @@ elements:
 
   registerNext:
     en_US:
-      web: //button[@id='register-next']
+      web: //h2[contains(normalize-space(.), 'Register now')]/following-sibling::form/button
 
   termsCheckbox:
     en_US:
@@ -43,13 +39,16 @@ elements:
 
   invalidPhoneNumberErrorMessage:
     en_US:
-      web: //div[contains(text(),'Please enter correct phone number')]
+      web: //p[contains(text(),'Please enter correct phone number')]
 
   invalidGSTINErrorMessage:
     en_US:
-      web: //div[contains(text(),'Please enter correct GSTIN for account registration on JSW ONE MSME')]
+      web: //span[contains(@class, 'red-light-text-color')]
+      
   checkBox:
     en_US:
       web: xpath=//span[contains(text(),'I agree to JSW')]
 
-
+  continueCTA:
+    en_US:
+      web: xpath=//button[normalize-space(.)='Continue']

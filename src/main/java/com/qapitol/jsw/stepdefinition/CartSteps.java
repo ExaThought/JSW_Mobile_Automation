@@ -1,12 +1,14 @@
 package com.qapitol.jsw.stepdefinition;
 
 
+import com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp;
 import com.qapitol.jsw.context.ScenarioContext;
 import com.qapitol.jsw.utils.CustomUtil;
 import com.qapitol.jsw.utils.CustomerProfileUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
@@ -19,12 +21,14 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.*;
 import static com.qapitol.jsw.utils.CustomUtil.*;
@@ -90,7 +94,7 @@ public class CartSteps extends AbstractWebPage {
     private static final String CUSTOM_LENGTH_MSG = "//label[text()=\"Custom length (mm):\"]/../following-sibling::div/span";
     private static final String CUSTOM_LENGTH_TEXTBOX = "//label[text()=\"Custom length (mm):\"]/following-sibling::input";
     private static final String QUANTITY_TEXTBOX = "//input[@id='quantity-input']";
-    private static final String ADD_TO_CART_BTN = "//button[text()='Add to cart']";
+    private static final String ADD_TO_CART_BTN = "//*[@data-test-id='pdp-add-to-cart-button']";
     /** How long an optional PDP attribute is given to render before it is treated as absent. */
     private static final int OPTIONAL_ATTRIBUTE_WAIT_SECONDS = 5;
     /** How long the Add to cart button is given to become enabled after the quantity is entered. */
@@ -109,12 +113,13 @@ public class CartSteps extends AbstractWebPage {
     private static final String hotRolledCoilsSubCategory = "//li/a[contains(@href, 'hot-rolled-coils')]";
     private static final String coldRolledSheetsSubCategory = "//li/a[contains(@href, 'cold-rolled-steel-sheet') or contains(@href, 'steel-cold-rolled-sheet')]";
     private static final String coldRolledCoilsSubCategory = "//li/a[contains(@href, 'cold-rolled-coils')]";
-    private static final String galvanizedSheetCategory = "//li/a[contains(@href, 'coated-gi-sheet')]";
+    private static final String galvanizedSheetCategory = "//li/a[contains(@href, 'coated-gi-sheet') or contains(@href, 'coated-galvanized-sheets')]";
     public static final String msHotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]";
     public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]";
     public static final String coatedSteelCategory = "(//a[contains(@href,'/category/steel-coated')])[1]";
     public static final By quantityTextbox = By.xpath("//input[@id='quantity-input']");
     public static final By quantityLabel = By.xpath("//label[contains(normalize-space(), 'Specify quantity')]");
+    public static final String ACCOUNT_TAB = "accountTab";
     static String oldRequirementId;
     static String newRequirementId;
     static String pdpThickness;
@@ -168,7 +173,6 @@ public class CartSteps extends AbstractWebPage {
         sleep(2000);
         waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
         waitAndClickOn(ADD_TO_CART_CTA);
-        sleep(5000);
         waitAndCheckIsElementPresent(VIEW_CART);
         waitAndClickOn(VIEW_CART);
         softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
@@ -192,7 +196,6 @@ public class CartSteps extends AbstractWebPage {
         oldRequirementId = waitAndGetText(REQUIREMENT_ID);
         waitAndCheckIsElementPresent(CART_PAGE);
         waitAndClickOn(CART_PAGE);
-        sleep(5000);
         waitAndCheckIsElementPresent(RCV2_CHECKOUT);
         waitAndClickOn(RCV2_CHECKOUT);
         sleep(2000);
@@ -254,7 +257,9 @@ public class CartSteps extends AbstractWebPage {
         try {
             waitAndCheckIsElementClickable(QUANTITY);
             waitAndSetText(QUANTITY, context.pdpQuantity);
-            int quantityValue = Integer.parseInt(pdpQuantity) * 2;
+            // context.pdpQuantity, not the static pdpQuantity field: nothing ever assigns the
+            // static one, so this threw NumberFormatException(null) on every run.
+            int quantityValue = Integer.parseInt(context.pdpQuantity) * 2;
             context.pdpQuantity = String.valueOf(quantityValue);
             log.info("Entered same quantity " + context.pdpQuantity + " for hot rolled coil");
             Grid.driver().findElement(By.xpath(QUANTITY)).sendKeys(Keys.ENTER);
@@ -282,29 +287,70 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
-    @Then("Verify attribute values for HR Coil in cart page with cart count {string}")
-    public void verifyAttributeValuesForHRCoilinCartPage(String count) {
-        //verify quantity in cart page - extract the quantity from the cart text, double it, then validate
-        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
-        int extractedCartQty = Integer.parseInt(context.cartPageQuantity.replaceAll("[^0-9]", ""));
-        int doubledCartQty = extractedCartQty * 2;
-        String expectedDoubledQuantity = "Qty: " + (Integer.parseInt(context.pdpQuantity.replaceAll("[^0-9]", "")) * 2) + " MT";
-        softAssert.assertEquals("Qty: " + doubledCartQty + " MT", expectedDoubledQuantity,
-                "Doubled cart quantity does not match the expected doubled quantity for cart text '" + context.cartPageQuantity + "'");
+    /**
+     * Cart check for a product added TWICE that is expected to merge into one line item.
+     *
+     * <p>{@code Verify the Attribute values for HR Coil in cart page with cart count} cannot be
+     * reused for the second add. It compares the cart against {@code context.pdpQuantity}, which
+     * the second PDP visit resets to the quantity typed that time (50), while the cart holds the
+     * merged total (100) - so it fails with {@code expected [Qty: 50 MT] but found [Qty: 100 MT]}
+     * even though the product behaved correctly.
+     *
+     * <p>The cart count assertion is what separates a merge from a duplicate: a merging cart holds
+     * ONE line item at double the quantity, a duplicating cart holds two at the original quantity.
+     */
+    @Then("Verify the doubled quantity for HR Coil in cart page with cart count {string}")
+    public void verifyDoubledQuantityForHrCoilInCartPage(String count) {
+        verifyMergedHrCoilLineItem(2, count);
+    }
 
-        softAssert.assertEquals(getItemCount(getText(By.xpath(CART_COUNT))), count, "Cart count is not updated in cart icon after adding product to cart");
+    /**
+     * @param timesAdded how many times the same SKU was added - the merged line item is expected to
+     *                   hold {@code timesAdded x} the quantity entered on the PDP.
+     * @param count      expected cart icon count; "1" when the cart merges rather than duplicates.
+     */
+    private void verifyMergedHrCoilLineItem(int timesAdded, String count) {
+        int pdpQuantity = parseQuantity(context.pdpQuantity, "quantity entered on the HR Coil PDP");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        int cartQuantity = parseQuantity(context.cartPageQuantity, "quantity shown in the cart");
+        int expectedQuantity = pdpQuantity * timesAdded;
+
+        softAssert.assertEquals(cartQuantity, expectedQuantity,
+                "HR Coil was added " + timesAdded + " times at " + pdpQuantity + " MT each, so the"
+                        + " merged line item should hold " + expectedQuantity + " MT - the cart shows '"
+                        + context.cartPageQuantity + "'");
+
+        softAssert.assertEquals(getItemCount(getText(By.xpath(CART_COUNT))), count,
+                "Cart count is not '" + count + "' after adding the same HR Coil " + timesAdded
+                        + " times - the cart created a duplicate line item instead of merging");
 
         context.cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertFalse(context.cartAttributeValue.isEmpty(), "Attribute value is not displayed in cart page");
         softAssert.assertEquals(context.cartAttributeValue, context.pdpThickness + " x " + context.pdpWidth + " mm", "Attribute value in cart page is not matching with selected attribute value in PDP");
 
         softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
-        log.info("Verifies the cart attributes");
-        // Cleanup: remove the line item so the cart is left empty for the next run.
-        WebElement deleteBtn = Grid.driver().findElement(By.xpath("(//section/div/div/div/button[text()='Delete']) [position() < 2]"));
-        jsClick(deleteBtn);
-        WebElement deleteItemBtn = Grid.driver().findElement(By.xpath("//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']"));
-        jsClick(deleteItemBtn);
+        log.info("Verified the merged HR Coil line item: " + cartQuantity + " MT across " + timesAdded + " adds");
+
+        // Cleanup carried over from the method this replaced: remove the line item so the cart is
+        // left empty. Now largely redundant - the Background empties the cart through the cart API
+        // before every scenario - so a cleanup failure is logged rather than thrown, otherwise it
+        // would fail a scenario whose assertions have all just passed.
+        try {
+            jsClick(Grid.driver().findElement(By.xpath("(//section/div/div/div/button[text()='Delete']) [position() < 2]")));
+            jsClick(Grid.driver().findElement(By.xpath("//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']")));
+        } catch (Exception e) {
+            log.info("Could not delete the cart line item during cleanup: " + e.getMessage());
+        }
+    }
+
+    /** Digits out of a quantity string, with a named soft failure when there are none. */
+    private int parseQuantity(String text, String description) {
+        String digits = (text == null) ? "" : text.replaceAll("[^0-9]", "");
+        if (digits.isEmpty()) {
+            softAssert.fail("Could not read a numeric " + description + " from '" + text + "'");
+            return -1;
+        }
+        return Integer.parseInt(digits);
     }
 
     @And("click on first product")
@@ -334,39 +380,10 @@ public class CartSteps extends AbstractWebPage {
      */
     @And("add to cart")
     public void addToCart() {
-        try {
-            // Scroll to quantity, then back to the button.
-            if (waitForElementPresent(QUANTITY_TEXTBOX)) {
-                scrollToCenter(By.xpath(QUANTITY_TEXTBOX));
-                sleep(500);
-            } else {
-                log.info("Quantity field not present before add to cart - continuing anyway");
-            }
-            scrollToCenter(By.xpath(ADD_TO_CART_BTN));
-
-            if (!waitForAddToCartEnabled()) {
-                String message = "Add to cart button did not become enabled within "
-                        + ADD_TO_CART_ENABLED_WAIT_SECONDS + "s for '" + context.cartPdpProductName
-                        + "'. The PDP keeps it disabled until a valid attribute + quantity"
-                        + " combination is priced - check the skipped attributes and the quantity"
-                        + " logged above.";
-                log.info(message);
-                Allure.addAttachment("Add to cart not enabled", message);
-                softAssert.fail(message);
-                return;
-            }
-
-            jsClick(By.xpath(ADD_TO_CART_BTN));
-            sleep(500);
-            log.info("Clicked on add to cart button");
-            context.skuCount = 1;
-        } catch (Exception e) {
-            // Reported rather than swallowed: a silent failure here shows up much later as an
-            // empty cart, which is a far harder thing to diagnose.
-            String message = "Failed to click add to cart: " + e.getMessage();
-            log.info(message);
-            softAssert.fail(message);
-        }
+        waitUntilElementIsClickable(addToCart);
+        scrollToCenter(By.xpath(ADD_TO_CART_BTN));
+        jsClick(By.xpath(ADD_TO_CART_BTN));
+        log.info("Clicked on add to cart button");
     }
 
     /** True once the Add to cart button is present, displayed and enabled. */
@@ -424,6 +441,42 @@ public class CartSteps extends AbstractWebPage {
             throw new RuntimeException("Failed to click View Cart button", e);
         }
         Assert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT), "Did not open the cart page after clicking on view cart");
+    }
+
+    /**
+     * Clears the logged-in user's requirements cart through the cart API before a scenario starts.
+     *
+     * <p>Belongs in the Background rather than in each scenario: every add-to-cart scenario asserts
+     * a cart count, so an item left behind by a previous run makes the FIRST assertion of the next
+     * run fail for a reason that has nothing to do with what is being tested.
+     *
+     * <p>Deliberately fails the scenario when the cleanup does not work. A precondition that
+     * silently does nothing is worse than no precondition - the scenario then fails later on a
+     * cart-count mismatch that reads like a product defect.
+     */
+    @Given("empty the cart via API")
+    public void emptyTheCartViaApi() {
+        CartRCV2ApiImp cartApi = new CartRCV2ApiImp();
+        int deleted;
+        try {
+            deleted = cartApi.emptyCartForLoggedInUser();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to empty the cart through the cart API before the"
+                    + " scenario - the cart count assertions cannot be trusted", e);
+        }
+
+        // Re-read rather than trusting the delete response: the call can return 200 and still
+        // leave items behind if the cart identifier does not match the cart they live in.
+        int remaining = cartApi.getCartLineItemCount();
+        String summary = "Line items deleted: " + deleted + ", remaining: " + remaining;
+        log.info(deleted == 0
+                ? "Cart was already empty before the scenario"
+                : "Emptied the cart via API - " + summary);
+        Allure.addAttachment("Cart cleanup before scenario", summary);
+
+        Assert.assertEquals(remaining, 0,
+                "Cart still holds " + remaining + " line item(s) after the API cleanup, so this"
+                        + " scenario would start with a dirty cart");
     }
 
     @Then("verify the Attribute values for Cement in cart page")
@@ -643,18 +696,6 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("open Wire pdp")
-    public void openWirePdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(FIRST_WIRE_ROD_PRODUCT));
-        try {
-            jsClick(locator);
-            log.info("Clicked on Wire product");
-        } catch (Exception e) {
-            log.info("Failed to open Wire PDP");
-            throw new RuntimeException("Failed to open Wire PDP", e);
-        }
-    }
-
     @Then("verify the Attribute values for Wire in cart page")
     public void verifyTheAttributeValuesForWireInCartPage() {
         //verify quantity in cart page
@@ -724,6 +765,117 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " MT");
         log.info(getItemCount(getText(By.xpath(CART_COUNT))));
         softAssert.assertEquals((getItemCount(getText(By.xpath(CART_COUNT)))), String.valueOf(count), "Cart count is not updated in cart icon after adding product to cart");
+    }
+
+    /**
+     * Full cart-page check for TMT: product name, quantity, both selected attributes and cart count.
+     *
+     * <p>The counted variant above never looks at the diameter or the TMT form, so a cart that
+     * dropped or swapped an attribute still passed it. TMT is configured as
+     * {@code DIAMETER, FORM} in {@link #buildProductAttributes()}, and this asserts every value the
+     * PDP captured.
+     *
+     * <p>{@code cartPageAttributeValue} resolves to MORE THAN ONE node - the cart renders each
+     * attribute in its own span, so TMT's diameter and form arrive as two separate strings. Every
+     * matched node is therefore read and each expected value is looked for across all of them.
+     * {@code waitAndGetText} returns only the first match, which made whichever attribute sat in
+     * the second span read as absent.
+     */
+    @Then("verify the Attribute values for TMT in cart page")
+    public void verifyTheAttributeValuesForTmtInCartPage() {
+        softAssert.assertTrue(
+                context.cartPdpProductName.toLowerCase().contains(context.pdpProductName.toLowerCase()),
+                "TMT product name in cart page is not matching with product name in PDP - PDP shows '"
+                        + context.cartPdpProductName + "', cart shows '" + context.pdpProductName + "'");
+
+        //verify quantity in cart page
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " MT",
+                "Quantity in cart page is not matching with the quantity entered on the TMT PDP");
+
+        //verify diameter and TMT form in cart page
+        List<String> cartAttributeTexts = readCartAttributeTexts();
+        // Kept populated for the reports and for the edit/update steps that read it afterwards.
+        context.cartAttributeValue = String.join(" | ", cartAttributeTexts);
+        softAssert.assertFalse(cartAttributeTexts.isEmpty(),
+                "No attribute value is displayed in cart page for TMT");
+        assertCartAttributeShown(cartAttributeTexts, context.pdpDiameter, "diameter");
+        assertCartAttributeShown(cartAttributeTexts, context.pdpForm, "TMT form");
+
+        //verify cart count in cart icon
+        waits(By.xpath(CART_COUNT));
+        softAssert.assertEquals(getItemCount(getText(By.xpath(CART_COUNT))), "1",
+                "Cart count is not updated in cart icon after adding the TMT product to cart");
+    }
+
+    /**
+     * Text of every node {@code cartPageAttributeValue} matches, blanks dropped.
+     *
+     * <p>The cart puts each attribute in its own span, so this is a list rather than one string.
+     */
+    private List<String> readCartAttributeTexts() {
+        By locator = byForLocatorKey(CART_PAGE_ATTRIBUTE_VALUE);
+        waits(locator);
+        List<String> texts = new ArrayList<>();
+        for (WebElement element : Grid.driver().findElements(locator)) {
+            String text = element.getText();
+            if (text != null && !text.trim().isEmpty()) {
+                texts.add(text.trim());
+            }
+        }
+        return texts;
+    }
+
+    /**
+     * By for a locator key from cartsteps.yaml.
+     *
+     * <p>That file mixes both conventions - some entries carry an {@code xpath=} prefix and some do
+     * not - and {@code By.xpath} would take the prefix as part of the expression.
+     */
+    private By byForLocatorKey(String key) {
+        String locator = getLocator(key);
+        if (locator.startsWith("xpath=")) {
+            locator = locator.substring("xpath=".length());
+        }
+        return By.xpath(locator);
+    }
+
+    /**
+     * Asserts one PDP-selected value is shown in the cart's attribute spans.
+     *
+     * <p>Matched against each span individually rather than against their concatenation, so a value
+     * cannot pass by straddling two spans. Matching is on whole words, so a diameter of "8" is not
+     * satisfied by a span reading "18". The failure message lists every string the cart showed,
+     * which is what tells you whether the value is missing or merely formatted differently.
+     */
+    private void assertCartAttributeShown(List<String> cartTexts, String selectedValue, String attributeName) {
+        if (selectedValue == null || selectedValue.trim().isEmpty()) {
+            softAssert.fail("No " + attributeName + " was captured on the TMT PDP, so the value shown"
+                    + " in the cart cannot be verified");
+            return;
+        }
+        String expected = selectedValue.trim();
+        boolean shown = false;
+        for (String text : cartTexts) {
+            if (containsAsWholeWord(text, expected)) {
+                shown = true;
+                break;
+            }
+        }
+        softAssert.assertTrue(shown,
+                "Selected " + attributeName + " '" + expected + "' is not shown in the cart."
+                        + " Cart attribute values found: " + cartTexts);
+    }
+
+    /**
+     * Whole-word, case-insensitive containment. Word boundaries are only applied at ends that are
+     * alphanumeric, because {@code \b} next to a symbol matches the opposite of what is intended.
+     */
+    private static boolean containsAsWholeWord(String text, String value) {
+        String prefix = Character.isLetterOrDigit(value.charAt(0)) ? "\\b" : "";
+        String suffix = Character.isLetterOrDigit(value.charAt(value.length() - 1)) ? "\\b" : "";
+        return Pattern.compile(prefix + Pattern.quote(value) + suffix, Pattern.CASE_INSENSITIVE)
+                .matcher(text).find();
     }
 
     @When("move the mouse to Structural category")
@@ -1018,13 +1170,10 @@ public class CartSteps extends AbstractWebPage {
                     System.out.println("the item count is " + value);
                     for (int i = 0; i < Integer.parseInt(value); i++) {
                         try {
-
                             waits(By.xpath(DELETE_ITEMS));
-
                             sleep(1000);
                             jsClick(By.xpath(DELETE_ITEMS));
                             sleep(1000);
-
                             waits(By.xpath(DELETE_BTN));
                             jsClick(By.xpath(DELETE_BTN));
                             sleep(1000);
@@ -1095,7 +1244,7 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("verify the opportunity is created with a valid requirement id")
     public void verifyTheOpportunityIsCreatedWithAValidRequirementId() {
-        // After submitting the cart, the requirement (opportunity) is listed under My requirements.
+        waitAndClickOn(ACCOUNT_TAB);
         waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
         waitAndClickOn(MY_REQUIREMENT_PAGE);
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
@@ -1362,11 +1511,8 @@ public class CartSteps extends AbstractWebPage {
         selectProductAttributes("TMT", quantity);
     }
 
-    @And("select diameter {string} quantity {string} for Wire")
-    public void selectAllTheWireAttribute(String diameter, String quantity) {
-        // The PDP only exposes the enabled diameters, so the requested value is logged for
-        // traceability while the first available option is what actually gets selected.
-        log.info("Requested diameter '" + diameter + "' for Wire; selecting first available option");
+    @And("select diameter and quantity {string} for Wire")
+    public void selectAllTheWireAttribute(String quantity) {
         selectProductAttributes("Wire", quantity);
     }
 
@@ -1416,7 +1562,9 @@ public class CartSteps extends AbstractWebPage {
         /** Length only enterable as a custom value in a textbox. */
         CUSTOM_LENGTH,
         /** Length button when one is available, otherwise the custom-length textbox. */
-        LENGTH_OR_CUSTOM
+        LENGTH_OR_CUSTOM,
+        COATING_GRADE,
+        SPANGLE_TYPE
     }
 
     /**
@@ -1435,11 +1583,11 @@ public class CartSteps extends AbstractWebPage {
         map.put("wire", Collections.singletonList(PdpAttribute.DIAMETER));
 
         // Flat products - thickness and width always, length varies by product.
-        map.put("coatedsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.LENGTH_OR_CUSTOM));
-        map.put("coatedsteelsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.LENGTH_OR_CUSTOM));
+        map.put("coatedsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.LENGTH_OR_CUSTOM, PdpAttribute.COATING_GRADE, PdpAttribute.SPANGLE_TYPE));
+        map.put("coatedsteelsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.LENGTH_OR_CUSTOM, PdpAttribute.COATING_GRADE, PdpAttribute.SPANGLE_TYPE));
         map.put("crsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.LENGTH));
         map.put("coldrolledsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.LENGTH));
-        map.put("hrsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.CUSTOM_LENGTH));
+        map.put("hrsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.LENGTH));
         map.put("hotrolledsheet", Arrays.asList(PdpAttribute.THICKNESS, PdpAttribute.WIDTH, PdpAttribute.CUSTOM_LENGTH));
 
         // Coils - no length, they are sold by weight.
@@ -1486,10 +1634,10 @@ public class CartSteps extends AbstractWebPage {
                 // at all - that is a property of the product, not a defect, so it must not fail the
                 // scenario. Thickness, diameter and form stay mandatory.
                 case WIDTH:
-                    context.pdpWidth = selectOptionalOption(WIDTH_BUTTON, "width", productName);
+                    context.pdpWidth = selectFirstEnabledOption(WIDTH_BUTTON, "width", productName);
                     break;
                 case LENGTH:
-                    context.pdpLength = selectOptionalOption(LENGTH_BUTTON, "length", productName);
+                    context.pdpLength = selectFirstEnabledOption(LENGTH_BUTTON, "length", productName);
                     break;
                 case CUSTOM_LENGTH:
                     context.pdpLength = enterCustomLengthIfPresent(productName);
@@ -1499,15 +1647,24 @@ public class CartSteps extends AbstractWebPage {
                             ? selectFirstEnabledOption(LENGTH_BUTTON, "length", productName)
                             : enterCustomLengthIfPresent(productName);
                     break;
+                case COATING_GRADE:
+                    context.pdpCoatingGrade = selectFirstEnabledOption(COATING_GRADE, "coating grade", productName);
+                    break;
+                case SPANGLE_TYPE:
+                    context.pdpSpangleType = selectFirstEnabledOption(SPANGLE_TYPE, "spangle type", productName);
+                    break;
                 default:
                     throw new IllegalStateException("Unhandled PDP attribute: " + attribute);
             }
         }
-
-        enterQuantityViaJs(quantity, productName);
+        sleep(1000);
+        // Delegated rather than inlined. The inline copy that used to live here never assigned
+        // context.pdpQuantity, so every product routed through this method - Wire, Coated Sheet,
+        // CR Sheet, CR Coil, HR Sheet, HR Coil - reached the cart assertion with a null expected
+        // value and failed as "expected [Qty: null MT]".
+        enterQuantityUsingText(quantity, productName);
         confirmBusinessDetailsIfDialogPresent();
         jsClick(quantityLabel);
-        sleep(1000);
     }
 
     /**
@@ -1637,22 +1794,75 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /** Types the quantity using a JS click and a JS value set, then fires ENTER to commit it. */
-    private void enterQuantityViaJs(String quantity, String productName) {
+    /**
+     * Types the quantity with real key events and commits it with ENTER.
+     *
+     * <p>Uses {@code enterText} (sendKeys) rather than a JS value assignment. The PDP quantity box
+     * is a React-controlled input: assigning {@code .value} directly bypasses React's internal
+     * value tracker, so the component re-renders with its previous value and the typed number
+     * never reaches the model. That is why the JS path left the field unchanged.
+     *
+     * <p>{@code enterText} appends rather than replaces, so whatever the field already holds is
+     * selected first and typed over. {@code clear()} is deliberately not used - on a controlled
+     * input it has the same tracker problem as the JS assignment.
+     *
+     * <p>What lands in {@code context.pdpQuantity} is the value read back off the input AFTER the
+     * commit, not the value that was requested. The PDP can legitimately hold a different number -
+     * a minimum order quantity, a lot-size step, a maxlength - and storing the request instead
+     * would make the cart-page assertion compare the cart against a number the PDP never held.
+     *
+     * <p>The read-back is also asserted against the request, so a clamp surfaces as its own named
+     * failure rather than quietly redefining what the rest of the scenario expects.
+     */
+    private void enterQuantityUsingText(String quantity, String productName) {
         try {
             waits(By.xpath(QUANTITY_TEXTBOX));
             scrollToCenter(By.xpath(QUANTITY_TEXTBOX));
             WebElement quantityInput = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX));
             jsClick(quantityInput);
-            setValueJS(quantityInput, quantity);
+
+            // Select the existing value so the typed digits replace it instead of appending - a
+            // pre-filled minimum order quantity would otherwise turn a requested "50" into "1050".
+            quantityInput.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+            enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
             quantityInput.sendKeys(Keys.ENTER);
-            context.pdpQuantity = quantity;
-            log.info("Entered quantity '" + quantity + "' for " + productName);
-            Allure.addAttachment("Quantity entered for " + productName, "Quantity: " + quantity);
+
+            String accepted = readCommittedQuantity(quantity);
+            context.pdpQuantity = accepted;
+
+            softAssert.assertEquals(accepted, quantity,
+                    "PDP did not accept the requested quantity for " + productName
+                            + " - the quantity field holds '" + accepted + "' after entering '"
+                            + quantity + "'");
+
+            log.info("Entered quantity '" + quantity + "' for " + productName
+                    + " - PDP holds '" + accepted + "' after commit");
+            Allure.addAttachment("Quantity entered for " + productName,
+                    "Requested: " + quantity + "\nPDP value after commit: " + accepted);
         } catch (Exception e) {
             log.info("Failed to enter quantity '" + quantity + "' for " + productName);
             throw new RuntimeException("Failed to enter quantity for " + productName, e);
         }
+    }
+
+    /**
+     * The committed quantity as the PDP holds it, digits only.
+     *
+     * <p>Polled rather than read once: the input is re-rendered after the change event, so an
+     * immediate read can still return the pre-commit value. Returns whatever the field holds when
+     * the poll gives up, which is what the caller then asserts on.
+     */
+    private String readCommittedQuantity(String requested) {
+        String value = "";
+        for (int attempt = 0; attempt < 10; attempt++) {
+            String raw = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX)).getAttribute("value");
+            value = (raw == null) ? "" : raw.replaceAll("[^0-9]", "");
+            if (requested.equals(value)) {
+                return value;
+            }
+            sleep(300);
+        }
+        return value;
     }
 
     /** True when at least one enabled option button exists for the locator. */

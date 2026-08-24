@@ -18,9 +18,6 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     // Updated registration locator names
     public static final String CCP_REGISTRATION_EMAIL = "ccpRegistrationEmail";
-    // CCP_REGISTRATION_PASSWORD ("ccpRegistrationPassword") removed: never referenced, and no such
-    // key exists in ccpregistrationsteps.yaml. Adding the key would have created a dead locator.
-    public static final String CCP_REGISTRATION_CTA = "ccpRegistrationCTA";
     public static final String CCP_REGISTRATION_ERROR_MESSAGE = "registrationErrorMessage";
     public static final String CCP_INVALID_REGISTRATION_EMAIL_ERROR = "invalidRegistrationEmailErrorMessage";
     public static final String CCP_FULL_NAME = "fullName";
@@ -37,9 +34,9 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     private static final String CHECKBOX="checkBox";
     private static final String LOGIN_CTA_BUTTON = "//button[text()='Login']";
     private static final String CONTINUE_EMAIL_BTN = "//button[contains(text(), 'Continue with email')]";
-    private static final String ACCOUNT_ALREADY_EXISTS_ERROR_MSG="//span[@id=\"aae-desktop-title\"]";
-    private static final String GST_INFO_ICON = "//div[@class=\"gstin-success-icon\"]";
-
+    private static final String ACCOUNT_ALREADY_EXISTS_ERROR_MSG = "//div[@role='alert']/p";
+    private static final String GST_INFO_ICON = "//div[@class='gstin-success-icon']";
+    public static final String CONTINUE_CTA = "continueCTA";
 
     @And("user open the CCP web portal")
     public void user_open_the_ccp_web_portal() {
@@ -96,7 +93,7 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     @Then("user should not able to proceed to Registration with error message")
     public void userShouldNotAbleToProceedToRegistrationWithErrorMessage() {
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
+        waitAndCheckIsElementVisible(CONTINUE_CTA);
         waitAndCheckIsElementVisible(CCP_INVALID_REGISTRATION_EMAIL_ERROR);
 
         String msg = waitAndGetText(CCP_INVALID_REGISTRATION_EMAIL_ERROR);
@@ -107,10 +104,10 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     @Then("continue button should be disable")
     public void continueButtonShouldBeDisabled() {
 
-        String locatorValue = getLocator(CCP_REGISTRATION_CTA);
+        String locatorValue = getLocator(CONTINUE_CTA);
         By continueBtnLocator = By.xpath(locatorValue);
 
-        waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
+        waitAndCheckIsElementVisible(CONTINUE_CTA);
 
         WebDriver driver = Grid.driver();
         WebElement continueBtn = driver.findElement(continueBtnLocator);
@@ -151,14 +148,40 @@ public class CcpRegistrationSteps extends AbstractWebPage {
         }
     }
 
+    /** Enters the email for a named account, so no address is committed in the feature file. */
+    @And("enter the email for the {string} account on registration")
+    public void enterTheEmailForTheAccountOnRegistration(String alias) {
+        log.info("Entering the configured registration email for account '" + alias + "'");
+        enterNewValidEmailId(com.qapitol.jsw.utils.UserConfig.getAccountEmail(alias));
+    }
+
+    /**
+     * Registration details where the mobile and GSTIN come from configuration.
+     *
+     * <p>The duplicate-account scenarios need values that ALREADY EXIST in the environment under
+     * test. Hardcoding them pinned those scenarios to QA: a mobile registered on QA is not
+     * necessarily registered on pre-prod, and there the scenario would assert nothing.
+     */
+    @And("enter full name {string} with the existing mobile number and gst {string}")
+    public void enterFullNameWithExistingMobile(String fullName, String gstin) {
+        enterFullNameMobileNumberAndGst(
+                fullName, com.qapitol.jsw.utils.UserConfig.getAccountValue("existing", "mobile"), gstin);
+    }
+
+    @And("enter full name {string} mobile number {string} and the existing gst")
+    public void enterFullNameWithExistingGst(String fullName, String mobile) {
+        enterFullNameMobileNumberAndExistingGst(
+                fullName, mobile, com.qapitol.jsw.utils.UserConfig.getAccountValue("existing", "gstin"));
+    }
+
     @Then("new user continue to Registration")
     public void newUserContinueToRegistration() {
         try {
             log.info("Clicking on Continue button to proceed with registration.");
 
-            waitAndCheckIsElementVisible(CCP_REGISTRATION_CTA);
+            waitAndCheckIsElementVisible(CONTINUE_CTA);
 
-            waitAndClickOn(CCP_REGISTRATION_CTA);
+            waitAndClickOn(CONTINUE_CTA);
 
             log.info("Successfully clicked on Continue button.");
 
@@ -178,8 +201,6 @@ public class CcpRegistrationSteps extends AbstractWebPage {
             log.info("Entered full name: " + fullName);
 
             waitAndCheckIsElementVisible(CCP_GSTIN);
-
-
 
             if (gstin == null || gstin.isEmpty() || gstin.equals("INVALIDGSTIN")) {
 
@@ -212,22 +233,15 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public void enterFullNameMobileNumberAndExistingGst(String fullName, String mobile, String gstin) {
         try {
             log.info("Entering registration details.");
-
             waitAndCheckIsElementVisible(CCP_FULL_NAME);
             waitAndSetText(CCP_FULL_NAME, fullName);
             log.info("Entered full name: " + fullName);
 
             waitAndCheckIsElementVisible(CCP_GSTIN);
-
-
-
             waitAndSetText(CCP_GSTIN, gstin);
-
-
             waitAndCheckIsElementVisible(CCP_MOBILE);
             waitAndSetText(CCP_MOBILE, mobile);
             log.info("Entered mobile number: " + mobile);
-
             log.info("Registration details entered successfully.");
 
         } catch (Exception e) {
@@ -248,16 +262,13 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     public void nextButtonShouldBeDisabled() {
         String locatorValue = getLocator(CCP_REGISTER_NEXT);
         By nextBtnLocator = By.xpath(locatorValue);
-
+        scrollToCenter(nextBtnLocator);
         waitAndCheckIsElementVisible(CCP_REGISTER_NEXT);
-
         WebDriver driver = Grid.driver();
         WebElement nextBtn = driver.findElement(nextBtnLocator);
-
         String disabledAttr = nextBtn.getAttribute("disabled");
         String ariaDisabled = nextBtn.getAttribute("aria-disabled");
         String classAttr = nextBtn.getAttribute("class");
-
         boolean attrDisabled = disabledAttr != null &&
                 (disabledAttr.equalsIgnoreCase("true") || disabledAttr.equalsIgnoreCase("disabled"));
 
@@ -425,19 +436,17 @@ public class CcpRegistrationSteps extends AbstractWebPage {
 
     @Then("User click on Next Button")
     public void userClickOnNextButton() {
-        waits(By.xpath(GST_INFO_ICON));
-        if(isDisplayed(By.xpath(GST_INFO_ICON))) {
-            waitAndClickOn(CCP_REGISTER_NEXT);
-        }else {
-            log.info("error in gst");
-        }
+        String locatorValue = getLocator(CCP_REGISTER_NEXT);
+        By nextBtnLocator = By.xpath(locatorValue);
+        scrollToCenter(nextBtnLocator);
+        jsClick(nextBtnLocator);
         log.info("Click on next button");
     }
 
     @Then("User verifies the error message")
     public void userVerifiesTheErrorMessage() {
         try {
-            log.info("Verifying 'Account already exists' error message.");
+            log.info("Verifying 'Please login to your existing account' error message.");
 
             waits(By.xpath(ACCOUNT_ALREADY_EXISTS_ERROR_MSG));
 
@@ -445,8 +454,8 @@ public class CcpRegistrationSteps extends AbstractWebPage {
             log.info("Actual error message: " + actualErrorMessage);
 
             softAssert.assertTrue(
-                    actualErrorMessage.contains("Account already exists"),
-                    "Expected error message 'Account already exists' was not displayed. Actual message: "
+                    actualErrorMessage.contains("Please login to your existing account or contact support"),
+                    "Expected error message 'Please login to your existing account or contact support' was not displayed. Actual message: "
                             + actualErrorMessage
             );
 
@@ -458,9 +467,3 @@ public class CcpRegistrationSteps extends AbstractWebPage {
         }
     }
 }
-
-
-
-
-
-

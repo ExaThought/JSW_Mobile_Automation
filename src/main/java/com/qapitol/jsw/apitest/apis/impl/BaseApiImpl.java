@@ -27,8 +27,15 @@ public abstract class BaseApiImpl {
     protected ApiClientFactory appUrl(){
         return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("appBaseUrl"));
     }
+    /**
+     * Central-cart internal API.
+     *
+     * <p>resolveOrThrow, not getSecretValue: the property is not configured on every environment,
+     * and passing null to getInstance produced an unrelated failure much later. This names the
+     * missing property at the point of use instead.
+     */
     protected ApiClientFactory centralCartCcpUrl() {
-        return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("centralCartCcpUrl"));
+        return ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("centralCartCcpUrl"));
     }
 
     /**

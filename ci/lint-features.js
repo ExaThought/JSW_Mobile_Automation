@@ -127,7 +127,10 @@ for (const file of listFeatures(FEATURE_DIR)) {
       scenarioNames.get(name).push(`${rel}:${n}`);
 
       if (/^Scenario Outline|^Scenario Template/.test(scenario[1])) {
-        outline = { name, line: n, steps: [], headers: null, headerLine: n };
+        // The name is seeded into `steps` because Cucumber substitutes placeholders there too:
+        // "Scenario Outline: ... - <case>" is a legitimate use of the column, and gives each row
+        // a distinct name in the report rather than N identically-named scenarios.
+        outline = { name, line: n, steps: [name], headers: null, headerLine: n };
       }
       return;
     }

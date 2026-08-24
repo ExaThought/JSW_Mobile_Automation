@@ -32,10 +32,10 @@ Feature: Validate Footer links and navigation
 
     Examples:
       | platform  | expectedDomain |
+      | youtube   | youtube        |
       | linkedin  | linkedin       |
       | instagram | instagram      |
       | facebook  | facebook       |
-      | youtube   | youtube        |
 
   Scenario Outline: Verify app store badge navigation
     When the user clicks on app icon "<appName>"

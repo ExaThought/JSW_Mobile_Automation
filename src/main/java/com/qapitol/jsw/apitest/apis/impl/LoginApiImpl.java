@@ -40,7 +40,10 @@ public class LoginApiImpl implements LoginService {
             String ACCESS_TOKEN = "access_token";
             return Map.of(ACCESS_TOKEN, Token.getCCPToken());
         }
-        if (centralCartCcpUrl.equalsIgnoreCase(apiClientFactory.getAddress())) {
+        // Null-checked: centralCartCcpUrl is not configured on every environment, and an
+        // unguarded equalsIgnoreCase here made a missing property surface as a
+        // NullPointerException on every API call that was not ccpUrl.
+        if (centralCartCcpUrl != null && centralCartCcpUrl.equalsIgnoreCase(apiClientFactory.getAddress())) {
             String X_API_KEY = "X-API-KEY";
             String Request_ID = "X-Request-ID";
             String ACCESS_TOKEN = "access_token";

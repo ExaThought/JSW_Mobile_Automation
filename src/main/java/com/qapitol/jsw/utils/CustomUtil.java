@@ -82,7 +82,7 @@ public class CustomUtil {
 
     public static void jsClick(By  element) {
 
-        new WebDriverWait(Grid.driver(), Duration.ofSeconds(15)).until(ExpectedConditions.visibilityOfElementLocated(element));
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(30)).until(ExpectedConditions.visibilityOfElementLocated(element));
         WebElement element1 = Grid.driver().findElement(element);
 
         JavascriptExecutor js = (JavascriptExecutor) Grid.driver();

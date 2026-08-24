@@ -55,10 +55,10 @@ elements:
       web: xpath=//button[contains(text(),'Submit requirement')]
   myRequirementPage:
     en_US:
-      web: xpath=//a[@href='/my-requirements']
+      web: xpath=//a[@data-test-id='desktop-header-menu-item-my-requirements']
   requirementId:
     en_US:
-      web: xpath=(//div[contains(text(),'Requirements ID')])[1]//following-sibling::div
+      web: xpath=(//span[contains(normalize-space(),'Requirements ID')]/following-sibling::span) [1]
   mildSteel:
     en_US:
       web: xpath=(//a[contains(@href, 'mild-steel') or contains(@href, 'steel')]) [1]
@@ -201,5 +201,8 @@ elements:
   confirmBusinessDetails:
     en_US:
       web: xpath=//div[@role='dialog']/h2[contains(text(), 'Confirm your business details')]
+  accountTab:
+    en_US:
+      web: xpath=//div[@data-test-id='desktop-header-user-type-dropdown-toggle']/span
 
 

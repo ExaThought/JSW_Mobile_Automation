@@ -16,9 +16,17 @@ elements:
       web: //button[@type='submit' and normalize-space()='Continue']
   errorMessage:
     en_US:
-      web: //div[contains(text(),'Credentials are not valid. Please try again')]
+      web: //p[contains(text(),'Credentials are not valid. Please try again')]
   invalidEmailErrorMessage:
     en_US:
-      web: //div[contains(text(),'You have entered a wrong email address')]
+      web: //p[contains(text(),'You have entered a wrong email address')]
+
+
+  accountMenu:
+    en_US:
+      web: //header//span[normalize-space()='Account']
+  headerLoginCta:
+    en_US:
+      web: //header//button[normalize-space()='Login']
 
 
