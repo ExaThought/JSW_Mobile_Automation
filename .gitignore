@@ -15,4 +15,16 @@ profiles/
 runtime_data.json
 .jenkins.env
 .jenkins.env.*
-.jenkins.envTABallure-report/
+allure-report/
+
+# Generated QA analysis outputs (not source)
+TEST_COVERAGE_ANALYSIS.*
+MERGED_TEST_EXECUTION_REPORT.xlsx
+saved-reports/
+
+# Captured API traces and curl transcripts. These are debugging scratch, and they routinely
+# contain live bearer tokens copied straight out of a run - ci/check-secrets.js found three
+# real JWTs in API_TRACE_DOC.md. Keep them local; never commit them.
+API_TRACE_DOC.*
+*_CURLS.md
+*_CURL.md

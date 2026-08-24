@@ -54,11 +54,17 @@ public class SaveAndLoadCookies {
             String value = token.nextToken();
             String domain = token.nextToken();
             String path = token.nextToken();
+            // Field 5 is the expiry, written by saveCookiesToFile. It is consumed but discarded:
+            // StringTokenizer has no skip, so the call is required to reach the isSecure field
+            // below - it is a positional skip, not a dropped return value.
             token.nextToken();
             boolean isSecure = Boolean.parseBoolean(token.nextToken());
             boolean isHttpOnly = true;
             String sameSite = "None";
-            // Parse expiry date if present
+            // Deliberately null: a null expiry makes this a session cookie, which is what a
+            // restored automation session wants. Reusing the saved expiry would resurrect
+            // cookies that have already lapsed and mask an expired-session failure as a
+            // logged-in one.
             Date expiry = null;
 
             // Create a cookie from the line data and add to the set

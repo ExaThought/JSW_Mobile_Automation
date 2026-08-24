@@ -31,7 +31,10 @@ public class LoginSteps extends AbstractWebPage {
     /** Header state used to prove login and logout actually happened. */
     public static final String ACCOUNT_MENU = "accountMenu";
     public static final String HEADER_LOGIN_CTA = "headerLoginCta";
-    public static final String CONTINUE_CTA = "continueCTA";
+    // No CONTINUE_CTA constant: the login "Continue" submit button is CCP_LOGIN_CTA above, and a
+    // second key for one element is how locator files drift. "continue button should be disabled"
+    // already asserts against CCP_LOGIN_CTA, so the click has to use the same locator or the two
+    // steps can pass and fail about different buttons.
 
 
 
@@ -212,8 +215,8 @@ public class LoginSteps extends AbstractWebPage {
 
     @And("user click on continue button")
     public void userClickOnContinueButton() {
-        waitAndCheckIsElementVisible(CONTINUE_CTA);
-        waitAndClickOn(CONTINUE_CTA);// Login
+        waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
+        waitAndClickOn(CCP_LOGIN_CTA);
         log.info("clicked Continue button");
     }
 

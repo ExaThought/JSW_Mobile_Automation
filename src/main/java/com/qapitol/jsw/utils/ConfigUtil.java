@@ -37,12 +37,39 @@ public class ConfigUtil {
 
     /**
      * Resolves the value for the given key, but throws an exception if nothing is found.
+     *
+     * <p>The message names the ENVIRONMENT VARIABLE to set, not just the property key. Every
+     * secret in global_*.properties now ships with an empty default, so this is the failure
+     * operators actually hit - and "Missing configuration for key: omsAuthToken" does not tell
+     * anyone that the fix is to export OMS_TOKEN.
      */
     public static String resolveOrThrow(String key) {
         String value = getSecretValue(key);
         if (value == null || value.isEmpty()) {
-            throw new IllegalStateException(" Missing configuration for key: " + key);
+            String envVar = environmentVariableFor(key);
+            throw new IllegalStateException("No value for '" + key + "'."
+                    + (envVar == null
+                        ? " It is not defined in any global_*.properties for this environment."
+                        : " Set the " + envVar + " environment variable - it ships with an empty"
+                          + " default so that secrets are injected rather than committed.")
+                    + " See README.md \"Required secrets\".");
         }
         return value;
+    }
+
+    /**
+     * The environment variable a key reads from, or null when the key is absent or is a literal.
+     *
+     * <p>Parses the same {@code ${ENV_VAR:default}} shape {@link #getSecretValue(String)} resolves,
+     * so the two cannot disagree about which variable backs a key.
+     */
+    private static String environmentVariableFor(String key) {
+        String rawValue = Config.getConfigProperty(key);
+        if (rawValue == null || !rawValue.startsWith("${") || !rawValue.endsWith("}")) {
+            return null;
+        }
+        String content = rawValue.substring(2, rawValue.length() - 1);
+        String name = content.split(":", 2)[0].trim();
+        return name.isEmpty() ? null : name;
     }
 }

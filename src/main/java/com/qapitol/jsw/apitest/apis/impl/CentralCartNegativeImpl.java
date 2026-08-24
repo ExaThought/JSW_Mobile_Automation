@@ -22,7 +22,10 @@ public class CentralCartNegativeImpl extends BaseApiImpl {
         addToCartRequest.getCartIdentifier().setCartJourneyType(cartJourneyType);
         addToCartRequest.getCartIdentifier().setCartType(cartType);
         cartResponse=centralCartAddToCartApi.getAddToCartResponse(addToCartRequest);
-        cartResponse.getError().getCode();
+        // No error-code read here on purpose. CentralCartNegativeCaseSteps asserts
+        // getError().getCode() == 1000 on the returned response, so reading it again would
+        // duplicate the caller's assertion - and an unguarded getError() deref would throw
+        // NPE on any response that came back without an error block.
         if(cartResponse.getData()!=null){
             String cartId=cartResponse.getData().getCartId();
             System.out.println("CartId="+cartId);
