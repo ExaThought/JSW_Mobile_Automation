@@ -43,7 +43,7 @@
 
 <!-- ================================ LOGIN ================================ -->
 
-    <!-- <test name="Login">
+    <test name="Login">
         <parameter name="test.group" value="login"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
@@ -51,7 +51,7 @@
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
-    </test> -->
+    </test>
 
     <!-- ================================ HOMEPAGE ================================ -->
 
@@ -80,7 +80,7 @@
 
     <!-- @AddToCartAndCreateOpportunity is a FEATURE-level tag, so this selects every active
          scenario in AddToCartAndCreateOpportunity.feature, not just the create-opportunity one. -->
-    <!-- <test name="Cart_AddToCartAndCreateOpportunity">
+    <test name="Cart_AddToCartAndCreateOpportunity">
         <parameter name="test.group" value="cart"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
@@ -89,7 +89,7 @@
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
-    </test> -->
+    </test>
 
 
     <!-- =============================== SF ORDERS =============================== -->
@@ -100,7 +100,7 @@
         <parameter name="test.group" value="orders"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation"/>
+        <parameter name="cucumber.filter.tags" value="@sloOrderCreation or @sloOrderCreation"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -129,7 +129,7 @@
          with a rotating password - that returned HTTP 401 and cost every token scenario in
          CCP_Regression #231. A dedicated group also keeps EmptyBankDetails, Address,
          CustomerDetails, bankDetails and forgetPassword on the profile account, untouched. -->
-    <test name="TokenCheck">
+    <!-- <test name="TokenCheck">
         <parameter name="test.group" value="tokencheck"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
@@ -137,7 +137,7 @@
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
-    </test>
+    </test> -->
 
 
     <!-- ================================ PROFILE ================================ -->

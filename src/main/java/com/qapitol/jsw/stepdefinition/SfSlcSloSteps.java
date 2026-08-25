@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -59,6 +60,15 @@ public class SfSlcSloSteps extends AbstractWebPage {
 
     /** ERP path that the order number is appended to when opening an order: .../order-list/JOO-... */
     private static final String ERP_ORDER_LIST_SEGMENT = "order-list";
+
+    /** Path of the ERP login URL. While the browser is still here, the session cookie is not set. */
+    private static final String ERP_OAUTH_REDIRECT_SEGMENT = "oauth2/redirect";
+
+    /** Any password field means the ERP is asking to log in rather than showing the order. */
+    private static final String ERP_LOGIN_PASSWORD_FIELD = "//input[@type='password']";
+
+    /** How long to let the ERP OAuth redirect settle before requesting the order URL. */
+    private static final int ERP_SESSION_WAIT_SECONDS = 30;
 
     /** Query parameter carrying the order number on the CCP order summary page. */
     private static final String ORDER_NUMBER_QUERY_PARAM = "order_num";
@@ -589,14 +599,23 @@ public class SfSlcSloSteps extends AbstractWebPage {
         }
 
         //Open the ERP
-        Grid.driver().get(Token.getErpLoginUrl()); 
+        Grid.driver().get(Token.getErpLoginUrl());
         Grid.driver().manage().window().maximize();
+        waitForErpSession();
 
         //Open the Order in ERP
-        Grid.driver().get(ConfigUtil.getSecretValue("omsUrl") + ERP_ORDER_LIST_SEGMENT + "/" + ccpOrderNumber);
+        String erpOrderUrl = ConfigUtil.getSecretValue("omsUrl") + ERP_ORDER_LIST_SEGMENT + "/" + ccpOrderNumber;
+        Grid.driver().get(erpOrderUrl);
 
         if(!isLoaderVisible()){
             softAssert.fail(flow + ": ERP order page did not load properly for order number " + ccpOrderNumber);
+        }
+
+        // Stop here when the order did not render. Every assertion below reads a field off this
+        // page, so continuing produces five "but found [null]" failures per scenario that say
+        // nothing about the cause - 60 of them across the suite in build #233.
+        if (!erpOrderRendered(flow, erpOrderUrl)) {
+            return;
         }
 
         // //Total Amount validation
@@ -642,6 +661,72 @@ public class SfSlcSloSteps extends AbstractWebPage {
         if (returnToCcpPortal) {
             Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         }
+    }
+
+    /**
+     * Waits for the ERP OAuth redirect to complete before the order URL is requested.
+     *
+     * <p>{@link Token#getErpLoginUrl()} returns a {@code .../oauth2/redirect?token=...} address, and
+     * the ERP session is only established once the browser has followed that redirect. The order
+     * URL used to be requested immediately afterwards, so it could be fetched before the session
+     * existed - which serves a shell with none of the order fields on it.
+     *
+     * <p>Non-fatal: it logs and returns rather than throwing, because
+     * {@link #erpOrderRendered(String, String)} is what actually reports the outcome, and it can
+     * say far more about what went wrong than a bare timeout here could.
+     */
+    private void waitForErpSession() {
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(ERP_SESSION_WAIT_SECONDS))
+                    .until(driver -> {
+                        String url = driver.getCurrentUrl();
+                        boolean redirectFollowed = url != null && !url.contains(ERP_OAUTH_REDIRECT_SEGMENT);
+                        return redirectFollowed && "complete".equals(((JavascriptExecutor) driver)
+                                .executeScript("return document.readyState"));
+                    });
+            log.info("ERP session established - landed on " + Grid.driver().getCurrentUrl());
+        } catch (TimeoutException e) {
+            log.info("ERP login redirect did not settle within " + ERP_SESSION_WAIT_SECONDS
+                    + "s - still on " + Grid.driver().getCurrentUrl());
+        }
+    }
+
+    /**
+     * True when the ERP actually rendered the order, false after reporting why it did not.
+     *
+     * <p>All five ERP field locators are text-anchored ({@code //p[contains(text(),'Buyer order')]}
+     * and friends), so five simultaneous misses mean the page is not the order page at all rather
+     * than that five labels were renamed. This distinguishes the three ways that happens - no
+     * session, redirected away, or an order the ERP does not have - and names the URL it landed on
+     * so the next run says which.
+     */
+    private boolean erpOrderRendered(String flow, String erpOrderUrl) {
+        if (waitAndCheckIsElementPresent(ERP_ORDER_Number)) {
+            return true;
+        }
+
+        String currentUrl = Grid.driver().getCurrentUrl();
+        String pageTitle = Grid.driver().getTitle();
+        boolean loginFormShown =
+                !Grid.driver().findElements(By.xpath(ERP_LOGIN_PASSWORD_FIELD)).isEmpty();
+
+        String diagnosis;
+        if (loginFormShown) {
+            diagnosis = "the ERP is showing a login form, so the session was not established -"
+                    + " check omsAuthToken / the OMS login properties";
+        } else if (currentUrl != null && !currentUrl.contains(ccpOrderNumber)) {
+            diagnosis = "the ERP redirected away from the order URL";
+        } else {
+            diagnosis = "the ERP served the order URL but rendered no order fields - the order may"
+                    + " not have synced from CCP yet, or the order-list path has changed";
+        }
+
+        String message = flow + ": ERP did not render order " + ccpOrderNumber + " - " + diagnosis
+                + ". Requested: " + erpOrderUrl + " | landed on: " + currentUrl
+                + " | page title: '" + pageTitle + "'";
+        softAssert.fail(message);
+        Allure.addAttachment("ERP order page not rendered - " + ccpOrderNumber, message);
+        return false;
     }
 
     private boolean isLoaderVisible(){

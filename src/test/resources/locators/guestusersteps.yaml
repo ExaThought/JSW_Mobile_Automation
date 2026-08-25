@@ -26,12 +26,40 @@ elements:
   blogsArticleViewAll:
     en_US:
       web: xpath=//h1[contains(text(),'Browse articles & blogs')]/following-sibling::div/child::a
+  # Was (//div[text()='Featured articles'])[1] - measured on QA 24 Aug 2026 as 0 matches; that text
+  # no longer appears anywhere on /blogs. The page heading is the reliable signal, but it renders
+  # TWICE with the second copy at 0x0, so resolve it through CustomUtil.isAnyVisible rather than a
+  # first-match check.
   blogsPageVerification:
     en_US:
-      web: xpath=(//div[text()='Featured articles'])[1]
+      web: xpath=//h1[normalize-space()='Blogs']
   loginPage:
     en_US:
       web: xpath=//div[contains(text(),'Login or Register')]
   playedVideo:
     en_US:
       web: xpath=//video/source[@type='video/mp4']
+  # ---- MSME Masterclass, all three measured live on QA (24 Aug 2026) ----
+  # The section heading. 1 match.
+  masterclassSection:
+    en_US:
+      web: xpath=//h2[normalize-space()='MSME Masterclass']
+  # The real click target. 5 matches, one per carousel slide. The old locator walked
+  # .../div/div/div/button/picture/img, but the button is a SIBLING of the <picture>, not an
+  # ancestor of the <img> - so it matched 0. A synthetic click on the surrounding card does
+  # nothing; only this button opens the player.
+  masterclassPlayButton:
+    en_US:
+      web: xpath=//button[@aria-label='Play video']
+  # 1 match once the play button is clicked, 0 before. The player is NOT a YouTube embed - its src
+  # is a direct .mp4 on storage.googleapis.com - so title='video' is the correct anchor here and
+  # an @src youtube match finds nothing.
+  masterclassPlayerFrame:
+    en_US:
+      web: xpath=//iframe[@title='video']
+  # Blog detail links on the Blogs listing page. Anchored on the href rather than on a container
+  # class: the previous inline XPath used @class='common-container', which is generated CSS, and
+  # it also carried a stray "']" that made it an invalid selector.
+  blogsPageArticleLinks:
+    en_US:
+      web: xpath=//a[contains(@href,'/blogs/')]

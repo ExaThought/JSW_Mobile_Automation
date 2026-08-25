@@ -1,6 +1,7 @@
 package com.qapitol.jsw.stepdefinition;
 
 import com.qapitol.jsw.utils.ConfigUtil;
+import com.qapitol.jsw.utils.Token;
 import com.qapitol.jsw.utils.UserConfig;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -45,7 +46,7 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user set expired token in local storage")
     public void user_set_expired_token_in_local_storage() {
-        String expiredToken = ConfigUtil.getSecretValue("ccpExpiredToken");
+        String expiredToken = Token.getExpiredCcpToken();
         JavascriptExecutor js = Grid.driver();
         // Inject expired/invalid token
         js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);

@@ -85,6 +85,10 @@ public  class SessionSteps extends AbstractWebPage {
     public void initCCPSession(String url) {
         log.entering();
         try {
+            // The previous scenario's session may still be tearing down. Wait for a usable driver
+            // rather than assuming the first call succeeds - see awaitDriverReady().
+            awaitDriverReady();
+
             // Set implicit wait first
             Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             
@@ -134,11 +138,82 @@ public  class SessionSteps extends AbstractWebPage {
                // ccpLogOut();
             }
         }  catch (Exception e) {
-            log.log(Level.FINE, "initZohoSession failed.", e);
-            throw e;
+            // SEVERE, not FINE. This is the real cause of the failure, and FINE is filtered out of
+            // the run log - it only survives in raw surefire stdout.
+            //
+            // It has to be logged loudly because it does NOT reach the report. Sauron's
+            // ScreenshotBddListener fires on every finished step and calls Grid.driver() to capture
+            // a screenshot; when the session failed to start there is no driver, so the listener
+            // throws IllegalStateException("Driver not initialized...") from inside
+            // emitTestStepFinished - which REPLACES this exception as the reported test failure.
+            // The report then blames a missing @WebTest annotation and says nothing about the
+            // browser never having started.
+            log.log(Level.SEVERE, "Could not start the CCP browser session: " + e, e);
+            throw new IllegalStateException(SESSION_START_DIAGNOSIS + e, e);
         }
         log.exiting();
     }
+
+    /**
+     * Prefixed to a session-start failure so the message carries its own diagnosis.
+     *
+     * <p>"session not created: Chrome instance exited" against a LOCAL grid is usually neither a
+     * Chrome nor a chromedriver problem. Sauron randomises the hub's HTTP port per run, but Selenium
+     * Grid's ZeroMQ event bus is FIXED on 4442/4443 - so nodes left behind by an earlier run keep
+     * advertising on that bus, register themselves with the new hub, and the hub happily routes the
+     * session to a long-dead node. Observed on 24 Aug 2026: the run spawned its node on port 28308,
+     * and the hub handed the session to orphaned node 9917 from a previous run.
+     */
+    /** How many times to re-check for a usable driver while the session comes up. */
+    private static final int SESSION_READY_ATTEMPTS = 20;
+    private static final long SESSION_READY_POLL_MILLIS = 500;
+
+    /**
+     * Waits for a usable WebDriver instead of assuming the first {@code Grid.driver()} call works.
+     *
+     * <p>Between two scenarios the previous session is torn down and the next one is created, and
+     * {@code Grid.driver()} throws {@code IllegalStateException("Driver not initialized...")} for
+     * the duration of that window. A single attempt therefore fails on nothing more than timing.
+     *
+     * <p>Measured on Jenkins build #233: in the retry stage four scenarios failed within 131ms of
+     * each other - 21:15:50.644, .698, .743, .775 - each preceded by six "Stopping keep sessions
+     * alive periodic task" lines and followed by "Added test session to the Grid" AFTER the
+     * failure. The session was arriving microseconds too late. Notably this happened only in the
+     * retry stage (0 occurrences in the main run, 22 in the retry), which re-runs
+     * testng-failed.xml and so churns sessions far harder than the main suite.
+     *
+     * <p>When the session genuinely cannot start - a stale local grid, no Chrome - this still
+     * fails, but with {@link #SESSION_START_DIAGNOSIS} attached rather than a bare
+     * "missing @WebTest" message.
+     */
+    private void awaitDriverReady() {
+        IllegalStateException last = null;
+        for (int attempt = 1; attempt <= SESSION_READY_ATTEMPTS; attempt++) {
+            try {
+                Grid.driver();
+                if (attempt > 1) {
+                    log.info("Browser session became usable on attempt " + attempt);
+                }
+                return;
+            } catch (IllegalStateException e) {
+                last = e;
+                sleep(SESSION_READY_POLL_MILLIS);
+            }
+        }
+        log.log(Level.SEVERE, "No usable browser session after "
+                + (SESSION_READY_ATTEMPTS * SESSION_READY_POLL_MILLIS / 1000) + "s", last);
+        throw new IllegalStateException(SESSION_START_DIAGNOSIS + last, last);
+    }
+
+    private static final String SESSION_START_DIAGNOSIS =
+            "Could not start the CCP browser session. If the underlying message is"
+            + " 'session not created: Chrome instance exited' on a local grid, first suspect"
+            + " orphaned selenium-server processes from an earlier run rather than a Chrome or"
+            + " chromedriver version problem: Grid's ZeroMQ event bus is fixed on ports 4442/4443,"
+            + " so stale nodes keep advertising there and get registered with the new hub, which"
+            + " then routes the session to a dead node. Check for leftovers with"
+            + " `netstat -ano | findstr \"4442 4443\"` and terminate any selenium-server java"
+            + " processes that are not part of this run. Underlying failure: ";
     @And("ccp login with configured user")
     public void ccpLoginWithConfiguredUser() throws IOException {
         ccpLogin(UserConfig.getEmail(), UserConfig.getPassword());
