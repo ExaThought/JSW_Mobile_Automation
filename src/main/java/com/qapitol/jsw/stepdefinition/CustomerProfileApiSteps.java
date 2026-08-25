@@ -4,6 +4,7 @@ import com.qapitol.jsw.apitest.apis.impl.CustomerProfileApiImpl;
 import com.qapitol.jsw.apitest.pojos.order.customerProfile.CustomerProfileResponse;
 import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
+import com.qapitol.jsw.utils.Token;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
@@ -35,7 +36,9 @@ public class CustomerProfileApiSteps {
 
     @When("we request the customer profile Api with an expired token")
     public void weRequestTheCustomerProfileApiWithAnExpiredToken() {
-        rawResponse = ApiUtils.fetchCustomerProfile(ConfigUtil.resolveOrThrow("ccpExpiredToken"));
+        // Verified-expired, otherwise this scenario asserts a rejection the API has no reason to
+        // give: a valid token returns 200 and the test fails for the wrong reason.
+        rawResponse = ApiUtils.fetchCustomerProfile(Token.getExpiredCcpToken());
         Allure.addAttachment("customer-profile response (expired token)", rawResponse.asString());
     }
 

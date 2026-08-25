@@ -106,7 +106,12 @@ public class CartSteps extends AbstractWebPage {
     private static final String ITEM_NAME = "//h1";
     private static final String FIRST_WIRE_ROD_PRODUCT = "(//h1[text()='Wire rods']/../../following-sibling::div/div/a/div) [1]";
     private static final By ALL_CATEGORY = By.xpath("//span[contains(@class, 'hover') and contains(text(),'All categories')]");
-    private static final By MILD_STEEL_CATEGORY = By.xpath("(//a[contains(@href, 'mild-steel') or contains(@href, 'steel')]) [1]");
+    // No [1] index and no bare 'steel' fallback. The index pinned this to the first match in
+    // document order, which is the 0x0 duplicate header copy - hoverOverElement now picks the first
+    // RENDERED match instead, and an index would take that choice away again. The 'steel' clause
+    // also matched TMT-Bar-steel, steel-coated and stainless-steel, so whichever of those appeared
+    // first in the DOM could win.
+    private static final By MILD_STEEL_CATEGORY = By.xpath("//a[contains(@href,'mild-steel') or contains(@href, 'steel')]");
     private static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private static final String wireCategory = "//li/a[contains(@href, 'wire-rods')]";
     private static final String hotRolledSheetsSubCategory = "//li/a[contains(@href, 'hot-rolled-sheets')]";
@@ -532,7 +537,7 @@ public class CartSteps extends AbstractWebPage {
     @And("move to Cold rolled category")
     public void moveToColdRolledCategory() {
         //Move mouse to Cold rolled category
-        actions.moveToElement(Grid.driver().findElement(By.xpath(coldRolledCategory))).perform();
+        hoverOverElement(By.xpath(coldRolledCategory));
     }
 
     @And("open CR Coil pdp {string} product")
@@ -643,7 +648,7 @@ public class CartSteps extends AbstractWebPage {
     @And("click on Coated steel category")
     public void clickOnCoatedSteelCategory() {
         try {
-            actions.moveToElement(Grid.driver().findElement(By.xpath(coatedSteel))).click().perform();
+            clickFirstVisible(By.xpath(coatedSteel));
             log.info("cursor moved to Coated Steel");
         } catch (Exception e) {
             throw new RuntimeException("mouse failed to move to coated steel", e);
@@ -688,7 +693,7 @@ public class CartSteps extends AbstractWebPage {
         try {
             //Reading locator from page factory
             waits(By.xpath(wireCategory));
-            actions.moveToElement(Grid.driver().findElement(By.xpath(wireCategory))).click().perform();
+            clickFirstVisible(By.xpath(wireCategory));
             log.info("Clicked on Wire category");
         } catch (Exception e) {
             log.info("Failed to click on Wire category");
@@ -826,18 +831,9 @@ public class CartSteps extends AbstractWebPage {
         return texts;
     }
 
-    /**
-     * By for a locator key from cartsteps.yaml.
-     *
-     * <p>That file mixes both conventions - some entries carry an {@code xpath=} prefix and some do
-     * not - and {@code By.xpath} would take the prefix as part of the expression.
-     */
+    /** By for a locator key, tolerating the optional {@code xpath=} prefix used in cartsteps.yaml. */
     private By byForLocatorKey(String key) {
-        String locator = getLocator(key);
-        if (locator.startsWith("xpath=")) {
-            locator = locator.substring("xpath=".length());
-        }
-        return By.xpath(locator);
+        return xpathOf(getLocator(key));
     }
 
     /**
@@ -881,13 +877,13 @@ public class CartSteps extends AbstractWebPage {
     @When("move the mouse to Structural category")
     public void moveTheMouseToStructuralCategory() {
         //Reading locator from page factory
-        actions.moveToElement(Grid.driver().findElement(By.xpath(structuralSteelCategory))).perform();
+        hoverOverElement(By.xpath(structuralSteelCategory));
     }
 
     @And("click on Angles product")
     public void clickOnAnglesProduct() {
         //Reading locator from page factory
-        actions.moveToElement(Grid.driver().findElement(By.xpath(anglesSubCategory))).click().perform();
+        clickFirstVisible(By.xpath(anglesSubCategory));
     }
 
     @And("open Angles pdp")
@@ -919,7 +915,7 @@ public class CartSteps extends AbstractWebPage {
     @And("click on Channels product")
     public void clickOnChannelsProduct() {
         //Reading locator from page factory
-        actions.moveToElement(Grid.driver().findElement(By.xpath(channelsSubCategory))).click().perform();
+        clickFirstVisible(By.xpath(channelsSubCategory));
     }
 
     @And("open Channels pdp")
@@ -952,7 +948,7 @@ public class CartSteps extends AbstractWebPage {
     @And("click on Beams & Columns product")
     public void clickOnBeamsColumnsProduct() {
         //Reading locator from page factory
-        actions.moveToElement(Grid.driver().findElement(By.xpath(beamsAndColumnsSubCategory))).click().perform();
+        clickFirstVisible(By.xpath(beamsAndColumnsSubCategory));
     }
 
     @And("open Beams & Columns pdp")

@@ -47,13 +47,36 @@ public class CustomUtil {
         wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
+    /**
+     * By for a locator value read out of a {@code locators/*.yaml} file.
+     *
+     * <p>Those files mix both conventions - some entries carry an {@code xpath=} prefix and some do
+     * not - and {@code By.xpath} would take the prefix as part of the expression. Call as
+     * {@code xpathOf(getLocator(KEY))} from any step class.
+     */
+    public static By xpathOf(String locatorValue) {
+        String xpath = locatorValue.startsWith("xpath=")
+                ? locatorValue.substring("xpath=".length())
+                : locatorValue;
+        return By.xpath(xpath);
+    }
+
+    /**
+     * Waits up to 10s for the element to be clickable. Non-fatal by design - many callers use it as
+     * a settle before an interaction that has its own wait.
+     *
+     * <p>The timeout is logged rather than swallowed silently. Previously the catch block was empty,
+     * so a caller that then failed on its own shorter wait reported that shorter timeout as the
+     * cause: the category hover steps in build #233 read "tried for 2 second(s)" when 10 seconds had
+     * already elapsed here unnoticed.
+     */
     public static void waits(By locator) {
         try {
             WebDriverWait wait = new WebDriverWait(Grid.driver(), java.time.Duration.ofSeconds(10));
             wait.until(ExpectedConditions.elementToBeClickable(locator));
-        }catch (Exception e)
-        {
-
+        } catch (Exception e) {
+            logger.info("waits(): " + locator + " was not clickable within 10s - continuing. "
+                    + e.getClass().getSimpleName());
         }
     }
 
@@ -321,13 +344,27 @@ public class CustomUtil {
                 .perform();
     }
 
+    /**
+     * Moves the mouse over the first RENDERED match, so a hover-driven menu actually opens.
+     *
+     * <p>This used to resolve the element with {@code findElement}, i.e. the first match in document
+     * order. The CCP header is rendered twice and the first copy measures 0x0 (measured on QA - see
+     * homeheadersteps.yaml), so the Actions hover landed on a zero-size box and produced no hover at
+     * all. Every category mega-menu step then timed out looking for sub-category links that were
+     * never going to render: build #233 lost 31 scenarios to exactly this.
+     *
+     * <p>{@code visibilityOfElementLocated} did not save it either - that condition also inspects
+     * only the first match, which is why the old 2-second wait was the thing that threw.
+     *
+     * <p>The element is scrolled to centre first: {@code moveToElement} on a node outside the
+     * viewport is a "move target out of bounds" error in Selenium 4.
+     */
     public static void hoverOverElement(By locator)
     {
+        WebElement element = firstVisible(locator);
 
-        new WebDriverWait(Grid.driver(),Duration.ofMillis(2000)).until(ExpectedConditions.visibilityOfElementLocated(locator));
-
-
-        WebElement element = Grid.driver().findElement(locator);
+        ((JavascriptExecutor) Grid.driver())
+                .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
 
         new Actions(Grid.driver())
                 .moveToElement(element)

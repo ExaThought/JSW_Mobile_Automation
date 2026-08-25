@@ -9,6 +9,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -16,8 +17,12 @@ import org.testng.Assert;
 
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 
+import static com.qapitol.jsw.utils.CustomUtil.clickFirstVisible;
+import static com.qapitol.jsw.utils.CustomUtil.isAnyVisible;
+import static com.qapitol.jsw.utils.CustomUtil.xpathOf;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class GuestUserSteps extends AbstractWebPage {
@@ -27,6 +32,12 @@ public class GuestUserSteps extends AbstractWebPage {
     private final String MY_REQUIREMENT = "myRequirements";
     private final String MY_ORDERS = "myOrders";
     private final String LOGIN_PAGE = "loginPage";
+    private static final String MASTERCLASS_SECTION = "masterclassSection";
+    private static final String MASTERCLASS_PLAY_BUTTON = "masterclassPlayButton";
+    private static final String MASTERCLASS_PLAYER_FRAME = "masterclassPlayerFrame";
+    private static final String MASTERCLASS_VIDEO_SOURCE = "playedVideo";
+    private static final String BLOGS_PAGE_HEADING = "blogsPageVerification";
+    private static final String BLOGS_PAGE_ARTICLE_LINKS = "blogsPageArticleLinks";
 
     String pageName;
 
@@ -90,18 +101,22 @@ public class GuestUserSteps extends AbstractWebPage {
 
     @Then("MSME Masterclass video section should be displayed in home page and able to play")
     public void MsmeMasterclassVideoSectionShouldBeDisplayedInHomePageAndAbleToPlay() {
-        sleep(1000);
-        JavascriptExecutor js = Grid.driver();
-        WebElement msmeMasterclass_Video_Section = Grid.driver().findElement(By.xpath("//h2[text()='MSME Masterclass']/../../div/div"));
-        js.executeScript("arguments[0].scrollIntoView(true);", msmeMasterclass_Video_Section);
-        WebElement first_Item = Grid.driver().findElement(By.xpath("(//h2[text()='MSME Masterclass']/../../div/div/div/button/picture/img)[1]"));
-        js.executeScript("arguments[0].click();", first_Item);
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(50));
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.xpath("//iframe[@title='video']")));
-        Grid.driver().switchTo().frame(Grid.driver().findElement(By.xpath("//iframe[@title='video']")));
-        WebElement videoSource = Grid.driver().findElement(By.xpath("//video/source[@type='video/mp4']"));
-        softAssert.assertTrue(videoSource.isEnabled(),
-                "MSME Masterclass video is not played on clicking the video thumbnail");
+        softAssert.assertTrue(waitAndCheckIsElementVisible(MASTERCLASS_SECTION),
+                "MSME Masterclass section is not displayed on the home page");
+
+        clickFirstVisible(xpathOf(getLocator(MASTERCLASS_PLAY_BUTTON)));
+
+        By playerFrame = xpathOf(getLocator(MASTERCLASS_PLAYER_FRAME));
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(50))
+                .until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(playerFrame));
+        try {
+            softAssert.assertTrue(waitAndCheckIsElementPresent(MASTERCLASS_VIDEO_SOURCE),
+                    "MSME Masterclass video is not played on clicking the video thumbnail -"
+                            + " no video source rendered inside the player frame");
+            log.info("MSME Masterclass video is played");
+        } finally {
+            Grid.driver().switchTo().defaultContent();
+        }
     }
 
     @And("clicks on the Blogs label of the top navbar")
@@ -111,10 +126,35 @@ public class GuestUserSteps extends AbstractWebPage {
         Blogs.click();
     }
 
+    /**
+     * Two separate defects made this step incapable of running.
+     *
+     * <p>The XPath carried a stray {@code "']"}, so the driver rejected it as an invalid selector -
+     * meaning this step had never once executed. And {@code visibilityOfAllElements} was handed a
+     * findElements() list resolved BEFORE the wait started; that overload never re-queries the DOM,
+     * so an empty first look could never recover no matter how long it waited.
+     *
+     * <p>Both are gone: the page is identified by a curated locator key and the blog count uses the
+     * locator-based overload, which re-queries on every poll.
+     */
     @Then("Blogs Page should be displayed with multiple blogs")
     public void BlogsPageShouldBeDisplayedWithMultipleBlogs() {
-        WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(30));
-        List<WebElement> Blogs_Container = wait.until(ExpectedConditions.visibilityOfAllElements(Grid.driver().findElements(By.xpath("//div[@class='common-container']/div/button']"))));
-        Assert.assertFalse(Blogs_Container.isEmpty(), "Blogs are not present");
+        // isAnyVisible, not waitAndCheckIsElementVisible: the heading renders twice on /blogs and
+        // the second copy measures 0x0, so a first-match visibility check is one DOM-order change
+        // away from reporting a visible heading as hidden.
+        softAssert.assertTrue(isAnyVisible(xpathOf(getLocator(BLOGS_PAGE_HEADING))),
+                "Blogs page did not load - the 'Blogs' heading is not shown");
+
+        By articleLinks = xpathOf(getLocator(BLOGS_PAGE_ARTICLE_LINKS));
+        List<WebElement> blogs;
+        try {
+            blogs = new WebDriverWait(Grid.driver(), Duration.ofSeconds(30))
+                    .until(ExpectedConditions.visibilityOfAllElementsLocatedBy(articleLinks));
+        } catch (TimeoutException e) {
+            blogs = Collections.emptyList();
+        }
+        softAssert.assertTrue(blogs.size() > 1,
+                "Blogs page should list more than one blog but found " + blogs.size()
+                        + " matching " + articleLinks);
     }
 }

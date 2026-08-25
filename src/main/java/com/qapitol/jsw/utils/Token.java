@@ -1,11 +1,17 @@
 package com.qapitol.jsw.utils;
 
 import com.qapitol.jsw.apitest.apis.impl.BaseApiImpl;
+import com.qapitol.jsw.config.EnvConfig;
+import com.qapitol.sauron.common.configuration.Config;
+import com.qapitol.sauron.logging.SauronLogger;
+import com.qapitol.sauron.logging.SimpleLogger;
+import io.qameta.allure.Allure;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -13,6 +19,12 @@ import java.util.concurrent.ConcurrentMap;
 import static io.restassured.RestAssured.*;
 
 public class Token extends BaseApiImpl {
+
+    /**
+     * Static logger. The inherited {@code log} from BaseApiImpl is an instance field and so is
+     * unreachable from the static diagnostics below.
+     */
+    private static final SimpleLogger LOG = SauronLogger.getLogger();
 
     /** Response keys tried in order when omsTokenResponseKey is not configured. */
     private static final String[] OMS_TOKEN_RESPONSE_KEYS =
@@ -86,6 +98,43 @@ public class Token extends BaseApiImpl {
         return given().log().all().body(requestPayload).header("content-type","application/json")
                 .when().log().all().post(ConfigUtil.getSecretValue("ccpTokenUrl"))
                 .then().log().all().statusCode(200).extract().jsonPath().getString("jwtToken");
+    }
+
+    /**
+     * The configured deliberately-expired CCP token, checked to actually be expired.
+     *
+     * <p>The token-expiry scenarios assert that the app rejects a dead session. If the configured
+     * token is still valid the app correctly does nothing, and every one of those scenarios fails
+     * blaming the product - build #233 lost 6 that way, plus the re-login steps that only run after
+     * the redirect they were waiting for. The token also silently ages back into validity whenever
+     * someone refreshes it, so this has to be checked at the point of use rather than reviewed once.
+     *
+     * @throws IllegalStateException if the token's {@code exp} claim is in the future, naming the
+     *                               date and the property to replace.
+     */
+    public static String getExpiredCcpToken() {
+        String token = ConfigUtil.resolveOrThrow("ccpExpiredToken");
+        logExpiredTokenDiagnostics(token);
+        long exp = readExpiry(token);
+        if (exp > 0 && exp >= System.currentTimeMillis() / 1000) {
+            throw new IllegalStateException("ccpExpiredToken is NOT expired - its exp claim is "
+                    + Instant.ofEpochSecond(exp) + ", which is in the future. The token-expiry"
+                    + " scenarios assert that the app rejects an expired session, so with a valid"
+                    + " token the app correctly does nothing and every one of them fails. Replace"
+                    + " CCP_EXPIRED_TOKEN (or ccpExpiredToken in "
+                    + EnvConfig.propertiesFileFor(EnvConfig.current())
+                    + ") with a genuinely expired JWT.");
+        }
+        return token;
+    }
+
+    /**
+     * True when a JWT's {@code exp} claim is in the past. A token whose claim cannot be read counts
+     * as expired, because the server will reject it either way.
+     */
+    public static boolean isExpired(String jwt) {
+        long exp = readExpiry(jwt);
+        return exp <= 0 || exp < System.currentTimeMillis() / 1000;
     }
 
     /**
@@ -248,16 +297,120 @@ public class Token extends BaseApiImpl {
      * cannot be read, which makes the next call log in again rather than reuse a stale token.
      */
     private static long readExpiry(String jwt) {
+        JSONObject claims = readClaims(jwt);
         try {
-            String[] parts = jwt.split("\\.");
-            if (parts.length < 2) {
-                return 0;
-            }
-            String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-            JSONObject claims = new JSONObject(payload);
             return claims.has("exp") ? claims.getLong("exp") : 0;
         } catch (Exception e) {
             return 0;
+        }
+    }
+
+    /** A JWT's payload claims, or an empty object when the token cannot be decoded. */
+    private static JSONObject readClaims(String jwt) {
+        try {
+            String[] parts = jwt.split("\\.");
+            if (parts.length < 2) {
+                return new JSONObject();
+            }
+            String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+            return new JSONObject(payload);
+        } catch (Exception e) {
+            return new JSONObject();
+        }
+    }
+
+    // =====================================================================================
+    // DEBUG - identifies WHICH ccpExpiredToken a run actually used.
+    //
+    // Added because the value differs by environment in a way that is invisible in the report:
+    // locally it is the committed default in global_<env>.properties, while on Jenkins the
+    // CCP_EXPIRED_TOKEN credential binding overrides it. That exact split is what made the
+    // omsAuthToken diagnosis wrong for a whole investigation - the committed default was valid
+    // while the value Jenkins injected had expired two months earlier.
+    //
+    // The token itself is deliberately NOT logged. It is a live credential and run logs are
+    // attached to Allure reports and mailed out. What is logged is enough to identify it - the
+    // claims, plus a short SHA-256 prefix to compare two runs - and useless as a credential.
+    // =====================================================================================
+
+    private static void logExpiredTokenDiagnostics(String token) {
+        JSONObject claims = readClaims(token);
+        long exp = readExpiry(token);
+        long nowSeconds = System.currentTimeMillis() / 1000;
+
+        StringBuilder report = new StringBuilder("ccpExpiredToken in use:")
+                .append("\n  source        : ").append(resolvedSourceOf("ccpExpiredToken"))
+                .append("\n  fingerprint   : ").append(fingerprintOf(token))
+                .append("\n  length        : ").append(token == null ? 0 : token.length()).append(" chars");
+
+        if (claims.isEmpty()) {
+            report.append("\n  claims        : COULD NOT DECODE - this is not a readable JWT");
+        } else {
+            report.append("\n  exp           : ").append(exp == 0 ? "absent" : exp + " (" + Instant.ofEpochSecond(exp) + ")");
+            if (exp > 0) {
+                long ageSeconds = nowSeconds - exp;
+                report.append("\n  status        : ")
+                        .append(ageSeconds > 0
+                                ? "EXPIRED " + (ageSeconds / 86400) + " day(s) ago - usable for the token-expiry scenarios"
+                                : "STILL VALID for " + (-ageSeconds / 86400) + " more day(s) - the app will NOT log the user out");
+            }
+            for (String claim : new String[]{"tokenExpireAt", "tokenCreatedAt", "userId", "sfCustomerId", "userType", "storeKey"}) {
+                if (claims.has(claim)) {
+                    report.append("\n  ").append(String.format("%-14s", claim)).append(": ").append(claims.get(claim));
+                }
+            }
+        }
+
+        LOG.info(report.toString());
+        try {
+            Allure.addAttachment("ccpExpiredToken diagnostics", report.toString());
+        } catch (Exception e) {
+            // Attaching is a convenience; never let it break the run it is diagnosing.
+            LOG.info("Could not attach the token diagnostics to Allure: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Which of the three sources {@code ConfigUtil} actually took the value from.
+     *
+     * <p>Mirrors {@code getSecretValue}'s precedence - system property, then OS environment
+     * variable, then the committed default - so the label matches what really happened rather
+     * than what the properties file appears to say.
+     */
+    private static String resolvedSourceOf(String key) {
+        String raw = Config.getConfigProperty(key);
+        if (raw == null) {
+            return "property '" + key + "' is not defined at all";
+        }
+        if (!(raw.startsWith("${") && raw.endsWith("}"))) {
+            return "literal value in " + EnvConfig.propertiesFileFor(EnvConfig.current());
+        }
+        String varName = raw.substring(2, raw.length() - 1).split(":", 2)[0];
+        if (System.getProperty(varName) != null) {
+            return "-D" + varName + " system property";
+        }
+        if (System.getenv(varName) != null) {
+            return "OS environment variable " + varName + " (this is what Jenkins credential bindings set)";
+        }
+        return "committed default in " + EnvConfig.propertiesFileFor(EnvConfig.current())
+                + " (" + varName + " is not set)";
+    }
+
+    /** Short, non-reversible identifier so two runs' tokens can be compared without logging either. */
+    private static String fingerprintOf(String token) {
+        if (token == null || token.isBlank()) {
+            return "<empty>";
+        }
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 6; i++) {
+                hex.append(String.format("%02x", digest[i]));
+            }
+            return "sha256:" + hex;
+        } catch (Exception e) {
+            return "<could not hash: " + e.getMessage() + ">";
         }
     }
 
