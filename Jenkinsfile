@@ -14,6 +14,29 @@
 pipeline {
     agent any
 
+    /* Configuring a tool under Manage Jenkins -> Tools does NOT put it on PATH; a pipeline has to
+     * request it. Without this block the agent reported "mvn: not found" and "node: not found"
+     * (exit 127) even though both installations existed, because `sh` runs a non-login,
+     * non-interactive shell that never sources the Jenkins user's profile.
+     *
+     * The names below must match the Tools page EXACTLY, case included - a mismatch fails the
+     * build with "No tool named ... found" before any stage runs:
+     *   jdk11         JDK installation, JDK 11
+     *   maven-3.9.0   Maven installation, auto-installed from Apache
+     *   NodeJS        NodeJS installation, auto-installed from nodejs.org (20.x)
+     *
+     * jdk sets JAVA_HOME, which Maven requires. It must be a full JDK and not a JRE: the pom
+     * compiles with source/target 11, so javac has to be present.
+     *
+     * Node 20 matters: ci/summarize-allure.js uses optional chaining and nullish coalescing,
+     * so anything older than Node 14 dies with a SyntaxError rather than a readable message.
+     */
+    tools {
+        jdk 'jdk11'
+        maven 'maven-3.9.0'
+        nodejs 'NodeJS'
+    }
+
     parameters {
         choice(
             name: 'ENV',
