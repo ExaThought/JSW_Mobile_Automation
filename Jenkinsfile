@@ -77,19 +77,42 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                /* Explicit remote rather than scm.userRemoteConfigs: the `scm` global only exists
-                 * in a "Pipeline script from SCM" job, so this form works for an inline pipeline
-                 * script too. Set GIT_CREDENTIALS_ID as a Jenkins global env var, or replace the
-                 * fallback below with your credential's id. */
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${params.BRANCH_NAME}"]],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/JSWOne/msme-fe-utaf-automation.git',
-                        credentialsId: env.GIT_CREDENTIALS_ID ?: 'github-jswone'
-                    ]]
-                ])
                 script {
+                    /* This is a SECOND checkout. Jenkins has already cloned the repo once to read
+                     * this Jenkinsfile; this one re-checks-out at ${BRANCH_NAME}, so the pipeline
+                     * definition can stay on develop while a feature branch is tested.
+                     *
+                     * The credential is INHERITED from the job's own SCM config rather than named
+                     * here. A hardcoded id fails in a way the log barely explains: when the id does
+                     * not exist, the git plugin logs one "CredentialId ... could not be found"
+                     * warning and then runs git UNAUTHENTICATED, so GitHub replies "Password
+                     * authentication is not supported for Git operations" and it reads like a bad
+                     * token rather than a missing credential. Credential ids are usually generated
+                     * UUIDs, so the odds of a guessed name matching are nil.
+                     *
+                     * scm only exists in a "Pipeline script from SCM" job, hence the try/catch:
+                     * an inline-script job falls back to GIT_CREDENTIALS_ID, or to no credential
+                     * at all for a public repo.
+                     */
+                    def gitCredentialsId = env.GIT_CREDENTIALS_ID
+                    if (!gitCredentialsId) {
+                        try {
+                            gitCredentialsId = scm.userRemoteConfigs[0].credentialsId
+                        } catch (ignored) {
+                            gitCredentialsId = ''
+                        }
+                    }
+                    echo "Checkout stage using git credential id: ${gitCredentialsId ?: '(none)'}"
+
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/${params.BRANCH_NAME}"]],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/JSWOne/msme-fe-utaf-automation.git',
+                            credentialsId: gitCredentialsId
+                        ]]
+                    ])
+
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${params.ENV} ${params.BRANCH_NAME}"
                     currentBuild.description = params.TAGS ?: 'suite defaults'
                 }
