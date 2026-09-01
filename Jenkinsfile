@@ -147,6 +147,26 @@ pipeline {
                 /* allure-results must start empty. The summariser collapses duplicate
                  * scenario names across attempts, but results left over from a previous
                  * build would still be counted as part of this run. */
+                /* Preserve the PREVIOUS run's summary before anything deletes it, so the mail can
+                 * split failures into new / recurring / fixed.
+                 *
+                 * The Jenkins workspace persists between builds, so last build's
+                 * target/run-summary.json is still on disk right now - the rm below and
+                 * `mvn clean` are what remove it. Copying it out of target/ first is why this
+                 * needs neither the Copy Artifact plugin nor an authenticated call to the Jenkins
+                 * API to read our own previous output.
+                 *
+                 * Absent on a first build or after a workspace wipe; ci/email-body.js degrades to
+                 * "comparison not available" rather than failing. */
+                sh '''
+                    if [ -f target/run-summary.json ]; then
+                        cp target/run-summary.json .previous-run-summary.json
+                        echo "Preserved the previous run summary for the new-vs-recurring comparison"
+                    else
+                        echo "No previous run summary in this workspace - first build here, or it was cleaned"
+                    fi
+                '''
+
                 sh 'rm -rf allure-results target/run-summary.* target/email-body.html && mkdir -p allure-results'
 
                 /* ---------------------------------------------------------------------
@@ -317,9 +337,11 @@ pipeline {
                     }
 
                     // --jira-url is deliberately not passed; the body carries no ticket link.
+                    // --previous-summary is the file preserved at the top of the Test stage.
                     sh """
                         node ci/email-body.js \
                             --summary ${env.SUMMARY_BASE}.json \
+                            --previous-summary .previous-run-summary.json \
                             --job "${env.JOB_NAME}" \
                             --build ${env.BUILD_NUMBER} \
                             --env ${params.ENV} \
