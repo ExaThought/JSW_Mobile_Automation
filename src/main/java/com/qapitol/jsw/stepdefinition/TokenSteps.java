@@ -46,7 +46,8 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user set expired token in local storage")
     public void user_set_expired_token_in_local_storage() {
-        String expiredToken = Token.getExpiredCcpToken();
+        String expiredToken = ConfigUtil.getSecretValue("ccpExpiredToken");
+        Token.getExpiredCcpToken();
         JavascriptExecutor js = Grid.driver();
         // Inject expired/invalid token
         js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);
@@ -60,26 +61,36 @@ public class TokenSteps extends AbstractWebPage {
     public void user_refresh_the_page() {
         url = Grid.driver().getCurrentUrl();
         Grid.driver().navigate().refresh();
+        Grid.driver().navigate().refresh();
         log.info("Page refreshed after setting expired token");
     }
 
     @Then("verify the user is navigate to Guest home page")
     public void verify_the_user_is_navigate_to_guest_home_page() {
-        softAssert.assertTrue(waitAndCheckIsElementVisible(LOGIN_CTA), "User is not logged out or did not navigate to login page for token expiry from " + pageName);
-        log.info("User navigate to Guest user home Page after token expiry and product are visible");
+        By loginCta = By.xpath("//button[text()='Login']");
+        String urlAfterExpiry = Grid.driver().getCurrentUrl();
 
-        WebElement loginPageElement = Grid.driver().findElement(By.xpath("//button[text()='Login']"));
-        if (loginPageElement.isDisplayed()) {
-            log.info("Login page is displayed, user is logged out");
-            loginPageElement.click();
-            sleep(1000);
-            String currentUrl = Grid.driver().getCurrentUrl();
-            if (currentUrl.contains("/login")) {
-                log.info("User successfully navigated to login page after token expiry");
-            } else {
-                throw new AssertionError("User did not navigate to login page after token expiry, current URL: " + currentUrl + " from " + pageName);
-            }
+        if (urlAfterExpiry.contains("/login")) {
+            log.info("Token expiry redirected straight to the login page: " + urlAfterExpiry);
+            softAssert.assertTrue(isAnyVisible(By.xpath(getLocator(CONTINUE_WITH_EMAIL))),
+                    "Redirected to " + urlAfterExpiry + " after token expiry from " + pageName
+                            + ", but the auth modal did not open");
+            return;
         }
+
+        // Still on a guest page: a VISIBLE Login button is the evidence of being logged out.
+        softAssert.assertTrue(isAnyVisible(loginCta),
+                "Not logged out after token expiry from " + pageName + " - no visible Login button"
+                        + " and the URL is still " + urlAfterExpiry);
+        if (!isAnyVisible(loginCta)) {
+            return;
+        }
+
+        clickFirstVisible(loginCta);
+        softAssert.assertTrue(isAnyVisible(By.xpath(getLocator(CONTINUE_WITH_EMAIL))),
+                "Clicking Login after token expiry from " + pageName + " did not open the auth"
+                        + " modal - 'Continue with email' never became visible. URL: "
+                        + Grid.driver().getCurrentUrl());
     }
 
     @Then("verify the user is logged out and navigate to login page")
@@ -155,9 +166,13 @@ public class TokenSteps extends AbstractWebPage {
 
     @And("user again login with configured user")
     public void user_again_login_with_configured_user() {
-        WebElement LOGIN_BUTTON = Grid.driver().findElement(By.xpath("//button[text()='Login']"));
-        JavascriptExecutor js = Grid.driver();
-        js.executeScript("arguments[0].click();", LOGIN_BUTTON);
+        /* Two bugs here, both silent:
+         *   - findElement returns the FIRST //button[text()='Login'], which is the 0x0 duplicate
+         *   - arguments[0].click() does not fire pointerdown, and this app's buttons are Radix
+         *     primitives that listen on pointerdown rather than click
+         * so the modal never opened. clickFirstVisible picks the on-screen copy and uses a real
+         * Actions click. */
+        clickFirstVisible(By.xpath("//button[text()='Login']"));
         user_again_login(UserConfig.getEmail(), UserConfig.getPassword());
     }
 
@@ -222,8 +237,12 @@ public class TokenSteps extends AbstractWebPage {
 
     @And("user navigate to login page and again login with configured user")
     public void userNavigateTOLoginPageAndAgainLoginWithConfiguredUser() {
-        if(isElementPresent(LOGIN_CTA)) {
-            waitAndClickOn(LOGIN_CTA);
+        By loginCta = By.xpath(getLocator(LOGIN_CTA));
+        if (isAnyVisible(loginCta)) {
+            clickFirstVisible(loginCta);
+        } else {
+            log.info("No visible Login button - the app already redirected to the login page with "
+                    + "the auth modal open, so there is nothing to click");
         }
         user_again_login(UserConfig.getEmail(), UserConfig.getPassword());
     }

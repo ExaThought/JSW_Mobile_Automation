@@ -111,7 +111,7 @@ public class CartSteps extends AbstractWebPage {
     // RENDERED match instead, and an index would take that choice away again. The 'steel' clause
     // also matched TMT-Bar-steel, steel-coated and stainless-steel, so whichever of those appeared
     // first in the DOM could win.
-    private static final By MILD_STEEL_CATEGORY = By.xpath("//a[contains(@href,'mild-steel') or contains(@href, 'steel')]");
+    private static final By MILD_STEEL_CATEGORY = By.xpath("//a[@data-test-id='desktop-navbar-category-mild-steel']/span");
     private static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private static final String wireCategory = "//li/a[contains(@href, 'wire-rods')]";
     private static final String hotRolledSheetsSubCategory = "//li/a[contains(@href, 'hot-rolled-sheets')]";
@@ -1625,10 +1625,6 @@ public class CartSteps extends AbstractWebPage {
                 case THICKNESS:
                     context.pdpThickness = selectFirstEnabledOption(THICKNESS, "thickness", productName);
                     break;
-                // Width and length are OPTIONAL. A SKU can ship with a single fixed width, or with
-                // every width out of stock, in which case the PDP renders no enabled option button
-                // at all - that is a property of the product, not a defect, so it must not fail the
-                // scenario. Thickness, diameter and form stay mandatory.
                 case WIDTH:
                     context.pdpWidth = selectFirstEnabledOption(WIDTH_BUTTON, "width", productName);
                     break;

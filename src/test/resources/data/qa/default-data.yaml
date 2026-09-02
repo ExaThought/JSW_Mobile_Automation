@@ -19,4 +19,7 @@ RCV2_DELETE_LINE_ITEM: "deleteLineItemRequestPayload"
 RCV2_DELETE_LINE_ITEM_2: "deleteLineItemRequestPayload2"
 RCV2_UPDATE_LINE_ITEM: "updateLineItemPayload"
 ORDER_CONFIRMATION: "orderConfirmationReq"
-CCP_TOKEN_REQUEST_PAYLOAD: "ccpTokenRequestPayload"
+# CCP_TOKEN_REQUEST_PAYLOAD removed together with api/request/ccpTokenRequestPayload.json.
+# Nothing read either one: Token.requestCCPToken builds its JSON inline from
+# UserConfig.getEmail()/getPassword(), so the file was a second, unused login path that held a
+# working QA credential in plain text (base64 is encoding, not encryption).

@@ -5,6 +5,7 @@ Feature: Validate Footer links and navigation
     Given Go to session "ccp"
     And ccp login with configured user
 
+  @productionSanity
   Scenario Outline: Verify footer link navigation
     Given the footer link "<linkName>" should be visible for web
     When the user clicks on the footer link "<linkName>" for web

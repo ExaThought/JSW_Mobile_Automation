@@ -397,14 +397,12 @@ public class ApiUtils extends BaseApiImpl
      */
     public static Response fetchCustomerProfile(String accessToken) {
         String endpoint = customerProfileEndpoint();
-
-        // Per-request baseUri instead of the shared static baseURI, so a parallel test that
-        // set baseURI to ccpUrl/omsUrl cannot hijack this call.
-        Response response = RestAssured.given()
+        String acceptHeader = "application/json, text/plain, */*";
+        io.restassured.specification.RequestSpecification spec = RestAssured.given()
                 .baseUri(endpoint)
-                .header("accept", "application/json, text/plain, */*")
-                .header("access_token", accessToken)
-                .when().log().uri()
+                .header("accept", acceptHeader)
+                .header("access_token", accessToken);
+        Response response = spec.when()
                 .get()
                 .then().log().ifError()
                 .extract().response();

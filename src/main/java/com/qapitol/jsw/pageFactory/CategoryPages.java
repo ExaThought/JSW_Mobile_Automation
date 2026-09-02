@@ -23,7 +23,7 @@ public class CategoryPages {
     public static String channelsSubCategory = "(//a[contains(text(),'Channels')])[3]";
     public static String beamsAndColumnsSubCategory = "(//a[contains(text(),'Beams and columns')])[2]";
     public static String deleteCartLineItem = "(//div[contains(text(),'Delete')])[1]";
-    public static String coatedSteel = "(//a[@href=\"/category/steel-coated\"])[1]";
+    public static String coatedSteel = "//a[@data-test-id='desktop-submenu-steel-coated']";
     public static By editEnterQuantity = By.xpath("//div[contains(text(),'Enter quantity')]");
     public static By CONFIRM_ORDER_BTN = By.xpath("//button[normalize-space()='Confirm order']");
     public static By ACTIVE_ORDER_NUMBER = By.xpath("//span[normalize-space()='Order number:']/following-sibling::span");

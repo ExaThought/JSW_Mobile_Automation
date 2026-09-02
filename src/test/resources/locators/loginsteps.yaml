@@ -1,7 +1,7 @@
 elements:
   loginButton:
     en_US:
-      web: //button[text()="Login"]
+      web: //button[@data-test-id='desktop-header-user-type-button']
   ccpLoginEmail:
     en_US:
       web: //input[@id='email']

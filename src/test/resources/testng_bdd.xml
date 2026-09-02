@@ -18,7 +18,7 @@
      give every concurrently-running block its own test.group first. TestGroupContext is
      already ThreadLocal, so it is only softAssert and the user allocation that block this.
      =========================================================================================== -->
-<suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
+<suite verbose="1" name="Jsw automation" parallel="tests" thread-count="5"
        data-provider-thread-count="1" annotations="JDK">
 
     <listeners>
@@ -28,7 +28,7 @@
     <!-- env / data.env are set by GlobalConfigProperties from -Denv (default: qa).
          Override here only if this suite must pin one environment. -->
     <parameter name="data.testId" value="testCaseId"/>
-    <parameter name="api.retry.count" value="3"/>
+    <parameter name="api.retry.count" value="1"/>
     <parameter name="enableSessionsKeepAlive" value="true"/>
     <parameter name="executionTimeout" value="10000"/>
     <parameter name="cucumber.publish.quiet" value="true"/>
@@ -100,7 +100,7 @@
         <parameter name="test.group" value="orders"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@sloOrderCreation or @sloOrderCreation"/>
+        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>

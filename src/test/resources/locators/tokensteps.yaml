@@ -47,7 +47,7 @@ elements:
       web: //a[contains(@href,'track-material')]
   loginButton:
     en_US:
-      web: //button[text()='Login']
+      web: //button[@data-test-id='desktop-header-user-type-button']
   accountLabel:
     en_US:
       web: (//span[text()='Account'])[2]

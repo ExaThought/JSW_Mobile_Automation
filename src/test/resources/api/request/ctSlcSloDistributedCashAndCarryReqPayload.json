@@ -97,6 +97,7 @@
   "shippingAddressVerified": true,
   "shippingAddress": {
     "urp": true,
+    "shipToPartyName": "Test Party Name",
     "streetLine": "Pune City West",
     "status": "Approved",
     "state": "MAHARASHTRA",
