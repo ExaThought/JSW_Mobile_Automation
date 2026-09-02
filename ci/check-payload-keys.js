@@ -45,6 +45,21 @@ function listFiles(dir, ext, out = []) {
   return out;
 }
 
+/**
+ * Environments that must define every referenced payload key.
+ *
+ * PRODUCTION IS EXCLUDED, and that is the point rather than an exemption.
+ * data/prod/default-data.yaml deliberately defines NO order-payload keys: every one of them
+ * maps to a request body that creates a real order or cart, and their absence is the second
+ * barrier behind the @productionSanity tag filter. If an order-creation scenario ever reached
+ * -Denv=prod, resolvePayloadFileName throws naming the missing key instead of placing the
+ * order.
+ *
+ * Treating prod as a parity target inverts that: this check would demand the very keys the
+ * safety design removes, and "fixing" the 17 findings would arm production for order creation.
+ */
+const PARITY_EXEMPT = new Set(['prod']);
+
 /** Environments are whatever directories exist under data/ - no hardcoded list to drift. */
 function environments() {
   if (!fs.existsSync(DATA_DIR)) return [];
@@ -52,6 +67,11 @@ function environments() {
     .filter(e => e.isDirectory())
     .map(e => e.name)
     .sort();
+}
+
+/** The environments a referenced key has to resolve in. */
+function parityEnvironments() {
+  return environments().filter(e => !PARITY_EXEMPT.has(e));
 }
 
 /**
@@ -97,29 +117,36 @@ function referencedKeys() {
   return refs;
 }
 
-const envs = environments();
+const allEnvs = environments();
+const envs = parityEnvironments();
 const refs = referencedKeys();
 const problems = [];
 
-if (envs.length === 0) {
+if (allEnvs.length === 0) {
   console.error('No environment directories under src/test/resources/data - nothing to check.');
   process.exit(1);
 }
 
-const dataMaps = new Map(envs.map(env => [env, readDataMap(path.join(DATA_DIR, env, 'default-data.yaml'))]));
+const dataMaps = new Map(allEnvs.map(env => [env, readDataMap(path.join(DATA_DIR, env, 'default-data.yaml'))]));
 
 for (const [key, sites] of [...refs].sort()) {
-  for (const env of envs) {
-    const mapped = dataMaps.get(env).get(key);
-    const where = [...sites].join(', ');
+  const where = [...sites].join(', ');
 
-    if (!mapped) {
+  // Must be DEFINED in every parity environment.
+  for (const env of envs) {
+    if (!dataMaps.get(env).get(key)) {
       problems.push(`${key}\n    used at: ${where}\n` +
         `      [${env}] no entry in data/${env}/default-data.yaml -> resolves to null.json`);
-      continue;
     }
-    const payload = path.join(PAYLOAD_DIR, mapped + '.json');
-    if (!fs.existsSync(payload)) {
+  }
+
+  // Wherever it IS defined - parity-exempt environments included - it must map to a real file.
+  // A prod entry pointing at a missing payload is still a broken mapping; what prod is exempt
+  // from is being REQUIRED to have the entry at all.
+  for (const env of allEnvs) {
+    const mapped = dataMaps.get(env).get(key);
+    if (!mapped) continue;
+    if (!fs.existsSync(path.join(PAYLOAD_DIR, mapped + '.json'))) {
       problems.push(`${key}\n    used at: ${where}\n` +
         `      [${env}] maps to "${mapped}" but api/request/${mapped}.json does not exist`);
     }
@@ -138,7 +165,9 @@ for (const key of [...allDefined].sort()) {
   }
 }
 
-console.log(`Payload key check: ${refs.size} keys referenced, environments [${envs.join(', ')}]`);
+const exempt = allEnvs.filter(e => PARITY_EXEMPT.has(e));
+console.log(`Payload key check: ${refs.size} keys referenced, environments [${envs.join(', ')}]`
+  + (exempt.length ? ` (parity-exempt: ${exempt.join(', ')} - see PARITY_EXEMPT)` : ''));
 if (problems.length === 0) {
   console.log('  OK - every payload key resolves to an existing file in every environment');
   process.exit(0);
