@@ -1,5 +1,5 @@
 @customerDetails @regression
-Feature: validate customer profile details
+Feature: Validate Customer Profile Details
 
   Background:
     Given Go to session "ccp"

@@ -9,6 +9,7 @@ Feature: Check PDP page
   Scenario: Verify reset in pdp page.
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Sheet product
+    And User lands on PLP
     And click on first product
     And select thickness, width, length, quantity "50" for HR Sheet
     And click on reset button in pdp page
@@ -17,6 +18,7 @@ Feature: Check PDP page
   Scenario: Verify the Cascading in PDP  page.
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Sheet product
+    And User lands on PLP
     And click on first product
     And select thickness for pdp "2.5"
     Then check Add to cart is disabled
@@ -30,6 +32,7 @@ Feature: Check PDP page
     Then check the empty cart page display with message "Your cart is empty"
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "<enteredQuantity>" for HR Coil
     And add to cart
@@ -43,28 +46,35 @@ Feature: Check PDP page
       | 12345           | 1234             |
       | 99999           | 9999             |
 
+  @productionSanity
   Scenario: Brand name should not be empty in PDP page.
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Sheet product
+    And User lands on PLP
     And click on first product
     Then check brand name is not empty in PDP page
 
   Scenario: Verify when entering quantity = 0
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "0" for HR Coil
     Then check Add to cart is disabled
 
+  @productionSanity
   Scenario: Verify Add to Cart enabled state after all attributes selected
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "100" for HR Coil
     Then check Add to cart is enabled
 
+  @productionSanity
   Scenario: Verify product description is not empty
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     Then check product description is not empty in PDP page

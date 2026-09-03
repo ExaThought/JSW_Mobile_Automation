@@ -1,7 +1,7 @@
 elements:
   loginButton:
     en_US:
-      web: //button[@data-test-id='desktop-header-user-type-button']
+      web: //button[text()='Login']
   continueWithEmailCta:
     en_US:
       web: xpath=//button[contains(text(),'Continue with email')]
@@ -34,7 +34,7 @@ elements:
       web: xpath=//button[normalize-space(.)='Continue']
   confirmBusinessDetails:
     en_US:
-      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Confirm your business details')]
+      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]
   accountLabel:
     en_US:
       web: xpath=(//span[text()='Account'])[2]

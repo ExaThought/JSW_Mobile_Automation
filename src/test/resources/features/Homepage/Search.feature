@@ -1,4 +1,4 @@
-@search @regression
+@search @regression @productionSanity
 Feature: Validate Search functionality and navigation
 
   Background:

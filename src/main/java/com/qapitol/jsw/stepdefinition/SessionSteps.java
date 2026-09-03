@@ -85,8 +85,6 @@ public  class SessionSteps extends AbstractWebPage {
     public void initCCPSession(String url) {
         log.entering();
         try {
-            // The previous scenario's session may still be tearing down. Wait for a usable driver
-            // rather than assuming the first call succeeds - see awaitDriverReady().
             awaitDriverReady();
 
             // Set implicit wait first
@@ -138,16 +136,6 @@ public  class SessionSteps extends AbstractWebPage {
                // ccpLogOut();
             }
         }  catch (Exception e) {
-            // SEVERE, not FINE. This is the real cause of the failure, and FINE is filtered out of
-            // the run log - it only survives in raw surefire stdout.
-            //
-            // It has to be logged loudly because it does NOT reach the report. Sauron's
-            // ScreenshotBddListener fires on every finished step and calls Grid.driver() to capture
-            // a screenshot; when the session failed to start there is no driver, so the listener
-            // throws IllegalStateException("Driver not initialized...") from inside
-            // emitTestStepFinished - which REPLACES this exception as the reported test failure.
-            // The report then blames a missing @WebTest annotation and says nothing about the
-            // browser never having started.
             log.log(Level.SEVERE, "Could not start the CCP browser session: " + e, e);
             throw new IllegalStateException(SESSION_START_DIAGNOSIS + e, e);
         }
@@ -168,24 +156,7 @@ public  class SessionSteps extends AbstractWebPage {
     private static final int SESSION_READY_ATTEMPTS = 20;
     private static final long SESSION_READY_POLL_MILLIS = 500;
 
-    /**
-     * Waits for a usable WebDriver instead of assuming the first {@code Grid.driver()} call works.
-     *
-     * <p>Between two scenarios the previous session is torn down and the next one is created, and
-     * {@code Grid.driver()} throws {@code IllegalStateException("Driver not initialized...")} for
-     * the duration of that window. A single attempt therefore fails on nothing more than timing.
-     *
-     * <p>Measured on Jenkins build #233: in the retry stage four scenarios failed within 131ms of
-     * each other - 21:15:50.644, .698, .743, .775 - each preceded by six "Stopping keep sessions
-     * alive periodic task" lines and followed by "Added test session to the Grid" AFTER the
-     * failure. The session was arriving microseconds too late. Notably this happened only in the
-     * retry stage (0 occurrences in the main run, 22 in the retry), which re-runs
-     * testng-failed.xml and so churns sessions far harder than the main suite.
-     *
-     * <p>When the session genuinely cannot start - a stale local grid, no Chrome - this still
-     * fails, but with {@link #SESSION_START_DIAGNOSIS} attached rather than a bare
-     * "missing @WebTest" message.
-     */
+
     private void awaitDriverReady() {
         IllegalStateException last = null;
         for (int attempt = 1; attempt <= SESSION_READY_ATTEMPTS; attempt++) {
@@ -276,6 +247,7 @@ public  class SessionSteps extends AbstractWebPage {
             }
         }
         refreshAndWaitForPageLoad();
+        confirmBusinessDetailsIfDialogPresent();
     }
 
     @And("open Login page to enter email and password")
@@ -327,6 +299,15 @@ public  class SessionSteps extends AbstractWebPage {
     public CustomerDetailsResponse getCustomerDetail(){
         return ApiUtils.getCustomerDetails(userEmail,userPassword);
     }
+
+    private void confirmBusinessDetailsIfDialogPresent() {
+        try{
+            if (isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
+                Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
+                log.info("Business details confirmation dialog was present and has been closed.");
+            }
+        } catch (Exception e) {
+            log.info("No business details confirmation dialog was present.");
+        }
+    }
 }
-
-

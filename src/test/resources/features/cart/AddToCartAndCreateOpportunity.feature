@@ -13,6 +13,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Sheet product
+    And User lands on PLP
     And click on first product
     And select thickness, width, length, quantity "50" for HR Sheet
     And add to cart
@@ -27,6 +28,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "50" for HR Coil
     And add to cart
@@ -42,6 +44,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Cold rolled
     And click on CR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "50" for CR Coil
     And add to cart
@@ -56,6 +59,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Cold rolled
     And click on CR Sheet product
+    And User lands on PLP
     And click on first product
     And select thickness, width, length, quantity "50" for CR Sheet
     And add to cart
@@ -69,6 +73,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then check the empty cart page display with message "Your cart is empty"
     And User navigate to HomePage
     When click on Cement product
+    And User lands on PLP
     And click on first product
     And enter quantity "250" for Cement
     And add to cart
@@ -80,6 +85,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
   Scenario: Verify Coated Steel Sheet Product Add to Cart
     When move the mouse to Mild steel category
     And click on Coated steel category
+    And User lands on PLP
     And click on first product
     And select thickness, width, length and quantity "50" for Coated Sheet
     And add to cart
@@ -93,6 +99,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then check the empty cart page display with message "Your cart is empty"
     When move the mouse to Mild steel category
     And click on Wire product
+    And User lands on PLP
     And click on first product
     And click on reset button in pdp page
     And select diameter and quantity "50" for Wire
@@ -106,6 +113,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     When click cart icon
     Then check the empty cart page display with message "Your cart is empty"
     When click on TMT product
+    And User lands on PLP
     And click on first product
     And select diameter, form, quantity "50" for TMT
     And add to cart
@@ -120,6 +128,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "50" for HR Coil
     And add to cart
@@ -141,6 +150,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "50" for HR Coil
     And add to cart
@@ -154,6 +164,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And click view cart
     Then verify the Attribute values for HR Sheet in cart page with cart count "2"
     When click on TMT product
+    And User lands on PLP
     And click on first product
     And select diameter, form, quantity "50" for TMT
     And add to cart
@@ -169,6 +180,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "50" for HR Coil
     And add to cart
@@ -185,6 +197,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "50" for HR Coil
     And add to cart
@@ -201,6 +214,7 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Coil product
+    And User lands on PLP
     And click on first product
     And select thickness, width, quantity "50" for HR Coil
     And add to cart

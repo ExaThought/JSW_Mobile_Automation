@@ -1,7 +1,7 @@
 elements:
   loginButton:
     en_US:
-      web: //button[@data-test-id='desktop-header-user-type-button']
+      web: //button[text()='Login']
   loginViaOtp:
     en_US:
       web: //button[@id='login-via-otp']

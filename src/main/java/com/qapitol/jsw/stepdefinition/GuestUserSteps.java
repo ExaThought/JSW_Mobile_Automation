@@ -53,7 +53,7 @@ public class GuestUserSteps extends AbstractWebPage {
     @When("User clicks on Login button")
     public void userClicksOnLoginButton() {
         sleep(1000);
-        WebElement LOGIN_BUTTON = Grid.driver().findElement(By.xpath("//button[@data-test-id='desktop-header-user-type-button']"));
+        WebElement LOGIN_BUTTON = Grid.driver().findElement(By.xpath("//button[text()='Login']"));
         JavascriptExecutor js = Grid.driver();
         js.executeScript("arguments[0].scrollIntoView(true);", LOGIN_BUTTON);
         js.executeScript("arguments[0].click();", LOGIN_BUTTON);

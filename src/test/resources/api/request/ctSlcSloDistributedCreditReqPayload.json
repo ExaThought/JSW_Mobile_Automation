@@ -93,12 +93,12 @@
       "terms": "null"
     }
   },
-  "customerId": "1834a7bb-e285-4744-911d-e15b4e2b1bc0",
+  "CustomerId": "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0",
   "creditLimitBypass": false,
-  "businessUnit": "Manufacturing",
+  "businessUnit": "Distributed",
   "blockOrderSummaryFlag": false,
   "billingAddressSFId": "a03Bh00000Jpx8RIAR",
-  "billingAddressId": "dvB5WQ0T",
+  "billingAddressId": "01QL_kRz",
   "advancePercentage": 0,
   "advancePayment": 0.0,
   "priority": "High",
