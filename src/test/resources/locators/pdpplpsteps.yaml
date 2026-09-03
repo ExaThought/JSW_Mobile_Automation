@@ -1,25 +1,25 @@
 elements:
-    resetSelectionButton:
-      en_US:
-        web: xpath=//button[text()='Reset selection']
-    addToCart:
-      en_US:
-        web: xpath=//div[contains(text(),'Add to cart')]/parent::button
-    attributeValue:
-      en_US:
-        web: xpath=(//span[text()='Thickness (mm)']/../following-sibling::div/button)[1]
-    quantity:
-      en_US:
-        web: xpath=//input[@id="quantity-input"]
-    cartPageQuantity:
-      en_US:
-        web: xpath=//div[contains(text(),'Qty:')]
-    brandName:
-      en_US:
-        web: xpath=(//span[contains(text(),'Brand:')])/following-sibling::span
-    pdpDescription:
-      en_US:
-        web: xpath=//h3[text()='Product Information']
-    confirmBusinessDetails:
-      en_US:
-        web: xpath=//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]
+  resetSelectionButton:
+    en_US:
+      web: xpath=//button[text()='Reset selection']
+  addToCart:
+    en_US:
+      web: xpath=//div[contains(text(),'Add to cart')]/parent::button
+  attributeValue:
+    en_US:
+      web: xpath=(//span[text()='Thickness (mm)']/../following-sibling::div/button)[1]
+  quantity:
+    en_US:
+      web: xpath=//input[@id="quantity-input"]
+  cartPageQuantity:
+    en_US:
+      web: xpath=//div[contains(text(),'Qty:')]
+  brandName:
+    en_US:
+      web: xpath=(//span[contains(text(),'Brand:')])/following-sibling::span
+  pdpDescription:
+    en_US:
+      web: xpath=//h3[text()='Product Information']
+  confirmBusinessDetails:
+    en_US:
+      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]
