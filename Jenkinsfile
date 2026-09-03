@@ -70,6 +70,14 @@ pipeline {
             description: 'TestNG suite file. Maps to the pom\'s ${suiteXmlFile} property.'
         )
         string(
+            name: 'GRID_URL',
+            defaultValue: '',
+            description: 'Remote Selenium Grid, e.g. http://selenium-grid.internal:4444. Leave ' +
+                         'blank to use the grid Sauron starts on the agent - which sizes its ' +
+                         'session slots from the CPU count, so a 2-CPU agent cannot serve the 5 ' +
+                         'concurrent sessions testng_bdd.xml asks for. See docker-compose.grid.yml.'
+        )
+        string(
             name: 'RECIPIENTS',
             defaultValue: 'ritika.jaggi@jsw.in,v_akash.garg@jsw.in, piyush.dwivedi@jsw.in',
             description: 'Comma-separated Outlook recipients for the summary email.'
@@ -219,8 +227,39 @@ pipeline {
                  * the END of a build, which does nothing for a build that was killed or for a
                  * process that outlived its workspace. Clear both before starting.
                  * --------------------------------------------------------------------- */
+                withEnv(["GRID_URL=${params.GRID_URL}"]) {
                 sh '''
                     set -e
+
+                    if [ -n "$GRID_URL" ]; then
+                        echo "Remote grid: $GRID_URL"
+                        STATUS=$(curl -sS --max-time 15 "$GRID_URL/status" || true)
+                        if [ -z "$STATUS" ]; then
+                            echo "FATAL: no answer from $GRID_URL/status - grid unreachable from agent $(hostname)."
+                            exit 1
+                        fi
+                        echo "$STATUS" | head -c 2000; echo
+                        echo "$STATUS" | grep -q '"ready": *true' || {
+                            echo "FATAL: grid at $GRID_URL reports ready=false - no node has registered yet."
+                            exit 1
+                        }
+                        # Slots must cover the suite's thread-count or the surplus sessions fail
+                        # exactly as they do on a 2-CPU local grid. selenium/standalone-chrome
+                        # needs SE_NODE_MAX_SESSIONS *and* SE_NODE_OVERRIDE_MAX_SESSIONS=true;
+                        # without the override it derives slots from CPU count all over again.
+                        SLOTS=$(echo "$STATUS" | grep -o '"maxSessions": *[0-9]*' | grep -o '[0-9]*' | paste -sd+ - | bc 2>/dev/null || echo 0)
+                        echo "Grid session slots: $SLOTS"
+                        if [ "${SLOTS:-0}" -lt 5 ]; then
+                            echo "WARNING: grid advertises $SLOTS slot(s) but the suite runs 5 tests in parallel."
+                            echo "  Set SE_NODE_MAX_SESSIONS=5 AND SE_NODE_OVERRIDE_MAX_SESSIONS=true on the node,"
+                            echo "  and give the grid host >=5 cores - slots without cores just turn session"
+                            echo "  failures into step timeouts."
+                        fi
+                        rm -rf profiles/ sauronFiles/ || true
+                        exit 0
+                    fi
+
+                    echo "No GRID_URL - falling back to the local grid Sauron starts on this agent."
 
                     CHROME=""
                     for c in google-chrome google-chrome-stable chromium chromium-browser; do
@@ -257,6 +296,7 @@ pipeline {
 
                     rm -rf profiles/ sauronFiles/ || true
                 '''
+                }
 
                 /* catchError, not a bare failure: a red suite must still produce the report and
                  * the email. The build is marked UNSTABLE and the summary carries the detail. */

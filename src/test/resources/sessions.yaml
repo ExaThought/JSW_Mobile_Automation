@@ -1,3 +1,26 @@
+# CCP browser session.
+#
+# `local: true` makes Sauron start a Selenium Grid on the machine running the suite. Selenium
+# sizes a node's session slots from the CPU count, so the 2-CPU Jenkins agent serves 2 concurrent
+# sessions while testng_bdd.xml asks for 5. The three surplus sessions never start, and because
+# Sauron's ScreenshotBddListener then throws on the absent driver, EVERY scenario reports
+# "Driver not initialized. Is @WebTest/@MobileTest missing on class/method?" - a message that
+# names neither the browser nor the real cause.
+#
+# TO MOVE TO A REMOTE GRID: docker-compose.grid.yml brings one up with 5 slots, and the Jenkins
+# job's GRID_URL parameter pre-flights it (reachable, ready, enough slots) before the suite runs.
+# What is NOT settled here is the key Sauron reads for the grid address - it is not in this repo,
+# and the only committed `local: false` example (sessions_mobile.yaml, since deleted) carried no
+# URL, so the address evidently comes from somewhere else. Confirm it against the Sauron jar
+# before editing this file:
+#
+#   mvn -s settings.xml -Dnexus-username=... -Dnexus-password=... dependency:copy \
+#       -Dartifact=com.qapitol.sauron4:web:4.0.6-SNAPSHOT -DoutputDirectory=/tmp/sauron
+#   javap -cp /tmp/sauron/web-4.0.6-SNAPSHOT.jar -p com.qapitol.sauron.web.sessions.WebTestSession
+#
+# The field next to `local` is the one to set. Guessing a key name here is worse than leaving it:
+# an unrecognised key is ignored silently, Sauron starts a local grid anyway, and the run fails
+# in exactly the way this comment describes.
 - name: "ccp"
   local: true
   platform: "chrome"
