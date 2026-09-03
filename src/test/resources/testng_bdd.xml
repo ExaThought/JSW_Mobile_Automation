@@ -2,21 +2,29 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
 <!-- ===========================================================================================
-     thread-count is deliberately 1. Two pieces of shared state make concurrent <test> blocks
-     unsafe today:
+     thread-count is 5: up to five <test> blocks run at once. Two pieces of shared state used to
+     make that unsafe. Read both before raising it further.
 
-       1. Hooks.softAssert is "public static SoftAssert" - ONE instance for the whole JVM.
-          @Before replaces it and @After calls assertAll() on it, so with two scenarios in
-          flight one thread wipes the other's collected assertions and failures get reported
-          against the wrong scenario, or disappear.
+       1. FIXED - assertion state. Hooks.softAssert was "public static SoftAssert", ONE instance
+          for the whole JVM: @Before replaced it and @After called assertAll() on it, so with two
+          scenarios in flight one wiped the other's collected assertions and failures were
+          reported against the wrong scenario or lost outright - a green run that was not green.
+          Hooks.softAssert is now a final ThreadLocalSoftAssert: one shared handle, but the
+          failures are collected per THREAD, i.e. per scenario in flight. Call sites are
+          unchanged. Measured on the pre-fix code with five concurrent scenarios raising three
+          failures each, one scenario reported NONE of its own and another reported nine
+          belonging to other scenarios; after the fix every scenario reports its own three and no
+          foreign ones.
 
-       2. Several blocks below share a test.group, and therefore a login. The same account
-          driving two browsers at once corrupts cart and profile state - e.g. Cart_AddToCart
-          empties the cart while another block is adding to it.
-
-     Raising thread-count is worth doing, but fix (1) by making softAssert a ThreadLocal and
-     give every concurrently-running block its own test.group first. TestGroupContext is
-     already ThreadLocal, so it is only softAssert and the user allocation that block this.
+       2. STILL LIVE - the account behind each block. TestGroupContext is ThreadLocal, and every
+          active block below now has its OWN test.group, so no two blocks share a group. But a
+          group is only as isolated as the credential it resolves to, and in
+          global_qa.properties login.user.* and profile.user.* are both testautomation01@yopmail.com
+          (tokencheck.user.* too, though that block is commented out). Login and Profile can
+          therefore run concurrently as the SAME customer, which is exactly the cart/profile
+          corruption the user pool exists to prevent. Give profile its own account before
+          trusting a parallel run of those two, and keep new blocks on a credential no other
+          concurrent block uses.
      =========================================================================================== -->
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="5"
        data-provider-thread-count="1" annotations="JDK">

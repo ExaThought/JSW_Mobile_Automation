@@ -36,13 +36,23 @@ public class JswSoftAssert extends SoftAssert {
     static String originOfFailure() {
         for (StackTraceElement frame : new Throwable().getStackTrace()) {
             String className = frame.getClassName();
-            if (className.startsWith(PROJECT_PACKAGE)
-                    && !className.equals(JswSoftAssert.class.getName())) {
+            if (className.startsWith(PROJECT_PACKAGE) && !isSoftAssertPlumbing(className)) {
                 return frame.getFileName() + ":" + frame.getLineNumber()
                         + " (" + simpleName(className) + "." + frame.getMethodName() + ")";
             }
         }
         return "unknown location";
+    }
+
+    /**
+     * True for this project's own soft-assert machinery, which sits between the step definition
+     * and the failure and would otherwise be reported as the origin. Covers
+     * {@link ThreadLocalSoftAssert} and its nested per-scenario subclass, both of which appear on
+     * the stack of every assertion since the shared handle started forwarding per thread.
+     */
+    private static boolean isSoftAssertPlumbing(String className) {
+        return className.equals(JswSoftAssert.class.getName())
+                || className.startsWith(ThreadLocalSoftAssert.class.getName());
     }
 
     private static String simpleName(String className) {
