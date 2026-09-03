@@ -119,8 +119,8 @@ public class CartSteps extends AbstractWebPage {
     private static final String coldRolledSheetsSubCategory = "//li/a[contains(@href, 'cold-rolled-steel-sheet') or contains(@href, 'steel-cold-rolled-sheet')]";
     private static final String coldRolledCoilsSubCategory = "//li/a[contains(@href, 'cold-rolled-coils')]";
     private static final String galvanizedSheetCategory = "//li/a[contains(@href, 'coated-gi-sheet') or contains(@href, 'coated-galvanized-sheets')]";
-    public static final String msHotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]";
-    public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]";
+    public static final String msHotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]/span";
+    public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]/span";
     public static final String coatedSteelCategory = "(//a[contains(@href,'/category/steel-coated')])[1]";
     public static final By quantityTextbox = By.xpath("//input[@id='quantity-input']");
     public static final By quantityLabel = By.xpath("//label[contains(normalize-space(), 'Specify quantity')]");

@@ -136,28 +136,50 @@ public  class SessionSteps extends AbstractWebPage {
                // ccpLogOut();
             }
         }  catch (Exception e) {
+            // Do NOT re-wrap something awaitDriverReady() has already diagnosed. It throws from
+            // inside this try, so the old unconditional wrap printed the whole diagnosis paragraph
+            // twice for every failure.
+            if (e instanceof IllegalStateException
+                    && String.valueOf(e.getMessage()).startsWith(DIAGNOSIS_PREFIX)) {
+                throw (IllegalStateException) e;
+            }
             log.log(Level.SEVERE, "Could not start the CCP browser session: " + e, e);
-            throw new IllegalStateException(SESSION_START_DIAGNOSIS + e, e);
+            throw new IllegalStateException(diagnose(e), e);
         }
         log.exiting();
     }
 
     /**
-     * Prefixed to a session-start failure so the message carries its own diagnosis.
+     * Waits briefly for a usable WebDriver, absorbing the window in which the previous scenario's
+     * session is still being torn down.
      *
-     * <p>"session not created: Chrome instance exited" against a LOCAL grid is usually neither a
-     * Chrome nor a chromedriver problem. Sauron randomises the hub's HTTP port per run, but Selenium
-     * Grid's ZeroMQ event bus is FIXED on 4442/4443 - so nodes left behind by an earlier run keep
-     * advertising on that bus, register themselves with the new hub, and the hub happily routes the
-     * session to a long-dead node. Observed on 24 Aug 2026: the run spawned its node on port 28308,
-     * and the hub handed the session to orphaned node 9917 from a previous run.
+     * <p>ONE SECOND, not ten. This exists for a millisecond-scale race: on Jenkins build #233 four
+     * scenarios failed within 131ms of each other (21:15:50.644 / .698 / .743 / .775), each with
+     * "Added test session to the Grid" arriving AFTER the failure - the session was nine
+     * milliseconds late. A ten-second poll bought nothing for that and cost ten seconds per
+     * scenario on the far more common case below, where no session is ever coming.
+     *
+     * <p>When the grid itself failed to start, no amount of polling helps and every scenario is
+     * doomed, so the first failure is remembered and the rest fail immediately against it.
      */
-    /** How many times to re-check for a usable driver while the session comes up. */
-    private static final int SESSION_READY_ATTEMPTS = 20;
-    private static final long SESSION_READY_POLL_MILLIS = 500;
+    private static final int SESSION_READY_ATTEMPTS = 8;
+    private static final long SESSION_READY_POLL_MILLIS = 125;
 
+    /**
+     * Set the first time the grid proves unusable. Later scenarios then fail in microseconds with a
+     * pointer to the first failure, instead of each re-polling and re-printing the full diagnosis -
+     * a 125-scenario suite used to emit the same paragraph 125 times.
+     */
+    private static volatile String gridFailure;
 
     private void awaitDriverReady() {
+        if (gridFailure != null) {
+            throw new IllegalStateException("Skipping the browser start: the Selenium grid already"
+                    + " failed earlier in this run, so no scenario in it can obtain a session."
+                    + " Fix the first failure and the rest go with it. First failure was: "
+                    + gridFailure);
+        }
+
         IllegalStateException last = null;
         for (int attempt = 1; attempt <= SESSION_READY_ATTEMPTS; attempt++) {
             try {
@@ -171,20 +193,77 @@ public  class SessionSteps extends AbstractWebPage {
                 sleep(SESSION_READY_POLL_MILLIS);
             }
         }
+
+        String diagnosis = diagnose(last);
+        gridFailure = String.valueOf(last);
         log.log(Level.SEVERE, "No usable browser session after "
-                + (SESSION_READY_ATTEMPTS * SESSION_READY_POLL_MILLIS / 1000) + "s", last);
-        throw new IllegalStateException(SESSION_START_DIAGNOSIS + last, last);
+                + (SESSION_READY_ATTEMPTS * SESSION_READY_POLL_MILLIS) + "ms. " + diagnosis, last);
+        throw new IllegalStateException(diagnosis, last);
     }
 
-    private static final String SESSION_START_DIAGNOSIS =
-            "Could not start the CCP browser session. If the underlying message is"
-            + " 'session not created: Chrome instance exited' on a local grid, first suspect"
-            + " orphaned selenium-server processes from an earlier run rather than a Chrome or"
-            + " chromedriver version problem: Grid's ZeroMQ event bus is fixed on ports 4442/4443,"
-            + " so stale nodes keep advertising there and get registered with the new hub, which"
-            + " then routes the session to a dead node. Check for leftovers with"
-            + " `netstat -ano | findstr \"4442 4443\"` and terminate any selenium-server java"
-            + " processes that are not part of this run. Underlying failure: ";
+    /** Marker so {@link #initCCPSession} can tell an already-diagnosed failure from a fresh one. */
+    private static final String DIAGNOSIS_PREFIX = "Could not start the CCP browser session.";
+
+    /**
+     * Builds a session-start message whose advice matches the failure actually seen.
+     *
+     * <p>The previous version stated the orphaned-grid theory unconditionally, prefixed with "if the
+     * underlying message is 'session not created'". For the commonest failure - "Driver not
+     * initialized" - that sent readers to look at Chrome and chromedriver versions when the real
+     * problem was that no session had ever been created. The two causes are unrelated and now get
+     * separate advice.
+     */
+    private static String diagnose(Throwable cause) {
+        String text = (cause == null) ? "" : String.valueOf(cause.getMessage());
+        String advice;
+        if (text.contains("Driver not initialized")) {
+            advice = NO_SESSION_ADVICE;
+        } else if (text.contains("session not created") || text.contains("Chrome instance exited")) {
+            advice = ORPHANED_GRID_ADVICE;
+        } else {
+            advice = GENERIC_ADVICE;
+        }
+        return DIAGNOSIS_PREFIX + " " + advice + " Underlying failure: " + cause;
+    }
+
+    /**
+     * "Driver not initialized" means no WebDriver was ever bound to this thread - Chrome did not
+     * crash, it was never asked to start. Nothing in this repository starts a session:
+     * {@code Grid.getTestSession().isStarted()} in loginAndGoToSession is the only reference to
+     * session lifecycle anywhere in src/main, and it only READS the flag. The session is created by
+     * Sauron's own listener, so that is where to look.
+     */
+    private static final String NO_SESSION_ADVICE =
+            "No browser session was ever created for this scenario - Chrome did not crash, it was"
+            + " never started, so this is NOT a Chrome or chromedriver version problem. The session"
+            + " is created by Sauron's SauronWebListener.onStartTest via"
+            + " LocalGridManager.spawnLocalHub, not by this suite. In the console log find"
+            + " \"Executing command [java, ... selenium-server-*.jar, hub, --host, 127.0.0.1, -p,"
+            + " <port>]\" and read what follows it: \"Added node ... at http://127.0.0.1:<port>\""
+            + " means the hub is fine and the cause is elsewhere, while \"Timed out waiting for"
+            + " 127.0.0.1 to initialize\" means the hub never came up and no scenario in this run"
+            + " can get a browser.";
+
+    /**
+     * The orphaned-grid theory, now stated only when the symptom actually matches. Sauron randomises
+     * the hub's HTTP port per run, but Grid's ZeroMQ event bus is FIXED on 4442/4443, so nodes left
+     * behind by an earlier run keep advertising there, register with the new hub, and the hub routes
+     * the session to a long-dead node. Observed 24 Aug 2026: the run spawned its node on port 28308
+     * while the hub handed the session to orphaned node 9917 from a previous run.
+     */
+    private static final String ORPHANED_GRID_ADVICE =
+            "Chrome was asked to start and exited. On a LOCAL grid suspect orphaned selenium-server"
+            + " processes from an earlier run before suspecting Chrome or chromedriver versions:"
+            + " Grid's ZeroMQ event bus is fixed on ports 4442/4443, so stale nodes keep advertising"
+            + " there, get registered with the new hub, and the hub then routes the session to a"
+            + " dead node. Check with `netstat -ano | findstr \"4442 4443\"` (Windows) or"
+            + " `lsof -i:4442 -i:4443` (Linux) and terminate any selenium-server java process that"
+            + " is not part of this run.";
+
+    private static final String GENERIC_ADVICE =
+            "The failure below is not one of the two known session-start causes (no session created,"
+            + " or Chrome exiting on a stale local grid), so read it directly rather than assuming"
+            + " either.";
     @And("ccp login with configured user")
     public void ccpLoginWithConfiguredUser() throws IOException {
         ccpLogin(UserConfig.getEmail(), UserConfig.getPassword());

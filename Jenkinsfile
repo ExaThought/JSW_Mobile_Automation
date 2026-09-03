@@ -40,15 +40,20 @@ pipeline {
     parameters {
         choice(
             name: 'ENV',
-            // 'prod' is deliberately NOT offered yet. Everything it needs - EnvConfig support,
-            // global_prod.properties, data/prod/ and testng_prod_sanity.xml - lands in a separate
-            // commit, and offering an option that cannot resolve produces a confusing
-            // "Unsupported env" failure. Add 'prod' back in that same commit, not before.
-            // The production guard in the Test stage is already in place and stays inert until then.
-            choices: ['qa', 'preprod'],
+            // 'prod' is offered now that all four prerequisites exist: EnvConfig accepts it,
+            // global_prod.properties, data/prod/ and testng_prod_sanity.xml are all present.
+            //
+            // qa stays FIRST so it remains the default for triggered and scheduled builds -
+            // selecting production has to be a deliberate act, never something a cron inherits.
+            //
+            // Choosing prod is safe by construction: the guard at the top of the Test stage
+            // refuses ENV=prod with any suite other than testng_prod_sanity.xml, and refuses a
+            // TAGS filter outright, so the ~60 order-creating scenarios cannot be reached.
+            choices: ['qa', 'preprod', 'prod'],
             description: 'Target environment. Passed as -Denv and resolved by EnvConfig; ' +
                          'selects global_&lt;env&gt;.properties and the data/&lt;env&gt;/ test-data directory. ' +
-                         'Only qa and preprod are accepted - anything else fails the suite immediately.'
+                         'prod runs READ-ONLY against www.jswonemsme.com and is only permitted with ' +
+                         'SUITE=testng_prod_sanity.xml and an empty TAGS.'
         )
         string(
             name: 'BRANCH_NAME',
@@ -64,10 +69,14 @@ pipeline {
         )
         choice(
             name: 'SUITE',
-            // testng_prod_sanity.xml is omitted for the same reason as ENV=prod above: the file
-            // is not in the repo yet, so selecting it would fail on a missing suite.
-            choices: ['testng_bdd.xml', 'testng_mobilebdd.xml'],
-            description: 'TestNG suite file. Maps to the pom\'s ${suiteXmlFile} property.'
+            // testng_prod_sanity.xml is listed LAST and is the only suite ENV=prod accepts.
+            // It must be COMMITTED for this choice to work: Jenkins checks out from the remote,
+            // so an untracked file is simply absent from the workspace and the run fails on a
+            // missing suite rather than on anything informative.
+            choices: ['testng_bdd.xml', 'testng_mobilebdd.xml', 'testng_prod_sanity.xml'],
+            description: 'TestNG suite file. Maps to the pom\'s ${suiteXmlFile} property. ' +
+                         'testng_prod_sanity.xml is the read-only @productionSanity suite and is ' +
+                         'required when ENV=prod; it is also safe to run against qa or preprod.'
         )
         string(
             name: 'RECIPIENTS',
@@ -170,6 +179,46 @@ pipeline {
                 sh 'rm -rf allure-results target/run-summary.* target/email-body.html && mkdir -p allure-results'
 
                 /* ---------------------------------------------------------------------
+                 * Kill Selenium leftovers BEFORE the JVM starts.
+                 *
+                 * Sauron randomises the hub's HTTP port per run, but Grid's ZeroMQ event bus is
+                 * FIXED on 4442/4443. A hub or node left behind by a crashed build still holds
+                 * those ports and still advertises on that bus, so the new hub either cannot bind
+                 * at all or - worse - accepts the stale node's registration and routes sessions to
+                 * a process that is already dead.
+                 *
+                 * Both failure shapes were observed:
+                 *   hub cannot bind  -> SauronWebListener.onStartTest fails with "Timed out waiting
+                 *                       for 127.0.0.1 to initialize", no session is ever created,
+                 *                       and EVERY scenario then dies on
+                 *                       "IllegalStateException: Driver not initialized".
+                 *   routed to a dead node -> "session not created: Chrome instance exited".
+                 *
+                 * Stale NODES matter as much as stale hubs, which is why both are killed. Every
+                 * command is `|| true`: a clean agent has nothing to kill and that is not an error.
+                 * ------------------------------------------------------------------- */
+                sh '''
+                    echo "--- Selenium leftovers before cleanup ---"
+                    pgrep -af selenium-server || echo "  none"
+                    (command -v lsof >/dev/null && lsof -i:4442 -i:4443) || true
+
+                    pkill -9 -f selenium-server        || true
+                    pkill -9 -f chromedriver           || true
+                    pkill -9 -f "chrome.*--test-type"  || true
+                    (command -v lsof >/dev/null && lsof -ti:4442 -ti:4443 | xargs -r kill -9) || true
+                    sleep 2
+
+                    echo "--- after cleanup (4442/4443 must be free) ---"
+                    if command -v lsof >/dev/null && lsof -i:4442 -i:4443; then
+                        echo "WARNING: 4442/4443 are STILL held. The hub will fail to start and every"
+                        echo "scenario will report 'Driver not initialized'. The owning process is"
+                        echo "listed above and is not owned by this build."
+                    else
+                        echo "  4442/4443 free"
+                    fi
+                '''
+
+                /* ---------------------------------------------------------------------
                  * PRODUCTION GUARD - deliberately OUTSIDE catchError, so it aborts the
                  * build rather than degrading it to UNSTABLE and carrying on.
                  *
@@ -229,19 +278,33 @@ pipeline {
                         """
 
                         if (params.ENV == 'prod') {
-                            // global_prod.properties ships every account key EMPTY - there are no
-                            // production credentials in the repo, by design. They come from these
-                            // two Jenkins string credentials, and UserConfig fails naming the exact
-                            // key if either is missing, rather than throwing a NullPointerException
-                            // inside ccpLogin.
-                            //
-                            // The account behind msme-prod-monitor-user must be READ-ONLY BY POLICY:
-                            // used for monitoring, never for placing orders.
-                            // The variable names match the ${...} placeholders in
-                            // global_prod.properties exactly, so withCredentials alone is enough -
-                            // no withEnv, and the secret is never interpolated into a Groovy string.
+                            /* ONE credential, not two.
+                             *
+                             * The production account is testnivea@yopmail.com and it is COMMITTED in
+                             * global_prod.properties - an address is not a secret, and having it in
+                             * the file pins the suite to the right account under review. Only the
+                             * PASSWORD is secret, and it ships as ${PROD_MONITOR_PASSWORD:} with an
+                             * empty default.
+                             *
+                             * Binding msme-prod-monitor-user as well used to be required here, which
+                             * meant TWO credentials had to exist or withCredentials aborted the stage -
+                             * producing an UNSTABLE build with zero tests that looks exactly like a
+                             * test failure. Only the password is bound now. Override the address for a
+                             * one-off run with -DPROD_MONITOR_USER=... instead.
+                             *
+                             * The variable name matches the ${...} placeholder in
+                             * global_prod.properties exactly, so withCredentials alone is enough - no
+                             * withEnv, and the secret is never interpolated into a Groovy string.
+                             *
+                             * The account behind it must be READ-ONLY BY POLICY: used for monitoring,
+                             * never for placing orders.
+                             *
+                             * Locally there is no Jenkins, so run-prod-sanity.sh / .ps1 reads
+                             * .env.prod (gitignored) and passes the same name as -D. ConfigUtil
+                             * resolves -D first, then the environment, then the empty default - so a
+                             * developer's local value can never leak into a CI run.
+                             */
                             withCredentials([
-                                string(credentialsId: 'msme-prod-monitor-user',     variable: 'PROD_MONITOR_USER'),
                                 string(credentialsId: 'msme-prod-monitor-password', variable: 'PROD_MONITOR_PASSWORD')
                             ]) {
                                 sh mvnCmd
