@@ -37,6 +37,13 @@ public class Hooks {
 
     @After
     public void afterScenario(Scenario scenario) {
+        // A session that never started is reported as "Driver not initialized. Is
+        // @WebTest/@MobileTest missing on class/method?" - Sauron's ScreenshotBddListener calls
+        // Grid.driver() after every step, and with no driver its exception REPLACES the real one.
+        // The annotation is not the problem and never was. Put the actual cause where whoever
+        // reads the report will find it, rather than only in the console at SEVERE.
+        reportSessionStartFailure(scenario);
+
         // Capture diagnostics FIRST. The teardown below logs out, injects an expired token and
         // refreshes, so anything captured after it would show a logged-out page, not the failure.
         if (scenario != null && scenario.isFailed()) {
@@ -71,6 +78,33 @@ public class Hooks {
                     log.info("Could not reset the session token after a failed logout: " + ex.getMessage());
                 }
             }
+        }
+    }
+
+    /**
+     * Writes the real browser-session-start failure into the scenario's report output, when there
+     * was one. Without this the report shows only the ScreenshotBddListener's "Driver not
+     * initialized / missing @WebTest" message, which is a consequence of having no driver rather
+     * than a cause, and is identical for every scenario in the run.
+     *
+     * <p>Swallows its own errors: reporting must never turn one failure into a different one.
+     */
+    private void reportSessionStartFailure(Scenario scenario) {
+        try {
+            String failure = SessionSteps.consumeSessionStartFailure();
+            if (failure == null || scenario == null) {
+                return;
+            }
+            String message = "BROWSER SESSION NEVER STARTED - this is the real failure."
+                    + " The \"Driver not initialized. Is @WebTest/@MobileTest missing on"
+                    + " class/method?\" message shown elsewhere in this report is Sauron's"
+                    + " screenshot listener reacting to the absent driver, not the cause."
+                    + " Underlying: " + failure;
+            // SessionSteps already logged the cause at SEVERE; this call is what carries it into
+            // the report, which is where it was missing.
+            scenario.log(message);
+        } catch (Throwable ignored) {
+            // Never let diagnostics break teardown.
         }
     }
 

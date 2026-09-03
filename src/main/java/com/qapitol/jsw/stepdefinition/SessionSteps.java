@@ -136,6 +136,24 @@ public  class SessionSteps extends AbstractWebPage {
                // ccpLogOut();
             }
         }  catch (Exception e) {
+            /* SEVERE, not FINE. This is the real cause of the failure, and FINE is filtered out
+             * of the run log - it only survives in raw surefire stdout.
+             *
+             * It has to be logged loudly because it does NOT reach the report on its own.
+             * Sauron's ScreenshotBddListener fires on every finished step and calls
+             * Grid.driver() to capture a screenshot; when the session failed to start there is
+             * no driver, so the listener throws
+             *     IllegalStateException("Driver not initialized. Is @WebTest/@MobileTest
+             *     missing on class/method?")
+             * from inside emitTestStepFinished, and THAT replaces this exception as the
+             * reported test failure. The report then blames a missing @WebTest annotation and
+             * says nothing about the browser never having started - which is why every scenario
+             * in a run whose browser cannot start looks identical and useless.
+             *
+             * recordSessionStartFailure() carries the real cause to Hooks.afterScenario, which
+             * writes it into the scenario's own report output. Do not remove it without
+             * replacing the path from here to the report. */
+            recordSessionStartFailure(e);
             log.log(Level.SEVERE, "Could not start the CCP browser session: " + e, e);
             throw new IllegalStateException(SESSION_START_DIAGNOSIS + e, e);
         }
@@ -156,7 +174,47 @@ public  class SessionSteps extends AbstractWebPage {
     private static final int SESSION_READY_ATTEMPTS = 20;
     private static final long SESSION_READY_POLL_MILLIS = 500;
 
+    /**
+     * The real reason this thread's browser session failed to start, kept until
+     * {@code Hooks.afterScenario} can write it into the scenario report.
+     *
+     * <p>Per-thread because the suite runs {@code parallel="tests"}: a session failing in one
+     * block must not be reported against a scenario in another.
+     */
+    private static final ThreadLocal<String> SESSION_START_FAILURE = new ThreadLocal<>();
 
+    private static void recordSessionStartFailure(Exception e) {
+        SESSION_START_FAILURE.set(e.toString());
+    }
+
+    /**
+     * The session-start failure recorded on this thread, or null. Clears it, so a later scenario
+     * that started its browser fine is not annotated with an earlier scenario's failure.
+     */
+    public static String consumeSessionStartFailure() {
+        String failure = SESSION_START_FAILURE.get();
+        SESSION_START_FAILURE.remove();
+        return failure;
+    }
+
+    /**
+     * Waits for a usable WebDriver instead of assuming the first {@code Grid.driver()} call works.
+     *
+     * <p>Between two scenarios the previous session is torn down and the next one is created, and
+     * {@code Grid.driver()} throws {@code IllegalStateException("Driver not initialized...")} for
+     * the duration of that window. A single attempt therefore fails on nothing more than timing.
+     *
+     * <p>Measured on Jenkins build #233: in the retry stage four scenarios failed within 131ms of
+     * each other, each preceded by six "Stopping keep sessions alive periodic task" lines and
+     * followed by "Added test session to the Grid" AFTER the failure - the session was arriving
+     * microseconds too late. It happened only in the retry stage (0 in the main run, 22 in the
+     * retry), which re-runs testng-failed.xml and so churns sessions far harder.
+     *
+     * <p>20 attempts x 500ms = 10 seconds. That covers the teardown window; it does NOT cover a
+     * session that can never start. So if EVERY scenario in a run fails here, the cause is
+     * environmental - no Chrome on the agent, or a grid that cannot serve the number of
+     * concurrent sessions the suite's thread-count asks for - not this race.
+     */
     private void awaitDriverReady() {
         IllegalStateException last = null;
         for (int attempt = 1; attempt <= SESSION_READY_ATTEMPTS; attempt++) {
