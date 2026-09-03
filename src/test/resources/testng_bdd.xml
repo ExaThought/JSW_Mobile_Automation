@@ -2,8 +2,30 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
 <!-- ===========================================================================================
-     thread-count is 5: up to five <test> blocks run at once. Two pieces of shared state used to
-     make that unsafe. Read both before raising it further.
+     thread-count is 1: the <test> blocks below run one after another.
+
+     THIS IS A CAPACITY DECISION, NOT A CORRECTNESS ONE - and that is a change from before.
+     The two things that used to make parallelism unsafe are both resolved (see 1 and 2 below),
+     so the only remaining limit is the machine. Selenium sizes a node's Chrome slots from the
+     CPU count, and the Jenkins agent's own node log says:
+
+         [NodeOptions.getSessionFactories] Detected 2 available processors
+         [NodeOptions.report] Adding Chrome for {"browserName": "chrome", ...} 2 times
+
+     Two slots. At thread-count 5 the three surplus sessions never started, and because Sauron's
+     ScreenshotBddListener then throws on the absent driver, every one of those scenarios reported
+     "Driver not initialized. Is @WebTest/@MobileTest missing on class/method?" - naming neither
+     the browser nor the real cause. Build #234 lost roughly three scenarios in five that way.
+
+     RAISING IT AGAIN: the ceiling is min(agent CPUs, distinct accounts). On qa there are 7 active
+     blocks with 7 distinct accounts, so accounts are not the constraint - cores are. Budget about
+     one core and ~1GB of RAM per concurrent session and leave 2 for the build itself, so
+     thread-count 5 wants a 7-8 CPU agent, or a remote grid via the Jenkins GRID_URL parameter
+     (docker-compose.grid.yml). The Test stage also caps thread-count to the agent's CPU count at
+     build time, so an undersized agent degrades to a slower run rather than a false failure.
+
+     Two pieces of shared state used to make parallelism unsafe. Both are fixed; read them before
+     raising thread-count, because neither protects you if a new block reuses an account.
 
        1. FIXED - assertion state. Hooks.softAssert was "public static SoftAssert", ONE instance
           for the whole JVM: @Before replaced it and @After called assertAll() on it, so with two
@@ -35,7 +57,7 @@
           Give preprod its own per-group accounts, or run it serially, before pointing this suite
           at it.
      =========================================================================================== -->
-<suite verbose="1" name="Jsw automation" parallel="tests" thread-count="5"
+<suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
        data-provider-thread-count="1" annotations="JDK">
 
     <listeners>

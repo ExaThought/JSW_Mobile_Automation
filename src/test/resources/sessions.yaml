@@ -7,20 +7,36 @@
 # "Driver not initialized. Is @WebTest/@MobileTest missing on class/method?" - a message that
 # names neither the browser nor the real cause.
 #
+# ON JENKINS THIS FILE IS REWRITTEN, NOT EDITED. The Test stage generates a remote-grid version
+# in the workspace when the GRID_URL build parameter is set, and otherwise caps the suite's
+# thread-count to the agent's CPU count so no thread is left without a slot. The committed
+# version below stays `local: true`, which is what a developer clone wants.
+#
 # TO MOVE TO A REMOTE GRID: docker-compose.grid.yml brings one up with 5 slots, and the Jenkins
-# job's GRID_URL parameter pre-flights it (reachable, ready, enough slots) before the suite runs.
-# What is NOT settled here is the key Sauron reads for the grid address - it is not in this repo,
-# and the only committed `local: false` example (sessions_mobile.yaml, since deleted) carried no
-# URL, so the address evidently comes from somewhere else. Confirm it against the Sauron jar
-# before editing this file:
+# job's GRID_URL parameter pre-flights it (reachable, ready, enough slots) and then points the
+# suite at it.
 #
-#   mvn -s settings.xml -Dnexus-username=... -Dnexus-password=... dependency:copy \
-#       -Dartifact=com.qapitol.sauron4:web:4.0.6-SNAPSHOT -DoutputDirectory=/tmp/sauron
-#   javap -cp /tmp/sauron/web-4.0.6-SNAPSHOT.jar -p com.qapitol.sauron.web.sessions.WebTestSession
+# THE KEYS ARE NOW CONFIRMED against the Sauron jar - they are `local`, `protocol`, `host` and
+# `port` on the shared SessionConfigData, not a single URL field:
 #
-# The field next to `local` is the one to set. Guessing a key name here is worse than leaving it:
-# an unrecognised key is ignored silently, Sauron starts a local grid anyway, and the run fails
-# in exactly the way this comment describes.
+#   javap -cp web-4.0.6-SNAPSHOT.jar -p com.qapitol.sauron.common.pojos.SessionConfigData
+#     -> private String protocol / private String host / private int port / private boolean local
+#   javap -cp web-4.0.6-SNAPSHOT.jar -p -c com.qapitol.sauron.web.sessions.WebTestSession
+#     -> createDriverUrl() calls getProtocol(), getHost(), getPort() and hands them to
+#        getURLFromData(protocol, host, port); the defaults are localhost:4444
+#
+# So a remote session is:
+#
+#   - name: "ccp"
+#     local: false
+#     protocol: "http"
+#     host: "grid.internal.example"
+#     port: 4444
+#     platform: "chrome"
+#     browserRunHeadless: true
+#
+# Still true that a wrong key is silently ignored and Sauron falls back to a local grid, which is
+# why the four above were read out of the jar rather than guessed.
 - name: "ccp"
   local: true
   platform: "chrome"
