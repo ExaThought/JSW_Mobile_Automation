@@ -27,7 +27,7 @@ public final class EnvConfig {
 
     /** Add an entry here (and a matching global_<env>.properties) to support a new environment. */
     private static final Set<String> SUPPORTED_ENVS =
-            new LinkedHashSet<>(Arrays.asList("qa", "preprod"));
+            new LinkedHashSet<>(Arrays.asList("qa", "preprod", "prod"));
 
     private static final String SYSTEM_PROPERTY = "env";
     private static final String ENVIRONMENT_VARIABLE = "ENV";

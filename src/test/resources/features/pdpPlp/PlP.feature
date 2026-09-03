@@ -1,7 +1,6 @@
 @regression @PLPValidation
 Feature: Check PlP filter
 
-
   Background:
     Given Go to session "ccp"
     And ccp login with configured user
@@ -11,6 +10,7 @@ Feature: Check PlP filter
       And User navigate to HomePage
       When move the mouse to Mild steel category and to sub category Hot rolled
       And click on HR Sheet product
+      And User lands on PLP
       And User selects the first category
       Then User verifies category
 
@@ -19,6 +19,7 @@ Feature: Check PlP filter
       And User navigate to HomePage
       When move the mouse to Mild steel category and to sub category Hot rolled
       And click on HR Sheet product
+      And User lands on PLP
       And User select the Grade
       Then User verifies Grade
 
@@ -27,14 +28,16 @@ Feature: Check PlP filter
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Sheet product
+    And User lands on PLP
     And User select the Brand
     Then User verifies Brand
 
 
-  Scenario: Verify the Brand filter
+  Scenario: Verify the Sub Brand filter
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Sheet product
+    And User lands on PLP
     And User select the Sub grade
     Then User verifies Sub Grade
 
@@ -43,6 +46,7 @@ Feature: Check PlP filter
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
     And click on HR Sheet product
+    And User lands on PLP
     And User select the Grade
     Then User verifies Grade
     And User select the Brand
@@ -50,22 +54,22 @@ Feature: Check PlP filter
     And User select the Sub grade
     Then User verifies Sub Grade
 
-
   Scenario: Verify filter in Cement product
     And User navigate to HomePage
     When click on Cement product
+    And User lands on PLP
     And User select the Brand
     Then User verifies Brand
-
 
   Scenario: Verify filters in TMT
     When click on TMT product
+    And User lands on PLP
     And User select the Brand
     Then User verifies Brand
 
-
   Scenario:  Verify multiple filters in TMT
     When click on TMT product
+    And User lands on PLP
     And User select the Brand
     Then User verifies Brand
     And User select the Sub grade

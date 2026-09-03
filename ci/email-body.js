@@ -473,7 +473,7 @@ const body =
     Build <b style="color:${INK}">#${esc(BUILD)}</b> &nbsp;·&nbsp;
     Env <b style="color:${INK}">${esc(ENVIRONMENT)}</b> &nbsp;·&nbsp;
     Branch <b style="color:${INK}">${esc(data.branch || '-')}</b> &nbsp;·&nbsp;
-    ${duration}
+    Duration <b style="color:${INK}">${duration}</b>
   </td></tr>
 
   ${section('📋 EXECUTION SUMMARY')}

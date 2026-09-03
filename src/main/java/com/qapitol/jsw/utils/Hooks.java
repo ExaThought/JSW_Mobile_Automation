@@ -14,16 +14,22 @@ import static com.qapitol.sauron.web.WebActionListener.log;
 
 public class Hooks {
 
-    // Make SoftAssert static so it can be accessed globally
-    public static SoftAssert softAssert;
+    /**
+     * Static so every step definition can reach it, FINAL because the state behind it is now
+     * per-thread: {@link ThreadLocalSoftAssert} routes each call into the collection belonging to
+     * the thread running that scenario. Reassigning this field is what used to make concurrent
+     * scenarios wipe each other's failures, so the fresh-per-scenario collection is started by
+     * ThreadLocalSoftAssert.startScenario() below instead of by a new object here.
+     */
+    public static final SoftAssert softAssert = new ThreadLocalSoftAssert();
     SessionSteps sessionSteps = new SessionSteps();
 
     @Before
     public void beforeScenario() {
         System.out.println("=== SCENARIO STARTED ===");
-        // Initialize a new SoftAssert object before every scenario.
-        // JswSoftAssert is a drop-in subclass that also prints the file and line of each failure.
-        softAssert = new JswSoftAssert();
+        // Start this thread's own collection of failures for the scenario about to run. The
+        // failures are reported with the file and line of each assertion (see JswSoftAssert).
+        ThreadLocalSoftAssert.startScenario();
         // Drop the cached customer-profile flag so each scenario reads it for its own user
         CustomerProfileUtil.reset();
 
@@ -39,7 +45,7 @@ public class Hooks {
 
         try{
         System.out.println("=== SCENARIO ENDED ===");
-        // Assert all soft assertions at the end of each scenario
+        // Assert this scenario's soft assertions - only the ones collected on this thread.
         softAssert.assertAll();
         } catch (RuntimeException e) {
         e.printStackTrace();

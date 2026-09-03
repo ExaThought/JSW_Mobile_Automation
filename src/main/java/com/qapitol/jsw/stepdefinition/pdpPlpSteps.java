@@ -31,11 +31,12 @@ public class pdpPlpSteps extends AbstractWebPage {
     private final String GRADE_FILTER_NAME = "(//span[text()='Grade']/../following-sibling::div//label)[1]";
     private final String BRAND_CHECKBOX = "(//span[text()='Brand']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
     private final String BRAND_LABEL = "(//span[text()='Brand']/../following-sibling::div//label)[1]";
-    private final String SUB_GRADE_CHECKBOX = "(//span[text()='Sub grade']/../following-sibling::div//button[@data-slot=\"checkbox\"])[1]";
+    private final String SUB_GRADE_CHECKBOX = "(//span[text()='Sub grade']/../following-sibling::div//button[@data-slot='checkbox'])[1]";
     private final String SUB_GRADE_NAME = "(//span[text()='Sub grade']/../following-sibling::div//label)[1]";
     private final String PROD_NAME = "//span[text()='Brand: ']/../preceding-sibling::p";
     private final String PROD_BRAND_NAME = "//span[text()='Brand: ']/following-sibling::span";
     private final String SELECTED_FILTER_NAME = "(//span[text()='%s'])[2]";
+        public static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private final ScenarioContext context;
 
     public pdpPlpSteps(ScenarioContext context) {
@@ -283,6 +284,20 @@ public class pdpPlpSteps extends AbstractWebPage {
         }
     }
 
+    @And("User lands on PLP")
+    public void userLandsOnPLP(){
+        softAssert.assertTrue(Grid.driver().getCurrentUrl().contains("/category/"));
+        confirmBusinessDetailsIfDialogPresent();
+    }
 
+    private void confirmBusinessDetailsIfDialogPresent() {
+        try{
+            if (isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
+                Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
+                log.info("Business details confirmation dialog was present and has been closed.");
+            }
+        } catch (Exception e) {
+            log.info("No business details confirmation dialog was present.");
+        }
+    }
 }
-

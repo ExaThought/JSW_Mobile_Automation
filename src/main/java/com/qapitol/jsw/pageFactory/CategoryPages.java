@@ -1,6 +1,5 @@
 package com.qapitol.jsw.pageFactory;
 
-
 import org.openqa.selenium.By;
 
 public class CategoryPages {
@@ -11,7 +10,7 @@ public class CategoryPages {
     public static String hotRolledSheetsSubCategory = "//a[contains(@href,'hot-rolled-sheets')]";
     public static String hotRolledCoilsSubCategory = "//a[contains(@href,'hot-rolled-coils')]";
     public static String length = "//div[contains(text(),'Length (mm)')]/parent::div/following-sibling::div/child::div/child::button[1]";
-    public static String addToCart = "//button[@data-test-id='pdp-add-to-cart-button']";
+    public static String addToCart = "//button[text()='Add to cart']";
     public static String coldRolledCategory = "(//li//a[@href=\"/category/cold-rolled-steel\"])[1]";
     public static String coldRolledCoilsSubCategory = "(//li//a[@href=\"/category/cold-rolled-coils\"])[1]";
     public static String coldRolledSheetsSubCategory = "(//li//a[@href=\"/category/cold-rolled-sheets\"])[1]";
@@ -23,7 +22,7 @@ public class CategoryPages {
     public static String channelsSubCategory = "(//a[contains(text(),'Channels')])[3]";
     public static String beamsAndColumnsSubCategory = "(//a[contains(text(),'Beams and columns')])[2]";
     public static String deleteCartLineItem = "(//div[contains(text(),'Delete')])[1]";
-    public static String coatedSteel = "(//a[@href=\"/category/steel-coated\"])[1]";
+    public static String coatedSteel = "//a[contains(@href, 'steel-coated') or contains(@href, '/category/coated-steel')]/span";
     public static By editEnterQuantity = By.xpath("//div[contains(text(),'Enter quantity')]");
     public static By CONFIRM_ORDER_BTN = By.xpath("//button[normalize-space()='Confirm order']");
     public static By ACTIVE_ORDER_NUMBER = By.xpath("//span[normalize-space()='Order number:']/following-sibling::span");
@@ -33,7 +32,5 @@ public class CategoryPages {
     public static By BLOG_SECTION = By.xpath("//span[text()='Blogs']");
     public static By BLOG_Youtube = By.xpath("//img[@alt='Youtube']");
     public static By ALL_CATEGORY = By.xpath("(//span[text()=\"All categories\"])[2]");
-
-
 }
 

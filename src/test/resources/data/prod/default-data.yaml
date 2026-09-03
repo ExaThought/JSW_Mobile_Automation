@@ -1,0 +1,14 @@
+# Production test data.
+#
+# Intentionally minimal. The qa/preprod copies of this file map keys such as
+# CT_SLC_SLO_CASH_AND_CARRY and RCV2_ADD_TO_CART to request-payload files, and those payloads
+# CREATE REAL ORDERS AND CARTS. None of them belongs on production, so none is defined here.
+#
+# CtSlcSlocreationImpl.resolvePayloadFileName throws an IllegalStateException naming the missing
+# key and this file, so a scenario that somehow reaches production with -Denv=prod fails with a
+# readable message instead of falling back to a QA payload.
+#
+# The production sanity suite (@productionSanity) contains no @dataFile scenarios, so nothing
+# below is actually read today. The file exists so data/prod/ resolves like the other envs.
+username: prod-sanity
+password: not-used

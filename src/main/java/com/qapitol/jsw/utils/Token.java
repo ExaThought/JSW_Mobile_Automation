@@ -115,17 +115,75 @@ public class Token extends BaseApiImpl {
     public static String getExpiredCcpToken() {
         String token = ConfigUtil.resolveOrThrow("ccpExpiredToken");
         logExpiredTokenDiagnostics(token);
+
+        long now = System.currentTimeMillis() / 1000;
         long exp = readExpiry(token);
-        if (exp > 0 && exp >= System.currentTimeMillis() / 1000) {
-            throw new IllegalStateException("ccpExpiredToken is NOT expired - its exp claim is "
-                    + Instant.ofEpochSecond(exp) + ", which is in the future. The token-expiry"
-                    + " scenarios assert that the app rejects an expired session, so with a valid"
-                    + " token the app correctly does nothing and every one of them fails. Replace"
-                    + " CCP_EXPIRED_TOKEN (or ccpExpiredToken in "
+        long tokenExpireAt = readTokenExpireAt(token);
+
+        /* Either claim being in the past counts as expired, because the two consumers read
+         * DIFFERENT claims and disagree about this very token:
+         *
+         *   exp           - the standard numeric claim, what the API gateway enforces
+         *   tokenExpireAt - a JSW-specific string claim, what the WEB APP enforces
+         *
+         * Verified against QA on 2026-08-25 with the committed token (exp 2026-09-23, i.e. future;
+         * tokenExpireAt 2023/09/23, i.e. past): injecting it into localStorage and reloading made
+         * the app DELETE the token and redirect to /login. So the UI scenarios work with this
+         * token while an exp-only guard rejects it - the guard was blocking scenarios that pass.
+         *
+         * Only when BOTH are in the future is the token genuinely unusable for these scenarios.
+         */
+        boolean expiredByExp = exp > 0 && exp < now;
+        boolean expiredByTokenExpireAt = tokenExpireAt > 0 && tokenExpireAt < now;
+
+        if (!expiredByExp && !expiredByTokenExpireAt) {
+            throw new IllegalStateException("ccpExpiredToken is NOT expired by either claim - exp is "
+                    + (exp == 0 ? "absent" : Instant.ofEpochSecond(exp).toString())
+                    + " and tokenExpireAt is "
+                    + (tokenExpireAt == 0 ? "absent/unparseable" : Instant.ofEpochSecond(tokenExpireAt).toString())
+                    + ", both in the future. The token-expiry scenarios assert that the app rejects a"
+                    + " dead session, so with a live token the app correctly does nothing and every"
+                    + " one of them fails. Replace CCP_EXPIRED_TOKEN (or ccpExpiredToken in "
                     + EnvConfig.propertiesFileFor(EnvConfig.current())
                     + ") with a genuinely expired JWT.");
         }
+
+        /* One claim past and the other future is usable, but only for one surface - so say which,
+         * rather than letting the other surface fail looking like a product bug. */
+        if (expiredByTokenExpireAt && !expiredByExp) {
+            LOG.info("ccpExpiredToken is expired by tokenExpireAt but its exp claim is still in the"
+                    + " future (" + Instant.ofEpochSecond(exp) + "). The WEB APP will reject it, so"
+                    + " the UI token-expiry scenarios work; an API called with it may still answer"
+                    + " 200 rather than 401.");
+        } else if (expiredByExp && !expiredByTokenExpireAt) {
+            LOG.info("ccpExpiredToken is expired by exp but its tokenExpireAt claim is still in the"
+                    + " future. APIs will reject it, but the web app may keep the session alive.");
+        }
         return token;
+    }
+
+    /**
+     * The {@code tokenExpireAt} claim as epoch seconds, or 0 when absent or unparseable.
+     *
+     * <p>A JSW-specific claim in {@code yyyy/MM/dd HH:mm:ss} form rather than an epoch, and it is
+     * what the web app enforces - so it cannot be ignored in favour of the standard {@code exp}.
+     * Parsed as UTC: the claim carries no zone, and treating it as local time would shift the
+     * verdict by the agent's offset, which is how a token flips between "expired" and "valid"
+     * depending on which machine runs the suite.
+     */
+    static long readTokenExpireAt(String jwt) {
+        JSONObject claims = readClaims(jwt);
+        if (!claims.has("tokenExpireAt")) {
+            return 0;
+        }
+        try {
+            return java.time.LocalDateTime
+                    .parse(claims.getString("tokenExpireAt").trim(),
+                           java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
+                    .toEpochSecond(java.time.ZoneOffset.UTC);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     /**
@@ -296,7 +354,7 @@ public class Token extends BaseApiImpl {
      * Reads the {@code exp} claim so the cache knows when to refresh. Returns 0 when the claim
      * cannot be read, which makes the next call log in again rather than reuse a stale token.
      */
-    private static long readExpiry(String jwt) {
+    static long readExpiry(String jwt) {
         JSONObject claims = readClaims(jwt);
         try {
             return claims.has("exp") ? claims.getLong("exp") : 0;
@@ -306,7 +364,7 @@ public class Token extends BaseApiImpl {
     }
 
     /** A JWT's payload claims, or an empty object when the token cannot be decoded. */
-    private static JSONObject readClaims(String jwt) {
+    static JSONObject readClaims(String jwt) {
         try {
             String[] parts = jwt.split("\\.");
             if (parts.length < 2) {
@@ -338,6 +396,10 @@ public class Token extends BaseApiImpl {
         long exp = readExpiry(token);
         long nowSeconds = System.currentTimeMillis() / 1000;
 
+        /* Runs BEFORE getExpiredCcpToken's expiry guard throws, which is the whole point: the
+         * failing case is when you most need to see which token was used. The raw value is
+         * printed under tokenTrace.showFullToken so this class and TokenTrace cannot disagree
+         * about whether tokens are disclosed. */
         StringBuilder report = new StringBuilder("ccpExpiredToken in use:")
                 .append("\n  source        : ").append(resolvedSourceOf("ccpExpiredToken"))
                 .append("\n  fingerprint   : ").append(fingerprintOf(token))
@@ -397,7 +459,7 @@ public class Token extends BaseApiImpl {
     }
 
     /** Short, non-reversible identifier so two runs' tokens can be compared without logging either. */
-    private static String fingerprintOf(String token) {
+    static String fingerprintOf(String token) {
         if (token == null || token.isBlank()) {
             return "<empty>";
         }

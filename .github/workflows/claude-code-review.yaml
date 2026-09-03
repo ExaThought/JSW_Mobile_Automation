@@ -4,12 +4,14 @@ name: Claude Code Review
 # tracked-progress comment on the PR.
 #
 # Triggers
-#   - a PR is opened (non-draft) or marked ready for review  -> automatic
-#   - someone comments "/claude-review" on the PR            -> re-run on demand
+#   - a PR is opened (non-draft), marked ready for review, or reopened  -> automatic
+#   - every push to the PR branch (`synchronize`)                       -> automatic
+#   - someone comments "/claude-review" on the PR                       -> re-run on demand
 #
-# `synchronize` is deliberately NOT in the trigger list: it fires on every push to the branch,
-# which re-reviews the whole diff each time a reviewer asks for a small change. Add it below if
-# you want that, but expect the token spend to scale with pushes rather than with PRs.
+# `synchronize` fires on EVERY push to the branch, so token spend scales with pushes rather than
+# with pull requests. That is the deliberate trade for always reviewing the current diff instead
+# of the one the PR happened to open with. The concurrency block below is what keeps the cost
+# sane: a new push cancels the review still running against the older commit.
 #
 # Required repository secret: CLAUDE_CODE_OAUTH_TOKEN
 #   Settings -> Secrets and variables -> Actions -> New repository secret.
@@ -19,22 +21,40 @@ name: Claude Code Review
 
 on:
   pull_request:
-    types: [opened, ready_for_review, reopened]
+    types: [opened, ready_for_review, reopened, synchronize]
   issue_comment:
     types: [created]
 
-# One review at a time per PR. A re-run request supersedes an in-flight review rather than
-# racing it and posting two comments. Note this is only about repeated /claude-review comments
-# and a reopen: `synchronize` is not a trigger (see above), so pushes do not start a review and
-# therefore never cancel one.
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
+# Concurrency is deliberately NOT declared here at workflow level - see the job below.
+#
+# It used to be, and that is what killed the review on PR #98 four seconds in:
+#   "Canceling since a higher priority waiting request for claude-review-98 exists"
+# A workflow-level group is entered by EVERY run the triggers create, before any `if` is
+# evaluated. issue_comment fires on every comment in the repo, so an ordinary comment posted
+# moments after the PR opened joined the same group and cancelled the review that was running.
+#
+# Moving it to the job means a comment that is not /claude-review is skipped by the job's `if`
+# and never joins the group at all, so it cannot cancel anything.
 
 jobs:
   review:
     name: Review pull request
     runs-on: ubuntu-latest
+
+    # One review at a time per PR, and only a NEW PUSH may cancel one in flight.
+    #
+    # cancel-in-progress is an expression, not a flag, and it is evaluated for the INCOMING run:
+    #   pull_request (a push)  -> true  -> supersedes the review of the older commit, which is
+    #                                      what makes `synchronize` affordable. Push three
+    #                                      commits and you get one review of the final state.
+    #   issue_comment          -> false -> a /claude-review request WAITS for the running review
+    #                                      to finish instead of killing it.
+    #
+    # Because this sits on the job rather than the workflow, a comment that fails the `if` below
+    # never reaches here, so ordinary PR discussion has no effect on a running review at all.
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     # 30, not 20: a review killed by the timeout still leaves the tracked-progress comment on the
     # PR, and a half-finished review reads exactly like a clean one - no findings, no indication
     # it was cut short. The OUTPUT rules ask for the most severe findings first so that a run
