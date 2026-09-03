@@ -79,6 +79,14 @@ pipeline {
                          'required when ENV=prod; it is also safe to run against qa or preprod.'
         )
         string(
+            name: 'GRID_URL',
+            defaultValue: '',
+            description: 'Remote Selenium Grid, e.g. http://selenium-grid.internal:4444. Leave ' +
+                         'blank to use the grid Sauron starts on the agent - which sizes its ' +
+                         'session slots from the CPU count, so a 2-CPU agent cannot serve the 5 ' +
+                         'concurrent sessions testng_bdd.xml asks for. See docker-compose.grid.yml.'
+        )
+        string(
             name: 'RECIPIENTS',
             defaultValue: 'ritika.jaggi@jsw.in,v_akash.garg@jsw.in, piyush.dwivedi@jsw.in',
             description: 'Comma-separated Outlook recipients for the summary email.'
@@ -246,6 +254,97 @@ pipeline {
                         }
                         echo "PRODUCTION RUN - read-only @productionSanity suite against www.jswonemsme.com"
                     }
+                }
+
+                /* ---------------------------------------------------------------------
+                 * Browser pre-flight. Deliberately OUTSIDE the catchError below, so a missing
+                 * or unusable browser fails the build here with a readable message instead of
+                 * producing several hundred identical scenario failures.
+                 *
+                 * Why this is needed: sessions.yaml is `local: true`, so Sauron starts a grid
+                 * on this agent and drives a real Chrome. The agent is `agent any` and nothing
+                 * pins Chrome to it. When Chrome is absent, every session fails to start and
+                 * every scenario reports Sauron's screenshot-listener artifact - "Driver not
+                 * initialized. Is @WebTest/@MobileTest missing on class/method?" - which names
+                 * neither Chrome nor the agent. The only other complaint the pipeline made was
+                 * a warning in the reporting stage, long after the suite had already gone red.
+                 *
+                 * The leftovers below matter for the same reason: Selenium Grid's ZeroMQ event
+                 * bus is FIXED on 4442/4443, so a selenium-server orphaned by an earlier build
+                 * keeps advertising there, registers with this run's hub, and gets sessions
+                 * routed to it - a dead node. `cleanup` removes profiles/ and sauronFiles/ at
+                 * the END of a build, which does nothing for a build that was killed or for a
+                 * process that outlived its workspace. Clear both before starting.
+                 * --------------------------------------------------------------------- */
+                withEnv(["GRID_URL=${params.GRID_URL}"]) {
+                sh '''
+                    set -e
+
+                    if [ -n "$GRID_URL" ]; then
+                        echo "Remote grid: $GRID_URL"
+                        STATUS=$(curl -sS --max-time 15 "$GRID_URL/status" || true)
+                        if [ -z "$STATUS" ]; then
+                            echo "FATAL: no answer from $GRID_URL/status - grid unreachable from agent $(hostname)."
+                            exit 1
+                        fi
+                        echo "$STATUS" | head -c 2000; echo
+                        echo "$STATUS" | grep -q '"ready": *true' || {
+                            echo "FATAL: grid at $GRID_URL reports ready=false - no node has registered yet."
+                            exit 1
+                        }
+                        # Slots must cover the suite's thread-count or the surplus sessions fail
+                        # exactly as they do on a 2-CPU local grid. selenium/standalone-chrome
+                        # needs SE_NODE_MAX_SESSIONS *and* SE_NODE_OVERRIDE_MAX_SESSIONS=true;
+                        # without the override it derives slots from CPU count all over again.
+                        SLOTS=$(echo "$STATUS" | grep -o '"maxSessions": *[0-9]*' | grep -o '[0-9]*' | paste -sd+ - | bc 2>/dev/null || echo 0)
+                        echo "Grid session slots: $SLOTS"
+                        if [ "${SLOTS:-0}" -lt 5 ]; then
+                            echo "WARNING: grid advertises $SLOTS slot(s) but the suite runs 5 tests in parallel."
+                            echo "  Set SE_NODE_MAX_SESSIONS=5 AND SE_NODE_OVERRIDE_MAX_SESSIONS=true on the node,"
+                            echo "  and give the grid host >=5 cores - slots without cores just turn session"
+                            echo "  failures into step timeouts."
+                        fi
+                        rm -rf profiles/ sauronFiles/ || true
+                        exit 0
+                    fi
+
+                    echo "No GRID_URL - falling back to the local grid Sauron starts on this agent."
+
+                    CHROME=""
+                    for c in google-chrome google-chrome-stable chromium chromium-browser; do
+                        command -v "$c" >/dev/null 2>&1 && CHROME="$c" && break
+                    done
+                    if [ -z "$CHROME" ]; then
+                        echo "FATAL: no Chrome/Chromium on PATH on agent $(hostname)."
+                        echo "  sessions.yaml declares a LOCAL grid, so the tests drive a browser"
+                        echo "  installed on this agent. Without it every scenario fails at session"
+                        echo "  start and the report blames a missing @WebTest annotation instead."
+                        echo "  Install Chrome on the agent, or pin this job to one that has it."
+                        exit 1
+                    fi
+                    echo "Browser: $CHROME - $("$CHROME" --version 2>&1)"
+
+                    # Concurrent sessions the suite will ask for vs. what this agent can serve.
+                    # Selenium Grid sizes a local node's session slots from the CPU count, so an
+                    # agent with fewer cores than the suite's thread-count cannot start every
+                    # session and the surplus fails - which looks exactly like "no browser".
+                    CPUS=$(nproc 2>/dev/null || echo "?")
+                    echo "Agent CPUs: $CPUS (suite thread-count is set in the TestNG suite file)"
+
+                    # Orphaned grids from an earlier build, and the ports they squat on.
+                    if pgrep -fa "selenium-server" >/dev/null 2>&1; then
+                        echo "WARNING: selenium-server processes predate this build - terminating:"
+                        pgrep -fa "selenium-server" || true
+                        pkill -f "selenium-server" || true
+                        sleep 2
+                    fi
+                    (ss -lntp 2>/dev/null || netstat -lntp 2>/dev/null || true) \
+                        | grep -E ":(4442|4443)\\b" \
+                        && echo "WARNING: 4442/4443 still bound - a stale Grid event bus can hijack this run's sessions" \
+                        || echo "Grid event bus ports 4442/4443 are free"
+
+                    rm -rf profiles/ sauronFiles/ || true
+                '''
                 }
 
                 /* catchError, not a bare failure: a red suite must still produce the report and

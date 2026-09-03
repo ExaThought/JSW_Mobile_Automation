@@ -136,15 +136,16 @@ public  class SessionSteps extends AbstractWebPage {
                // ccpLogOut();
             }
         }  catch (Exception e) {
-            // Do NOT re-wrap something awaitDriverReady() has already diagnosed. It throws from
-            // inside this try, so the old unconditional wrap printed the whole diagnosis paragraph
-            // twice for every failure.
+            // Already diagnosed AND already recorded by awaitDriverReady(), which throws from
+            // inside this try. Re-wrapping printed the whole diagnosis paragraph twice.
             if (e instanceof IllegalStateException
                     && String.valueOf(e.getMessage()).startsWith(DIAGNOSIS_PREFIX)) {
                 throw (IllegalStateException) e;
             }
-            log.log(Level.SEVERE, "Could not start the CCP browser session: " + e, e);
-            throw new IllegalStateException(diagnose(e), e);
+            String diagnosis = diagnose(e);
+            recordSessionStartFailure(diagnosis);
+            log.log(Level.SEVERE, diagnosis, e);
+            throw new IllegalStateException(diagnosis, e);
         }
         log.exiting();
     }
@@ -164,20 +165,44 @@ public  class SessionSteps extends AbstractWebPage {
      */
     private static final int SESSION_READY_ATTEMPTS = 8;
     private static final long SESSION_READY_POLL_MILLIS = 125;
+    private static volatile String gridFailure;
 
     /**
-     * Set the first time the grid proves unusable. Later scenarios then fail in microseconds with a
-     * pointer to the first failure, instead of each re-polling and re-printing the full diagnosis -
-     * a 125-scenario suite used to emit the same paragraph 125 times.
+     * The session-start failure for the scenario running on THIS thread, read back by
+     * {@code Hooks.reportSessionStartFailure} so the real cause reaches the Allure report rather
+     * than only the console.
+     *
+     * <p>Thread-local, not static: testng_bdd.xml runs at thread-count 5, so a shared field would
+     * let one block's failure be reported against another block's scenario. That is the opposite of
+     * {@link #gridFailure}, which is deliberately suite-wide because a grid that never started
+     * dooms every thread equally.
      */
-    private static volatile String gridFailure;
+    private static final ThreadLocal<String> SESSION_START_FAILURE = new ThreadLocal<>();
+
+    /** Records the text that should appear in the report for this scenario's session failure. */
+    private static void recordSessionStartFailure(String failure) {
+        SESSION_START_FAILURE.set(failure);
+    }
+
+    /**
+     * The session-start failure recorded on this thread, or null. Clears it, so a later scenario
+     * that started its browser fine is not annotated with an earlier scenario's failure.
+     */
+    public static String consumeSessionStartFailure() {
+        String failure = SESSION_START_FAILURE.get();
+        SESSION_START_FAILURE.remove();
+        return failure;
+    }
 
     private void awaitDriverReady() {
         if (gridFailure != null) {
-            throw new IllegalStateException("Skipping the browser start: the Selenium grid already"
-                    + " failed earlier in this run, so no scenario in it can obtain a session."
-                    + " Fix the first failure and the rest go with it. First failure was: "
-                    + gridFailure);
+            String skipped = "Skipping the browser start: the Selenium grid already failed earlier"
+                    + " in this run, so no scenario in it can obtain a session. Fix the first"
+                    + " failure and the rest go with it. First failure was: " + gridFailure;
+            // Recorded as well as thrown - otherwise every scenario after the first shows the
+            // bare "Driver not initialized" message in the report with no pointer to the cause.
+            recordSessionStartFailure(skipped);
+            throw new IllegalStateException(skipped);
         }
 
         IllegalStateException last = null;
@@ -195,6 +220,9 @@ public  class SessionSteps extends AbstractWebPage {
         }
 
         String diagnosis = diagnose(last);
+        // Both, and they are not redundant: SESSION_START_FAILURE carries the full diagnosis into
+        // THIS scenario's report, gridFailure short-circuits every later scenario in the run.
+        recordSessionStartFailure(diagnosis);
         gridFailure = String.valueOf(last);
         log.log(Level.SEVERE, "No usable browser session after "
                 + (SESSION_READY_ATTEMPTS * SESSION_READY_POLL_MILLIS) + "ms. " + diagnosis, last);

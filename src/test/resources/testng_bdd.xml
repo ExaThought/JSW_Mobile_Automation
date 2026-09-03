@@ -16,15 +16,24 @@
           belonging to other scenarios; after the fix every scenario reports its own three and no
           foreign ones.
 
-       2. STILL LIVE - the account behind each block. TestGroupContext is ThreadLocal, and every
-          active block below now has its OWN test.group, so no two blocks share a group. But a
-          group is only as isolated as the credential it resolves to, and in
-          global_qa.properties login.user.* and profile.user.* are both testautomation01@yopmail.com
-          (tokencheck.user.* too, though that block is commented out). Login and Profile can
-          therefore run concurrently as the SAME customer, which is exactly the cart/profile
-          corruption the user pool exists to prevent. Give profile its own account before
-          trusting a parallel run of those two, and keep new blocks on a credential no other
-          concurrent block uses.
+       2. THE STANDING RULE - two blocks that can run at the same time may not share an account.
+          CCP logout is SERVER-SIDE and Hooks.afterScenario clicks Log out after EVERY scenario,
+          so a second block signed in as the same customer loses its session mid-scenario. The
+          symptom is a scatter of "session expired" failures that read as product bugs.
+
+          TestGroupContext is ThreadLocal and every active block below has its own test.group, but
+          a group is only as isolated as the credential it resolves to. On qa each active block
+          now resolves to a distinct account: Login is testautomation01 (via account.login.*,
+          which is what its features actually drive - they never call "ccp login with configured
+          user"), and Homepage/Cart/PDP_PLP/SF_SLC_SLO/Profile are on their own jswtest.in
+          accounts. tokencheck.user.* is still testautomation01, which is why the TokenCheck block
+          below must stay commented out until it has an account of its own.
+
+          NOT TRUE OF PREPROD. This suite pins no environment, so -Denv=preprod runs it at the
+          same thread-count, and in global_preprod.properties testautomation01@yopmail.com still
+          backs login, cart, homepage, orders and pdpplp - five active blocks on one customer.
+          Give preprod its own per-group accounts, or run it serially, before pointing this suite
+          at it.
      =========================================================================================== -->
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="5"
        data-provider-thread-count="1" annotations="JDK">

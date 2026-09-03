@@ -1,0 +1,61 @@
+# Selenium Grid for parallel UI runs.
+#
+# WHY THIS EXISTS
+# ---------------
+# sessions.yaml declares `local: true`, so Sauron starts a grid on the Jenkins agent itself.
+# Selenium sizes a node's session slots from the CPU count, and the agent has 2 CPUs - so it
+# serves 2 concurrent sessions while testng_bdd.xml asks for 5. The surplus sessions never
+# start, and because Sauron's ScreenshotBddListener then throws on the missing driver, every
+# scenario reports "Driver not initialized. Is @WebTest/@MobileTest missing on class/method?"
+# instead of the real cause.
+#
+# SE_NODE_OVERRIDE_MAX_SESSIONS IS THE POINT
+# ------------------------------------------
+# The container derives its slots from CPU count exactly like the local grid does. Without the
+# override below, running this on a 2-CPU host reproduces the same 2-slot ceiling and nothing is
+# fixed. The override is what lets one node hold 5 sessions.
+#
+# ...WHICH IS NOT A LICENCE TO RUN IT ON THE 2-CPU AGENT
+# ------------------------------------------------------
+# Slots are bookkeeping; cores are not. Five headless Chromes on 2 vCPUs will thrash, and the
+# failure mode changes from "session not created" to step timeouts - which read as flaky product
+# bugs and cost more time than they save. Budget roughly one core and ~1GB of RAM per concurrent
+# session: 5 sessions wants a host with >=5 cores and >=8GB. Run this on a dedicated grid host
+# and point GRID_URL at it. Putting it on the build agent moves the bottleneck rather than
+# removing it.
+#
+# USAGE
+#   docker compose -f docker-compose.grid.yml up -d
+#   curl -s http://<grid-host>:4444/status | jq '.value.ready, .value.nodes[].maxSessions'
+#
+# The Jenkins job's GRID_URL parameter takes http://<grid-host>:4444 and pre-flights it before
+# the suite runs.
+
+services:
+  chrome:
+    image: selenium/standalone-chrome:4.27.0
+    container_name: msme-utaf-grid
+    ports:
+      - "4444:4444"   # WebDriver endpoint + /status
+      - "7900:7900"   # noVNC, for watching a session live while debugging
+    environment:
+      # Slots. Both are required - MAX_SESSIONS alone is ignored without the override.
+      SE_NODE_MAX_SESSIONS: "5"
+      SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
+      # A session that outlives the suite holds a slot forever; reclaim it.
+      SE_NODE_SESSION_TIMEOUT: "300"
+      # Queue rather than reject when all five slots are busy, so a sixth request from a retry
+      # stage waits instead of failing the scenario.
+      SE_SESSION_REQUEST_TIMEOUT: "300"
+      SE_ENABLE_TRACING: "false"
+      SCREEN_WIDTH: "1920"
+      SCREEN_HEIGHT: "1080"
+    # Chrome crashes in containers with the default 64MB /dev/shm. --disable-dev-shm-usage is
+    # already passed in JSWCapabilitiesBuilder, but a real shm is faster and less fragile.
+    shm_size: 2gb
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/opt/bin/check-grid.sh", "--host", "0.0.0.0", "--port", "4444"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
