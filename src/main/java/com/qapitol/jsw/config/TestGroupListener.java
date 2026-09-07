@@ -1,12 +1,26 @@
 package com.qapitol.jsw.config;
 
+import org.testng.ISuite;
+import org.testng.ISuiteListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
-public class TestGroupListener implements ITestListener {
+public class TestGroupListener implements ITestListener, ISuiteListener {
 
     private static final String PROJECT_PACKAGE = "com.qapitol.jsw";
+
+    /**
+     * Fires once, on the main thread, before any {@code <test>} block starts.
+     *
+     * <p>ISuiteListener rather than ITestListener deliberately: {@code ITestListener.onStart} runs
+     * once per {@code <test>}, and with {@code parallel="tests"} those run concurrently - too late
+     * and too racy to install a guard that exists to prevent a race.
+     */
+    @Override
+    public void onStart(ISuite suite) {
+        GridInstanceListGuard.apply();
+    }
 
     /**
      * Prints where a failure originated inside project code. TestNG's default console output

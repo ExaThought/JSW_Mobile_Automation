@@ -15,7 +15,6 @@ import io.qameta.allure.Allure;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
@@ -151,7 +150,9 @@ public class CartSteps extends AbstractWebPage {
     static String cartValue;
     static String cartPdpProductName;
     public ScenarioContext context;
-    Actions actions = new Actions(Grid.driver());
+    /* No shared `actions` field: it was unused, and it called Grid.driver() at construction time,
+     * which binds it to the session current when Cucumber built this glue instance. Build Actions
+     * inside the method that needs it (or call CustomUtil.hoverOverElement). */
 
     public CartSteps(ScenarioContext context) {
         this.context = context;

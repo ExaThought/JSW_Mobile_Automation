@@ -606,12 +606,42 @@ YAML
                      * derived from allure-results. It is carried in currentBuild.description,
                      * which needs no plugin and survives workspace cleanup.
                      * --------------------------------------------------------------------- */
+                    /* One node call for every number the build list needs, pipe-joined - the same
+                     * technique the mail stage below uses, rather than six process spawns to
+                     * assemble one line of text.
+                     *
+                     * BROKEN IS REPORTED SEPARATELY ON PURPOSE. Allure's `failed` means an
+                     * assertion returned the wrong answer; `broken` means the scenario threw. This
+                     * suite produces far more broken than failed - build #243 was 36 broken - so a
+                     * description showing only "passed / failed" reads as a near-clean run when it
+                     * was not. summarize-allure.js takes the same view: its verdict is
+                     * `failed + broken === 0`, not `failed === 0`.
+                     *
+                     * `total` is the DEDUPLICATED scenario count: a scenario that was retried is
+                     * counted once, at its best outcome, and skipped scenarios are included. So
+                     * total is "scenarios in the run", and passRate is passed/total, which means
+                     * skips count against it. */
+                    def totalsLine = ''
                     def passRate = ''
                     if (fileExists("${env.SUMMARY_BASE}.json")) {
-                        passRate = sh(
+                        def raw = sh(
                             returnStdout: true,
-                            script: """node -e "console.log(require('./${env.SUMMARY_BASE}.json').totals.passRate)" """
+                            script: """node -e "const t=require('./${env.SUMMARY_BASE}.json').totals;console.log([t.total,t.passed,t.failed,t.broken,t.skipped,t.passRate].join('|'))" """
                         ).trim()
+                        def n = raw.split(/\|/)
+                        if (n.length == 6) {
+                            totalsLine = "${n[0]} total, ${n[1]} passed, ${n[2]} failed, ${n[3]} broken, ${n[4]} skipped"
+                            passRate = n[5]
+                        } else {
+                            /* Shape drift in our own summariser. Fall back to the pass rate alone so
+                             * the same-env trend below keeps working - losing it would silently
+                             * break the "improvement from last run" line in the mail. */
+                            echo "run-summary.json totals had ${n.length} fields, expected 6 - falling back to passRate only"
+                            passRate = sh(
+                                returnStdout: true,
+                                script: """node -e "console.log(require('./${env.SUMMARY_BASE}.json').totals.passRate)" """
+                            ).trim()
+                        }
                     }
 
                     /* The most recent build ON THIS ENV, which is not always the preceding build.
@@ -676,10 +706,19 @@ YAML
                             > target/email-body.html
                     """
 
-                    // Appended, not assigned: Checkout already put the tag filter here and that
-                    // is what makes the build list readable.
+                    /* Appended, not assigned: Checkout already put env= and the tag filter here and
+                     * that is what makes the build list readable.
+                     *
+                     * passRate= stays LAST. The walker above reads it with
+                     * indexOf('passRate=') + substring, and although it then splits on the first
+                     * non-numeric character, keeping it last means the counts can never be
+                     * mistaken for the rate. Do not insert anything after it, and do not let any
+                     * added text contain the literal "env=" - the same walker takes the first
+                     * "env=" it finds as the build's environment. */
                     if (passRate) {
-                        currentBuild.description = "${currentBuild.description ?: ''} | passRate=${passRate}"
+                        currentBuild.description = "${currentBuild.description ?: ''}"
+                                + (totalsLine ? " | ${totalsLine}" : '')
+                                + " | passRate=${passRate}"
                     }
                 }
             }

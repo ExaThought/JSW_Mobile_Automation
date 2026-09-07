@@ -13,7 +13,6 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
 
 
 import java.time.Duration;
@@ -41,7 +40,11 @@ public class GuestUserSteps extends AbstractWebPage {
 
     String pageName;
 
-    WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(30));
+    /* No shared `wait` field. It called Grid.driver() at construction time, which binds the wait to
+     * whichever session was current when Cucumber built this glue instance - so after a session
+     * switch it would still drive the old session's driver, and if the field initialiser ran before
+     * any session existed Grid.driver() throws rather than returning null. Every wait below is
+     * built inside the method that uses it, so it resolves the calling thread's current driver. */
     HomepageBlogSteps homepageBlogSteps = new HomepageBlogSteps();
 
     /**
