@@ -154,7 +154,11 @@ pipeline {
                     ])
 
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${params.ENV} ${params.BRANCH_NAME}"
-                    currentBuild.description = params.TAGS ?: 'suite defaults'
+                    /* env= is machine-read, not decoration: the mail stage walks back through
+                     * previous builds looking for this token so the trend only ever compares a run
+                     * against another run on the SAME environment. Keep it first and keep the
+                     * "env=<value>" spelling. */
+                    currentBuild.description = "env=${params.ENV} | ${params.TAGS ?: 'suite defaults'}"
                 }
             }
         }
@@ -175,10 +179,28 @@ pipeline {
                  *
                  * Absent on a first build or after a workspace wipe; ci/email-body.js degrades to
                  * "comparison not available" rather than failing. */
+                /* FILED UNDER THE ENV THAT WROTE IT, not the env being built now.
+                 *
+                 * One job runs qa, pre-prod and prod out of the same workspace, so the summary
+                 * still on disk belongs to whichever env ran last. A single
+                 * .previous-run-summary.json therefore handed a prod build the qa run to compare
+                 * against - a 7-scenario read-only suite against a 200-scenario regression, which
+                 * labels every prod failure NEW and reports every qa scenario as fixed.
+                 *
+                 * The env is read out of the file itself (summarize-allure.js writes it) rather
+                 * than taken from params.ENV, which would mislabel a leftover qa summary as prod.
+                 * sed, not node: this runs before the tool check, and the mail stage is where a
+                 * missing node is diagnosed. */
                 sh '''
                     if [ -f target/run-summary.json ]; then
-                        cp target/run-summary.json .previous-run-summary.json
-                        echo "Preserved the previous run summary for the new-vs-recurring comparison"
+                        LAST_ENV=$(sed -n 's/.*"env"[[:space:]]*:[[:space:]]*"\\([^"]*\\)".*/\\1/p' \
+                                   target/run-summary.json | head -1)
+                        if [ -n "$LAST_ENV" ]; then
+                            cp target/run-summary.json ".previous-run-summary-$LAST_ENV.json"
+                            echo "Preserved the previous $LAST_ENV run summary as .previous-run-summary-$LAST_ENV.json"
+                        else
+                            echo "Leftover run-summary.json records no env - not preserved, as it cannot be attributed to one"
+                        fi
                     else
                         echo "No previous run summary in this workspace - first build here, or it was cleaned"
                     fi
@@ -383,6 +405,35 @@ YAML
                         echo "Agent has $CPUS CPU(s) for thread-count=$AUTHORED - every thread gets a slot."
                     fi
 
+                    # Force headless regardless of what is committed.
+                    #
+                    # A Jenkins agent has no display, so a headed Chrome does not start and every
+                    # scenario fails at session start - reported as "Driver not initialized. Is
+                    # @WebTest/@MobileTest missing on class/method?", which names neither the
+                    # browser nor the display. Developers legitimately set browserRunHeadless:
+                    # false to watch a local run, and that value reaching CI must not be able to
+                    # break the build. The GRID_URL branch above already writes its own
+                    # sessions.yaml with headless true; this is the same guarantee for the
+                    # local-grid branch.
+                    if grep -q 'browserRunHeadless: *false' src/test/resources/sessions.yaml; then
+                        sed -i 's/browserRunHeadless: *false/browserRunHeadless: true/' \
+                            src/test/resources/sessions.yaml
+                        echo "sessions.yaml had browserRunHeadless: false - forced to true for this agent (no display)."
+                    fi
+
+                    # sessions.yaml must be a YAML LIST. A bare mapping parses as a Map, Sauron
+                    # loads no sessions, and Grid.getTestSession() returns null - at which point
+                    # AbstractPage's locale supplier NPEs inside getLocator, so every scenario dies
+                    # with a bare NullPointerException pointing at a locator. Cheap to check, and
+                    # it turns a 20-minute mystery into one line.
+                    if ! grep -q '^- name:' src/test/resources/sessions.yaml; then
+                        echo "FATAL: src/test/resources/sessions.yaml is not a YAML list."
+                        echo "  Expected a '- name: \\"ccp\\"' entry with its keys indented beneath it."
+                        echo "  As written, Sauron loads zero sessions and every scenario fails with"
+                        echo "  a bare NullPointerException from getLocator."
+                        exit 1
+                    fi
+
                     CHROME=""
                     for c in google-chrome google-chrome-stable chromium chromium-browser; do
                         command -v "$c" >/dev/null 2>&1 && CHROME="$c" && break
@@ -560,28 +611,65 @@ YAML
                         ).trim()
                     }
 
-                    // Only the immediately preceding build - "improvement from last run" means
-                    // exactly that. String ops rather than a regex Matcher, which is not
-                    // serializable across pipeline steps.
+                    /* The most recent build ON THIS ENV, which is not always the preceding build.
+                     *
+                     * This used to read currentBuild.previousBuild only. In a job that runs qa,
+                     * pre-prod and prod, that makes "improvement from last run" a comparison
+                     * between two different suites on two different environments: a prod sanity
+                     * build following a qa regression reported a pass-rate swing of tens of points
+                     * that was nothing but the change of suite.
+                     *
+                     * So walk back to the newest build carrying env=<this env>, and hand its env to
+                     * the mail alongside the rate so the two cannot be separated later. The bound
+                     * keeps this cheap on a job with thousands of builds; if no same-env build is
+                     * found within it, the trend is simply absent, which is honest.
+                     *
+                     * String ops rather than a regex Matcher, which is not serializable across
+                     * pipeline steps. */
                     def previousPassRate = ''
-                    def previousDescription = currentBuild.previousBuild?.description ?: ''
-                    if (previousDescription.contains('passRate=')) {
-                        previousPassRate = previousDescription
-                            .substring(previousDescription.indexOf('passRate=') + 'passRate='.length())
-                            .split(/[^0-9.]/)[0]
+                    def previousRateEnv = ''
+                    def probe = currentBuild.previousBuild
+                    int hops = 0
+                    while (probe != null && hops < 40) {
+                        String d = probe.description ?: ''
+                        String probeEnv = ''
+                        if (d.contains('env=')) {
+                            probeEnv = d.substring(d.indexOf('env=') + 'env='.length())
+                                .split(/[^A-Za-z0-9_-]/)[0]
+                        }
+                        if (probeEnv == params.ENV && d.contains('passRate=')) {
+                            previousPassRate = d
+                                .substring(d.indexOf('passRate=') + 'passRate='.length())
+                                .split(/[^0-9.]/)[0]
+                            previousRateEnv = probeEnv
+                            echo "Trend baseline: build #${probe.number} (env=${probeEnv}, passRate=${previousPassRate})"
+                            break
+                        }
+                        probe = probe.previousBuild
+                        hops++
+                    }
+                    if (!previousPassRate) {
+                        echo "No previous ${params.ENV} build found within ${hops} builds - the mail will say the trend is not available"
                     }
 
-                    // --jira-url is deliberately not passed; the body carries no ticket link.
-                    // --previous-summary is the file preserved at the top of the Test stage.
+                    /* --jira-url is deliberately not passed; the body carries no ticket link.
+                     *
+                     * --previous-summary names the ENV-SCOPED file preserved at the top of the Test
+                     * stage, so a prod build can only ever be compared with the last prod run.
+                     * --previous-env travels with --previous-pass-rate: the rate is a bare number,
+                     * and email-body.js drops it if the env does not match rather than trusting the
+                     * caller. Both guards are in place because the mail is the artefact people act
+                     * on, and a cross-env trend reads as a regression that never happened. */
                     sh """
                         node ci/email-body.js \
                             --summary ${env.SUMMARY_BASE}.json \
-                            --previous-summary .previous-run-summary.json \
+                            --previous-summary .previous-run-summary-${params.ENV}.json \
                             --job "${env.JOB_NAME}" \
                             --build ${env.BUILD_NUMBER} \
                             --env ${params.ENV} \
                             --jenkins-url ${env.BUILD_URL} \
                             ${previousPassRate ? "--previous-pass-rate ${previousPassRate}" : ''} \
+                            ${previousRateEnv ? "--previous-env ${previousRateEnv}" : ''} \
                             > target/email-body.html
                     """
 

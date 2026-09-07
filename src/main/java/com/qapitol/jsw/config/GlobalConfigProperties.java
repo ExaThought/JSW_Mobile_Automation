@@ -29,8 +29,37 @@ public class GlobalConfigProperties extends AbstractConfigInitializer {
 
     private static final String COMMON_PROPERTIES = "global_common.properties";
 
-    /** Any one of these missing means the env file did not load - fail fast rather than run with nulls. */
-    private static final String[] REQUIRED_KEYS = {"ccpUrl", "ccpPortalUrl", "omsBaseUrl", "middlewareUrl"};
+    /**
+     * Proves the env file actually loaded. Deliberately limited to keys EVERY environment must
+     * define, because that is all this check can honestly tell you: a missing one means the file
+     * did not land, not that some feature is unconfigured.
+     */
+    private static final String[] REQUIRED_KEYS = {"ccpUrl", "ccpPortalUrl", "middlewareUrl"};
+
+    /**
+     * Additionally required wherever the suite can reach ERP.
+     *
+     * <p>NOT required on prod, and that is deliberate rather than an oversight.
+     * global_prod.properties omits every order-creation and ERP endpoint so that a scenario which
+     * must never run against production dies on missing configuration instead of placing a real,
+     * invoiced order - one of the three barriers in front of that suite.
+     *
+     * <p>Demanding omsBaseUrl for every env made the production sanity suite unstartable: it threw
+     * from CoreListener.onStart, before a single scenario, with "Property 'omsBaseUrl' is missing
+     * after loading global_common.properties and global_prod.properties". None of its six @P0
+     * scenarios touches OMS - they are page loads, the 404 page, catalogue contents, search,
+     * sign-in and registration validation - so the check failed a run for lacking config it would
+     * never read.
+     *
+     * <p>middlewareUrl used to sit here for the same reason, but prod now configures it: the
+     * customer-profile API is a read-only GET of the signed-in customer's own profile, so unlike
+     * ERP it is safe against production. It is back in REQUIRED_KEYS above, which keeps the
+     * load-check as strong as it can honestly be.
+     */
+    private static final String[] ERP_REQUIRED_KEYS = {"omsBaseUrl"};
+
+    /** The one environment that deliberately ships without ERP and middleware endpoints. */
+    private static final String PROD_ENV = "prod";
 
     @Override
     public int getPriority() {
@@ -69,9 +98,11 @@ public class GlobalConfigProperties extends AbstractConfigInitializer {
                 + ", test data: data/" + env + "/)");
         System.out.println("    ccpUrl        = " + ConfigUtil.getSecretValue("ccpUrl"));
         System.out.println("    ccpPortalUrl  = " + ConfigUtil.getSecretValue("ccpPortalUrl"));
-        System.out.println("    omsBaseUrl    = " + ConfigUtil.getSecretValue("omsBaseUrl"));
-        System.out.println("    middlewareUrl = " + ConfigUtil.getSecretValue("middlewareUrl"));
-        System.out.println("    sfUrl         = " + ConfigUtil.getSecretValue("sfUrl"));
+        // "not configured" rather than a bare null: on prod these are absent by design, and a
+        // banner reading "omsBaseUrl = null" invites someone to helpfully fill it in.
+        System.out.println("    omsBaseUrl    = " + describe("omsBaseUrl"));
+        System.out.println("    middlewareUrl = " + describe("middlewareUrl"));
+        System.out.println("    sfUrl         = " + describe("sfUrl"));
 
         checkConfiguredTokenFreshness();
     }
@@ -104,13 +135,30 @@ public class GlobalConfigProperties extends AbstractConfigInitializer {
         Config.loadProperties(fileName);
     }
 
+    /** A property's value for the startup banner, or a note when it is deliberately unset. */
+    private static String describe(String key) {
+        String value = ConfigUtil.getSecretValue(key);
+        return (value == null || value.trim().isEmpty())
+                ? "(not configured for this env)"
+                : value;
+    }
+
     /** Second guard: confirms the properties actually landed in Config, not just that a file existed. */
     private void verifyLoaded(String env, String envProperties) {
-        for (String key : REQUIRED_KEYS) {
+        requireAll(REQUIRED_KEYS, env, envProperties, "");
+        if (!PROD_ENV.equalsIgnoreCase(env)) {
+            requireAll(ERP_REQUIRED_KEYS, env, envProperties,
+                    " ERP endpoints are required on every environment except prod, which"
+                    + " deliberately ships without them.");
+        }
+    }
+
+    private void requireAll(String[] keys, String env, String envProperties, String extra) {
+        for (String key : keys) {
             if (!Config.checkPropertyExists(key)) {
                 throw new IllegalStateException("Property '" + key + "' is missing after loading "
                         + COMMON_PROPERTIES + " and " + envProperties + " for env '" + env + "'."
-                        + " Check that " + envProperties + " defines it.");
+                        + " Check that " + envProperties + " defines it." + extra);
             }
         }
     }

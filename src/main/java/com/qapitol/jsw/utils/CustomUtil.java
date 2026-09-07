@@ -135,7 +135,22 @@ public class CustomUtil {
      * @throws org.openqa.selenium.TimeoutException if no match becomes visible within 15 seconds
      */
     public static WebElement firstVisible(By locator) {
+        /* withMessage, because the condition is a lambda.
+         *
+         * WebDriverWait names the condition in its timeout text, and for a lambda that name is the
+         * JVM's synthetic class - "waiting for CustomUtil$$Lambda$1082/0x00000008007e1c40@4e9034cb".
+         * In the 3 Sep 2026 run that was 24 of 36 failure messages: the locator that actually timed
+         * out appeared nowhere in the report, so every one of them had to be traced by reading this
+         * source. isAnyVisible and clickFirstVisible both delegate here, so this one message covers
+         * all three call paths.
+         *
+         * The "matches may exist but be 0x0" wording is deliberate: that is the case this method
+         * exists for, and distinguishing "no element" from "no VISIBLE element" is usually the
+         * whole question. */
         return new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
+                .withMessage("no VISIBLE match for " + locator
+                        + " within 15s (matches may exist in the DOM but be 0x0 - the header, footer"
+                        + " and nav each render 2-4 copies of every item)")
                 .until(driver -> {
                     for (WebElement candidate : driver.findElements(locator)) {
                         try {

@@ -115,7 +115,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
         String value = orderNumber == null ? null : String.valueOf(orderNumber).trim();
 
         if (isBlank(value) || "null".equalsIgnoreCase(value)) {
-            log.info("Sales-opp response carried no orderNumber (expected for an SLC cart) -"
+            log.info("Sales-opp response carried no orderNumber (expected for an SLO cart) -"
                     + " leaving ccpOrderNumber unchanged.");
             return;
         }

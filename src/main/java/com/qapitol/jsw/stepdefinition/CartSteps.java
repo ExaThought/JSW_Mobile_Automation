@@ -1490,8 +1490,41 @@ public class CartSteps extends AbstractWebPage {
         jsClick(By.xpath(galvanizedSheetCategory));
     }
 
+    /**
+     * Opens the mild-steel mega-menu by hovering the copy of the nav item that is actually rendered.
+     *
+     * <p>This single method is the root cause of 27 of the 36 broken scenarios in the 3 Sep 2026
+     * run - 24 timing out here and 3 more where the Header feature asserts the same thing directly
+     * ("Mega-menu did not open: visible category links stayed at 17 after hovering").
+     *
+     * <p>The header renders every nav item two to four times and the FIRST copy has a zero-size
+     * box. The previous implementation called {@code waits(MILD_STEEL_CATEGORY)} then
+     * {@code hoverOverElement(MILD_STEEL_CATEGORY)}, and both resolve the first match - so the
+     * pointer was moved to an element with no bounding box, no {@code pointerenter} was
+     * dispatched, the panel never opened, and the caller's next line spent 15 seconds waiting for
+     * a sub-category that had never been rendered.
+     *
+     * <p>Two deliberate choices, both copied from {@code HomeHeaderSteps}:
+     * <ul>
+     *   <li>{@code firstVisible} rather than the locator alone, so the pointer lands on the
+     *       rendered node.</li>
+     *   <li>{@code Actions} inline rather than {@code CustomUtil.hoverOverElement}, because that
+     *       helper follows its move with a click - which navigates to the category page instead of
+     *       opening the panel, and the sub-category hover that follows then has nothing to aim at.</li>
+     * </ul>
+     *
+     * <p>{@code waits()} is gone rather than kept as a belt-and-braces guard: it swallows its own
+     * timeout in an empty catch, so it never contributed a diagnosis, and {@code firstVisible}
+     * already waits and throws.
+     */
     private void hoverOverMildSteelCategory() {
-        waits(MILD_STEEL_CATEGORY);
+        /* hoverOverElement is correct here and must stay: it resolves firstVisible(locator)
+         * internally, scrolls that node to centre, and moves the pointer WITHOUT clicking.
+         * (The clicking helper is moveToAction, which is a different method - the comment in
+         * HomeHeaderSteps conflates the two.)
+         *
+         * waits() is dropped: it swallows its own timeout in an empty catch, so it never
+         * contributed a diagnosis, and hoverOverElement's firstVisible already waits and throws. */
         hoverOverElement(MILD_STEEL_CATEGORY);
         log.info("cursor moved to mild steel category");
     }

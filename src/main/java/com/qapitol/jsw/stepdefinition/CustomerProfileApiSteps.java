@@ -5,6 +5,7 @@ import com.qapitol.jsw.apitest.pojos.order.customerProfile.CustomerProfileRespon
 import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.Token;
+import com.qapitol.jsw.utils.UserConfig;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
@@ -63,6 +64,40 @@ public class CustomerProfileApiSteps {
         softAssert.assertNotNull(customerProfile.getData(), "Customer profile response has no data node");
         softAssert.assertFalse(customerProfile.getData().isEmpty(), "Customer profile data node is empty");
         log.info("Customer profile: " + customerProfile);
+    }
+
+    /**
+     * Asserts the profile returned belongs to the account the call authenticated as.
+     *
+     * <p>Without this, a 200 with a populated data node passes even if the middleware hands back
+     * somebody else's profile - which is the failure that matters most on production, and the one
+     * a status-code check cannot see.
+     *
+     * <p>Compared against {@code UserConfig.getEmail()} rather than a literal, so the same
+     * scenario works on qa, preprod and prod: each resolves {@code <test.group>.user.email} from
+     * its own properties file, and that is the same credential {@code Token.getCCPToken()} used to
+     * make the request.
+     *
+     * <p>{@code email}, not {@code customerId}: the response's data node has no customerId key.
+     * Confirmed against qa on 3 Sep 2026 - the keys are id, sfAccountId, sfUserId,
+     * customerProxyId, gstIn, pan, firstName, lastName, phoneNumber, email.
+     */
+    @Then("the customer profile belongs to the signed-in account")
+    public void theCustomerProfileBelongsToTheSignedInAccount() {
+        if (customerProfile == null) {
+            customerProfile = ApiUtils.getCustomerProfile();
+        }
+        String expectedEmail = UserConfig.getEmail();
+        String actualEmail = customerProfile.getDataValueAsString("email");
+
+        softAssert.assertNotNull(actualEmail,
+                "Customer profile response carries no data.email, so it cannot be checked against"
+                        + " the signed-in account. Endpoint: " + ApiUtils.customerProfileEndpoint());
+        softAssert.assertEquals(actualEmail, expectedEmail,
+                "The customer profile API returned a profile for '" + actualEmail + "' but the"
+                        + " request was authenticated as '" + expectedEmail + "'. Endpoint: "
+                        + ApiUtils.customerProfileEndpoint());
+        log.info("Customer profile identity OK - profile belongs to " + actualEmail);
     }
 
     @Then("customer profile response should have {string} as {string}")
