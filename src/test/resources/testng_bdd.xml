@@ -2,7 +2,16 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
 <!-- ===========================================================================================
-     thread-count is 1: the <test> blocks below run one after another.
+     TWO INDEPENDENT PARALLELISM AXES. Read both before changing either.
+
+       thread-count="1"                 - how many <test> BLOCKS run at once. One, so the blocks
+                                          below run one after another. Covered by 1 and 2 below.
+       data-provider-thread-count="5"   - how many SCENARIOS run at once INSIDE one block. Five.
+                                          Covered by 3 below: shares one account per block, which
+                                          rule 2 forbids, but measured on qa and did not reproduce.
+
+     Setting thread-count to 1 does not make this suite serial. The two multiply: one block at a
+     time, five scenarios in flight within it.
 
      THIS IS A CAPACITY DECISION, NOT A CORRECTNESS ONE - and that is a change from before.
      The two things that used to make parallelism unsafe are both resolved (see 1 and 2 below),
@@ -24,8 +33,10 @@
      (docker-compose.grid.yml). The Test stage also caps thread-count to the agent's CPU count at
      build time, so an undersized agent degrades to a slower run rather than a false failure.
 
-     Two pieces of shared state used to make parallelism unsafe. Both are fixed; read them before
-     raising thread-count, because neither protects you if a new block reuses an account.
+     Two pieces of shared state used to make BLOCK parallelism unsafe. Both are fixed; read them
+     before raising thread-count, because neither protects you if a new block reuses an account.
+     Item 3 is the same account-sharing hazard on the OTHER axis - not fixed, but measured, and it
+     did not reproduce. Read 3 before trusting 2's stated mechanism; the run in 3 casts doubt on it.
 
        1. FIXED - assertion state. Hooks.softAssert was "public static SoftAssert", ONE instance
           for the whole JVM: @Before replaced it and @After called assertAll() on it, so with two
@@ -56,6 +67,61 @@
           backs login, cart, homepage, orders and pdpplp - five active blocks on one customer.
           Give preprod its own per-group accounts, or run it serially, before pointing this suite
           at it.
+
+       3. WITHIN-BLOCK ACCOUNT SHARING - the same sharing rule 2 forbids, one layer down. Measured
+          rather than reasoned about, and it did NOT reproduce. Kept at 5.
+
+          Why rule 2 does not cover this. Rule 2 is satisfied by giving each <test> BLOCK its own
+          account. This axis runs five scenarios of the SAME block concurrently, and they all
+          resolve the SAME credential: UserConfig.getEmail() reads the group from TestGroupContext
+          and maps it to one <group>.user.email. TestGroupContext being ThreadLocal does not help -
+          every thread in a block holds the same group, so it resolves the same account.
+          global_qa.properties defines exactly one email/password per group; there is no pool and no
+          per-thread variant, and sessions.yaml defines a single ccp session config.
+
+          The axis is live, not inert. Sauron's SauronCucumberTest.scenarios() carries
+          @DataProvider(parallel = true) - verified in the bytecode of cucumber-4.0.6-SNAPSHOT.jar,
+          where the plain cucumber-testng parent it overrides is NOT parallel. So this setting takes
+          effect regardless of thread-count. Confirmed at runtime: five TestNG-PoolService threads,
+          five browsers, five concurrent logins as qa_homepage_user.
+
+          MEASURED 2026-09-07, Homepage block on qa, dptc=5. A probe suite carrying only the
+          Homepage <test> block, every other parameter copied from this file (selfHeal included):
+
+              44 scenarios - 40 passed, 4 broken, 18m49s
+              ZERO session or auth failures: no "session expired", no 401, no unauthorized,
+              across roughly 40 logins with 5 in flight on one shared account
+
+          The 4 broken were ordinary locator/timing failures, not eviction: the footer about-us
+          link staying on /corporate (x2 of 13 outline examples), a search-to-PDP timeout on
+          //a[contains(@href,'/product-detail')], and a NoSuchElementException on the search button.
+
+          So the eviction predicted from rule 2 did not happen on this axis. Two probable reasons,
+          and BOTH weaken rule 2's premise rather than this axis specifically:
+            - Chrome runs incognito (the "incognito" flag is in Sauron's chromeOptions args), so
+              every session has its own cookie jar. Spelled without the leading dashes on purpose:
+              a literal double hyphen is illegal inside an XML comment and breaks this file.
+            - "No log out is found" appeared 20 times in that run, i.e. ccpLogOut() threw and the
+              server-side logout never fired at all. Where it did fire it evicted only itself.
+
+          WHAT THIS DOES NOT ESTABLISH. One 19-minute run on qa is not proof the mechanism can
+          never fire - only that it did not at this concurrency, on this env, in this window. It
+          says nothing either way about rule 2's cross-BLOCK claim, which remains untested. And the
+          dptc=1 control that would have told us whether those 4 failures are concurrency-induced
+          or pre-existing was INVALID: it reported Tests run: 0 after 43m46s and died with
+          NoSuchSessionException / UnsupportedCommandException, the grid having degraded mid-run.
+          The one signal that survived is that the footer about-us failure appeared in both runs,
+          so that one is not concurrency-related. Re-run the control before trusting any pass/fail
+          comparison between 1 and 5.
+
+          IF IT EVER DOES BITE, the signature is a scatter of session failures landing in Allure as
+          BROKEN, not failed - they throw rather than assert - so check the broken column before
+          suspecting the product. The fix would be a per-group account POOL:
+          <group>.user.email.1..N with a handout keyed to the executing thread, falling back to the
+          single account when no pool is configured. That is credential provisioning before it is
+          code - it needs N real accounts per active group and none exist today. The cheap
+          alternative is setting this attribute to 1, which is the whole fix and needs no code
+          change.
      =========================================================================================== -->
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
        data-provider-thread-count="5" annotations="JDK">

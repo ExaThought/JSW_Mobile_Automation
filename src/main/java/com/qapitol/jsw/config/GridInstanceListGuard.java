@@ -10,8 +10,16 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Works around a data race inside {@code com.qapitol.sauron.core.Grid} that only appears when the
- * suite runs with {@code thread-count} greater than 1.
+ * Works around a data race inside {@code com.qapitol.sauron.core.Grid} that appears as soon as more
+ * than one thread touches {@code Grid}.
+ *
+ * <p><strong>That is already the case.</strong> An earlier revision of this comment said
+ * "thread-count greater than 1", which was wrong: there are two parallelism axes and
+ * {@code thread-count} is the one that is set to 1. {@code data-provider-thread-count} in
+ * testng_bdd.xml is 5, and Sauron's {@code SauronCucumberTest.scenarios()} carries
+ * {@code @DataProvider(parallel = true)}, so five scenarios already run concurrently inside each
+ * {@code <test>} block and five threads already race this list. This guard is load-bearing today,
+ * not insurance against a hypothetical future setting.
  *
  * <h2>The bug</h2>
  * Sauron 4.0.6 registers every per-thread {@code Grid} in a plain {@code ArrayList}, and it does so
@@ -120,7 +128,8 @@ public final class GridInstanceListGuard {
             System.out.println("[grid-guard] Grid." + FIELD_NAME
                     + " wrapped in a synchronized list (" + existing.size()
                     + " existing entr" + (existing.size() == 1 ? "y" : "ies")
-                    + "). Guards a Sauron 4.0.6 race that surfaces at thread-count > 1.");
+                    + "). Guards a Sauron 4.0.6 race on concurrent Grid creation; the suite's"
+                    + " data-provider-thread-count already makes that concurrent.");
 
         } catch (NoSuchFieldException e) {
             warn("Grid has no field '" + FIELD_NAME + "' in this Sauron build - the race this"
@@ -133,8 +142,10 @@ public final class GridInstanceListGuard {
 
     private static void warn(String message) {
         System.out.println("[grid-guard] WARNING - " + message);
-        System.out.println("[grid-guard] Running unguarded. At thread-count 1 this is harmless;"
-                + " above it, a worker may fail at start-up with ArrayIndexOutOfBoundsException"
-                + " from inside Grid's ThreadLocal initialiser. See GridInstanceListGuard.");
+        System.out.println("[grid-guard] Running unguarded. Harmless only if exactly one thread"
+                + " ever touches Grid - which needs BOTH thread-count and"
+                + " data-provider-thread-count at 1. Otherwise a worker may fail at start-up with"
+                + " ArrayIndexOutOfBoundsException from inside Grid's ThreadLocal initialiser."
+                + " See GridInstanceListGuard.");
     }
 }
