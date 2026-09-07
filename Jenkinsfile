@@ -75,8 +75,9 @@ pipeline {
             // missing suite rather than on anything informative.
             choices: ['testng_bdd.xml', 'testng_mobilebdd.xml', 'testng_prod_sanity.xml'],
             description: 'TestNG suite file. Maps to the pom\'s ${suiteXmlFile} property. ' +
-                         'testng_prod_sanity.xml is the read-only @productionSanity suite and is ' +
-                         'required when ENV=prod; it is also safe to run against qa or preprod.'
+                         'testng_prod_sanity.xml is the read-only suite selecting ' +
+                         '"@productionSanity and @P0", and is required when ENV=prod; it is also ' +
+                         'safe to run against qa or preprod.'
         )
         string(
             name: 'GRID_URL',
@@ -256,7 +257,7 @@ pipeline {
                  * production; this is the first and the only one a human sees before the
                  * JVM starts:
                  *   1. this guard              - ENV=prod accepts one suite and no ad-hoc tags
-                 *   2. the @productionSanity tag filter in testng_prod_sanity.xml
+                 *   2. the "@productionSanity and @P0" filter in testng_prod_sanity.xml
                  *   3. global_prod.properties  - salesOppUrl / OMS / DB deliberately unset
                  *
                  * TAGS is refused on prod because it would override the suite's own filter
@@ -271,10 +272,12 @@ pipeline {
                         }
                         if (params.TAGS?.trim()) {
                             error("TAGS must be empty when ENV=prod. The production suite selects " +
-                                  "scenarios by the @productionSanity tag; an ad-hoc filter here " +
+                                  "scenarios by \"@productionSanity and @P0\"; an ad-hoc filter here " +
                                   "could select order-creation scenarios.")
                         }
-                        echo "PRODUCTION RUN - read-only @productionSanity suite against www.jswonemsme.com"
+                        // Single-quoted: nothing here interpolates, so the tag expression can be
+                        // quoted inline without escaping.
+                        echo 'PRODUCTION RUN - read-only suite selecting "@productionSanity and @P0" against www.jswonemsme.com'
                     }
                 }
 

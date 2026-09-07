@@ -1493,38 +1493,30 @@ public class CartSteps extends AbstractWebPage {
     /**
      * Opens the mild-steel mega-menu by hovering the copy of the nav item that is actually rendered.
      *
-     * <p>This single method is the root cause of 27 of the 36 broken scenarios in the 3 Sep 2026
-     * run - 24 timing out here and 3 more where the Header feature asserts the same thing directly
-     * ("Mega-menu did not open: visible category links stayed at 17 after hovering").
+     * <p>{@code CustomUtil.hoverOverElement} is the correct helper here and should stay. It resolves
+     * {@code firstVisible(locator)} internally, scrolls that node to centre, and moves the pointer
+     * <em>without</em> clicking. That matters because the header renders this item twice - the
+     * {@code /mild-steel} copy measures 0x0 and the {@code /category/mild-steel} copy 66x20
+     * (measured on QA) - and {@code moveToElement} on a zero-size box dispatches no
+     * {@code pointerenter}, so the panel never opens.
      *
-     * <p>The header renders every nav item two to four times and the FIRST copy has a zero-size
-     * box. The previous implementation called {@code waits(MILD_STEEL_CATEGORY)} then
-     * {@code hoverOverElement(MILD_STEEL_CATEGORY)}, and both resolve the first match - so the
-     * pointer was moved to an element with no bounding box, no {@code pointerenter} was
-     * dispatched, the panel never opened, and the caller's next line spent 15 seconds waiting for
-     * a sub-category that had never been rendered.
+     * <p>Do not "simplify" this to {@code CustomUtil.moveToAction}. That is the helper that follows
+     * its move with a {@code click()}, and it resolves the first match through {@code findElement}
+     * rather than {@code firstVisible}. Both properties are wrong for this locator: it would aim at
+     * the 0x0 copy and then navigate to the category page instead of opening the panel.
      *
-     * <p>Two deliberate choices, both copied from {@code HomeHeaderSteps}:
-     * <ul>
-     *   <li>{@code firstVisible} rather than the locator alone, so the pointer lands on the
-     *       rendered node.</li>
-     *   <li>{@code Actions} inline rather than {@code CustomUtil.hoverOverElement}, because that
-     *       helper follows its move with a click - which navigates to the category page instead of
-     *       opening the panel, and the sub-category hover that follows then has nothing to aim at.</li>
-     * </ul>
+     * <p>{@code waits(MILD_STEEL_CATEGORY)} was dropped as redundant, not as harmful - it logs its
+     * timeout with the locator and exception class rather than swallowing it, but
+     * {@code firstVisible} already waits and throws with a message naming the locator, so the extra
+     * 10 seconds only delayed the same failure.
      *
-     * <p>{@code waits()} is gone rather than kept as a belt-and-braces guard: it swallows its own
-     * timeout in an empty catch, so it never contributed a diagnosis, and {@code firstVisible}
-     * already waits and throws.
+     * <p>An earlier revision of this comment named this method as the root cause of 27 broken
+     * scenarios in the 3 Sep 2026 run. That claim is withdrawn, and should not be reinstated
+     * without new evidence: hovering this locator with a real pointer does open the panel (visible
+     * {@code /category/} links went from 16 to 31), and {@code firstVisible} does select the 66x20
+     * copy. The cause of those failures is not established.
      */
     private void hoverOverMildSteelCategory() {
-        /* hoverOverElement is correct here and must stay: it resolves firstVisible(locator)
-         * internally, scrolls that node to centre, and moves the pointer WITHOUT clicking.
-         * (The clicking helper is moveToAction, which is a different method - the comment in
-         * HomeHeaderSteps conflates the two.)
-         *
-         * waits() is dropped: it swallows its own timeout in an empty catch, so it never
-         * contributed a diagnosis, and hoverOverElement's firstVisible already waits and throws. */
         hoverOverElement(MILD_STEEL_CATEGORY);
         log.info("cursor moved to mild steel category");
     }

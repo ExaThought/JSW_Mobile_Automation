@@ -28,7 +28,13 @@
         <parameter name="env" value="prod"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@P0"/>
+        <!-- A conjunction, not bare @P0. @P0 is a generic priority tag: nothing stops a future
+             scenario anywhere in the repo from carrying it, and a bare @P0 filter would make that
+             scenario eligible for -Denv=prod the moment it was written. @productionSanity is the
+             tag that actually denotes "vetted to run against www.jswonemsme.com", so it has to be
+             part of the expression. Keep both operands - dropping either widens the blast radius.
+             `and` must stay lowercase; Cucumber tag expressions reject `AND`. -->
+        <parameter name="cucumber.filter.tags" value="@productionSanity and @P0"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>

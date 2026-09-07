@@ -83,10 +83,13 @@ public class CustomUtil {
     public static boolean waitUntilEnabled(By locator) {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
 
-        return wait.until(driver -> {
-            WebElement element = driver.findElement(locator);
-            return element.isEnabled();
-        });
+        // Named, for the same reason as firstVisible: a lambda condition makes WebDriverWait
+        // report the JVM's synthetic class rather than anything a reader can act on.
+        return wait.withMessage("element never became enabled: " + locator + " (within 10s)")
+                .until(driver -> {
+                    WebElement element = driver.findElement(locator);
+                    return element.isEnabled();
+                });
     }
 
 
@@ -495,6 +498,8 @@ public class CustomUtil {
         WebDriver driver = Grid.driver();
         driver.navigate().refresh();
         new WebDriverWait(driver, refreshWaitTimeout())
+                .withMessage("document.readyState never reached 'complete' after a refresh of "
+                        + driver.getCurrentUrl())
                 .until(d -> "complete".equals(
                         ((JavascriptExecutor) d).executeScript("return document.readyState")));
     }
@@ -506,8 +511,10 @@ public class CustomUtil {
         WebDriverWait wait = new WebDriverWait(driver, refreshWaitTimeout());
 
         // 1. Page load complete (all synchronous resources done)
-        wait.until(d -> "complete".equals(
-                ((JavascriptExecutor) d).executeScript("return document.readyState")));
+        wait.withMessage("document.readyState never reached 'complete' after a refresh, while"
+                        + " waiting to re-find " + landmark)
+                .until(d -> "complete".equals(
+                        ((JavascriptExecutor) d).executeScript("return document.readyState")));
 
         // 2. The element the caller actually needs next — this is what
         //    proves the SPA has re-rendered, readyState alone is not enough
