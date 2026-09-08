@@ -197,16 +197,28 @@ public  class SessionSteps extends AbstractWebPage {
      * timeout cannot serve both:
      *
      * <ul>
-     *   <li>COLD - nothing has started a session yet, so the grid may be dead. One second, for a
-     *       millisecond-scale race: on Jenkins build #233 four scenarios failed within 131ms of
-     *       each other (21:15:50.644 / .698 / .743 / .775), each with "Added test session to the
-     *       Grid" arriving AFTER the failure - the session was nine milliseconds late. A ten-second
-     *       poll bought nothing for that and cost ten seconds per scenario when no session was ever
-     *       coming.</li>
+     *   <li>COLD - nothing has started a session yet. Two very different things look identical
+     *       here: the grid is dead, or the HUB IS STILL STARTING. The first scenarios of a run hit
+     *       the second case, because Sauron spawns the hub lazily on the first session request -
+     *       a Java process, hub init, then node registration. On the 2-CPU Jenkins agent that took
+     *       about 41 seconds in build #244 (clamp finished 05:06:11, first session 05:06:52), so a
+     *       budget under that guarantees the first scenario fails and, being cold, latches the
+     *       whole run.</li>
      *   <li>WARM - a session has already started, so the grid works and this scenario is queuing
      *       for a browser slot. Minutes, not milliseconds. Build #244 is the case: one second was
      *       applied to a scenario waiting its turn behind 2 Chrome slots, and it lost.</li>
      * </ul>
+     *
+     * <p>WHY COLD IS NO LONGER ONE SECOND. It was, for a millisecond-scale race: on build #233 four
+     * scenarios failed within 131ms of each other (21:15:50.644 / .698 / .743 / .775), each with
+     * "Added test session to the Grid" arriving AFTER the failure - the session was nine
+     * milliseconds late. The stated objection to a longer poll was that it "cost ten seconds per
+     * scenario when no session was ever coming".
+     *
+     * <p>That objection no longer applies, because the latch below already short-circuits every
+     * scenario after the first. A cold wait is therefore paid AT MOST ONCE PER RUN, not per
+     * scenario. One second was optimising away a cost the latch had already removed, while
+     * reintroducing the failure it was meant to prevent.</p>
      *
      * <p>The suite-wide latch is likewise conditional. A grid that never came up dooms every
      * scenario and should short-circuit the rest of the run - but a single warm timeout does not,
@@ -216,10 +228,15 @@ public  class SessionSteps extends AbstractWebPage {
     private static final long SESSION_READY_POLL_MILLIS = 125;
 
     /**
-     * COLD budget - nothing has started a session yet, so the grid may genuinely be dead. Kept at
-     * one second for the reason above: fail fast rather than pay a long poll per scenario.
+     * COLD budget - nothing has started a session yet, so the hub may still be starting OR the grid
+     * may be dead. Must exceed hub spawn on the slowest agent; ~41s was measured on the 2-CPU
+     * Jenkins agent in build #244, so this leaves room without being open-ended.
+     *
+     * <p>Paid at most once per run: the latch short-circuits every later scenario. A genuinely dead
+     * grid therefore costs this once, which is nothing against a 50-minute build - and in exchange
+     * a slow hub no longer writes off the entire run.
      */
-    private static final long COLD_BUDGET_MILLIS = 1_000;
+    private static final long COLD_BUDGET_MILLIS = 90_000;
 
     /**
      * WARM budget - a session HAS started in this run, so the grid demonstrably works and this
@@ -267,6 +284,17 @@ public  class SessionSteps extends AbstractWebPage {
     private static final AtomicInteger CONSECUTIVE_WARM_FAILURES = new AtomicInteger();
 
     /**
+     * Why the grid was latched, in words, for the skip message.
+     *
+     * <p>The first version of that message said "failed for 3 scenarios in a row (or never came up
+     * at all)" and left the reader to work out which. It reads as though three scenarios failed
+     * even when only the first one did, which is the cold case - and that ambiguity sent the first
+     * reader of this failure looking for two failures that never happened. The message now states
+     * the condition that actually fired.
+     */
+    private static volatile String gridFailureReason;
+
+    /**
      * The session-start failure for the scenario running on THIS thread, read back by
      * {@code Hooks.reportSessionStartFailure} so the real cause reaches the Allure report rather
      * than only the console.
@@ -295,20 +323,29 @@ public  class SessionSteps extends AbstractWebPage {
 
     private void awaitDriverReady() {
         if (gridFailure != null) {
-            String skipped = "Skipping the browser start: the Selenium grid failed for "
-                    + WARM_FAILURES_BEFORE_LATCH + " scenarios in a row (or never came up at all),"
-                    + " so it is treated as dead for the rest of this run. Fix the first failure and"
-                    + " the rest go with it. First failure was: " + gridFailure;
+            String skipped = "Skipping the browser start: " + gridFailureReason
+                    + " so the grid is treated as dead for the rest of this run. Fix the first"
+                    + " failure and the rest go with it. First failure was: " + gridFailure;
             // Recorded as well as thrown - otherwise every scenario after the first shows the
             // bare "Driver not initialized" message in the report with no pointer to the cause.
             recordSessionStartFailure(skipped);
             throw new IllegalStateException(skipped);
         }
 
-        // A demonstrably working grid gets the long budget; an unproven one fails fast.
+        // A demonstrably working grid gets the queuing budget; an unproven one waits for the hub.
         boolean warm = sessionEverStarted;
         long budgetMillis = warm ? WARM_BUDGET_MILLIS : COLD_BUDGET_MILLIS;
         long deadline = System.currentTimeMillis() + budgetMillis;
+
+        if (!warm) {
+            // Said out loud, because this is the one wait in the run that can look like a hang:
+            // the first scenario blocks here while Sauron spawns the hub, with nothing else in the
+            // log to explain the pause.
+            log.info("No browser session has started in this run yet - waiting up to "
+                    + (COLD_BUDGET_MILLIS / 1000) + "s for the Selenium hub to come up. Sauron"
+                    + " spawns it lazily on the first session request, so this wait is expected"
+                    + " once per run.");
+        }
 
         IllegalStateException last = null;
         int attempt = 0;
@@ -340,12 +377,16 @@ public  class SessionSteps extends AbstractWebPage {
          * scenarios running. A single warm timeout is a queuing loss, not a dead grid - latching on
          * it is what cost build #244 forty-three scenarios while 131 sessions were being served. */
         if (!warm) {
+            gridFailureReason = "no scenario in this run ever obtained a browser session, and the"
+                    + " first to try waited " + (budgetMillis / 1000) + "s for the hub,";
             gridFailure = String.valueOf(last);
         } else {
             // Captured, not re-read: another thread can reset this to 0 between the increment and
             // the log, which would print a count that did not choose this branch.
             int warmFailures = CONSECUTIVE_WARM_FAILURES.incrementAndGet();
             if (warmFailures >= WARM_FAILURES_BEFORE_LATCH) {
+                gridFailureReason = warmFailures + " scenarios in a row failed to get a session"
+                        + " after the grid had already served at least one,";
                 gridFailure = String.valueOf(last);
                 log.log(Level.SEVERE, warmFailures + " scenarios in a row could not obtain a session"
                         + " despite the grid having worked earlier - treating it as dead for the rest"

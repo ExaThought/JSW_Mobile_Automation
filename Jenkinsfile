@@ -174,6 +174,26 @@ pipeline {
         }
 
         stage('Test') {
+            /* Nexus credentials, needed by EVERY build - Nexus hosts the Sauron artifacts, so
+             * dependency resolution fails without them regardless of ENV or
+             * USE_JENKINS_CREDENTIALS. Bound here rather than around one of the three `sh mvnCmd`
+             * call sites below, all of which need it.
+             *
+             * credentials() on a Username-with-password credential exposes NEXUS_USR and NEXUS_PSW
+             * and masks both in the console. One id covers both halves, so only one credential has
+             * to exist.
+             *
+             * CREATE THE CREDENTIAL BEFORE THE NEXT BUILD: Manage Jenkins > Credentials > (scope) >
+             * Add Credentials > kind "Username with password", ID exactly `nexus-member`. If the id
+             * is missing the stage aborts before any test runs, which surfaces as an UNSTABLE build
+             * with zero tests - indistinguishable at a glance from a test failure.
+             *
+             * This replaced `-Dnexus-username=${NEXUS_USERNAME:-nexus}`, whose committed
+             * nexus/nexus fallback silently produced a 401 from Nexus when the real credentials
+             * were absent. Failing at bind time names the cause instead. */
+            environment {
+                NEXUS = credentials('nexus-member')
+            }
             steps {
                 /* allure-results must start empty. The summariser collapses duplicate
                  * scenario names across attempts, but results left over from a previous
@@ -504,17 +524,26 @@ YAML
                         // ignored, keep tag selection in testng_bdd.xml instead.
                         def tagArg = params.TAGS?.trim() ? "-Dcucumber.filter.tags=\"${params.TAGS.trim()}\"" : ''
 
-                        // Nexus hosts the Sauron artifacts, so the build cannot resolve without
-                        // it. Shell default expansion means this works whether or not the agent
-                        // exports the variables, and lets them be overridden without a credential
-                        // id having to exist.
+                        /* NEXUS_USR / NEXUS_PSW come from the stage's environment block, which
+                         * binds the `nexus-member` credential. settings.xml resolves
+                         * ${nexus-username} / ${nexus-password} from these -D properties.
+                         *
+                         * Both are QUOTED. The password is free text chosen outside this repo, and
+                         * an unquoted value containing a space or a shell metacharacter would split
+                         * the argument or be interpreted - producing a 401 that looks like wrong
+                         * credentials rather than a quoting bug.
+                         *
+                         * Note this still puts the password on a command line, where it is visible
+                         * in the agent's process list for the life of the build. Jenkins masks it in
+                         * the console, not in /proc. Moving settings.xml to ${env.NEXUS_PSW} would
+                         * remove that exposure - worth doing if the agent is shared. */
                         def mvnCmd = """
                             mvn -B -ntp clean test \
                                 -s settings.xml \
                                 -Denv=${params.ENV} \
                                 -DsuiteXmlFile=${params.SUITE} \
-                                -Dnexus-username=\${NEXUS_USERNAME:-nexus} \
-                                -Dnexus-password=\${NEXUS_PASSWORD:-nexus} \
+                                -Dnexus-username="\${NEXUS_USR}" \
+                                -Dnexus-password="\${NEXUS_PSW}" \
                                 ${tagArg}
                         """
 

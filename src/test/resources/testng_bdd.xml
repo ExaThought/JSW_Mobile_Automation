@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
-<suite verbose="1" name="Jsw automation" parallel="tests" thread-count="3"
-       data-provider-thread-count="3" annotations="JDK">
+<suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
+       data-provider-thread-count="1" annotations="JDK">
 
     <listeners>
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
@@ -68,7 +68,7 @@
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
         <parameter name="cucumber.filter.tags"
-                   value="@AddToCartAndCreateOpportunity"/>
+                   value="@AddToCartAndCreateOpportunity or @CartVerification"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -105,13 +105,7 @@
 
     <!-- =============================== TOKEN CHECK =============================== -->
 
-    <!-- Both token features in one block: LoginUserToken logs in and closes the payment-due
-         popup, GuestUserToken only opens the session.
-         Runs under its own "tokencheck" group, which resolves to testautomation01@yopmail.com in
-         both qa and preprod. It used to share the "profile" group, whose account is a real mailbox
-         with a rotating password - that returned HTTP 401 and cost every token scenario in
-         CCP_Regression #231. A dedicated group also keeps EmptyBankDetails, Address,
-         CustomerDetails, bankDetails and forgetPassword on the profile account, untouched. -->
+
     <!-- <test name="TokenCheck">
         <parameter name="test.group" value="tokencheck"/>
         <parameter name="sessions" value="sessions.yaml"/>
