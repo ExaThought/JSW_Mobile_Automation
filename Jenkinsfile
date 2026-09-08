@@ -82,10 +82,19 @@ pipeline {
         string(
             name: 'GRID_URL',
             defaultValue: '',
+            /* No session count quoted here on purpose. Jenkins renders parameter descriptions
+             * before any step runs, so this text cannot be computed from the suite - and the last
+             * hardcoded number ("5") silently went stale the moment either parallelism axis was
+             * edited, which is the same drift that broke the CPU clamp. The authoritative figure is
+             * thread-count x data-provider-thread-count on the <suite> tag; the Test stage
+             * prints it via ci/cap-parallelism.js. */
             description: 'Remote Selenium Grid, e.g. http://selenium-grid.internal:4444. Leave ' +
-                         'blank to use the grid Sauron starts on the agent - which sizes its ' +
-                         'session slots from the CPU count, so a 2-CPU agent cannot serve the 5 ' +
-                         'concurrent sessions testng_bdd.xml asks for. See docker-compose.grid.yml.'
+                         'blank to use the grid Sauron starts on the agent, which sizes its ' +
+                         'session slots from the CPU count. If the suite asks for more concurrent ' +
+                         'sessions than the agent has cores, ci/cap-parallelism.js lowers the ' +
+                         'suite for that build, so an undersized agent runs slower instead of ' +
+                         'failing - the console prints the demand and any cap it applied. Set this ' +
+                         'to run the authored parallelism instead. See docker-compose.grid.yml.'
         )
         string(
             name: 'RECIPIENTS',
@@ -384,14 +393,18 @@ YAML
                     # Match the suite's parallelism to what a LOCAL grid can serve.
                     #
                     # Selenium sizes a node's session slots from the CPU count. On the 2-CPU agent
-                    # that is 2 concurrent sessions while testng_bdd.xml asks for 5, so three
-                    # sessions never start - and because Sauron's ScreenshotBddListener then throws
-                    # on the missing driver, every scenario reports "Driver not initialized. Is
-                    # @WebTest/@MobileTest missing on class/method?" and names neither the browser
-                    # nor the real cause.
+                    # that is 2 concurrent sessions, while the suite demands thread-count x
+                    # data-provider-thread-count - so any surplus session never starts, and because
+                    # Sauron's ScreenshotBddListener then throws on the missing driver, the scenario
+                    # reports "Driver not initialized. Is @WebTest/@MobileTest missing on
+                    # class/method?" and names neither the browser nor the real cause.
+                    #
+                    # No figure is quoted here; cap-parallelism.js prints the demand and any cap it
+                    # applied. Hardcoding it is what let the old clamp go stale unnoticed.
                     #
                     # Capping is a workaround, not the fix: it trades parallelism for a run that
-                    # completes. The fix is GRID_URL pointing at a host with >=5 cores.
+                    # completes. The fix is GRID_URL pointing at a host with at least as many cores
+                    # as the suite demands sessions.
                     #
                     # Only ever LOWERS. Raising past the authored value would break the rule
                     # documented in global_qa.properties - two blocks that run at the same time may
