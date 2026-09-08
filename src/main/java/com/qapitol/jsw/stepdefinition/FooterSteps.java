@@ -176,7 +176,13 @@ public class FooterSteps extends AbstractWebPage {
 
             WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
 
-            wait.until(driver -> driver.getCurrentUrl().toLowerCase().contains(text.toLowerCase()));
+            /* Named: the catch below reports e.getMessage(), so without this the failure reads
+             * "Exception while verifying redirection: ... waiting for
+             * FooterSteps$$Lambda$1412/0x0000000800b51440@17b692f1" - which is what two footer
+             * scenarios reported on 3 Sep 2026, naming neither the expected text nor the URL. */
+            wait.withMessage("URL never contained '" + text + "' within 10s - still at "
+                            + Grid.driver().getCurrentUrl())
+                    .until(driver -> driver.getCurrentUrl().toLowerCase().contains(text.toLowerCase()));
 
             String currentUrl = Grid.driver().getCurrentUrl();
             log.info("Current URL after navigation: " + currentUrl);
@@ -250,8 +256,11 @@ public class FooterSteps extends AbstractWebPage {
     @Then("the user should be redirected to the correct social page {string}")
     public void verify_social_redirect(String platform) {
 
-        // Wait for the new tab to open, then switch to it.
+        // Wait for the new tab to open, then switch to it. This one is NOT caught, so its message
+        // goes straight to the report - name the platform rather than a lambda.
         new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
+                .withMessage("the " + platform + " social link opened no new tab within 10s"
+                        + " (still " + Grid.driver().getWindowHandles().size() + " window handle(s))")
                 .until(d -> d.getWindowHandles().size() > 1);
 
         Set<String> handles = Grid.driver().getWindowHandles();

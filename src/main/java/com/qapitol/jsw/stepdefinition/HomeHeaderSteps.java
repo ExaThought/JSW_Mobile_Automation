@@ -11,7 +11,6 @@ import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.IOException;
@@ -21,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.qapitol.jsw.utils.CustomUtil.clickFirstVisible;
-import static com.qapitol.jsw.utils.CustomUtil.firstVisible;
+import static com.qapitol.jsw.utils.CustomUtil.hoverOverElement;
 import static com.qapitol.jsw.utils.CustomUtil.isAnyVisible;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
@@ -196,10 +195,16 @@ public class HomeHeaderSteps extends AbstractWebPage {
         softAssert.assertTrue(isAnyVisible(target),
                 "Header navigation menu item not displayed, cannot hover: " + menuItem);
 
-        // Hovered inline rather than via CustomUtil: hoverOverElement resolves the first match,
-        // which is the hidden header copy, and moveToAction follows its move with a click - which
-        // would navigate away instead of opening the panel. firstVisible pins the rendered node.
-        new Actions(Grid.driver()).moveToElement(firstVisible(target)).perform();
+        // hoverOverElement resolves firstVisible(locator), scrolls that node to centre, and moves
+        // the pointer with no click. Both parts matter: the header renders each nav item two to
+        // four times and the first copy in document order measures 0x0 (moveToElement on a
+        // zero-size box dispatches no pointerenter), and moveToElement on a node outside the
+        // viewport throws Selenium's "move target out of bounds".
+        //
+        // The helper to avoid is moveToAction - it resolves the first match through findElement
+        // AND follows its move with a click(), which would navigate to the category page instead
+        // of opening the panel.
+        hoverOverElement(target);
         log.info("Hovered over header navigation menu '" + menuItem + "'");
     }
 
@@ -334,7 +339,12 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     /** Wait until the document has finished loading. */
     private void waitForPageLoad() {
-        new WebDriverWait(Grid.driver(), Duration.ofSeconds(30)).until(
-                d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
+        // Named: this wait is not caught, so a timeout goes straight to the report. Without a
+        // message it reads "waiting for HomeHeaderSteps$$Lambda$NNNN/0x...@hash", which names
+        // neither the page nor the condition.
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(30))
+                .withMessage("document.readyState never reached 'complete' within 30s at "
+                        + Grid.driver().getCurrentUrl())
+                .until(d -> "complete".equals(((JavascriptExecutor) d).executeScript("return document.readyState")));
     }
 }

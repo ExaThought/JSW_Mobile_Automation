@@ -15,7 +15,6 @@ import io.qameta.allure.Allure;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
@@ -119,8 +118,8 @@ public class CartSteps extends AbstractWebPage {
     private static final String coldRolledSheetsSubCategory = "//li/a[contains(@href, 'cold-rolled-steel-sheet') or contains(@href, 'steel-cold-rolled-sheet')]";
     private static final String coldRolledCoilsSubCategory = "//li/a[contains(@href, 'cold-rolled-coils')]";
     private static final String galvanizedSheetCategory = "//li/a[contains(@href, 'coated-gi-sheet') or contains(@href, 'coated-galvanized-sheets')]";
-    public static final String msHotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]";
-    public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]";
+    public static final String msHotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]/span";
+    public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]/span";
     public static final String coatedSteelCategory = "(//a[contains(@href,'/category/steel-coated')])[1]";
     public static final By quantityTextbox = By.xpath("//input[@id='quantity-input']");
     public static final By quantityLabel = By.xpath("//label[contains(normalize-space(), 'Specify quantity')]");
@@ -151,7 +150,9 @@ public class CartSteps extends AbstractWebPage {
     static String cartValue;
     static String cartPdpProductName;
     public ScenarioContext context;
-    Actions actions = new Actions(Grid.driver());
+    /* No shared `actions` field: it was unused, and it called Grid.driver() at construction time,
+     * which binds it to the session current when Cucumber built this glue instance. Build Actions
+     * inside the method that needs it (or call CustomUtil.hoverOverElement). */
 
     public CartSteps(ScenarioContext context) {
         this.context = context;
@@ -1490,8 +1491,33 @@ public class CartSteps extends AbstractWebPage {
         jsClick(By.xpath(galvanizedSheetCategory));
     }
 
+    /**
+     * Opens the mild-steel mega-menu by hovering the copy of the nav item that is actually rendered.
+     *
+     * <p>{@code CustomUtil.hoverOverElement} is the correct helper here and should stay. It resolves
+     * {@code firstVisible(locator)} internally, scrolls that node to centre, and moves the pointer
+     * <em>without</em> clicking. That matters because the header renders this item twice - the
+     * {@code /mild-steel} copy measures 0x0 and the {@code /category/mild-steel} copy 66x20
+     * (measured on QA) - and {@code moveToElement} on a zero-size box dispatches no
+     * {@code pointerenter}, so the panel never opens.
+     *
+     * <p>Do not "simplify" this to {@code CustomUtil.moveToAction}. That is the helper that follows
+     * its move with a {@code click()}, and it resolves the first match through {@code findElement}
+     * rather than {@code firstVisible}. Both properties are wrong for this locator: it would aim at
+     * the 0x0 copy and then navigate to the category page instead of opening the panel.
+     *
+     * <p>{@code waits(MILD_STEEL_CATEGORY)} was dropped as redundant, not as harmful - it logs its
+     * timeout with the locator and exception class rather than swallowing it, but
+     * {@code firstVisible} already waits and throws with a message naming the locator, so the extra
+     * 10 seconds only delayed the same failure.
+     *
+     * <p>An earlier revision of this comment named this method as the root cause of 27 broken
+     * scenarios in the 3 Sep 2026 run. That claim is withdrawn, and should not be reinstated
+     * without new evidence: hovering this locator with a real pointer does open the panel (visible
+     * {@code /category/} links went from 16 to 31), and {@code firstVisible} does select the 66x20
+     * copy. The cause of those failures is not established.
+     */
     private void hoverOverMildSteelCategory() {
-        waits(MILD_STEEL_CATEGORY);
         hoverOverElement(MILD_STEEL_CATEGORY);
         log.info("cursor moved to mild steel category");
     }

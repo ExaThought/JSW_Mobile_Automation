@@ -70,6 +70,10 @@ function looksLikeSecretKey(key) {
 // password, and removed keys leave a marker behind, so both have to survive this check.
 const FAKE_VALUES = [
   /^deliberately-invalid/i,
+  // global_prod.properties spells the same idea differently:
+  // account.login.wrongPassword=JswOne@NotAValidPassword2029. It exists to prove a bad password
+  // is REJECTED, so it is not a credential - and blanking it would break that negative test.
+  /notavalidpassword/i,
   /^<.*>$/,                 // <removed - ...>, <qa-token>, <preprod-token>
   /^\$\{[^}]*\}$/,          // an unresolved placeholder is not a value
   /^(changeme|placeholder|example|dummy|redacted|none|null|true|false)$/i,

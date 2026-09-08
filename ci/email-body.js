@@ -114,6 +114,28 @@ try {
   previousData = null;
 }
 
+/* A TREND IS ONLY MEANINGFUL WITHIN ONE ENVIRONMENT.
+ *
+ * One Jenkins job runs qa, pre-prod and prod from the same workspace, so the summary left on disk
+ * by the last build is whatever env ran last - not necessarily this one. Comparing a 7-scenario
+ * read-only prod sanity run against a 200-scenario qa regression produces a pass-rate delta, a
+ * duration delta and a "fixed failures" list that are all arithmetic on unrelated suites, and it
+ * reads as a prod improvement or regression that never happened.
+ *
+ * summarize-allure.js stamps `env` into run-summary.json, so the mismatch is detectable here where
+ * both values are known. Dropped rather than reconciled: there is no sensible comparison to make.
+ *
+ * The pipeline ALSO keeps a separate previous-summary file per env and only carries a pass rate
+ * forward from a same-env build, so this should not trigger. It is the backstop for a job
+ * configured by hand, an older workspace holding the single-file name, or a summary written before
+ * env was recorded (env undefined, which is not equal to a real env and so is correctly rejected).
+ */
+let previousEnvMismatch = null;
+if (previousData && previousData.env !== ENVIRONMENT) {
+  previousEnvMismatch = previousData.env || 'unrecorded';
+  previousData = null;
+}
+
 /* ---------------------------------------------------------------- trend
  *
  * Reads the previous SUMMARY where it exists, so the trend covers pass rate, scenario counts and
@@ -124,7 +146,19 @@ try {
  * a productivity problem that no pass/fail number reports.
  */
 const prevTotals = (previousData && previousData.totals) || null;
-const descriptionRate = PREVIOUS === null || PREVIOUS === '' ? null : Number(PREVIOUS);
+
+/* --previous-pass-rate is a bare number with no env attached, so --previous-env says which build it
+ * came from. The pipeline resolves it by walking back to the most recent SAME-env build, and passes
+ * both together; a mismatch here means the caller got that wrong, so the rate is dropped.
+ *
+ * Absent --previous-env is accepted, for a hand-run invocation that passes only a rate. */
+const previousEnvClaim = arg('previous-env');
+const rateEnvMismatch = previousEnvClaim !== null && previousEnvClaim !== '' && previousEnvClaim !== ENVIRONMENT;
+const descriptionRate =
+  PREVIOUS === null || PREVIOUS === '' || rateEnvMismatch ? null : Number(PREVIOUS);
+if (rateEnvMismatch && previousEnvMismatch === null) {
+  previousEnvMismatch = previousEnvClaim;
+}
 
 let previousRate = null;
 if (prevTotals && typeof prevTotals.passRate === 'number') {
@@ -338,8 +372,16 @@ let trendRows =
   + trendRow('Duration', trend.duration);
 
 if (trend.previousBuild) {
-  // The build number is stated once, in whichever section renders it first.
-  trendRows += note(`Compared against build <b>#${esc(trend.previousBuild)}</b>.`);
+  // The build number is stated once, in whichever section renders it first. The env is named too:
+  // this line is the reader's assurance that the comparison is like-for-like.
+  trendRows += note(`Compared against build <b>#${esc(trend.previousBuild)}</b>`
+    + ` on <b>${esc(ENVIRONMENT)}</b>.`);
+} else if (previousEnvMismatch) {
+  // Silence would read as "no regression". Name the env that was skipped instead.
+  trendRows = note(`No trend: the last run in this workspace was <b>${esc(previousEnvMismatch)}</b>,`
+    + ` and this is <b>${esc(ENVIRONMENT)}</b>. Comparing different environments would report a`
+    + ` change that did not happen, so it is skipped — the trend resumes at the next`
+    + ` <b>${esc(ENVIRONMENT)}</b> build.`);
 } else if (previousRate === null) {
   trendRows = note('No previous run recorded yet — the trend appears from the next build onwards.');
 } else {
@@ -348,7 +390,13 @@ if (trend.previousBuild) {
 
 /* -------------------------------------------------- change since last run */
 let changeRows;
-if (!change) {
+if (!change && previousEnvMismatch) {
+  changeRows = note(`New, recurring and fixed failures are not separated for this build: the last`
+    + ` run in this workspace was <b>${esc(previousEnvMismatch)}</b> and this is`
+    + ` <b>${esc(ENVIRONMENT)}</b>. Scenario names differ between the suites, so every failure`
+    + ` would be labelled NEW and every scenario from the other environment would be reported as`
+    + ` fixed. Available from the next <b>${esc(ENVIRONMENT)}</b> build onwards.`);
+} else if (!change) {
   changeRows = note('No previous run summary in the workspace, so new and recurring failures '
     + 'cannot be separated for this build. Available from the next run onwards.');
 } else if (change.newCount === 0 && change.fixedCount === 0 && change.recurringCount === 0) {

@@ -13,7 +13,6 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
 
 
 import java.time.Duration;
@@ -41,8 +40,28 @@ public class GuestUserSteps extends AbstractWebPage {
 
     String pageName;
 
-    WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(30));
+    /* No shared `wait` field. It called Grid.driver() at construction time, which binds the wait to
+     * whichever session was current when Cucumber built this glue instance - so after a session
+     * switch it would still drive the old session's driver, and if the field initialiser ran before
+     * any session existed Grid.driver() throws rather than returning null. Every wait below is
+     * built inside the method that uses it, so it resolves the calling thread's current driver. */
     HomepageBlogSteps homepageBlogSteps = new HomepageBlogSteps();
+
+    /**
+     * Waits for the document to finish loading, naming the page in the timeout.
+     *
+     * <p>Neither caller catches this, so the message reaches the report. A bare
+     * {@code wait.until(webDriver -> ...)} reported only
+     * {@code waiting for GuestUserSteps$$Lambda$NNNN/0x...@hash}, which names neither the URL
+     * being loaded nor the condition being waited on.
+     */
+    private void waitForPageLoad() {
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(30))
+                .withMessage("document.readyState never reached 'complete' within 30s for '"
+                        + pageName + "' - still at " + Grid.driver().getCurrentUrl())
+                .until(webDriver -> ((JavascriptExecutor) webDriver)
+                        .executeScript("return document.readyState").equals("complete"));
+    }
 
     @Given("user open the CCP portal as guest user")
     public void userOpenTheCCPPortalAsGuestUser() {
@@ -61,8 +80,9 @@ public class GuestUserSteps extends AbstractWebPage {
 
     @Then("User should be redirected to Login or Register")
     public void userShouldBeRedirectedToLoginOrRegister() {
-        wait.until(webDriver -> ((JavascriptExecutor) webDriver)
-                .executeScript("return document.readyState").equals("complete"));
+        // Local wait, not the shared `wait` field: withMessage() mutates the instance it is called
+        // on, so setting a message on the field would attach this text to every later use of it.
+        waitForPageLoad();
         if (isElementPresent(LOGIN_PAGE)) {
             softAssert.assertTrue(isElementPresent(LOGIN_REGISTER_PAGE), "User is not prompted to Login or Register when trying to access " + pageName + " page as Guest User");
         }
@@ -83,8 +103,7 @@ public class GuestUserSteps extends AbstractWebPage {
     @Then("user should be prompted to Login or Register")
     public void userShouldBePromptedToLoginOrRegister() {
         //Wait until the page is loaded completely before verifying the presence of Login/Register page elements to avoid flaky test execution
-        wait.until(webDriver -> ((JavascriptExecutor) webDriver)
-                .executeScript("return document.readyState").equals("complete"));
+        waitForPageLoad();
         if (isElementPresent(LOGIN_PAGE)) {
             softAssert.assertTrue(isElementPresent(LOGIN_REGISTER_PAGE), "User is not prompted to Login or Register when trying to access " + pageName + " page as Guest User");
         }
