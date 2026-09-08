@@ -4,20 +4,16 @@ name: Claude Code Review
 # tracked-progress comment on the PR.
 #
 # Triggers
-#   - a PR is opened (non-draft), marked ready for review, or reopened  -> automatic
-#   - every push to the PR branch (`synchronize`)                       -> automatic
-#   - someone comments "/claude-review" on the PR                       -> re-run on demand
+#   - a PR is opened (non-draft), reopened, or marked ready for review -> automatic
+#   - every new commit pushed to an open, non-draft PR (`synchronize`) -> automatic
+#   - someone comments "/claude-review" on the PR                     -> re-run on demand
 #
-# `synchronize` fires on EVERY push to the branch, so token spend scales with pushes rather than
-# with pull requests. That is the deliberate trade for always reviewing the current diff instead
-# of the one the PR happened to open with. The concurrency block below is what keeps the cost
-# sane: a new push cancels the review still running against the older commit.
+# NOTE: `synchronize` means review runs on every commit, so token spend scales with pushes,
+# not just with PRs opened. If that gets noisy/expensive, remove `synchronize` below and rely
+# on manual "/claude-review" re-runs instead.
 #
-# Required repository secret: CLAUDE_CODE_OAUTH_TOKEN
+# Required repository secret: ANTHROPIC_API_KEY
 #   Settings -> Secrets and variables -> Actions -> New repository secret.
-#   Generated with `claude setup-token` and consumed by the action's claude_code_oauth_token
-#   input. It must be a REPOSITORY secret: an environment secret only resolves for a job that
-#   declares `environment:`, and this one does not - it would arrive empty and fail on auth.
 
 on:
   pull_request:
@@ -25,59 +21,25 @@ on:
   issue_comment:
     types: [created]
 
-# Concurrency is deliberately NOT declared here at workflow level - see the job below.
-#
-# It used to be, and that is what killed the review on PR #98 four seconds in:
-#   "Canceling since a higher priority waiting request for claude-review-98 exists"
-# A workflow-level group is entered by EVERY run the triggers create, before any `if` is
-# evaluated. issue_comment fires on every comment in the repo, so an ordinary comment posted
-# moments after the PR opened joined the same group and cancelled the review that was running.
-#
-# Moving it to the job means a comment that is not /claude-review is skipped by the job's `if`
-# and never joins the group at all, so it cannot cancel anything.
+# One review at a time per PR. A newer push or a re-run request supersedes an in-flight review
+# rather than racing it and posting two comments.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
 
 jobs:
   review:
     name: Review pull request
     runs-on: ubuntu-latest
-
-    # One review at a time per PR, and only a NEW PUSH may cancel one in flight.
-    #
-    # cancel-in-progress is an expression, not a flag, and it is evaluated for the INCOMING run:
-    #   pull_request (a push)  -> true  -> supersedes the review of the older commit, which is
-    #                                      what makes `synchronize` affordable. Push three
-    #                                      commits and you get one review of the final state.
-    #   issue_comment          -> false -> a /claude-review request WAITS for the running review
-    #                                      to finish instead of killing it.
-    #
-    # Because this sits on the job rather than the workflow, a comment that fails the `if` below
-    # never reaches here, so ordinary PR discussion has no effect on a running review at all.
-    concurrency:
-      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
-      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-    # 30, not 20: a review killed by the timeout still leaves the tracked-progress comment on the
-    # PR, and a half-finished review reads exactly like a clean one - no findings, no indication
-    # it was cut short. The OUTPUT rules ask for the most severe findings first so that a run
-    # that does hit the wall has already reported what matters. Keep this comfortably above the
-    # worst case rather than tuned to the average PR.
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     # Draft PRs are skipped - "ready for review" is the point at which a review is wanted.
-    #
-    # The issue_comment branch carries three extra guards:
-    #   - issue.pull_request != null   issue_comment fires for plain issues too, and there
-    #                                  would be no diff to review
-    #   - comment.user.type != 'Bot'   a bot that quotes the trigger string in a reply would
-    #                                  otherwise re-invoke this workflow from its own output
-    #   - author_association           /claude-review spends API credit, so it is restricted to
-    #                                  people with write access. Without this, anyone able to
-    #                                  comment on a PR can start an unbounded number of runs.
+    # The issue_comment branch also checks the comment is on a PR, because issue_comment fires
+    # for plain issues too and there would be no diff to review.
     if: |
       (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request != null &&
-       github.event.comment.user.type != 'Bot' &&
-       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
        contains(github.event.comment.body, '/claude-review'))
 
     permissions:
@@ -90,25 +52,13 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
         with:
-          # An issue_comment event carries no PR ref: github.ref is the DEFAULT BRANCH, so a bare
-          # checkout here reviewed develop instead of the pull request and reported "no findings"
-          # on every /claude-review. The merge ref is resolved explicitly for that path.
-          #
-          # For pull_request events github.ref is already refs/pull/<n>/merge, so the fallback
-          # keeps the automatic trigger behaving exactly as before.
-          ref: ${{ github.event_name == 'issue_comment'
-                   && format('refs/pull/{0}/merge', github.event.issue.number)
-                   || github.ref }}
           # Full history so the review can diff against the base branch rather than a shallow tip.
           fetch-depth: 0
 
       - name: Run Claude code review
         uses: anthropics/claude-code-action@v1
         with:
-          # OAuth token, not an API key. The action takes these through two different inputs
-          # backing two different auth mechanisms, so a Claude Code OAuth token (from
-          # `claude setup-token`) fails authentication if it is passed as an API key.
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
           # Posts a single comment that updates as the review progresses, instead of a wall of
           # separate comments.
@@ -130,44 +80,6 @@ jobs:
             Apply these project-specific rules. Each one has cost a real debugging session here,
             so treat a match as a finding rather than a style preference.
 
-            WHAT CI ALREADY CHECKS - do not re-derive any of it, and do not propose adding a
-            check that already exists. .github/workflows/pr-checks.yaml runs on every PR:
-              - mvn -o -B clean compile
-              - ci/check-locator-keys.js   every locator KEY referenced by a step class resolves
-                                           in that class's yaml file
-              - ci/check-payload-keys.js   every orderType key resolves in data/<env>/
-                                           default-data.yaml for every environment AND maps to a
-                                           file that exists in src/test/resources/api/request/
-              - yamllint                   every yaml parses
-              - ci/lint-features.js        Gherkin rules F1-F8: duplicate scenario names, Examples
-                                           table shape, outlines with no Examples, tab characters,
-                                           untagged features
-            These are deterministic and already comment on the PR. Reviewing locator or payload
-            key EXISTENCE duplicates them; reviewing locator QUALITY (below) does not, and is
-            where the value is.
-
-            PRODUCTION SAFETY - check this first, it is the only rule here whose blast radius
-            reaches real customers
-            - The @productionSanity tag decides what runs against www.jswonemsme.com
-              (testng_prod_sanity.xml, -Denv=prod). Around 60 scenarios in this repo CREATE REAL
-              BUSINESS RECORDS: SFSlc/SFSlo place orders that get dispatched and invoiced,
-              @createOpportunity raises a lead the sales team phones, and the cart, registration,
-              address and bank-details suites write customer data.
-            - Treat EVERY newly added @productionSanity tag as a finding that needs explicit
-              justification in the PR. Confirm the scenario only reads: no add-to-cart, no order
-              or opportunity creation, no registration, no profile/address/bank edit, and nothing
-              that sends a real email (the forgot-password confirmation scenario does).
-            - Also check the scenario's Background. Production resolves accounts from
-              global_prod.properties, so a Background carrying a hardcoded credential - for
-              example `ccp login with "someone@jsw.in" and "SomePassword"` - cannot run there.
-              It must use `ccp login with configured user`.
-            - global_prod.properties deliberately OMITS salesOppUrl, the OMS/ERP hosts, the OMS
-              database and the central-cart internal API, and data/prod/default-data.yaml omits
-              every order-payload key. That is the second barrier behind the tag filter, not an
-              oversight. Flag any PR that adds write configuration to either file.
-            - Flag any change that loosens the ENV=prod guard in the Jenkinsfile, which allows
-              exactly one suite and refuses an ad-hoc TAGS value.
-
             LOCATORS
             - Reject locators anchored on generated class names. This app emits Tailwind utility
               classes and MUI/emotion hashes (for example `css-1xnox0e`, `s-pt-8 text-right`,
@@ -177,36 +89,10 @@ jobs:
               Resolution must go through CustomUtil.isAnyVisible / firstVisible / clickFirstVisible,
               which filter by rendered state. Flag any use of findElement, waitAndCheckIsElementVisible
               or isElementVisibleJS on a header/footer locator, since those all take the first match.
-            - More generally: findElement and waitAndGetText return match[0]. If a locator can
-              match more than one node, a single-value read silently picks one of them. The cart
-              renders each attribute in its own span, so `cartPageAttributeValue` matches two
-              elements - a TMT check for the FORM was reading the DIAMETER's span and could never
-              fail honestly. When a locator is not provably unique, read every match with
-              findElements and assert across the collection, naming all values found in the
-              failure message.
-            - Locator keys in cartsteps.yaml mix two conventions: some values carry an `xpath=`
-              prefix and some do not. By.xpath(getLocator(key)) takes the prefix as part of the
-              expression. Flag a raw By.xpath(getLocator(...)) against a file that uses the prefix.
 
-            BROWSER INTERACTIONS
-            - CustomUtil.enterText is sendKeys with NO clear, so it APPENDS. Typing "50" into a
-              field already holding a minimum order quantity yields "1050". Flag any text entry
-              that does not first clear or select the existing value. Prefer select-all then type.
-            - Do NOT set a value on this app's inputs with JavaScript (element.value = x, i.e.
-              CustomUtil.setValueJS). The PDP quantity box is a React-controlled input: a direct
-              .value assignment bypasses React's internal value tracker, so the component
-              re-renders with its previous value and the write is silently lost. It looks like it
-              worked and the field never changes. Use real key events.
-            - clear() has the same tracker problem as a .value assignment on a controlled input,
-              which is why select-all-then-type is the recommended form above.
-
-            DEAD CODE
-            - Flag a new private method that nothing calls, and flag a refactor that inlines a
-              helper's body at a call site. enterQuantityViaJs was the ONLY place
-              context.pdpQuantity was assigned; when quantity entry was inlined elsewhere the
-              assignment was dropped with it, and every cart quantity assertion then compared
-              against "Qty: null MT" for weeks. An uncalled private helper is where the next such
-              assignment goes to die.
+            WAITS
+            - Flag new Thread.sleep / sleep(...) used in place of a conditional wait, and any sleep
+              placed immediately before a call that already blocks (such as driver.get).
 
             ASSERTIONS
             - Flag assertions that cannot fail: assertTrue(true), assertNotNull(waitAndGetText(...))
@@ -214,64 +100,43 @@ jobs:
               `expected.contains(actualText)` without a blank check, since "anything".contains("")
               is always true.
             - Inside a soft assertion's arguments, a throwing getter suppresses every remaining
-              soft assert in that step - the scenario dies on the first stale locator instead of
-              reporting the other findings. Reads there must go through a helper that RETURNS
-              NULL rather than throwing, never waitAndGetText directly.
-              There is no shared helper for this, and there cannot be a static one: locator keys
-              resolve against the calling class's own yaml file, so the helper has to be an
-              instance method on the step class. SfSlcSloSteps.safeGetText is the reference
-              implementation - a new step class needs its own copy, so do not suggest importing
-              it from CustomUtil.
+              soft assert in that step. Reads must go through a null-returning helper such as
+              safeGetText, not waitAndGetText.
             - Floating-point comparisons need a delta. Amounts derived from quantity x price drift
               (15 x 10416.67 computes to 184375.05899999998 against a rendered 1,84,375.06).
             - Flag empty catch blocks and catch blocks that only log. A swallowed failure surfaces
               later as an empty cart or a missing order number, far from its cause.
-            - TestNG's signature is assertEquals(ACTUAL, EXPECTED), and the report prints
-              "expected [X] but found [Y]" where X is the second argument. Check the argument
-              order on every new assertEquals: a swapped pair sends whoever reads the report to
-              the wrong side of the comparison. "expected [Qty: null MT] but found [Qty: 100 MT]"
-              meant the PDP capture was null, not the cart value, and cost a day of looking at
-              the cart.
-            - An assertion added to a SHARED helper must hold for every scenario that routes
-              through it. A read-back check demanding the quantity field equal what was typed was
-              added to the common attribute-selection path, and it failed Pdp.feature's 4-digit
-              cap Outline - which deliberately enters "12345" and expects "1234" - for behaving
-              exactly as specified. Before approving an assertion in a shared method, enumerate
-              its callers and confirm none of them is a boundary or negative scenario that
-              expects the very behaviour being asserted against.
 
-            WAITS
-            - Flag new Thread.sleep / sleep(...) used in place of a conditional wait, and any sleep
-              placed immediately before a call that already blocks (such as driver.get).
+            API VALIDATION
+            - Flag API tests that check only HTTP status when the business outcome also depends on
+              response fields.
+            - Flag hardcoded IDs, order numbers, timestamps, or tokens in API tests; prefer
+              generated data or values pulled from configuration/test data.
+            - Flag logging of access tokens, passwords, API keys, or other sensitive request/
+              response data.
+
+            TEST ISOLATION
+            - Flag two or more tests/scenarios that perform different, state-changing operations
+              (e.g. one places an order, another updates cart or account details) using the same
+              hardcoded account or test data. This has already caused one test's operation to
+              collide with another's and produce a misleading failure. Each test that mutates
+              account/order state needs its own account or uniquely generated data.
 
             CONFIGURATION AND TEST DATA
             - Property reads must use ConfigUtil.getSecretValue(). Raw Config.getConfigProperty()
               does NOT resolve the ${VAR:default} placeholders these files use, so it injects the
               literal placeholder text into the browser or the request.
-            - Environment parity applies to QA and PRE-PROD ONLY: a change to
-              global_qa.properties needs the matching change in global_preprod.properties, and
-              vice versa. The same applies to data/qa/** and data/preprod/**.
-              A new <group>.user.email needs a <group>.user.password beside it in BOTH files.
-            - PRODUCTION IS NOT A PARITY TARGET. Do NOT ask for a global_prod.properties or
-              data/prod/** entry to match qa or preprod - those files are intentionally
-              incomplete, and "completing" them removes a deliberate safety barrier. See the
-              PRODUCTION SAFETY section above. The only parity that does apply to prod is that
-              any key the production sanity suite actually reads must resolve; UserConfig fails
-              naming the exact missing key, so an absent value is a clear error, not a crash.
-            - A new test.group in a suite XML needs THREE things, and having two of them fails in
-              a way that names none of them. It must (a) appear in UserConfig.VALID_GROUPS,
-              (b) have <group>.user.email and (c) <group>.user.password in EVERY
-              global_<env>.properties. `pdpplp` had (a) and was used in testng_bdd.xml but had no
-              properties, so the credential resolved to null and all 18 PDP_PLP scenarios died
-              with a bare NullPointerException inside SessionSteps.ccpLogin - naming neither the
-              group nor the missing key. Check all three whenever a suite XML or VALID_GROUPS
-              changes.
+            - Environment parity: a change to global_qa.properties needs the matching change in
+              global_preprod.properties, and vice versa. The same applies to
+              data/qa/** and data/preprod/**.
+            - Every orderType key set in a step definition must exist in
+              data/<env>/default-data.yaml for BOTH environments, and must map to a file that
+              actually exists in src/test/resources/api/request/. A missing key resolves to null
+              and fails as "FileNotFoundException: .../null.json".
             - Flag any new plaintext credential, JWT or API key. Secrets belong in
-              ${ENV_VAR:default} form so CI can inject them. This includes credentials in
-              GHERKIN: a Background reading `ccp login with "user@jsw.in" and "Password"` puts a
-              password in every clone, diff and CI log, and pins the scenario to one environment.
-              The step to use is `ccp login with configured user`, which resolves from
-              global_<env>.properties.
+              ${ENV_VAR:default} form so CI can inject them.
+            - Flag hardcoded URLs, environment names, customer/order/account IDs, or dates that
+              should come from configuration or test data instead.
 
             CUCUMBER
             - Every step text in a .feature file must have a matching glue annotation. An
@@ -282,12 +147,32 @@ jobs:
               per scenario, so splitting read-only visibility checks multiplies logins for no
               extra coverage.
 
+            TEST CASE SCOPE
+            - When step definitions or feature files change, check that both individual/isolated
+              scenarios (a single action plus its assertion) and integration scenarios (a flow that
+              spans multiple steps or systems, e.g. cart -> order -> ERP) are covered where the
+              change affects a multi-step flow.
+            - Do not ask for a new integration scenario when the change only affects an isolated,
+              single-step case.
+
+            PARALLEL EXECUTION (preventive - suite doesn't run in parallel yet, but is moving there)
+            - Flag new static/shared mutable fields, a WebDriver instance shared across test
+              methods, or hardcoded (non-unique) test data in new code. None of these break
+              today's sequential run, but each would silently break once tests start running in
+              parallel, and are cheap to avoid now versus retrofit later.
+
+            REPORTING
+            - Flag a new failure path (a thrown exception, a failed assertion, a caught error) that
+              does not capture a screenshot or an Allure step describing what was being done.
+              Triage has repeatedly needed a local re-run just to see what actually broke.
+            - Flag assertion messages that don't state the business entity, expected value, and
+              actual value, since a bare "assertion failed" gives no diagnosable context in the CI
+              report.
+
             OUTPUT
-            - Report findings most severe first, with file and line. Post them as you go rather
-              than holding everything back for one final message: the job has a wall-clock
-              timeout, and a review cut short mid-way still leaves its progress comment on the
-              PR - where an empty one is indistinguishable from a clean review. Anything found
-              in the PRODUCTION SAFETY section goes first, whatever else is outstanding.
+            - Report findings most severe first, with file and line.
+            - For each finding, briefly state what is wrong, why it would cause a false pass/fail
+              or a hard-to-diagnose failure, and the recommended fix.
             - Do not run the test suite. It needs a browser and a live QA environment, neither of
               which exists in CI.
             - If the diff is sound, say so briefly rather than inventing findings.
