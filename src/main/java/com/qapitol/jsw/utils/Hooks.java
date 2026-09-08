@@ -32,6 +32,11 @@ public class Hooks {
         ThreadLocalSoftAssert.startScenario();
         // Drop the cached customer-profile flag so each scenario reads it for its own user
         CustomerProfileUtil.reset();
+        // Same reason, for the login credentials: TestNG reuses pool threads, so without this a
+        // scenario that never logs in would inherit the previous scenario's email and query the
+        // wrong customer record. Cleared at the START because a scenario that fails before logging
+        // in never reaches its own teardown.
+        SessionSteps.clearCredentials();
 
     }
 

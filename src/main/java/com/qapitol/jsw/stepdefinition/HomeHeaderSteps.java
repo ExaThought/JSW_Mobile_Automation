@@ -35,6 +35,38 @@ public class HomeHeaderSteps extends AbstractWebPage {
     private static final String ACCOUNT_MENU = "accountMenu";
     private static final String NAV_ITEM_BY_HREF = "//header//a[@href='%s']";
     private static final By ANY_CATEGORY_LINK = By.xpath("//a[contains(@href,'/category/')]");
+
+    /**
+     * The mega-menu panel belonging to one nav item.
+     *
+     * <p>CAPTURED FROM THE LIVE DOM on 8 Sep 2026 at 1440x900, which the previous version of this
+     * step could not do - it counted {@code /category/} links before and after the hover because
+     * "the panel's markup could not be captured". It can be, with a real pointer move, and the
+     * panel is:
+     *
+     * <pre>
+     *   div.relative.group.flex.items-center           &lt;- the hover target's ancestor
+     *     a[href='/category/mild-steel']               &lt;- 1 match, 84x32, nothing overlaying it
+     *     div.absolute.left-0.top-full.z-50.hidden.group-hover:block.pt-1
+     *       a[href='/category/hot-rolled-steel'] ... 5 sub-category links
+     * </pre>
+     *
+     * <p>It opens on CSS {@code :hover} alone - {@code hidden} to {@code group-hover:block}, no JS
+     * state, no {@code role="menu"}, no {@code data-state}. The header carries FOUR of these panels
+     * (Mild Steel, Structural steel, Bitumen, Help &amp; Support), so the panel is reached through
+     * the hovered anchor's own {@code group} ancestor rather than matched globally.
+     *
+     * <p>{@code concat(' ', normalize-space(@class), ' ')} matches the {@code group} class as a
+     * whole token. {@code contains(@class,'group')} would also match {@code group-hover:*} utility
+     * classes, which sit on the label span and would resolve the ancestor to the wrong node.
+     */
+    private static final String MEGA_MENU_PANEL_FOR_NAV =
+            "//header//a[@href='%s']"
+                    + "/ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' group ')][1]"
+                    + "//div[contains(@class,'group-hover:block')]";
+
+    /** Path of the nav item most recently hovered, so the Then step can find its panel. */
+    private String lastHoveredNavPath;
     private static final Map<String, String> NAV_ITEM_PATHS = buildNavItemPaths();
     private int categoryLinksBeforeHover = -1;
     private Boolean loggedIn;
@@ -204,32 +236,126 @@ public class HomeHeaderSteps extends AbstractWebPage {
         // The helper to avoid is moveToAction - it resolves the first match through findElement
         // AND follows its move with a click(), which would navigate to the category page instead
         // of opening the panel.
+        lastHoveredNavPath = pathFor(menuItem);
         hoverOverElement(target);
         log.info("Hovered over header navigation menu '" + menuItem + "'");
+
+        /* Nudge the pointer if the panel has not appeared.
+         *
+         * A second pointerMove with a small position delta, which is the standard remedy for a CSS
+         * :hover that does not take on the first move.
+         *
+         * Honest about what this is: a mitigation, not a diagnosed fix. The panel opens on CSS
+         * :hover alone, and on 8 Sep a real pointer move over this anchor on a freshly loaded page
+         * DID open it (page-wide /category/ links went 16 -> 21). Repeating the same hover later in
+         * the same session did not, with the pointer geometrically inside the anchor
+         * (elementFromPoint resolved to the anchor's own label span) and the panel still
+         * display:none - so the browser's hover state and the pointer's position had diverged, and
+         * the cause of that divergence is not established. Two candidates were tested and neither
+         * explained it: the pointer already resting on the element, and scrollIntoView moving the
+         * page (scrollY stayed 0 on the first attempt).
+         *
+         * The assertion below is what makes the next failure diagnosable: it reports whether the
+         * panel was absent from the DOM or present-but-hidden, which this nudge cannot. */
+        By panel = By.xpath(String.format(MEGA_MENU_PANEL_FOR_NAV, lastHoveredNavPath));
+        if (!isAnyVisible(panel)) {
+            log.info("Panel not open after the first hover - nudging the pointer 2px off centre");
+            try {
+                WebElement anchor = com.qapitol.jsw.utils.CustomUtil.firstVisible(target);
+                new org.openqa.selenium.interactions.Actions(Grid.driver())
+                        .moveToElement(anchor)
+                        .moveToElement(anchor, 2, 2)
+                        .perform();
+            } catch (Exception e) {
+                log.info("Pointer nudge failed: " + e.getMessage());
+            }
+        }
     }
 
+    /**
+     * Asserts the hovered nav item's mega-menu panel is on screen with sub-category links in it.
+     *
+     * <p>Asserts the PANEL, not a page-wide link count. The count version compared
+     * {@code //a[contains(@href,'/category/')]} before and after the hover, which made the result
+     * depend on how many category links the rest of the page happened to render - 16 signed out and
+     * 17 signed in on 8 Sep - and reported "Mega-menu did not open" without being able to say
+     * whether the panel was there. The panel locator is now known (see
+     * {@link #MEGA_MENU_PANEL_FOR_NAV}), so the question is asked directly.
+     *
+     * <p>The link count is still logged, because it is a useful second signal, but nothing is
+     * asserted on it.
+     */
     @Then("the mega-menu panel should be displayed with sub-categories")
     public void theMegaMenuPanelShouldBeDisplayedWithSubCategories() {
-        if (categoryLinksBeforeHover < 0) {
+        if (lastHoveredNavPath == null) {
             softAssert.fail("No hover was recorded before asserting the mega-menu."
                     + " The hover step must run first.");
             return;
         }
 
-        // Detected by counting the category links the panel adds, rather than by matching a panel
-        // class name. The panel's markup could not be captured (it needs a real pointer hover, and
-        // synthetic mouse events do not open it), and a guessed Tailwind class would rot on the
-        // next restyle exactly as the cart and footer locators did.
-        int after = waitForCategoryLinkIncrease(categoryLinksBeforeHover);
-        softAssert.assertTrue(after > categoryLinksBeforeHover,
-                "Mega-menu did not open: visible category links stayed at " + categoryLinksBeforeHover
-                        + " after hovering. If the panel IS opening on screen, its sub-category links"
-                        + " do not use '/category/' hrefs - capture the panel markup and narrow"
-                        + " ANY_CATEGORY_LINK accordingly.");
-        log.info("Visible category links after hover: " + after);
+        String panelXpath = String.format(MEGA_MENU_PANEL_FOR_NAV, lastHoveredNavPath);
+        By panel = By.xpath(panelXpath);
+        By panelLinks = By.xpath(panelXpath + "//a[@href]");
+
+        boolean opened = waitForVisible(panel);
+        int visibleSubLinks = countVisible(panelLinks);
+        int matchedPanels = Grid.driver().findElements(panel).size();
+
+        if (!opened) {
+            /* Say which of the two failures happened, because they need different fixes: a panel
+             * that is not in the DOM at all means the locator or the markup changed, and a panel
+             * that is present but still display:none means the hover did not take. */
+            softAssert.fail("Mega-menu panel for '" + lastHoveredNavPath + "' did not become visible."
+                    + " Panel nodes matched in the DOM: " + matchedPanels
+                    + (matchedPanels == 0
+                        ? ". Nothing matched. Either this nav item has no mega-menu at all - Cement"
+                          + " and TMT genuinely have none, only Mild Steel, Structural steel,"
+                          + " Bitumen and Help & Support do - or the header markup changed, in which"
+                          + " case re-capture it and update MEGA_MENU_PANEL_FOR_NAV."
+                        : ". The panel IS in the DOM but stayed hidden, so the pointer hover did not"
+                          + " register - it opens on CSS :hover alone, so no JS click or dispatched"
+                          + " event will do it.")
+                    + " Sub-category links visible: " + visibleSubLinks
+                    + ". Page-wide /category/ links: " + countVisible(ANY_CATEGORY_LINK)
+                    + " (was " + categoryLinksBeforeHover + " before the hover).");
+            return;
+        }
+
+        softAssert.assertTrue(visibleSubLinks > 0,
+                "Mega-menu panel for '" + lastHoveredNavPath + "' is visible but shows no"
+                        + " sub-category links, so there is nothing for a customer to navigate to.");
+
+        log.info("Mega-menu opened for '" + lastHoveredNavPath + "' with " + visibleSubLinks
+                + " visible sub-category link(s); page-wide /category/ links went from "
+                + categoryLinksBeforeHover + " to " + countVisible(ANY_CATEGORY_LINK));
     }
 
-    /** Polls briefly for the panel's links to render; returns the final visible count. */
+    /** Polls briefly for a locator to have a visible match. */
+    private boolean waitForVisible(By locator) {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            if (isAnyVisible(locator)) {
+                return true;
+            }
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Polls briefly for the page-wide category-link count to rise above a baseline.
+     *
+     * @deprecated superseded by {@link #waitForVisible(By)} against
+     *             {@link #MEGA_MENU_PANEL_FOR_NAV}. This waited on a page-wide count, so it could
+     *             not distinguish "the panel did not open" from "the rest of the page rendered a
+     *             different number of category links", and it burned its full 3-second budget on
+     *             every failure. Kept only because the count is still logged as a secondary signal.
+     */
+    @Deprecated
     private int waitForCategoryLinkIncrease(int baseline) {
         int latest = baseline;
         for (int attempt = 0; attempt < 10; attempt++) {

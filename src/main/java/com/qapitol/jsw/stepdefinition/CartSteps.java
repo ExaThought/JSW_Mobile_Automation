@@ -1564,6 +1564,83 @@ public class CartSteps extends AbstractWebPage {
         selectProductAttributes("HR Coil", quantity);
     }
 
+    /**
+     * Types a quantity into the PDP box and deliberately does NOT read it back or assert it.
+     *
+     * <p><b>For quantities the PDP is EXPECTED to reject.</b> Every other quantity step goes through
+     * {@link #selectProductAttributes(String, String)}, which reads the committed value back and
+     * asserts it - correct behaviour when the value should stick, and wrong for a rejection test.
+     * Entering "0" makes that path fail on its way to the assertion the scenario actually cares
+     * about: the field refuses the value and holds "", {@code readCommittedQuantity} spends its full
+     * poll budget waiting for a "0" that will never arrive, and {@code assertQuantityAccepted} then
+     * reports "PDP did not accept the quantity" - which is the very thing being verified, recorded
+     * as a defect.
+     *
+     * <p>So this step performs the interaction and stops there. The resulting state is asserted by
+     * the NEXT step ("check Add to cart is disabled"), which is where a rejection test belongs.
+     *
+     * <p>Three things it does not do, each on purpose:
+     * <ul>
+     *   <li><b>No read-back assertion.</b> The field is expected to disagree with the request.</li>
+     *   <li><b>No write to {@code context.pdpQuantity}.</b> Storing a rejected value there would
+     *       feed "" or "0" into any later cart-page comparison. The value left by the preceding
+     *       attribute step stays in place.</li>
+     *   <li><b>It does not replace anything.</b> Added alongside the existing steps rather than
+     *       changing them, so every scenario that expects its quantity to be accepted keeps the
+     *       assertion it relies on.</li>
+     * </ul>
+     */
+    @And("enter quantity {string} in PDP without verifying the committed value")
+    public void enterQuantityInPdpWithoutVerifyingTheCommittedValue(String quantity) {
+        waits(By.xpath(QUANTITY_TEXTBOX));
+        scrollToCenter(By.xpath(QUANTITY_TEXTBOX));
+        WebElement quantityInput = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX));
+        jsClick(quantityInput);
+
+        // Same typing mechanics as the verified path: select the existing value so the digits
+        // replace it rather than appending, then commit with ENTER. sendKeys rather than a JS value
+        // assignment, because the box is a React-controlled input.
+        quantityInput.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
+        quantityInput.sendKeys(Keys.ENTER);
+
+        // Blur, as selectProductAttributes does. The PDP re-evaluates Add to cart on the input's
+        // change/blur, so without this the button can still be showing its pre-entry state when
+        // the next step reads it.
+        confirmBusinessDetailsIfDialogPresent();
+        jsClick(quantityLabel);
+
+        String held = settledQuantityValue();
+        log.info("Entered quantity '" + quantity + "' with verification disabled - field now holds '"
+                + held + "'. Not asserted: this step is for values the PDP is expected to reject.");
+        Allure.addAttachment("Quantity entered without verification",
+                "Requested: " + quantity
+                        + "\nField holds after commit: '" + held + "'"
+                        + "\nNo quantity assertion performed - the next step asserts the Add to cart state.");
+    }
+
+    /**
+     * The quantity field's value once two consecutive reads agree.
+     *
+     * <p>Timing only - nothing here is asserted. The input is re-rendered after the change event, so
+     * an immediate read can catch the pre-commit value. This waits for the value to stop moving
+     * instead of polling towards an expected result, because for a rejected input there is no
+     * expected result to poll towards.
+     */
+    private String settledQuantityValue() {
+        String previous = null;
+        for (int attempt = 0; attempt < 8; attempt++) {
+            String raw = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX)).getAttribute("value");
+            String current = (raw == null) ? "" : raw.trim();
+            if (current.equals(previous)) {
+                return current;
+            }
+            previous = current;
+            sleep(250);
+        }
+        return previous == null ? "" : previous;
+    }
+
     // =====================================================================
     // Generic PDP attribute selection
     //

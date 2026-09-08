@@ -325,10 +325,15 @@ pipeline {
                         # without the override it derives slots from CPU count all over again.
                         SLOTS=$(echo "$STATUS" | grep -o '"maxSessions": *[0-9]*' | grep -o '[0-9]*' | paste -sd+ - | bc 2>/dev/null || echo 0)
                         echo "Grid session slots: $SLOTS"
-                        if [ "${SLOTS:-0}" -lt 5 ]; then
-                            echo "WARNING: grid advertises $SLOTS slot(s) but the suite runs 5 tests in parallel."
-                            echo "  Set SE_NODE_MAX_SESSIONS=5 AND SE_NODE_OVERRIDE_MAX_SESSIONS=true on the node,"
-                            echo "  and give the grid host >=5 cores - slots without cores just turn session"
+                        # Derived from the suite, not hardcoded: this used to compare against a
+                        # literal 5, which was thread-count's value at the time and went stale as
+                        # soon as either axis changed. Demand is thread-count x
+                        # data-provider-thread-count.
+                        WANT=$(node ci/cap-parallelism.js "src/test/resources/${SUITE}" --demand)
+                        if [ "${SLOTS:-0}" -lt "${WANT:-1}" ]; then
+                            echo "WARNING: grid advertises $SLOTS slot(s) but the suite wants $WANT concurrent session(s)."
+                            echo "  Set SE_NODE_MAX_SESSIONS=$WANT AND SE_NODE_OVERRIDE_MAX_SESSIONS=true on the node,"
+                            echo "  and give the grid host >=$WANT cores - slots without cores just turn session"
                             echo "  failures into step timeouts."
                         fi
                         # ---------------------------------------------------------------
@@ -388,25 +393,22 @@ YAML
                     # Capping is a workaround, not the fix: it trades parallelism for a run that
                     # completes. The fix is GRID_URL pointing at a host with >=5 cores.
                     #
-                    # Only ever LOWERS thread-count. Raising it past the authored value would break
-                    # the rule documented in global_qa.properties - two blocks that run at the same
-                    # time may not share a CCP account, because logout is server-side.
+                    # Only ever LOWERS. Raising past the authored value would break the rule
+                    # documented in global_qa.properties - two blocks that run at the same time may
+                    # not share a CCP account, because logout is server-side.
+                    #
+                    # BOTH AXES, and via a script rather than grep/sed. Concurrent sessions are
+                    # thread-count x data-provider-thread-count, and the old inline version read
+                    # only the first `thread-count="N"` anywhere in the file. That matched
+                    # data-provider-thread-count (substring) and matched inside XML comments, so
+                    # after testng_bdd.xml documented both axes in prose the clamp was reading the
+                    # documentation. Build #244 is what that cost: 1 x 5 = 5 sessions demanded on a
+                    # 2-CPU agent, unclamped, and the clamp printed "every thread gets a slot".
+                    # ci/cap-parallelism.js reads the <suite> open tag only.
                     # ---------------------------------------------------------------
                     CPUS=$(nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
                     SUITE_FILE="src/test/resources/${SUITE}"
-                    AUTHORED=$(grep -oP 'thread-count="\\K[0-9]+' "$SUITE_FILE" | head -1)
-                    AUTHORED=${AUTHORED:-1}
-
-                    if [ "$CPUS" -lt "$AUTHORED" ]; then
-                        echo "Agent has $CPUS CPU(s); ${SUITE} asks for thread-count=$AUTHORED."
-                        echo "A local Selenium node serves one session per CPU, so $((AUTHORED - CPUS)) session(s)"
-                        echo "would never start. Capping thread-count to $CPUS for this build only."
-                        sed -i "s/thread-count=\\"$AUTHORED\\"/thread-count=\\"$CPUS\\"/" "$SUITE_FILE"
-                        grep -o 'thread-count="[0-9]*"' "$SUITE_FILE" | head -1 | sed 's/^/  now: /'
-                        echo "  To restore full parallelism, run a grid (docker-compose.grid.yml) and set GRID_URL."
-                    else
-                        echo "Agent has $CPUS CPU(s) for thread-count=$AUTHORED - every thread gets a slot."
-                    fi
+                    node ci/cap-parallelism.js "$SUITE_FILE" "$CPUS"
 
                     # Force headless regardless of what is committed.
                     #

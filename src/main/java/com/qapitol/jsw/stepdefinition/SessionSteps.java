@@ -16,6 +16,7 @@ import org.openqa.selenium.*;
 import java.io.IOException;
 import java.util.Base64;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 import static com.qapitol.jsw.utils.ApiUtils.deleteAllCartItems;
@@ -58,8 +59,47 @@ public  class SessionSteps extends AbstractWebPage {
     public static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     public static final String ACCOUNT_LABEL = "accountLabel";
 
-    public static String userEmail;
-    public static String userPassword;
+    /**
+     * The credentials the CURRENT SCENARIO logged in with, per thread.
+     *
+     * <p>These were {@code public static String}, which is a cross-scenario data leak as soon as
+     * more than one scenario is in flight. The suite runs data-provider-thread-count scenarios
+     * concurrently inside a single {@code <test>} block, so: thread A logs in as X, thread B logs in
+     * as Y and overwrites both fields, then A calls {@link #getCustomerDetail()} and receives Y's
+     * customer record - and asserts X's UI against it.
+     *
+     * <p>It fails silently rather than loudly. Nothing throws; the wrong customer is simply compared,
+     * and it only becomes visible when the two accounts happen to differ on an asserted field. The
+     * Profile block's "Validate personal details/company details against the customer record"
+     * scenarios are exactly this comparison, and they run in the same block.
+     *
+     * <p>Same fix as {@link #SESSION_START_FAILURE} above and {@code ThreadLocalSoftAssert}: keep one
+     * shared handle, store the value per thread. Cleared by {@link #clearCredentials()} from
+     * {@code Hooks.beforeScenario} so a pooled TestNG thread cannot serve a stale value to a later
+     * scenario that never logged in.
+     */
+    private static final ThreadLocal<String> USER_EMAIL = new ThreadLocal<>();
+    private static final ThreadLocal<String> USER_PASSWORD = new ThreadLocal<>();
+
+    /** The email this thread's scenario logged in with, or null if it has not logged in. */
+    public static String userEmail() {
+        return USER_EMAIL.get();
+    }
+
+    /** The Base64-encoded password this thread's scenario logged in with, or null. */
+    public static String userPassword() {
+        return USER_PASSWORD.get();
+    }
+
+    /**
+     * Drops this thread's credentials. Called at the start of every scenario, not the end: a
+     * scenario that fails before logging in never reaches its own teardown, and TestNG hands the
+     * same pool thread to the next scenario.
+     */
+    public static void clearCredentials() {
+        USER_EMAIL.remove();
+        USER_PASSWORD.remove();
+    }
 
 
 
@@ -151,21 +191,80 @@ public  class SessionSteps extends AbstractWebPage {
     }
 
     /**
-     * Waits briefly for a usable WebDriver, absorbing the window in which the previous scenario's
-     * session is still being torn down.
+     * Waits for a usable WebDriver on a budget that depends on what the grid has already proved.
      *
-     * <p>ONE SECOND, not ten. This exists for a millisecond-scale race: on Jenkins build #233 four
-     * scenarios failed within 131ms of each other (21:15:50.644 / .698 / .743 / .775), each with
-     * "Added test session to the Grid" arriving AFTER the failure - the session was nine
-     * milliseconds late. A ten-second poll bought nothing for that and cost ten seconds per
-     * scenario on the far more common case below, where no session is ever coming.
+     * <p>TWO BUDGETS, because "no driver yet" has two completely different causes and the same
+     * timeout cannot serve both:
      *
-     * <p>When the grid itself failed to start, no amount of polling helps and every scenario is
-     * doomed, so the first failure is remembered and the rest fail immediately against it.
+     * <ul>
+     *   <li>COLD - nothing has started a session yet, so the grid may be dead. One second, for a
+     *       millisecond-scale race: on Jenkins build #233 four scenarios failed within 131ms of
+     *       each other (21:15:50.644 / .698 / .743 / .775), each with "Added test session to the
+     *       Grid" arriving AFTER the failure - the session was nine milliseconds late. A ten-second
+     *       poll bought nothing for that and cost ten seconds per scenario when no session was ever
+     *       coming.</li>
+     *   <li>WARM - a session has already started, so the grid works and this scenario is queuing
+     *       for a browser slot. Minutes, not milliseconds. Build #244 is the case: one second was
+     *       applied to a scenario waiting its turn behind 2 Chrome slots, and it lost.</li>
+     * </ul>
+     *
+     * <p>The suite-wide latch is likewise conditional. A grid that never came up dooms every
+     * scenario and should short-circuit the rest of the run - but a single warm timeout does not,
+     * and treating it as fatal is exactly what turned build #244's one queuing loss into 44 broken
+     * scenarios while the grid went on serving 131 sessions.
      */
-    private static final int SESSION_READY_ATTEMPTS = 8;
     private static final long SESSION_READY_POLL_MILLIS = 125;
+
+    /**
+     * COLD budget - nothing has started a session yet, so the grid may genuinely be dead. Kept at
+     * one second for the reason above: fail fast rather than pay a long poll per scenario.
+     */
+    private static final long COLD_BUDGET_MILLIS = 1_000;
+
+    /**
+     * WARM budget - a session HAS started in this run, so the grid demonstrably works and this
+     * scenario is queuing for a browser slot rather than facing a dead grid.
+     *
+     * <p>Sized from Jenkins build #244. The agent reported "Detected 2 available processors" and
+     * Selenium sized the node to "Adding Chrome ... 2 times", while the suite runs
+     * data-provider-thread-count scenarios at once. At 5 scenarios against 2 slots, three of them
+     * must wait for a slot, and a scenario holds its browser for minutes - so a queued scenario
+     * legitimately waits far longer than the cold budget. One second was never a queuing timeout.
+     */
+    private static final long WARM_BUDGET_MILLIS = 120_000;
+
+    /**
+     * How many scenarios in a row may exhaust the WARM budget before the grid is declared dead.
+     *
+     * <p>Without this, a grid that dies mid-run after some successes would make every remaining
+     * scenario pay the full warm budget - 100 scenarios x 120s is hours of a build spent waiting
+     * for something that is never coming. Three strikes bounds that at ~6 minutes while still
+     * absorbing the single isolated timeout that build #244 turned into 43 write-offs.
+     */
+    private static final int WARM_FAILURES_BEFORE_LATCH = 3;
+
     private static volatile String gridFailure;
+
+    /**
+     * True once ANY scenario in this run has obtained a usable driver.
+     *
+     * <p>This is what separates "the grid never came up" from "this scenario could not get a slot
+     * in time", and build #244 is why it exists. That run created 131 sessions and passed 58
+     * scenarios over 34 healthy minutes; then at 11:11:05 one scenario exhausted its 1000ms wait,
+     * {@link #gridFailure} latched suite-wide, and the remaining 43 scenarios were written off
+     * against a grid that was still working. The hub was fine throughout - one "Added node", zero
+     * "Timed out waiting for 127.0.0.1 to initialize".
+     */
+    private static volatile boolean sessionEverStarted;
+
+    /**
+     * Consecutive scenarios that have exhausted the WARM budget. Reset by any success.
+     *
+     * <p>Atomic, not a volatile int: up to data-provider-thread-count scenarios can time out at the
+     * same moment, and {@code ++} on a volatile field is a read-modify-write that silently loses
+     * increments under exactly that concurrency.
+     */
+    private static final AtomicInteger CONSECUTIVE_WARM_FAILURES = new AtomicInteger();
 
     /**
      * The session-start failure for the scenario running on THIS thread, read back by
@@ -196,36 +295,73 @@ public  class SessionSteps extends AbstractWebPage {
 
     private void awaitDriverReady() {
         if (gridFailure != null) {
-            String skipped = "Skipping the browser start: the Selenium grid already failed earlier"
-                    + " in this run, so no scenario in it can obtain a session. Fix the first"
-                    + " failure and the rest go with it. First failure was: " + gridFailure;
+            String skipped = "Skipping the browser start: the Selenium grid failed for "
+                    + WARM_FAILURES_BEFORE_LATCH + " scenarios in a row (or never came up at all),"
+                    + " so it is treated as dead for the rest of this run. Fix the first failure and"
+                    + " the rest go with it. First failure was: " + gridFailure;
             // Recorded as well as thrown - otherwise every scenario after the first shows the
             // bare "Driver not initialized" message in the report with no pointer to the cause.
             recordSessionStartFailure(skipped);
             throw new IllegalStateException(skipped);
         }
 
+        // A demonstrably working grid gets the long budget; an unproven one fails fast.
+        boolean warm = sessionEverStarted;
+        long budgetMillis = warm ? WARM_BUDGET_MILLIS : COLD_BUDGET_MILLIS;
+        long deadline = System.currentTimeMillis() + budgetMillis;
+
         IllegalStateException last = null;
-        for (int attempt = 1; attempt <= SESSION_READY_ATTEMPTS; attempt++) {
+        int attempt = 0;
+        do {
+            attempt++;
             try {
                 Grid.driver();
+                // Order matters: record the success BEFORE returning, so the next scenario to queue
+                // gets the warm budget even if this one is the only session that ever worked.
+                sessionEverStarted = true;
+                CONSECUTIVE_WARM_FAILURES.set(0);
                 if (attempt > 1) {
-                    log.info("Browser session became usable on attempt " + attempt);
+                    log.info("Browser session became usable on attempt " + attempt
+                            + " (" + (warm ? "warm" : "cold") + " budget)");
                 }
                 return;
             } catch (IllegalStateException e) {
                 last = e;
                 sleep(SESSION_READY_POLL_MILLIS);
             }
-        }
+        } while (System.currentTimeMillis() < deadline);
 
         String diagnosis = diagnose(last);
         // Both, and they are not redundant: SESSION_START_FAILURE carries the full diagnosis into
         // THIS scenario's report, gridFailure short-circuits every later scenario in the run.
         recordSessionStartFailure(diagnosis);
-        gridFailure = String.valueOf(last);
-        log.log(Level.SEVERE, "No usable browser session after "
-                + (SESSION_READY_ATTEMPTS * SESSION_READY_POLL_MILLIS) + "ms. " + diagnosis, last);
+
+        /* Latch only when the grid has not proved itself, or has stopped working for several
+         * scenarios running. A single warm timeout is a queuing loss, not a dead grid - latching on
+         * it is what cost build #244 forty-three scenarios while 131 sessions were being served. */
+        if (!warm) {
+            gridFailure = String.valueOf(last);
+        } else {
+            // Captured, not re-read: another thread can reset this to 0 between the increment and
+            // the log, which would print a count that did not choose this branch.
+            int warmFailures = CONSECUTIVE_WARM_FAILURES.incrementAndGet();
+            if (warmFailures >= WARM_FAILURES_BEFORE_LATCH) {
+                gridFailure = String.valueOf(last);
+                log.log(Level.SEVERE, warmFailures + " scenarios in a row could not obtain a session"
+                        + " despite the grid having worked earlier - treating it as dead for the rest"
+                        + " of this run.");
+            } else {
+                log.log(Level.SEVERE, "Scenario could not obtain a browser session within "
+                        + budgetMillis + "ms, but the grid has served sessions in this run, so it is"
+                        + " NOT being latched. Consecutive warm failures: " + warmFailures + " of "
+                        + WARM_FAILURES_BEFORE_LATCH + ". Most likely this scenario queued for a"
+                        + " browser slot: check whether thread-count x data-provider-thread-count"
+                        + " exceeds the agent's Chrome slots.");
+            }
+        }
+
+        log.log(Level.SEVERE, "No usable browser session after " + budgetMillis + "ms ("
+                + (warm ? "warm" : "cold") + " budget, " + attempt + " attempts). " + diagnosis, last);
         throw new IllegalStateException(diagnosis, last);
     }
 
@@ -301,10 +437,10 @@ public  class SessionSteps extends AbstractWebPage {
     @And("ccp login with {string} and {string}")
     public void ccpLogin(String emailId, String pass) throws IOException {
         log.entering(emailId, pass);
-        userEmail = emailId;
+        USER_EMAIL.set(emailId);
         //convert given password to Base64
         String encodedPassword = Base64.getEncoder().encodeToString(pass.getBytes());
-        userPassword= encodedPassword;
+        USER_PASSWORD.set(encodedPassword);
 
         if(waitAndCheckIsElementVisible(LOGIN_POP_UP_CLOSE_BUTTON)){
             waitAndCheckIsElementClickable(LOGIN_POP_UP_CLOSE_BUTTON);
@@ -404,7 +540,15 @@ public  class SessionSteps extends AbstractWebPage {
     }
 
     public CustomerDetailsResponse getCustomerDetail(){
-        return ApiUtils.getCustomerDetails(userEmail,userPassword);
+        String email = userEmail();
+        if (email == null) {
+            // Was a silent wrong-customer comparison when these were static: this thread would read
+            // whichever scenario logged in last, on any thread. Now it is a named failure.
+            throw new IllegalStateException("getCustomerDetail() was called before this scenario"
+                    + " logged in, so there are no credentials to query the customer record with."
+                    + " Add a 'ccp login with ...' step to the scenario's Background.");
+        }
+        return ApiUtils.getCustomerDetails(email, userPassword());
     }
 
     private void confirmBusinessDetailsIfDialogPresent() {

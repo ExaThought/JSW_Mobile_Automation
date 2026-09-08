@@ -608,6 +608,95 @@ public class CustomUtil {
         return resolveElement(target).getText().trim();
     }
 
+    /**
+     * Reads an element's text through the JavaScript executor instead of {@code WebElement.getText()}.
+     *
+     * <p><b>Why this exists.</b> Selenium's {@code getText()} returns only text the browser is
+     * currently RENDERING, so it comes back empty for an element that is {@code display:none} or
+     * otherwise not laid out - even when the text sits in the DOM. Reading it through the DOM
+     * instead is how you get at a value that is present but not painted.
+     *
+     * <p>Tries {@code innerText} first and falls back to {@code textContent}. What separates the two
+     * is measured, not assumed - CCP's home page at 1440x900 renders {@code //header} twice:
+     *
+     * <pre>
+     *   copy 0    0 x 0        innerText 422    textContent 422
+     *   copy 1    1425 x 120   innerText 158    textContent 447
+     * </pre>
+     *
+     * <p>Two things follow, and both matter when choosing a method:
+     *
+     * <ul>
+     *   <li><b>On an element with no layout box, {@code innerText} is {@code textContent}.</b> The
+     *       HTML spec says so, and copy 0's identical 422/422 is that rule. There is no need for a
+     *       fallback to reach a hidden element's text - {@code innerText} already gives it.</li>
+     *   <li><b>On a rendered element the two disagree sharply</b> - 158 against 447. The extra 289
+     *       characters are inside closed menus. So {@code textContent} will satisfy a
+     *       {@code contains(...)} assertion using text that NO customer can see, which is a false
+     *       pass, not a robust one.</li>
+     * </ul>
+     *
+     * <p>Hence the order: {@code innerText} is what a person reads on a visible element and is
+     * already the full DOM text on a hidden one, which makes it right in both cases;
+     * {@code textContent} is only the safety net for markup where {@code innerText} yields nothing.
+     * Returns "" rather than null when the element has no text at all.
+     *
+     * <p>Where the question is "can the customer SEE this text", none of these is the answer - use
+     * {@link #getText(Object)} on {@link #firstVisible(By)}, so the visible copy is the one read.
+     *
+     * @param target By or WebElement, as {@link #resolveElement(Object)} accepts
+     * @return the element's text, trimmed, or "" when it has none
+     */
+    public static String getTextJS(Object target) {
+        WebElement element = resolveElement(target);
+        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+
+        Object innerText = js.executeScript("return arguments[0].innerText;", element);
+        if (innerText instanceof String && !((String) innerText).trim().isEmpty()) {
+            return ((String) innerText).trim();
+        }
+
+        Object textContent = js.executeScript("return arguments[0].textContent;", element);
+        if (textContent instanceof String) {
+            return ((String) textContent).trim();
+        }
+
+        return "";
+    }
+
+    /**
+     * Reads an element's text through every mechanism that can carry one, in order of fidelity.
+     *
+     * <p>Selenium {@code getText()}, then {@code innerText}/{@code textContent} via
+     * {@link #getTextJS(Object)}, then the {@code value} attribute - which is where an
+     * {@code <input>} keeps its text, since inputs have no child text node at all and return "" from
+     * all three of the preceding calls.
+     *
+     * <p>Extracted from a private copy in MProfileSteps so the four-way cascade is written once.
+     * Prefer the narrowest method that answers your question: {@link #getText(Object)} when the text
+     * must be visible, {@link #getTextJS(Object)} when it need only be in the DOM, and this when you
+     * are reading a field whose markup you do not control.
+     *
+     * @param target By or WebElement, as {@link #resolveElement(Object)} accepts
+     * @return the first non-empty text found, trimmed, or "" if every source is empty
+     */
+    public static String getTextResilient(Object target) {
+        WebElement element = resolveElement(target);
+
+        String rendered = element.getText();
+        if (rendered != null && !rendered.trim().isEmpty()) {
+            return rendered.trim();
+        }
+
+        String scripted = getTextJS(element);
+        if (!scripted.isEmpty()) {
+            return scripted;
+        }
+
+        String value = element.getAttribute("value");
+        return value == null ? "" : value.trim();
+    }
+
 
     public static String generateFirstName() {
         String randomString = UUID.randomUUID()

@@ -17,8 +17,8 @@ Feature: Validate Footer links and navigation
       | Structural Steel   | structural-steel |
       | TMT                | TMT              |
       | Cement             | Cement           |
-      | About us           | about-us         |
-      | Investor relations | about-us         |
+      | About us           | corporate        |
+      | Investor relations | corporate        |
       | Blogs              | blogs            |
       | Site map           | sitemap          |
       | one helix          | one-helix        |
@@ -27,6 +27,8 @@ Feature: Validate Footer links and navigation
       | Privacy policy     | privacy-policy   |
       | Return Policy      | return-policy    |
 
+  
+@productionSanity
   Scenario Outline: Verify social media icon navigation
     When the user clicks on social icon "<platform>"
     Then the user should be redirected to the correct social page "<expectedDomain>"
@@ -37,7 +39,8 @@ Feature: Validate Footer links and navigation
       | linkedin  | linkedin       |
       | instagram | instagram      |
       | facebook  | facebook       |
-
+  
+@productionSanity
   Scenario Outline: Verify app store badge navigation
     When the user clicks on app icon "<appName>"
     Then the user should be redirected to the correct app store "<store>"

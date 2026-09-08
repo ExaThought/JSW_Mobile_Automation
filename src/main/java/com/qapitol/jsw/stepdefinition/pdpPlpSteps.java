@@ -6,9 +6,12 @@ import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,11 +56,46 @@ public class pdpPlpSteps extends AbstractWebPage {
         log.info("Clicked on reset button in PDP page");
     }
 
+    /**
+     * Asserts the PDP has disabled Add to cart.
+     *
+     * <p>This used to assert {@code addToCart.isDisplayed()}, which cannot fail: the button is
+     * rendered whether or not it is disabled, so the step passed on every run and the only live
+     * scenario using it - the quantity = 0 case in Pdp.feature - proved nothing.
+     *
+     * <p>Disabled state is read from {@code isEnabled()} (the native {@code disabled} attribute) and
+     * from {@code aria-disabled}, for a button kept focusable and marked only for assistive tech.
+     * It is deliberately NOT read from the class list: the PDP's Tailwind build ships
+     * {@code disabled:} variant classes such as {@code disabled:hover:bg-*} that are present at all
+     * times, so {@code class.contains("disabled")} is true even on a fully enabled button.
+     *
+     * <p>Waited for rather than read once, because the PDP re-evaluates the button in response to a
+     * state change and an immediate read catches the previous state.
+     */
     @Then("check Add to cart is disabled")
     public void checkAddToCartIsDisabled() {
-        WebElement addToCart = Grid.driver().findElement(Add_TO_CART_BUTTON);
-        softAssert.assertTrue(addToCart.isDisplayed(), "Add to cart button is enabled after clicking reset button");
-        log.info("Add to cart button is disabled after clicking reset button");
+        boolean disabled;
+        try {
+            disabled = new WebDriverWait(Grid.driver(), Duration.ofSeconds(5))
+                    .withMessage("Add to cart to become disabled")
+                    .until(d -> isAddToCartDisabled(d.findElement(Add_TO_CART_BUTTON)));
+        } catch (TimeoutException e) {
+            disabled = false;
+        }
+
+        softAssert.assertTrue(disabled, "Add to cart is still enabled. It should be disabled while"
+                + " the quantity on the PDP is not a valid order quantity.");
+        if (disabled) {
+            log.info("Add to cart is disabled, as expected");
+        }
+    }
+
+    /** True when Add to cart is genuinely disabled. See {@link #checkAddToCartIsDisabled()}. */
+    private boolean isAddToCartDisabled(WebElement addToCart) {
+        if (!addToCart.isEnabled()) {
+            return true;
+        }
+        return "true".equalsIgnoreCase(addToCart.getAttribute("aria-disabled"));
     }
 
     @Then("check Add to cart is enabled")
@@ -127,7 +165,7 @@ public class pdpPlpSteps extends AbstractWebPage {
         // The PDP quantity field must accept at most 4 digits. A 4-digit value (e.g. 1000 or 9999)
         // is kept as-is; anything longer is truncated so only the first 4 digits are treated as
         // input (e.g. 12345 -> 1234, 99999 -> 9999).
-        String pdpQuantity = waitAndGetText(CART_QUANTITY);            // e.g. "Qty: 1234 MT"
+        String pdpQuantity = waitAndGetAttribute(CART_QUANTITY, "value");            // e.g. "Qty: 1234 MT"
         String actualDigits = pdpQuantity.replaceAll("[^0-9]", "");
 
         Assert.assertEquals(actualDigits.length(), 4,
@@ -136,12 +174,6 @@ public class pdpPlpSteps extends AbstractWebPage {
                 "Quantity field should treat only the first 4 digits as input. Expected '"
                         + expectedQuantity + "' but the cart shows '" + pdpQuantity + "'");
         log.info("Quantity field correctly limited to 4 digits in PDP page: " + pdpQuantity);
-
-        // Cleanup: remove the line item so the cart is left empty for the next example.
-        WebElement deleteBtn = Grid.driver().findElement(By.xpath("(//section/div/div/div/button[text()='Delete']) [position() < 2]"));
-        jsClick(deleteBtn);
-        WebElement deleteItemBtn = Grid.driver().findElement(By.xpath("//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']"));
-        jsClick(deleteItemBtn);
     }
 
     @Then("check brand name is not empty in PDP page")
