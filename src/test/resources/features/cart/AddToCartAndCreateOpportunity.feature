@@ -179,13 +179,13 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then check the empty cart page display with message "Your cart is empty"
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
-    And click on HR Coil product
+    And click on HR Sheet product
     And User lands on PLP
     And click on first product
-    And select thickness, width, quantity "50" for HR Coil
+    And select thickness, width, length, quantity "50" for HR Sheet
     And add to cart
     And click view cart
-    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    Then Verify the Attribute values for HR Sheet in cart page with cart count "1"
     And submit the requirement to create an opportunity
     Then verify the opportunity is created with a valid requirement id
 
@@ -196,13 +196,13 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then check the empty cart page display with message "Your cart is empty"
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
-    And click on HR Coil product
+    And click on HR Sheet product
     And User lands on PLP
     And click on first product
-    And select thickness, width, quantity "50" for HR Coil
+    And select thickness, width, length, quantity "50" for HR Sheet
     And add to cart
     And click view cart
-    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    Then Verify the Attribute values for HR Sheet in cart page with cart count "1"
     Then Delete the line item from cart
     Then check the empty cart page display with message "Your cart is empty"
 
@@ -213,11 +213,11 @@ Feature: Check Add-To-Cart and Create opportunity from Cart
     Then check the empty cart page display with message "Your cart is empty"
     And User navigate to HomePage
     When move the mouse to Mild steel category and to sub category Hot rolled
-    And click on HR Coil product
+    And click on HR Sheet product
     And User lands on PLP
     And click on first product
-    And select thickness, width, quantity "50" for HR Coil
+    And select thickness, width, length, quantity "50" for HR Sheet
     And add to cart
     And click view cart
-    Then Verify the Attribute values for HR Coil in cart page with cart count "1"
+    Then Verify the Attribute values for HR Sheet in cart page with cart count "1"
     Then cart should retain the items after page refresh
