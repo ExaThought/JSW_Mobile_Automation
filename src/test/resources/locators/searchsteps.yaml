@@ -27,7 +27,7 @@ elements:
     en_US:
       web: //span[normalize-space()='Search']
 
-  # Suggestion rows inside the search popup overlay. NOT verified live (needs the modal open).
+  # Suggestion rows inside the search popup overlay. NOT verified live (needs the modal open). 
   searchSuggestions:
     en_US:
       web: //input[@data-slot="input"]/../../../../../following-sibling::div//a
@@ -46,7 +46,7 @@ elements:
 
   plpNoResultsMessage:
     en_US:
-      web: //*[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no results') or contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no products')]
+      web: //*[contains(text(), 'No products found')]
 
   # -------- Inner elements of a result card (relative xpaths, used inside a card) --------
   productName:

@@ -25,12 +25,14 @@ Feature: Validate Home Page Header
     And the cart icon should be displayed in the header
     And the account menu should be displayed in the header
     And the Login call-to-action should not be displayed in the header
-    # Asserts the mega-menu is POPULATED, not that hovering reveals it. The reveal is pure CSS
-    # (hidden -> group-hover:block) and could not be driven reliably even in a headed Chrome, while
-    # the thing that can regress silently is the sub-category list itself - it is server-rendered,
-    # so a catalogue or nav-config change can empty the flyout with nothing else looking wrong.
     When user hovers over the "Mild Steel" navigation menu in the header
     Then the mega-menu panel should contain sub-category links
+
+
+  Scenario: The header cart badge agrees with the cart itself
+    Given user is on the application as a "Logged In" user
+    Then the cart icon should be displayed in the header
+    And the header cart badge should match the cart line-item count from the API
 
   @productionSanity @prodSafe
   Scenario Outline: Verify header navigation menu redirects to the correct listing page

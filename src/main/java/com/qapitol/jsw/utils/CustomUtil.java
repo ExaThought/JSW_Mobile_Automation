@@ -4,6 +4,7 @@ import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -20,18 +21,7 @@ import java.util.regex.Pattern;
 import static com.qapitol.sauron.core.actions.ActionListener.logger;
 
 public class CustomUtil {
-    /**
-     * Scrolls the element into view. Despite the name it does NOT click, and it swallows every
-     * exception, so a failure here is silent.
-     *
-     * <p>Retained as-is because ~13 call sites in CartSteps and TokenSteps were written against
-     * this behaviour and pass today; changing it would turn those into double-clicks. For a
-     * scroll that actually clicks, use {@link #scrollToViewAndClick(By)}.
-     *
-     * @param locator element to scroll into view
-     * @deprecated misleading name - use {@link #scrollToViewAndClick(By)} to scroll and click,
-     *             or call this only where a scroll alone is intended.
-     */
+
     @Deprecated
     public static void scrollingToViewAndClickUsingJS(WebElement locator) {
         try {
@@ -47,13 +37,14 @@ public class CustomUtil {
         wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
-    /**
-     * By for a locator value read out of a {@code locators/*.yaml} file.
-     *
-     * <p>Those files mix both conventions - some entries carry an {@code xpath=} prefix and some do
-     * not - and {@code By.xpath} would take the prefix as part of the expression. Call as
-     * {@code xpathOf(getLocator(KEY))} from any step class.
-     */
+    public static void waitForPageLoad() {
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(30))
+                .withMessage("document.readyState never reached 'complete' within 30s - still at "
+                        + Grid.driver().getCurrentUrl())
+                .until(driver -> "complete".equals(
+                        ((JavascriptExecutor) driver).executeScript("return document.readyState")));
+    }
+
     public static By xpathOf(String locatorValue) {
         String xpath = locatorValue.startsWith("xpath=")
                 ? locatorValue.substring("xpath=".length())
@@ -61,15 +52,7 @@ public class CustomUtil {
         return By.xpath(xpath);
     }
 
-    /**
-     * Waits up to 10s for the element to be clickable. Non-fatal by design - many callers use it as
-     * a settle before an interaction that has its own wait.
-     *
-     * <p>The timeout is logged rather than swallowed silently. Previously the catch block was empty,
-     * so a caller that then failed on its own shorter wait reported that shorter timeout as the
-     * cause: the category hover steps in build #233 read "tried for 2 second(s)" when 10 seconds had
-     * already elapsed here unnoticed.
-     */
+
     public static void waits(By locator) {
         try {
             WebDriverWait wait = new WebDriverWait(Grid.driver(), java.time.Duration.ofSeconds(10));
@@ -83,8 +66,6 @@ public class CustomUtil {
     public static boolean waitUntilEnabled(By locator) {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
 
-        // Named, for the same reason as firstVisible: a lambda condition makes WebDriverWait
-        // report the JVM's synthetic class rather than anything a reader can act on.
         return wait.withMessage("element never became enabled: " + locator + " (within 10s)")
                 .until(driver -> {
                     WebElement element = driver.findElement(locator);
@@ -124,32 +105,8 @@ public class CustomUtil {
         js.executeScript("arguments[0].click();", element);
     }
 
-    /**
-     * First rendered element matching the locator.
-     *
-     * <p>The header and navigation render each element twice - once collapsed to 0x0 and once
-     * visible - so findElement() returns the invisible copy. ExpectedConditions does not help here:
-     * visibilityOfElementLocated() re-checks only that same first match until it times out, and
-     * visibilityOfAllElementsLocatedBy() demands every match be visible, which the 0x0 duplicate
-     * never is. Hence the explicit filter below.
-     *
-     * @param locator locator that may resolve to both hidden and visible copies
-     * @return the first match that is displayed with a non-zero bounding box
-     * @throws org.openqa.selenium.TimeoutException if no match becomes visible within 15 seconds
-     */
+
     public static WebElement firstVisible(By locator) {
-        /* withMessage, because the condition is a lambda.
-         *
-         * WebDriverWait names the condition in its timeout text, and for a lambda that name is the
-         * JVM's synthetic class - "waiting for CustomUtil$$Lambda$1082/0x00000008007e1c40@4e9034cb".
-         * In the 3 Sep 2026 run that was 24 of 36 failure messages: the locator that actually timed
-         * out appeared nowhere in the report, so every one of them had to be traced by reading this
-         * source. isAnyVisible and clickFirstVisible both delegate here, so this one message covers
-         * all three call paths.
-         *
-         * The "matches may exist but be 0x0" wording is deliberate: that is the case this method
-         * exists for, and distinguishing "no element" from "no VISIBLE element" is usually the
-         * whole question. */
         return new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
                 .withMessage("no VISIBLE match for " + locator
                         + " within 15s (matches may exist in the DOM but be 0x0 - the header, footer"
@@ -169,16 +126,6 @@ public class CustomUtil {
                 });
     }
 
-    /**
-     * True when at least one match for the locator is actually rendered.
-     *
-     * <p>Use instead of {@code isDisplayed(By)} wherever a locator can resolve to hidden duplicates:
-     * isDisplayed() inspects only the first match, so it reports false while a visible copy exists.
-     * Never throws - a locator that matches nothing returns false after the wait elapses.
-     *
-     * @param locator locator that may resolve to both hidden and visible copies
-     * @return true if a rendered match was found within the wait window
-     */
     public static boolean isAnyVisible(By locator) {
         try {
             firstVisible(locator);
@@ -188,15 +135,6 @@ public class CustomUtil {
         }
     }
 
-    /**
-     * Clicks the first rendered element matching the locator, using a real Actions click.
-     *
-     * <p>Prefer this over jsClick for anything in the header or category navigation. A real click
-     * produces genuine pointer events, which the Radix-based components this app is built on
-     * require - they listen on pointerdown, and a JavaScript .click() never fires that.
-     *
-     * @param locator locator that may resolve to both hidden and visible copies
-     */
     public static void clickFirstVisible(By locator) {
         WebElement element = firstVisible(locator);
         ((JavascriptExecutor) Grid.driver())
@@ -204,15 +142,6 @@ public class CustomUtil {
         new Actions(Grid.driver()).moveToElement(element).click().perform();
     }
 
-    /**
-     * Scrolls the first rendered match into view and clicks it, falling back to a JavaScript
-     * click if the real click is intercepted.
-     *
-     * <p>Use this rather than {@link #scrollingToViewAndClickUsingJS(WebElement)}, which despite
-     * its name only scrolls.
-     *
-     * @param locator locator of the element to scroll to and click
-     */
     public static void scrollToViewAndClick(By locator) {
         WebElement element = firstVisible(locator);
         JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
@@ -225,12 +154,6 @@ public class CustomUtil {
         }
     }
 
-    /**
-     * Scrolls the given element into view and clicks it, falling back to a JavaScript
-     * click if the real click is intercepted. This overload accepts a resolved WebElement.
-     *
-     * @param element the element to scroll to and click
-     */
     public static void scrollToViewAndClick(WebElement element) {
         JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
         js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
@@ -242,12 +165,7 @@ public class CustomUtil {
         }
     }
 
-    /**
-     * Visibility check performed via the JavaScript executor (computed style + bounding rect)
-     * instead of Selenium's isDisplayed(). Waits for the element to be present in the DOM, then
-     * asks the browser whether it is actually rendered and visible. Returns false if the element
-     * is absent or not visible (never throws).
-     */
+
     public static boolean isElementVisibleJS(By locator) {
         try {
             new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
@@ -268,9 +186,6 @@ public class CustomUtil {
         }
     }
 
-    /**
-     * Scrolls element to center of viewport (safe from sticky headers/footers)
-     */
     public static void scrollToCenter(By locator) {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
         WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
@@ -284,17 +199,6 @@ public class CustomUtil {
         }
     }
 
-    /**
-     * Scrolls the div whose visible text equals {@code text} to the centre of the viewport.
-     *
-     * <p>The argument is TEXT CONTENT, not an XPath. It used to be an overload of
-     * {@link #scrollToCenter(By)} named scrollToCenter(String), which made it the silent winner of
-     * overload resolution whenever a caller passed a String XPath constant - producing selectors
-     * like {@code //div[normalize-space()='//li/a[contains(@href, 'x')]']}, which is not valid
-     * XPath and throws InvalidSelectorException. Renaming it removes that trap.
-     *
-     * @param text exact visible text of the target div, after whitespace normalisation
-     */
     public static void scrollToCenterByText(String text) {
         // XPath 1.0 has no escape syntax, so pick a quote character the text does not contain.
         String quoted = text.contains("'") ? "\"" + text + "\"" : "'" + text + "'";
@@ -302,11 +206,7 @@ public class CustomUtil {
     }
 
 
-    /**
-     * Scrolls element above sticky footer/header with configurable offset
-     *
-     * @param xpath XPath string to locate element
-     */
+
     public static void scrollAboveSticky(String xpath) {
         WebDriver driver = Grid.driver();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
@@ -323,10 +223,6 @@ public class CustomUtil {
                 y, offset);
     }
 
-    /**
-     * Safe click for mobile: scrolls to center, moves up slightly, then clicks
-     * Handles sticky footers/headers and uses JS fallback
-     */
     public static void safeClick(By locator) {
         WebDriver driver = Grid.driver();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
@@ -362,31 +258,81 @@ public class CustomUtil {
                 .perform();
     }
 
-    /**
-     * Moves the mouse over the first RENDERED match, so a hover-driven menu actually opens.
-     *
-     * <p>This used to resolve the element with {@code findElement}, i.e. the first match in document
-     * order. The CCP header is rendered twice and the first copy measures 0x0 (measured on QA - see
-     * homeheadersteps.yaml), so the Actions hover landed on a zero-size box and produced no hover at
-     * all. Every category mega-menu step then timed out looking for sub-category links that were
-     * never going to render: build #233 lost 31 scenarios to exactly this.
-     *
-     * <p>{@code visibilityOfElementLocated} did not save it either - that condition also inspects
-     * only the first match, which is why the old 2-second wait was the thing that threw.
-     *
-     * <p>The element is scrolled to centre first: {@code moveToElement} on a node outside the
-     * viewport is a "move target out of bounds" error in Selenium 4.
-     */
+    private static final int HOVER_ATTEMPTS = 3;
+
+    private static final String HOVER_REACHABLE_JS =
+            "var el = arguments[0], r = el.getBoundingClientRect();"
+          + "if (r.width === 0 || r.height === 0) return 'zero-size box';"
+          + "var vw = window.innerWidth, vh = window.innerHeight;"
+          + "if (!vw || !vh) return 'ok|' + Math.round(r.height) + '|viewport unmeasurable, reachability unchecked';"
+          + "var cx = r.left + r.width / 2, cy = r.top + r.height / 2;"
+          + "if (cx < 0 || cy < 0 || cx > vw || cy > vh)"
+          + "  return 'centre is outside the ' + vw + 'x' + vh + ' viewport at ('"
+          + "         + Math.round(cx) + ',' + Math.round(cy) + ')';"
+          + "var top = document.elementFromPoint(cx, cy);"
+          + "if (!top) return 'ok|' + Math.round(r.height) + '|no node at centre, reachability unchecked';"
+          + "if (top === el || el.contains(top)) return 'ok|' + Math.round(r.height);"
+          + "var id = top.getAttribute && top.getAttribute('data-test-id');"
+          + "return 'covered by <' + top.tagName.toLowerCase() + '>'"
+          + "  + (id ? ' data-test-id=' + id : '');";
+
+   
     public static void hoverOverElement(By locator)
     {
-        WebElement element = firstVisible(locator);
+        WebDriverException last = null;
+        String reachability = "not checked";
 
-        ((JavascriptExecutor) Grid.driver())
-                .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+        for (int attempt = 1; attempt <= HOVER_ATTEMPTS; attempt++) {
+            try {
+                // Re-resolved every attempt: a reference taken before the scroll can be stale by the
+                // time the move runs.
+                WebElement element = firstVisible(locator);
+                JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
 
-        new Actions(Grid.driver())
-                .moveToElement(element)
-                .perform();
+                js.executeScript(
+                        "arguments[0].scrollIntoView({block:'center', inline:'nearest', behavior:'instant'});",
+                        element);
+
+                reachability = String.valueOf(js.executeScript(HOVER_REACHABLE_JS, element));
+                if (!reachability.startsWith("ok|")) {
+                    logger.info("hover attempt " + attempt + " of " + HOVER_ATTEMPTS + " on " + locator
+                            + " is not reachable at its centre (" + reachability + ")");
+                    continue;
+                }
+
+                String[] ok = reachability.split("\\|");
+                if (ok.length > 2) {
+                    logger.warning("hoverOverElement: reachability check returned more than 2 fields: "
+                            + reachability);
+                }
+                int height = Integer.parseInt(ok[1]);
+                // Offsets are from the element's CENTRE in the W3C Actions spec, so this lands just
+                // above the top edge. Safe because the element was centred first.
+                int above = -(height / 2 + 12);
+
+                new Actions(Grid.driver())
+                        .moveToElement(element, 0, above)   // leave, so the next move re-enters
+                        .pause(Duration.ofMillis(60))
+                        .moveToElement(element)             // enter -> pointerenter fires
+                        .perform();
+
+                if (attempt > 1) {
+                    logger.info("hover on " + locator + " succeeded on attempt " + attempt);
+                }
+                return;
+
+            } catch (StaleElementReferenceException | MoveTargetOutOfBoundsException e) {
+                last = e;
+                logger.info("hover attempt " + attempt + " of " + HOVER_ATTEMPTS + " on " + locator
+                        + " threw " + e.getClass().getSimpleName() + " - re-resolving");
+            }
+        }
+
+        throw new IllegalStateException("could not hover " + locator + " after " + HOVER_ATTEMPTS
+                + " attempts. Last reachability check: " + reachability
+                + ". If this says 'covered by', a sticky header or modal is over the element - dismiss"
+                + " it first. If it says 'ok', the pointer reached the element and the component did"
+                + " not react, which is a product question, not a locator one.", last);
     }
 
     public static void moveToAction(By locator)
@@ -543,13 +489,7 @@ public class CustomUtil {
     public static boolean matches(String productName, String searchText) {
         return normalize(productName).toLowerCase().contains(normalize(searchText).toLowerCase());
     }
-    /**
-     * Resolves a supported element target into a WebElement.
-     *
-     * @param target supported element reference (By, WebElement, String XPath)
-     * @return resolved WebElement
-     * @throws IllegalArgumentException when target type is not supported
-     */
+
     public static WebElement resolveElement(Object target) {
         if (target instanceof WebElement) {
             return (WebElement) target;
@@ -562,10 +502,6 @@ public class CustomUtil {
         throw new IllegalArgumentException(
                 "Unsupported type: " + target.getClass().getSimpleName());
     }
-    /**
-     * @param target element identifier. Supported types are By, WebElement, and String XPath.
-     * @throws IllegalArgumentException if an unsupported target type is provided
-     */
 
     public static void clickButton(Object target) {
         WebElement element = resolveElement(target);
@@ -573,19 +509,6 @@ public class CustomUtil {
         element.click();
     }
 
-    /**
-     * Checks whether a UI element is displayed.
-     *
-     * <p>Supported target types:
-     * <ul>
-     *   <li>By - Selenium locator</li>
-     *   <li>WebElement - already located element</li>
-     *   <li>String - XPath expression</li>
-     * </ul>
-     *
-     * @param target element reference
-     * @return true if element exists and is visible, otherwise false
-     */
     public static boolean isDisplayed(Object target) {
         try {
             WebElement element= resolveElement(target);
@@ -608,45 +531,7 @@ public class CustomUtil {
         return resolveElement(target).getText().trim();
     }
 
-    /**
-     * Reads an element's text through the JavaScript executor instead of {@code WebElement.getText()}.
-     *
-     * <p><b>Why this exists.</b> Selenium's {@code getText()} returns only text the browser is
-     * currently RENDERING, so it comes back empty for an element that is {@code display:none} or
-     * otherwise not laid out - even when the text sits in the DOM. Reading it through the DOM
-     * instead is how you get at a value that is present but not painted.
-     *
-     * <p>Tries {@code innerText} first and falls back to {@code textContent}. What separates the two
-     * is measured, not assumed - CCP's home page at 1440x900 renders {@code //header} twice:
-     *
-     * <pre>
-     *   copy 0    0 x 0        innerText 422    textContent 422
-     *   copy 1    1425 x 120   innerText 158    textContent 447
-     * </pre>
-     *
-     * <p>Two things follow, and both matter when choosing a method:
-     *
-     * <ul>
-     *   <li><b>On an element with no layout box, {@code innerText} is {@code textContent}.</b> The
-     *       HTML spec says so, and copy 0's identical 422/422 is that rule. There is no need for a
-     *       fallback to reach a hidden element's text - {@code innerText} already gives it.</li>
-     *   <li><b>On a rendered element the two disagree sharply</b> - 158 against 447. The extra 289
-     *       characters are inside closed menus. So {@code textContent} will satisfy a
-     *       {@code contains(...)} assertion using text that NO customer can see, which is a false
-     *       pass, not a robust one.</li>
-     * </ul>
-     *
-     * <p>Hence the order: {@code innerText} is what a person reads on a visible element and is
-     * already the full DOM text on a hidden one, which makes it right in both cases;
-     * {@code textContent} is only the safety net for markup where {@code innerText} yields nothing.
-     * Returns "" rather than null when the element has no text at all.
-     *
-     * <p>Where the question is "can the customer SEE this text", none of these is the answer - use
-     * {@link #getText(Object)} on {@link #firstVisible(By)}, so the visible copy is the one read.
-     *
-     * @param target By or WebElement, as {@link #resolveElement(Object)} accepts
-     * @return the element's text, trimmed, or "" when it has none
-     */
+
     public static String getTextJS(Object target) {
         WebElement element = resolveElement(target);
         JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
@@ -664,22 +549,7 @@ public class CustomUtil {
         return "";
     }
 
-    /**
-     * Reads an element's text through every mechanism that can carry one, in order of fidelity.
-     *
-     * <p>Selenium {@code getText()}, then {@code innerText}/{@code textContent} via
-     * {@link #getTextJS(Object)}, then the {@code value} attribute - which is where an
-     * {@code <input>} keeps its text, since inputs have no child text node at all and return "" from
-     * all three of the preceding calls.
-     *
-     * <p>Extracted from a private copy in MProfileSteps so the four-way cascade is written once.
-     * Prefer the narrowest method that answers your question: {@link #getText(Object)} when the text
-     * must be visible, {@link #getTextJS(Object)} when it need only be in the DOM, and this when you
-     * are reading a field whose markup you do not control.
-     *
-     * @param target By or WebElement, as {@link #resolveElement(Object)} accepts
-     * @return the first non-empty text found, trimmed, or "" if every source is empty
-     */
+
     public static String getTextResilient(Object target) {
         WebElement element = resolveElement(target);
 

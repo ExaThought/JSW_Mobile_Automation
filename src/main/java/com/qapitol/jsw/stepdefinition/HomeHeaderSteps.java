@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
@@ -67,6 +68,26 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     /** Path of the nav item most recently hovered, so the Then step can find its panel. */
     private String lastHoveredNavPath;
+
+    /**
+     * The numeric badge on the header cart icon, if one is rendered.
+     *
+     * <p>Anchored on {@code data-test-id="desktop-header-cart-link"}, which was read off the live
+     * header on 8 Sep 2026 and is the cart anchor itself - not a guessed Tailwind class. Inside it,
+     * the badge is matched as "a descendant whose whole text is one to three digits", so the count
+     * is found without depending on the badge's own class, which is exactly the kind of generated
+     * class name that has rotted other locators in this suite.
+     *
+     * <p>NOT OBSERVED DIRECTLY. A signed-out visitor has an empty cart and no badge is rendered at
+     * all, so the badge element itself could not be captured - only the anchor that must contain
+     * it. {@link #readCartBadge()} therefore treats "no match" as zero rather than as an error,
+     * which is also the correct reading of an empty cart.
+     */
+    private static final By CART_BADGE = By.xpath(
+            "//header//a[@data-test-id='desktop-header-cart-link']"
+                    + "//*[normalize-space(text()) != ''"
+                    + " and string-length(normalize-space(text())) <= 3"
+                    + " and translate(normalize-space(text()), '0123456789', '') = '']");
     private static final Map<String, String> NAV_ITEM_PATHS = buildNavItemPaths();
     private int categoryLinksBeforeHover = -1;
     private Boolean loggedIn;
@@ -214,6 +235,42 @@ public class HomeHeaderSteps extends AbstractWebPage {
                 "Expected the URL to contain '" + expectedPath + "' but landed at: " + currentUrl);
     }
 
+    // ------------------- Cart badge -------------------
+
+    @Then("the header cart badge should match the cart line-item count from the API")
+    public void theHeaderCartBadgeShouldMatchTheCartLineItemCountFromTheApi() {
+        int apiCount = new CartRCV2ApiImp().getCartLineItemCount();
+        int badgeCount = readCartBadge();
+
+        softAssert.assertEquals(badgeCount, apiCount,
+                "The header cart badge shows " + badgeCount + " item(s) but the cart API reports "
+                        + apiCount + ". A customer reading the header would open the cart expecting "
+                        + badgeCount + ".");
+
+        log.info("Header cart badge: " + badgeCount + ", cart API line items: " + apiCount);
+    }
+
+    private int readCartBadge() {
+        for (WebElement candidate : Grid.driver().findElements(CART_BADGE)) {
+            try {
+                if (!candidate.isDisplayed()) {
+                    continue;
+                }
+                String text = candidate.getText().trim();
+                if (!text.isEmpty()) {
+                    return Integer.parseInt(text);
+                }
+            } catch (NumberFormatException e) {
+                // The locator already restricts to digits, so this only fires on a stale re-read.
+                log.info("Cart badge text was not a number on re-read - ignoring this match");
+            } catch (Exception ignored) {
+                // Stale between findElements and the read; not a usable match either way.
+            }
+        }
+        log.info("No cart badge rendered - reading that as an empty cart (0 items)");
+        return 0;
+    }
+
     // ------------------- Mega menu -------------------
 
     @When("user hovers over the {string} navigation menu in the header")
@@ -227,36 +284,10 @@ public class HomeHeaderSteps extends AbstractWebPage {
         softAssert.assertTrue(isAnyVisible(target),
                 "Header navigation menu item not displayed, cannot hover: " + menuItem);
 
-        // hoverOverElement resolves firstVisible(locator), scrolls that node to centre, and moves
-        // the pointer with no click. Both parts matter: the header renders each nav item two to
-        // four times and the first copy in document order measures 0x0 (moveToElement on a
-        // zero-size box dispatches no pointerenter), and moveToElement on a node outside the
-        // viewport throws Selenium's "move target out of bounds".
-        //
-        // The helper to avoid is moveToAction - it resolves the first match through findElement
-        // AND follows its move with a click(), which would navigate to the category page instead
-        // of opening the panel.
         lastHoveredNavPath = pathFor(menuItem);
         hoverOverElement(target);
         log.info("Hovered over header navigation menu '" + menuItem + "'");
 
-        /* Nudge the pointer if the panel has not appeared.
-         *
-         * A second pointerMove with a small position delta, which is the standard remedy for a CSS
-         * :hover that does not take on the first move.
-         *
-         * Honest about what this is: a mitigation, not a diagnosed fix. The panel opens on CSS
-         * :hover alone, and on 8 Sep a real pointer move over this anchor on a freshly loaded page
-         * DID open it (page-wide /category/ links went 16 -> 21). Repeating the same hover later in
-         * the same session did not, with the pointer geometrically inside the anchor
-         * (elementFromPoint resolved to the anchor's own label span) and the panel still
-         * display:none - so the browser's hover state and the pointer's position had diverged, and
-         * the cause of that divergence is not established. Two candidates were tested and neither
-         * explained it: the pointer already resting on the element, and scrollIntoView moving the
-         * page (scrollY stayed 0 on the first attempt).
-         *
-         * The assertion below is what makes the next failure diagnosable: it reports whether the
-         * panel was absent from the DOM or present-but-hidden, which this nudge cannot. */
         By panel = By.xpath(String.format(MEGA_MENU_PANEL_FOR_NAV, lastHoveredNavPath));
         if (!isAnyVisible(panel)) {
             log.info("Panel not open after the first hover - nudging the pointer 2px off centre");
@@ -272,46 +303,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
         }
     }
 
-    /**
-     * Asserts the hovered nav item's mega-menu panel is on screen with sub-category links in it.
-     *
-     * <p>Asserts the PANEL, not a page-wide link count. The count version compared
-     * {@code //a[contains(@href,'/category/')]} before and after the hover, which made the result
-     * depend on how many category links the rest of the page happened to render - 16 signed out and
-     * 17 signed in on 8 Sep - and reported "Mega-menu did not open" without being able to say
-     * whether the panel was there. The panel locator is now known (see
-     * {@link #MEGA_MENU_PANEL_FOR_NAV}), so the question is asked directly.
-     *
-     * <p>The link count is still logged, because it is a useful second signal, but nothing is
-     * asserted on it.
-     */
-    /**
-     * Asserts the hovered nav item's mega-menu is present and populated with real sub-category
-     * links.
-     *
-     * <h2>Why this no longer asserts that the panel is VISIBLE</h2>
-     * It did, and it failed every run against a healthy site. The panel is shown by CSS alone -
-     * {@code hidden} to {@code group-hover:block} on the {@code div.relative.group} ancestor - and
-     * a Selenium pointer hover did not register it in a HEADED Chrome, so headless was not the
-     * cause. A real pointer move over the same anchor on a freshly loaded page does open it
-     * (measured 8 Sep: page-wide {@code /category/} links 16 -> 21, the panel's 5 links), so the
-     * product is fine and the interaction is what could not be driven reliably.
-     *
-     * <p>Weighing what each version buys:
-     * <ul>
-     *   <li><b>Reveal-on-hover</b> is pure CSS. No script, no request, no state. It can only break
-     *       if someone deletes the {@code group-hover:block} class - a change that is obvious to
-     *       anyone who opens the page, and that no catalogue or config change can cause.</li>
-     *   <li><b>The panel's CONTENTS</b> can regress silently. The sub-category list is
-     *       server-rendered, so a catalogue or navigation-config change can empty the flyout or
-     *       fill it with dead hrefs, and nothing on the page looks wrong until a customer opens
-     *       it. That is worth an assertion, and it needs no pointer at all - the links are in the
-     *       DOM while the panel is hidden.</li>
-     * </ul>
-     *
-     * <p>So the reveal is attempted and logged, and the contents are asserted. Both assertions
-     * below can genuinely fail: the first on a markup change, the second on an empty menu.
-     */
+
     @Then("the mega-menu panel should contain sub-category links")
     public void theMegaMenuPanelShouldContainSubCategoryLinks() {
         if (lastHoveredNavPath == null) {
@@ -335,8 +327,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
             return;
         }
 
-        // findElements, not countVisible: the panel is display:none until hovered, so its links are
-        // present but not "displayed". Presence is the point here.
         List<WebElement> links = Grid.driver().findElements(subCategoryLinks);
         softAssert.assertTrue(!links.isEmpty(),
                 "The mega-menu panel for '" + lastHoveredNavPath + "' is in the DOM but contains no"
@@ -382,32 +372,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
         return false;
     }
 
-    /**
-     * Polls briefly for the page-wide category-link count to rise above a baseline.
-     *
-     * @deprecated superseded by {@link #waitForVisible(By)} against
-     *             {@link #MEGA_MENU_PANEL_FOR_NAV}. This waited on a page-wide count, so it could
-     *             not distinguish "the panel did not open" from "the rest of the page rendered a
-     *             different number of category links", and it burned its full 3-second budget on
-     *             every failure. Kept only because the count is still logged as a secondary signal.
-     */
-    @Deprecated
-    private int waitForCategoryLinkIncrease(int baseline) {
-        int latest = baseline;
-        for (int attempt = 0; attempt < 10; attempt++) {
-            latest = countVisible(ANY_CATEGORY_LINK);
-            if (latest > baseline) {
-                return latest;
-            }
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
-        return latest;
-    }
 
     // ------------------- Search, location, cart -------------------
 
@@ -417,20 +381,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
                 "Header search is not displayed in the header");
     }
 
-    /**
-     * The location control renders differently for each user state, so the expected markup is
-     * chosen from the state the scenario established rather than from one locator: a guest gets
-     * "Select location", a logged-in user gets "Deliver to".
-     *
-     * <p>Asserting only the variant that should be present is the point. The two are mutually
-     * exclusive on QA, so an OR across both would pass even when the header shows the wrong one
-     * for the current user.
-     *
-     * <p>Resolved with {@code isAnyVisible}, not {@code isElementVisibleJS}: the latter calls
-     * findElement(), which returns the first match in document order, and that is the 0x0 copy
-     * in the duplicated header (measured on QA: match[0] 0x0, match[1] 131x24). It would report
-     * the control as hidden while it is plainly on screen.
-     */
+
     @Then("the location selector should be displayed in the header")
     public void theLocationSelectorShouldBeDisplayedInTheHeader() {
         if (loggedIn == null) {
@@ -499,11 +450,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
         return a.equalsIgnoreCase(e);
     }
 
-    /** Wait until the document has finished loading. */
     private void waitForPageLoad() {
-        // Named: this wait is not caught, so a timeout goes straight to the report. Without a
-        // message it reads "waiting for HomeHeaderSteps$$Lambda$NNNN/0x...@hash", which names
-        // neither the page nor the condition.
         new WebDriverWait(Grid.driver(), Duration.ofSeconds(30))
                 .withMessage("document.readyState never reached 'complete' within 30s at "
                         + Grid.driver().getCurrentUrl())

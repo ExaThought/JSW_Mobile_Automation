@@ -29,7 +29,7 @@ public class CategoryPages {
     public static By VIEW_ORDER_DOCUMENTS_BTN = By.xpath("//p[normalize-space()='View order documents']");
     public static By SAVE_ADDRESS = By.xpath("//button[@id='save-change' and normalize-space()='Save changes']");
     public static By Add_TO_CART_BUTTON = By.xpath("//button[text()='Add to cart']");
-    public static By BLOG_SECTION = By.xpath("//span[text()='Blogs']");
+    public static By BLOG_SECTION = By.xpath("//header//a[contains(@href,'/blogs')]");
     public static By BLOG_Youtube = By.xpath("//img[@alt='Youtube']");
     public static By ALL_CATEGORY = By.xpath("(//span[text()=\"All categories\"])[2]");
 }
