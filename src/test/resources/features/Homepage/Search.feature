@@ -83,6 +83,23 @@ Feature: Validate Search functionality and navigation
     When user selects a product from PLP for web
     Then user should be navigated to product detail page for web
 
+  # Re-enabled. This was previously commented out as FAILS BY DESIGN: on QA,
+  # /product-list?text=<no-match> rendered "Something went wrong! We are unable to load this
+  # page at the moment." instead of an empty state, reproduced with two non-matching keywords.
+  #
+  # The fix was NOT independently confirmed when re-enabling. It was re-enabled alongside a
+  # locator change to the literal 'No products found', which implies someone saw the empty
+  # state render - but nothing in the change records that check, so treat it as unverified
+  # until this has passed a full QA run.
+  #
+  # If it fails, read WHICH assertion failed before calling it flaky - the step distinguishes
+  # the two cases deliberately:
+  #   "rendered the generic error page (Something went wrong!)"
+  #        -> the product defect is back, or was never fixed. The expectation here is the
+  #           CORRECT one; do not relax it to make the test green, the error page is the bug.
+  #   "No 'no results' message was shown"
+  #        -> the empty state DID render, with copy plpNoResultsMessage does not match.
+  #           Widen the locator in searchsteps.yaml; do not weaken the step.
   Scenario: Validate a non-matching search shows a no-results message rather than an error page
     Given user is on the application as a "Logged In" user
     When user searches for "qqqwwweee" from the header for web

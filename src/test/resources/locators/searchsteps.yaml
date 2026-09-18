@@ -46,7 +46,18 @@ elements:
 
   plpNoResultsMessage:
     en_US:
-      web: //*[contains(text(), 'No products found')]
+      # Case-insensitive and phrasing-tolerant ON PURPOSE. This was briefly narrowed to the
+      # literal contains(text(),'No products found'), which matches exactly one string: a
+      # capitalisation change, or copy of "No results found", would fail the step with
+      # "No 'no results' message was shown" - which reads as the product defect this scenario
+      # exists to catch, when it is really a copy change.
+      #
+      # Staying broad does NOT weaken the assertion. SearchSteps.verify_no_results_message_for_web
+      # checks plpErrorState FIRST and fails with its own "rendered the generic error page"
+      # message, so this locator is only consulted once the error page has been ruled out.
+      #
+      # Singular stems ('no product', 'no result') match the plural forms too.
+      web: //*[contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no product') or contains(translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'no result')]
 
   # -------- Inner elements of a result card (relative xpaths, used inside a card) --------
   productName:
