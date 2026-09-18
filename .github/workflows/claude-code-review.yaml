@@ -12,8 +12,9 @@ name: Claude Code Review
 # not just with PRs opened. If that gets noisy/expensive, remove `synchronize` below and rely
 # on manual "/claude-review" re-runs instead.
 #
-# Required repository secret: ANTHROPIC_API_KEY
-#   Settings -> Secrets and variables -> Actions -> New repository secret.
+# Required repository secret: CLAUDE_CODE_OAUTH_TOKEN
+#   Generated with `claude setup-token` and consumed by the action's claude_code_oauth_token
+#   input. Settings -> Secrets and variables -> Actions -> New repository secret.
 
 on:
   pull_request:
@@ -21,25 +22,53 @@ on:
   issue_comment:
     types: [created]
 
-# One review at a time per PR. A newer push or a re-run request supersedes an in-flight review
-# rather than racing it and posting two comments.
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
+# Concurrency is deliberately NOT declared here at workflow level - see the job below.
+#
+# A workflow-level concurrency group is joined BEFORE the job's `if` is evaluated, so every
+# issue_comment on the PR cancelled the running review even though the job itself was about to
+# be skipped. With track_progress the action posts its own comment, which is an issue_comment
+# on the PR, so the review cancelled ITSELF about three seconds after starting. Run 35329735303
+# is the evidence: comment created 09:35:09, cancellation signal 09:35:12.
 
 jobs:
   review:
     name: Review pull request
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+
+    # 30, not 20: a review killed by the timeout still leaves the tracked-progress comment on the
+    # PR, so an under-tuned limit reads as a finished review that happened to be short. The OUTPUT
+    # rules ask for the most severe findings first, so a run that does hit the wall has already
+    # reported what matters. Keep this comfortably above the worst case, not near the average.
+    timeout-minutes: 30
+
+    # One review at a time per PR, declared at JOB level so the group is joined only after the
+    # `if` below has already rejected unrelated comments - including the action's own.
+    #
+    # cancel-in-progress is an expression, not a flag, and it is evaluated for the INCOMING run.
+    # A new push (pull_request) supersedes the review of the older commit, which is what you
+    # want. A /claude-review comment does not cancel anything, so a deliberate re-run cannot
+    # kill a review that is already producing output.
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
     # Draft PRs are skipped - "ready for review" is the point at which a review is wanted.
-    # The issue_comment branch also checks the comment is on a PR, because issue_comment fires
-    # for plain issues too and there would be no diff to review.
+    #
+    # The issue_comment branch carries three extra guards:
+    #   - issue.pull_request != null   issue_comment fires for plain issues too, and there
+    #                                  would be no diff to review
+    #   - comment.user.type != 'Bot'   the action's own progress comment is posted by
+    #                                  claude[bot]; without this it re-invokes this workflow
+    #                                  from its own output
+    #   - author_association           /claude-review spends credit, so it is restricted to
+    #                                  people with write access. Without this, anyone able to
+    #                                  comment on a PR can start an unbounded number of runs.
     if: |
       (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request != null &&
+       github.event.comment.user.type != 'Bot' &&
+       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
        contains(github.event.comment.body, '/claude-review'))
 
     permissions:
@@ -47,18 +76,35 @@ jobs:
       pull-requests: write    # post and update the review comment
       issues: write           # issue_comment-triggered runs comment through the issues API
       id-token: write         # OIDC for the action
+      actions: read           # let the action read CI status; without it run 35329735303 logged
+                              # "The github_ci MCP server requires 'actions: read' permission.
+                              #  Skipping CI server installation."
 
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
         with:
+          # An issue_comment event carries no PR ref: github.ref is the DEFAULT BRANCH, so a bare
+          # checkout here reviews develop instead of the pull request and reports "no findings"
+          # on every /claude-review. The merge ref is resolved explicitly for that path.
+          #
+          # For pull_request events github.ref is already refs/pull/<n>/merge, so the fallback
+          # keeps the automatic trigger behaving exactly as before.
+          ref: ${{ github.event_name == 'issue_comment'
+                   && format('refs/pull/{0}/merge', github.event.issue.number)
+                   || github.ref }}
           # Full history so the review can diff against the base branch rather than a shallow tip.
           fetch-depth: 0
 
       - name: Run Claude code review
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # OAuth token, not an API key. The action takes these through two different inputs
+          # backing two different auth mechanisms, so a Claude Code OAuth token (from
+          # `claude setup-token`) fails authentication if it is passed as an API key.
+          # ANTHROPIC_API_KEY does not exist in this repository's secrets - it resolved to the
+          # empty string in run 35329735303.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
           # Posts a single comment that updates as the review progresses, instead of a wall of
           # separate comments.
