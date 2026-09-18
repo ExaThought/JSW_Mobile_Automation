@@ -82,7 +82,7 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # An issue_comment event carries no PR ref: github.ref is the DEFAULT BRANCH, so a bare
           # checkout here reviews develop instead of the pull request and reports "no findings"
