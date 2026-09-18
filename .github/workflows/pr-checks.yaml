@@ -44,7 +44,17 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          # 24, the active LTS. Node 20 reached end of life on 2026-04-30 and stops receiving
+          # security fixes, so pinning it here means the gates run on an unpatched runtime.
+          #
+          # The ci/ scripts are stdlib-only and the Jenkinsfile's "Node 20 matters" note is
+          # about a FLOOR - ci/summarize-allure.js uses optional chaining and nullish
+          # coalescing, which are ES2020 - so a newer major is safe.
+          #
+          # This is the runtime the scripts run ON. It is unrelated to the node20 -> node24
+          # move of checkout/setup-java/setup-node above, which is the runtime the ACTIONS
+          # themselves run on.
+          node-version: '24'
 
       # ---------------------------------------------------------------------
       # Each step runs even if an earlier one failed, so a PR gets the full
