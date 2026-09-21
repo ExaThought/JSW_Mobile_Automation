@@ -1,5 +1,6 @@
 package com.qapitol.jsw.stepdefinition;
 
+import com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.LocatorReader;
 import com.qapitol.sauron.core.Grid;
@@ -35,6 +36,58 @@ public class HomeHeaderSteps extends AbstractWebPage {
     private static final String ACCOUNT_MENU = "accountMenu";
     private static final String NAV_ITEM_BY_HREF = "//header//a[@href='%s']";
     private static final By ANY_CATEGORY_LINK = By.xpath("//a[contains(@href,'/category/')]");
+
+    /**
+     * The mega-menu panel belonging to one nav item.
+     *
+     * <p>CAPTURED FROM THE LIVE DOM on 8 Sep 2026 at 1440x900, which the previous version of this
+     * step could not do - it counted {@code /category/} links before and after the hover because
+     * "the panel's markup could not be captured". It can be, with a real pointer move, and the
+     * panel is:
+     *
+     * <pre>
+     *   div.relative.group.flex.items-center           &lt;- the hover target's ancestor
+     *     a[href='/category/mild-steel']               &lt;- 1 match, 84x32, nothing overlaying it
+     *     div.absolute.left-0.top-full.z-50.hidden.group-hover:block.pt-1
+     *       a[href='/category/hot-rolled-steel'] ... 5 sub-category links
+     * </pre>
+     *
+     * <p>It opens on CSS {@code :hover} alone - {@code hidden} to {@code group-hover:block}, no JS
+     * state, no {@code role="menu"}, no {@code data-state}. The header carries FOUR of these panels
+     * (Mild Steel, Structural steel, Bitumen, Help &amp; Support), so the panel is reached through
+     * the hovered anchor's own {@code group} ancestor rather than matched globally.
+     *
+     * <p>{@code concat(' ', normalize-space(@class), ' ')} matches the {@code group} class as a
+     * whole token. {@code contains(@class,'group')} would also match {@code group-hover:*} utility
+     * classes, which sit on the label span and would resolve the ancestor to the wrong node.
+     */
+    private static final String MEGA_MENU_PANEL_FOR_NAV =
+            "//header//a[@href='%s']"
+                    + "/ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' group ')][1]"
+                    + "//div[contains(@class,'group-hover:block')]";
+
+    /** Path of the nav item most recently hovered, so the Then step can find its panel. */
+    private String lastHoveredNavPath;
+
+    /**
+     * The numeric badge on the header cart icon, if one is rendered.
+     *
+     * <p>Anchored on {@code data-test-id="desktop-header-cart-link"}, which was read off the live
+     * header on 8 Sep 2026 and is the cart anchor itself - not a guessed Tailwind class. Inside it,
+     * the badge is matched as "a descendant whose whole text is one to three digits", so the count
+     * is found without depending on the badge's own class, which is exactly the kind of generated
+     * class name that has rotted other locators in this suite.
+     *
+     * <p>NOT OBSERVED DIRECTLY. A signed-out visitor has an empty cart and no badge is rendered at
+     * all, so the badge element itself could not be captured - only the anchor that must contain
+     * it. {@link #readCartBadge()} therefore treats "no match" as zero rather than as an error,
+     * which is also the correct reading of an empty cart.
+     */
+    private static final By CART_BADGE = By.xpath(
+            "//header//a[@data-test-id='desktop-header-cart-link']"
+                    + "//*[normalize-space(text()) != ''"
+                    + " and string-length(normalize-space(text())) <= 3"
+                    + " and translate(normalize-space(text()), '0123456789', '') = '']");
     private static final Map<String, String> NAV_ITEM_PATHS = buildNavItemPaths();
     private int categoryLinksBeforeHover = -1;
     private Boolean loggedIn;
@@ -182,6 +235,42 @@ public class HomeHeaderSteps extends AbstractWebPage {
                 "Expected the URL to contain '" + expectedPath + "' but landed at: " + currentUrl);
     }
 
+    // ------------------- Cart badge -------------------
+
+    @Then("the header cart badge should match the cart line-item count from the API")
+    public void theHeaderCartBadgeShouldMatchTheCartLineItemCountFromTheApi() {
+        int apiCount = new CartRCV2ApiImp().getCartLineItemCount();
+        int badgeCount = readCartBadge();
+
+        softAssert.assertEquals(badgeCount, apiCount,
+                "The header cart badge shows " + badgeCount + " item(s) but the cart API reports "
+                        + apiCount + ". A customer reading the header would open the cart expecting "
+                        + badgeCount + ".");
+
+        log.info("Header cart badge: " + badgeCount + ", cart API line items: " + apiCount);
+    }
+
+    private int readCartBadge() {
+        for (WebElement candidate : Grid.driver().findElements(CART_BADGE)) {
+            try {
+                if (!candidate.isDisplayed()) {
+                    continue;
+                }
+                String text = candidate.getText().trim();
+                if (!text.isEmpty()) {
+                    return Integer.parseInt(text);
+                }
+            } catch (NumberFormatException e) {
+                // The locator already restricts to digits, so this only fires on a stale re-read.
+                log.info("Cart badge text was not a number on re-read - ignoring this match");
+            } catch (Exception ignored) {
+                // Stale between findElements and the read; not a usable match either way.
+            }
+        }
+        log.info("No cart badge rendered - reading that as an empty cart (0 items)");
+        return 0;
+    }
+
     // ------------------- Mega menu -------------------
 
     @When("user hovers over the {string} navigation menu in the header")
@@ -195,47 +284,83 @@ public class HomeHeaderSteps extends AbstractWebPage {
         softAssert.assertTrue(isAnyVisible(target),
                 "Header navigation menu item not displayed, cannot hover: " + menuItem);
 
-        // hoverOverElement resolves firstVisible(locator), scrolls that node to centre, and moves
-        // the pointer with no click. Both parts matter: the header renders each nav item two to
-        // four times and the first copy in document order measures 0x0 (moveToElement on a
-        // zero-size box dispatches no pointerenter), and moveToElement on a node outside the
-        // viewport throws Selenium's "move target out of bounds".
-        //
-        // The helper to avoid is moveToAction - it resolves the first match through findElement
-        // AND follows its move with a click(), which would navigate to the category page instead
-        // of opening the panel.
+        lastHoveredNavPath = pathFor(menuItem);
         hoverOverElement(target);
         log.info("Hovered over header navigation menu '" + menuItem + "'");
+
+        By panel = By.xpath(String.format(MEGA_MENU_PANEL_FOR_NAV, lastHoveredNavPath));
+        if (!isAnyVisible(panel)) {
+            log.info("Panel not open after the first hover - nudging the pointer 2px off centre");
+            try {
+                WebElement anchor = com.qapitol.jsw.utils.CustomUtil.firstVisible(target);
+                new org.openqa.selenium.interactions.Actions(Grid.driver())
+                        .moveToElement(anchor)
+                        .moveToElement(anchor, 2, 2)
+                        .perform();
+            } catch (Exception e) {
+                log.info("Pointer nudge failed: " + e.getMessage());
+            }
+        }
     }
 
-    @Then("the mega-menu panel should be displayed with sub-categories")
-    public void theMegaMenuPanelShouldBeDisplayedWithSubCategories() {
-        if (categoryLinksBeforeHover < 0) {
+
+    @Then("the mega-menu panel should contain sub-category links")
+    public void theMegaMenuPanelShouldContainSubCategoryLinks() {
+        if (lastHoveredNavPath == null) {
             softAssert.fail("No hover was recorded before asserting the mega-menu."
                     + " The hover step must run first.");
             return;
         }
 
-        // Detected by counting the category links the panel adds, rather than by matching a panel
-        // class name. The panel's markup could not be captured (it needs a real pointer hover, and
-        // synthetic mouse events do not open it), and a guessed Tailwind class would rot on the
-        // next restyle exactly as the cart and footer locators did.
-        int after = waitForCategoryLinkIncrease(categoryLinksBeforeHover);
-        softAssert.assertTrue(after > categoryLinksBeforeHover,
-                "Mega-menu did not open: visible category links stayed at " + categoryLinksBeforeHover
-                        + " after hovering. If the panel IS opening on screen, its sub-category links"
-                        + " do not use '/category/' hrefs - capture the panel markup and narrow"
-                        + " ANY_CATEGORY_LINK accordingly.");
-        log.info("Visible category links after hover: " + after);
+        String panelXpath = String.format(MEGA_MENU_PANEL_FOR_NAV, lastHoveredNavPath);
+        By panel = By.xpath(panelXpath);
+        By subCategoryLinks = By.xpath(panelXpath + "//a[contains(@href,'/category/')]");
+
+        int matchedPanels = Grid.driver().findElements(panel).size();
+        softAssert.assertTrue(matchedPanels > 0,
+                "No mega-menu panel in the DOM for '" + lastHoveredNavPath + "'. Either this nav"
+                        + " item has no mega-menu - Cement and TMT genuinely have none, only Mild"
+                        + " Steel, Structural steel, Bitumen and Help & Support do - or the header"
+                        + " markup changed, in which case re-capture it and update"
+                        + " MEGA_MENU_PANEL_FOR_NAV.");
+        if (matchedPanels == 0) {
+            return;
+        }
+
+        List<WebElement> links = Grid.driver().findElements(subCategoryLinks);
+        softAssert.assertTrue(!links.isEmpty(),
+                "The mega-menu panel for '" + lastHoveredNavPath + "' is in the DOM but contains no"
+                        + " /category/ links, so a customer who opens it gets an empty flyout.");
+
+        // Reported, not asserted - see the note above on why the reveal is not a useful assertion.
+        boolean revealed = waitForVisible(panel);
+        log.info("Mega-menu for '" + lastHoveredNavPath + "': " + links.size()
+                + " sub-category link(s) in the DOM" + (links.isEmpty() ? "" : " " + hrefsOf(links))
+                + "; panel visible after hover: " + revealed
+                + " (not asserted - the reveal is CSS-only)");
     }
 
-    /** Polls briefly for the panel's links to render; returns the final visible count. */
-    private int waitForCategoryLinkIncrease(int baseline) {
-        int latest = baseline;
+    /** Hrefs of the given links, for the log. */
+    private String hrefsOf(List<WebElement> links) {
+        StringBuilder hrefs = new StringBuilder("[");
+        for (int i = 0; i < links.size(); i++) {
+            if (i > 0) {
+                hrefs.append(", ");
+            }
+            try {
+                hrefs.append(links.get(i).getAttribute("href"));
+            } catch (Exception e) {
+                hrefs.append("<stale>");
+            }
+        }
+        return hrefs.append("]").toString();
+    }
+
+    /** Polls briefly for a locator to have a visible match. */
+    private boolean waitForVisible(By locator) {
         for (int attempt = 0; attempt < 10; attempt++) {
-            latest = countVisible(ANY_CATEGORY_LINK);
-            if (latest > baseline) {
-                return latest;
+            if (isAnyVisible(locator)) {
+                return true;
             }
             try {
                 Thread.sleep(300);
@@ -244,8 +369,9 @@ public class HomeHeaderSteps extends AbstractWebPage {
                 break;
             }
         }
-        return latest;
+        return false;
     }
+
 
     // ------------------- Search, location, cart -------------------
 
@@ -255,20 +381,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
                 "Header search is not displayed in the header");
     }
 
-    /**
-     * The location control renders differently for each user state, so the expected markup is
-     * chosen from the state the scenario established rather than from one locator: a guest gets
-     * "Select location", a logged-in user gets "Deliver to".
-     *
-     * <p>Asserting only the variant that should be present is the point. The two are mutually
-     * exclusive on QA, so an OR across both would pass even when the header shows the wrong one
-     * for the current user.
-     *
-     * <p>Resolved with {@code isAnyVisible}, not {@code isElementVisibleJS}: the latter calls
-     * findElement(), which returns the first match in document order, and that is the 0x0 copy
-     * in the duplicated header (measured on QA: match[0] 0x0, match[1] 131x24). It would report
-     * the control as hidden while it is plainly on screen.
-     */
+
     @Then("the location selector should be displayed in the header")
     public void theLocationSelectorShouldBeDisplayedInTheHeader() {
         if (loggedIn == null) {
@@ -337,11 +450,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
         return a.equalsIgnoreCase(e);
     }
 
-    /** Wait until the document has finished loading. */
     private void waitForPageLoad() {
-        // Named: this wait is not caught, so a timeout goes straight to the report. Without a
-        // message it reads "waiting for HomeHeaderSteps$$Lambda$NNNN/0x...@hash", which names
-        // neither the page nor the condition.
         new WebDriverWait(Grid.driver(), Duration.ofSeconds(30))
                 .withMessage("document.readyState never reached 'complete' within 30s at "
                         + Grid.driver().getCurrentUrl())

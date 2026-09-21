@@ -2,129 +2,58 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
 <!-- ===========================================================================================
-     TWO INDEPENDENT PARALLELISM AXES. Read both before changing either.
+     CURRENTLY SERIAL: 1 x 1 = one browser session at a time.
 
-       thread-count="1"                 - how many <test> BLOCKS run at once. One, so the blocks
-                                          below run one after another. Covered by 1 and 2 below.
-       data-provider-thread-count="5"   - how many SCENARIOS run at once INSIDE one block. Five.
-                                          Covered by 3 below: shares one account per block, which
-                                          rule 2 forbids, but measured on qa and did not reproduce.
+     data-provider-thread-count was lowered from 5 to 1 to stabilise the regression run. This is
+     a CAPACITY decision, not a correctness one, and it is reversible - parallel execution is
+     still supported and the machinery for it is still live. Do not delete that machinery on the
+     assumption it is dead:
 
-     Setting thread-count to 1 does not make this suite serial. The two multiply: one block at a
-     time, five scenarios in flight within it.
+       - Hooks.softAssert (ThreadLocalSoftAssert)   collects failures per thread
+       - SessionSteps credential ThreadLocals       keep one scenario's login off another's thread
+       - ci/cap-parallelism.js                      clamps demand to the agent's cores at build time
 
-     THIS IS A CAPACITY DECISION, NOT A CORRECTNESS ONE - and that is a change from before.
-     The two things that used to make parallelism unsafe are both resolved (see 1 and 2 below),
-     so the only remaining limit is the machine. Selenium sizes a node's Chrome slots from the
-     CPU count, and the Jenkins agent's own node log says:
+     cap-parallelism.js in particular is NOT inert at 1. The Jenkinsfile still queries it for the
+     suite's demand when pre-flighting GRID_URL, it only ever LOWERS, and it is what makes raising
+     either axis safe again rather than a gamble.
 
-         [NodeOptions.getSessionFactories] Detected 2 available processors
-         [NodeOptions.report] Adding Chrome for {"browserName": "chrome", ...} 2 times
+     (An XML comment may not contain a double hyphen, so flag names are spelled out in prose here
+     rather than written literally. That is a parser rule, not a style choice.)
 
-     Two slots. At thread-count 5 the three surplus sessions never started, and because Sauron's
-     ScreenshotBddListener then throws on the absent driver, every one of those scenarios reported
-     "Driver not initialized. Is @WebTest/@MobileTest missing on class/method?" - naming neither
-     the browser nor the real cause. Build #234 lost roughly three scenarios in five that way.
+     TWO INDEPENDENT AXES. Read both before changing either - they MULTIPLY.
+       thread-count               how many <test> BLOCKS run at once.
+       data-provider-thread-count how many SCENARIOS run at once INSIDE one block.
 
-     RAISING IT AGAIN: the ceiling is min(agent CPUs, distinct accounts). On qa there are 7 active
-     blocks with 7 distinct accounts, so accounts are not the constraint - cores are. Budget about
-     one core and ~1GB of RAM per concurrent session and leave 2 for the build itself, so
-     thread-count 5 wants a 7-8 CPU agent, or a remote grid via the Jenkins GRID_URL parameter
-     (docker-compose.grid.yml). The Test stage also caps thread-count to the agent's CPU count at
-     build time, so an undersized agent degrades to a slower run rather than a false failure.
+     WHY THE CAP IS THE MACHINE, NOT THE CODE. Selenium sizes a local node's Chrome slots from the
+     CPU count, and the Jenkins agent reports "Detected 2 available processors" -> "Adding Chrome
+     ... 2 times". At 1 x 5 the three surplus sessions never start, and Sauron's
+     ScreenshotBddListener then throws on the absent driver, so every one of them reports "Driver
+     not initialized. Is @WebTest/@MobileTest missing on class/method?" - naming neither the
+     browser nor the real cause. Build #244 lost 44 scenarios that way.
 
-     Two pieces of shared state used to make BLOCK parallelism unsafe. Both are fixed; read them
-     before raising thread-count, because neither protects you if a new block reuses an account.
-     Item 3 is the same account-sharing hazard on the OTHER axis - not fixed, but measured, and it
-     did not reproduce. Read 3 before trusting 2's stated mechanism; the run in 3 casts doubt on it.
+     TO RAISE IT AGAIN the ceiling is min(agent CPUs, distinct accounts). Budget ~1 core and ~1GB
+     per concurrent session and leave 2 for the build, or point GRID_URL at a remote grid
+     (docker-compose.grid.yml).
 
-       1. FIXED - assertion state. Hooks.softAssert was "public static SoftAssert", ONE instance
-          for the whole JVM: @Before replaced it and @After called assertAll() on it, so with two
-          scenarios in flight one wiped the other's collected assertions and failures were
-          reported against the wrong scenario or lost outright - a green run that was not green.
-          Hooks.softAssert is now a final ThreadLocalSoftAssert: one shared handle, but the
-          failures are collected per THREAD, i.e. per scenario in flight. Call sites are
-          unchanged. Measured on the pre-fix code with five concurrent scenarios raising three
-          failures each, one scenario reported NONE of its own and another reported nine
-          belonging to other scenarios; after the fix every scenario reports its own three and no
-          foreign ones.
+     THE STANDING RULE SURVIVES THE ROLLBACK - two blocks that can run at the same time may not
+     share an account. CCP logout is SERVER-SIDE and Hooks.afterScenario logs out after EVERY
+     scenario, so a second block signed in as the same customer loses its session mid-scenario and
+     the symptom is a scatter of "session expired" failures that read as product bugs. This is why
+     the TokenCheck block stays commented out: tokencheck.user.* is still testautomation01.
 
-       2. THE STANDING RULE - two blocks that can run at the same time may not share an account.
-          CCP logout is SERVER-SIDE and Hooks.afterScenario clicks Log out after EVERY scenario,
-          so a second block signed in as the same customer loses its session mid-scenario. The
-          symptom is a scatter of "session expired" failures that read as product bugs.
+     NOT TRUE OF PREPROD. This suite pins no environment, so -Denv=preprod runs it at whatever is
+     set here, and in global_preprod.properties testautomation01@yopmail.com still backs login,
+     cart, homepage, orders and pdpplp - five blocks on one customer. Give preprod per-group
+     accounts before raising either axis against it.
 
-          TestGroupContext is ThreadLocal and every active block below has its own test.group, but
-          a group is only as isolated as the credential it resolves to. On qa each active block
-          now resolves to a distinct account: Login is testautomation01 (via account.login.*,
-          which is what its features actually drive - they never call "ccp login with configured
-          user"), and Homepage/Cart/PDP_PLP/SF_SLC_SLO/Profile are on their own jswtest.in
-          accounts. tokencheck.user.* is still testautomation01, which is why the TokenCheck block
-          below must stay commented out until it has an account of its own.
-
-          NOT TRUE OF PREPROD. This suite pins no environment, so -Denv=preprod runs it at the
-          same thread-count, and in global_preprod.properties testautomation01@yopmail.com still
-          backs login, cart, homepage, orders and pdpplp - five active blocks on one customer.
-          Give preprod its own per-group accounts, or run it serially, before pointing this suite
-          at it.
-
-       3. WITHIN-BLOCK ACCOUNT SHARING - the same sharing rule 2 forbids, one layer down. Measured
-          rather than reasoned about, and it did NOT reproduce. Kept at 5.
-
-          Why rule 2 does not cover this. Rule 2 is satisfied by giving each <test> BLOCK its own
-          account. This axis runs five scenarios of the SAME block concurrently, and they all
-          resolve the SAME credential: UserConfig.getEmail() reads the group from TestGroupContext
-          and maps it to one <group>.user.email. TestGroupContext being ThreadLocal does not help -
-          every thread in a block holds the same group, so it resolves the same account.
-          global_qa.properties defines exactly one email/password per group; there is no pool and no
-          per-thread variant, and sessions.yaml defines a single ccp session config.
-
-          The axis is live, not inert. Sauron's SauronCucumberTest.scenarios() carries
-          @DataProvider(parallel = true) - verified in the bytecode of cucumber-4.0.6-SNAPSHOT.jar,
-          where the plain cucumber-testng parent it overrides is NOT parallel. So this setting takes
-          effect regardless of thread-count. Confirmed at runtime: five TestNG-PoolService threads,
-          five browsers, five concurrent logins as qa_homepage_user.
-
-          MEASURED 2026-09-07, Homepage block on qa, dptc=5. A probe suite carrying only the
-          Homepage <test> block, every other parameter copied from this file (selfHeal included):
-
-              44 scenarios - 40 passed, 4 broken, 18m49s
-              ZERO session or auth failures: no "session expired", no 401, no unauthorized,
-              across roughly 40 logins with 5 in flight on one shared account
-
-          The 4 broken were ordinary locator/timing failures, not eviction: the footer about-us
-          link staying on /corporate (x2 of 13 outline examples), a search-to-PDP timeout on
-          //a[contains(@href,'/product-detail')], and a NoSuchElementException on the search button.
-
-          So the eviction predicted from rule 2 did not happen on this axis. Two probable reasons,
-          and BOTH weaken rule 2's premise rather than this axis specifically:
-            - Chrome runs incognito (the "incognito" flag is in Sauron's chromeOptions args), so
-              every session has its own cookie jar. Spelled without the leading dashes on purpose:
-              a literal double hyphen is illegal inside an XML comment and breaks this file.
-            - "No log out is found" appeared 20 times in that run, i.e. ccpLogOut() threw and the
-              server-side logout never fired at all. Where it did fire it evicted only itself.
-
-          WHAT THIS DOES NOT ESTABLISH. One 19-minute run on qa is not proof the mechanism can
-          never fire - only that it did not at this concurrency, on this env, in this window. It
-          says nothing either way about rule 2's cross-BLOCK claim, which remains untested. And the
-          dptc=1 control that would have told us whether those 4 failures are concurrency-induced
-          or pre-existing was INVALID: it reported Tests run: 0 after 43m46s and died with
-          NoSuchSessionException / UnsupportedCommandException, the grid having degraded mid-run.
-          The one signal that survived is that the footer about-us failure appeared in both runs,
-          so that one is not concurrency-related. Re-run the control before trusting any pass/fail
-          comparison between 1 and 5.
-
-          IF IT EVER DOES BITE, the signature is a scatter of session failures landing in Allure as
-          BROKEN, not failed - they throw rather than assert - so check the broken column before
-          suspecting the product. The fix would be a per-group account POOL:
-          <group>.user.email.1..N with a handout keyed to the executing thread, falling back to the
-          single account when no pool is configured. That is credential provisioning before it is
-          code - it needs N real accounts per active group and none exist today. The cheap
-          alternative is setting this attribute to 1, which is the whole fix and needs no code
-          change.
+     KEEPING THIS COMMENT IS SAFE. An earlier inline clamp did `grep -oP 'thread-count="\K[0-9]+'`,
+     which matched data-provider-thread-count as a substring AND matched inside XML comments, so a
+     block like this one was read as if it were the suite's attributes. ci/cap-parallelism.js reads
+     the <suite> open tag only, which is why prose here no longer influences the clamp.
      =========================================================================================== -->
+
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
-       data-provider-thread-count="5" annotations="JDK">
+       data-provider-thread-count="1" annotations="JDK">
 
     <listeners>
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
@@ -190,7 +119,7 @@
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
         <parameter name="cucumber.filter.tags"
-                   value="@AddToCartAndCreateOpportunity"/>
+                   value="@AddToCartAndCreateOpportunity or @CartVerification"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -227,13 +156,7 @@
 
     <!-- =============================== TOKEN CHECK =============================== -->
 
-    <!-- Both token features in one block: LoginUserToken logs in and closes the payment-due
-         popup, GuestUserToken only opens the session.
-         Runs under its own "tokencheck" group, which resolves to testautomation01@yopmail.com in
-         both qa and preprod. It used to share the "profile" group, whose account is a real mailbox
-         with a rotating password - that returned HTTP 401 and cost every token scenario in
-         CCP_Regression #231. A dedicated group also keeps EmptyBankDetails, Address,
-         CustomerDetails, bankDetails and forgetPassword on the profile account, untouched. -->
+
     <!-- <test name="TokenCheck">
         <parameter name="test.group" value="tokencheck"/>
         <parameter name="sessions" value="sessions.yaml"/>

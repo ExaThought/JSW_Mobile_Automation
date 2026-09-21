@@ -13,12 +13,14 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,23 +96,23 @@ public class CartSteps extends AbstractWebPage {
     private static final String CUSTOM_LENGTH_TEXTBOX = "//label[text()=\"Custom length (mm):\"]/following-sibling::input";
     private static final String QUANTITY_TEXTBOX = "//input[@id='quantity-input']";
     private static final String ADD_TO_CART_BTN = "//button[text()='Add to cart']";
-    /** How long an optional PDP attribute is given to render before it is treated as absent. */
     private static final int OPTIONAL_ATTRIBUTE_WAIT_SECONDS = 5;
-    /** How long the Add to cart button is given to become enabled after the quantity is entered. */
     private static final int ADD_TO_CART_ENABLED_WAIT_SECONDS = 15;
+    /** How long the delete confirmation modal gets to open, and a click gets to become possible. */
+    private static final int DELETE_CONFIRM_WAIT_SECONDS = 10;
+    /** Spare passes over the starting item count, so a cart that will not delete cannot spin forever. */
+    private static final int EXTRA_DELETE_ATTEMPTS = 2;
+    /** 500ms polls allowed for the cart list to re-render after a deletion. */
+    private static final int DELETE_SETTLE_POLLS = 20;
     private static final String VIEWCART = "//button[text()='View cart']";
     private static final String JSW_LOGO = "(//a[@href=\"/\"])[1]";
     private static final String ITEMS_COUNT = "//div[@id='cart-delivery-address']/following-sibling::div/div[contains(text(),'item')]";
     private static final String WIRE_COIL = "(//li//a[@href='/category/wire-rod-coils'])";
     private static final String ITEM_NAME = "//h1";
-    private static final String FIRST_WIRE_ROD_PRODUCT = "(//h1[text()='Wire rods']/../../following-sibling::div/div/a/div) [1]";
     private static final By ALL_CATEGORY = By.xpath("//span[contains(@class, 'hover') and contains(text(),'All categories')]");
-    // No [1] index and no bare 'steel' fallback. The index pinned this to the first match in
-    // document order, which is the 0x0 duplicate header copy - hoverOverElement now picks the first
-    // RENDERED match instead, and an index would take that choice away again. The 'steel' clause
-    // also matched TMT-Bar-steel, steel-coated and stainless-steel, so whichever of those appeared
-    // first in the DOM could win.
     private static final By MILD_STEEL_CATEGORY = By.xpath("//a[contains(@href, 'mild-steel')]/span");
+    private static final By STRUCTURAL_STEEL_CATEGORY = By.xpath("//a[contains(@href, 'structural-steel')]/span");
+    private static final By BITUMEN_CATEGORY = By.xpath("//a[contains(@href, 'bitumen')]/span");
     private static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private static final String wireCategory = "//li/a[contains(@href, 'wire-rods')]";
     private static final String hotRolledSheetsSubCategory = "//li/a[contains(@href, 'hot-rolled-sheets')]";
@@ -123,6 +125,10 @@ public class CartSteps extends AbstractWebPage {
     public static final String coatedSteelCategory = "(//a[contains(@href,'/category/steel-coated')])[1]";
     public static final By quantityTextbox = By.xpath("//input[@id='quantity-input']");
     public static final By quantityLabel = By.xpath("//label[contains(normalize-space(), 'Specify quantity')]");
+    public static final String pipesAndTubesCategory = "//a[contains(@href,'/category/pipes-and-tubes')]/span";
+    public static final String hollowSectionsSubCategory = "//a[contains(@href,'/category/hollow-sections')]/span";
+    public static final String viscosityGradeBitumenCategory = "//a[contains(@href,'/category/viscosity-grade-bitumen')]/span";
+    public static final String gradeBulkBitumenSubCategory = "//a[contains(@href,'/category/viscosity-grade-bulk-bitumen')]/span";
     public static final String ACCOUNT_TAB = "accountTab";
     static String oldRequirementId;
     static String newRequirementId;
@@ -150,133 +156,13 @@ public class CartSteps extends AbstractWebPage {
     static String cartValue;
     static String cartPdpProductName;
     public ScenarioContext context;
-    /* No shared `actions` field: it was unused, and it called Grid.driver() at construction time,
-     * which binds it to the session current when Cucumber built this glue instance. Build Actions
-     * inside the method that needs it (or call CustomUtil.hoverOverElement). */
+
 
     public CartSteps(ScenarioContext context) {
         this.context = context;
     }
 
-    @And("user will add Stainless Steel product to cart")
-    public void user_will_add_stainless_steel_product_to_cart() {
-        sleep(2000);
-        waitAndCheckIsElementPresent(STAINLESS_STEEL_PLP);
-        waitAndClickOn(STAINLESS_STEEL_PLP);
-        sleep(1000);
-        waitAndCheckIsElementPresent(STAINLESS_STEEL_PDP);
-        waitAndClickOn(STAINLESS_STEEL_PDP);
-        sleep(1000);
-        waitAndCheckIsElementPresent(STAINLESS_STEEL_THICKNESS);
-        waitAndClickOn(STAINLESS_STEEL_THICKNESS);
-        waitAndCheckIsElementPresent(STAINLESS_STEEL_WIDTH);
-        waitAndClickOn(STAINLESS_STEEL_WIDTH);
-        waitAndCheckIsElementPresent(STAINLESS_STEEL_LENGTH);
-        waitAndClickOn(STAINLESS_STEEL_LENGTH);
-        sleep(1000);
-        waitAndCheckIsElementPresent(QUANTITY);
-        waitAndSetText(QUANTITY, "10");
-        sleep(2000);
-        waitAndCheckIsElementPresent(ADD_TO_CART_CTA);
-        waitAndClickOn(ADD_TO_CART_CTA);
-        waitAndCheckIsElementPresent(VIEW_CART);
-        waitAndClickOn(VIEW_CART);
-        softAssert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT));
-        sleep(3000);
-    }
-
-    @Then("check user able to delete line item from cart")
-    public void check_ser_able_to_delete_line_item_from_cart() {
-        waitAndCheckIsElementPresent(DELETE_LINE_ITEM);
-        waitAndClickOn(DELETE_LINE_ITEM);
-        waitAndCheckIsElementPresent(DELETE_CTA_BUTTON);
-        waitAndClickOn(DELETE_CTA_BUTTON);
-    }
-
-    @And("user checkout the RCV2")
-    public void user_checkout_the_rcv2() {
-        sleep(2000);
-        waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
-        waitAndClickOn(MY_REQUIREMENT_PAGE);
-        waitAndCheckIsElementPresent(REQUIREMENT_ID);
-        oldRequirementId = waitAndGetText(REQUIREMENT_ID);
-        waitAndCheckIsElementPresent(CART_PAGE);
-        waitAndClickOn(CART_PAGE);
-        waitAndCheckIsElementPresent(RCV2_CHECKOUT);
-        waitAndClickOn(RCV2_CHECKOUT);
-        sleep(2000);
-        softAssert.assertTrue(isElementPresent(SUCCESS_PAGE_RCV2), "After checkout, RCV2 success page is not displayed");
-        waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
-        waitAndClickOn(MY_REQUIREMENT_PAGE);
-        waitAndCheckIsElementPresent(REQUIREMENT_ID);
-        newRequirementId = waitAndGetText(REQUIREMENT_ID);
-
-    }
-
-    @And("move to Hot rolled category")
-    public void moveToHotRolledCategory() {
-
-
-        try {
-            hoverOverElement(By.xpath(msHotRolled));
-            log.info("Click in MS Hot Rolled");
-
-        } catch (Exception e) {
-            throw new RuntimeException("mouse failed to move to hot rolled category", e);
-
-        }
-    }
-
-    @And("open HR Coil plp {string} product")
-    public void openHRCoilPdp(String product) {
-        try {
-            sleep(3000);
-            waits(By.xpath(PLP_FIRST_PRODUCT));
-            clickButton(By.xpath(PLP_FIRST_PRODUCT));
-            log.info("Opened HR Coil PDP page");
-        } catch (Exception e) {
-            log.info("Failed to click on  hot rolled coil category");
-            throw new RuntimeException("Failed to click on hot rolled coil category", e);
-        }
-    }
-
-    @And("select same attribute values")
-    public void selectSameAttributeValues() {
-        try {
-            waitAndCheckIsElementClickable(ATTRIBUTE, pdpThickness);
-            waitAndClickOn(ATTRIBUTE, pdpThickness);
-            log.info("Selected same thickness value " + context.pdpThickness + " mm for hot rolled coil");
-        } catch (Exception e) {
-            log.info("Failed to select same thickness value for hot rolled coil");
-            throw new RuntimeException("Failed to select same thickness value for hot rolled coil", e);
-        }
-
-        try {
-            waitAndCheckIsElementClickable(ATTRIBUTE, pdpWidth);
-            waitAndClickOn(ATTRIBUTE, pdpWidth);
-            log.info("Selected same width value " + pdpWidth + " mm for hot rolled coil");
-        } catch (Exception e) {
-            log.info("Failed to select same width value for hot rolled coil");
-            throw new RuntimeException("Failed to select same width value for hot rolled coil", e);
-        }
-
-        try {
-            waitAndCheckIsElementClickable(QUANTITY);
-            waitAndSetText(QUANTITY, context.pdpQuantity);
-            // context.pdpQuantity, not the static pdpQuantity field: nothing ever assigns the
-            // static one, so this threw NumberFormatException(null) on every run.
-            int quantityValue = Integer.parseInt(context.pdpQuantity) * 2;
-            context.pdpQuantity = String.valueOf(quantityValue);
-            log.info("Entered same quantity " + context.pdpQuantity + " for hot rolled coil");
-            Grid.driver().findElement(By.xpath(QUANTITY)).sendKeys(Keys.ENTER);
-            Grid.driver().findElement(By.xpath(QUANTITY)).sendKeys(Keys.ENTER);
-        } catch (Exception e) {
-            log.info("Failed to enter same quantity for hot rolled coil");
-            throw new RuntimeException("Failed to enter same quantity for hot rolled coil", e);
-        }
-    }
-
-     @Then("Verify the Attribute values for HR Coil in cart page with cart count {string}")
+    @Then("Verify the Attribute values for HR Coil in cart page with cart count {string}")
     public void verifyTheAttributeValuesForHRCoilinCartPage(String count) {
         //verify quantity in cart page
         context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
@@ -293,28 +179,11 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
-    /**
-     * Cart check for a product added TWICE that is expected to merge into one line item.
-     *
-     * <p>{@code Verify the Attribute values for HR Coil in cart page with cart count} cannot be
-     * reused for the second add. It compares the cart against {@code context.pdpQuantity}, which
-     * the second PDP visit resets to the quantity typed that time (50), while the cart holds the
-     * merged total (100) - so it fails with {@code expected [Qty: 50 MT] but found [Qty: 100 MT]}
-     * even though the product behaved correctly.
-     *
-     * <p>The cart count assertion is what separates a merge from a duplicate: a merging cart holds
-     * ONE line item at double the quantity, a duplicating cart holds two at the original quantity.
-     */
     @Then("Verify the doubled quantity for HR Coil in cart page with cart count {string}")
     public void verifyDoubledQuantityForHrCoilInCartPage(String count) {
         verifyMergedHrCoilLineItem(2, count);
     }
 
-    /**
-     * @param timesAdded how many times the same SKU was added - the merged line item is expected to
-     *                   hold {@code timesAdded x} the quantity entered on the PDP.
-     * @param count      expected cart icon count; "1" when the cart merges rather than duplicates.
-     */
     private void verifyMergedHrCoilLineItem(int timesAdded, String count) {
         int pdpQuantity = parseQuantity(context.pdpQuantity, "quantity entered on the HR Coil PDP");
         context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
@@ -337,10 +206,6 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
         log.info("Verified the merged HR Coil line item: " + cartQuantity + " MT across " + timesAdded + " adds");
 
-        // Cleanup carried over from the method this replaced: remove the line item so the cart is
-        // left empty. Now largely redundant - the Background empties the cart through the cart API
-        // before every scenario - so a cleanup failure is logged rather than thrown, otherwise it
-        // would fail a scenario whose assertions have all just passed.
         try {
             jsClick(Grid.driver().findElement(By.xpath("(//section/div/div/div/button[text()='Delete']) [position() < 2]")));
             jsClick(Grid.driver().findElement(By.xpath("//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']")));
@@ -370,65 +235,12 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /**
-     * Adds the configured product to the cart.
-     *
-     * <p>Scrolls to the quantity box first, then back down to the Add to cart button. That round
-     * trip is deliberate: the button stays disabled until the PDP has priced the selection, and
-     * the price call is triggered by the quantity field. Scrolling through it lets the field blur
-     * and commit before the button is read, so the enabled check reflects a settled page rather
-     * than one mid-request.
-     *
-     * <p>The button is then polled for {@link #ADD_TO_CART_ENABLED_WAIT_SECONDS} and only clicked
-     * once it is genuinely enabled. Previously this clicked immediately and swallowed every
-     * exception, so a disabled button produced a click that did nothing and a green step - the
-     * failure only surfaced later as an empty cart.
-     */
     @And("add to cart")
     public void addToCart() {
         waitUntilElementIsClickable(addToCart);
         scrollToCenter(By.xpath(ADD_TO_CART_BTN));
         jsClick(By.xpath(ADD_TO_CART_BTN));
         log.info("Clicked on add to cart button");
-    }
-
-    /** True once the Add to cart button is present, displayed and enabled. */
-    private boolean waitForAddToCartEnabled() {
-        for (int attempt = 0; attempt < ADD_TO_CART_ENABLED_WAIT_SECONDS * 2; attempt++) {
-            if (isAddToCartEnabled()) {
-                return true;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Reads the button's enabled state.
-     *
-     * <p>isEnabled() alone is not enough - the PDP marks the button disabled with a class as well
-     * as (or instead of) the disabled attribute, so both are checked.
-     */
-    private boolean isAddToCartEnabled() {
-        try {
-            List<WebElement> buttons = Grid.driver().findElements(By.xpath(ADD_TO_CART_BTN));
-            if (buttons.isEmpty()) {
-                return false;
-            }
-            WebElement button = buttons.get(0);
-            if (!button.isDisplayed() || !button.isEnabled()) {
-                return false;
-            }
-            String cssClass = button.getAttribute("class");
-            return cssClass == null || !cssClass.toLowerCase(Locale.ROOT).contains("disabled");
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     @And("click view cart")
@@ -449,17 +261,6 @@ public class CartSteps extends AbstractWebPage {
         Assert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT), "Did not open the cart page after clicking on view cart");
     }
 
-    /**
-     * Clears the logged-in user's requirements cart through the cart API before a scenario starts.
-     *
-     * <p>Belongs in the Background rather than in each scenario: every add-to-cart scenario asserts
-     * a cart count, so an item left behind by a previous run makes the FIRST assertion of the next
-     * run fail for a reason that has nothing to do with what is being tested.
-     *
-     * <p>Deliberately fails the scenario when the cleanup does not work. A precondition that
-     * silently does nothing is worse than no precondition - the scenario then fails later on a
-     * cart-count mismatch that reads like a product defect.
-     */
     @Given("empty the cart via API")
     public void emptyTheCartViaApi() {
         CartRCV2ApiImp cartApi = new CartRCV2ApiImp();
@@ -471,8 +272,6 @@ public class CartSteps extends AbstractWebPage {
                     + " scenario - the cart count assertions cannot be trusted", e);
         }
 
-        // Re-read rather than trusting the delete response: the call can return 200 and still
-        // leave items behind if the cart identifier does not match the cart they live in.
         int remaining = cartApi.getCartLineItemCount();
         String summary = "Line items deleted: " + deleted + ", remaining: " + remaining;
         log.info(deleted == 0
@@ -498,6 +297,16 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " bags", "Quantity in cart page is not matching with selected quantity in PDP or quantity is not displayed in cart page");
     }
 
+    @Then("verify the Attribute values for Grade bulk bitumen in cart page with cart count {string}")
+    public void verifyTheAttributeValuesForGradeBulkBitumenInCartPage(String count) {
+        //Verify product name in cart page for cement
+        softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
+
+        waits(By.xpath(CART_COUNT));
+        String fetchedCount = CustomUtil.getItemCount(CustomUtil.getText(By.xpath(CART_COUNT)));
+        softAssert.assertEquals(fetchedCount, count, "Cart count is not updated in cart icon after adding product to cart");
+    }
+
     @Then("verify the Attribute values for HR Sheet in cart page with cart count {string}")
     public void verifyTheAttributeValuesForHRSheetInCartPage(String count) {
 
@@ -508,8 +317,8 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
         waits(By.xpath(CART_COUNT));
-        String count1 = CustomUtil.getItemCount(CustomUtil.getText(By.xpath(CART_COUNT)));
-        softAssert.assertEquals(count1, count, "Cart count is not updated in cart icon after adding product to cart");
+        String fetchedCount = CustomUtil.getItemCount(CustomUtil.getText(By.xpath(CART_COUNT)));
+        softAssert.assertEquals(fetchedCount, count, "Cart count is not updated in cart icon after adding product to cart");
 
     }
 
@@ -533,19 +342,6 @@ public class CartSteps extends AbstractWebPage {
             log.info("Failed to delete line item from cart");
             throw new RuntimeException("Failed to delete line item from cart", e);
         }
-    }
-
-    @And("move to Cold rolled category")
-    public void moveToColdRolledCategory() {
-        //Move mouse to Cold rolled category
-        hoverOverElement(By.xpath(coldRolledCategory));
-    }
-
-    @And("open CR Coil pdp {string} product")
-    public void openCRCoilPdp(String product) {
-        //Scroll and click on it to open CR Coil PDP
-        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
-        clickButton(locator);
     }
 
     @Then("verify the Attribute values for CR coil in cart page")
@@ -577,12 +373,6 @@ public class CartSteps extends AbstractWebPage {
 
     }
 
-    @And("open CR Sheet pdp")
-    public void openCRSheetPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
-        clickButton(locator);
-    }
-
     @Then("verify the Attribute values for CR Sheet in cart page")
     public void verifyTheAttributeValuesForCRSheetInCartPage() {
         context.cartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
@@ -596,7 +386,6 @@ public class CartSteps extends AbstractWebPage {
     public void verifyTheUpdatedAttributeValuesForCRSheetInCartPage() {
         context.afterUpdateCartAttributeValue = waitAndGetText(CART_PAGE_ATTRIBUTE_VALUE);
         softAssert.assertEquals(context.afterUpdateCartAttributeValue, context.updatedThickness + " x " + context.updatedWidth + " x " + context.updatedLength + " mm", "After update, Attribute value in cart page is not matching with selected attribute value in edit line item");
-
     }
 
     @When("click on Cement product")
@@ -619,30 +408,17 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    @And("open Cement pdp product")
-    public void openCementPdp() {
-        try {
-            // The step has no index, so open the first Cement product listed on the PLP.
-            waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT, "1");
-            waitAndClickOn(PLP_FIRST_PRODUCT, "1");
-            log.info("Opened the first Cement product PDP");
-        } catch (Exception e) {
-            log.info("Failed to open Cement PDP page");
-            throw new RuntimeException("Failed to open Cement PDP page", e);
-        }
-    }
-
-    @And("enter quantity {string} for Cement")
-    public void selectAllTheCementAttribute(String quantity) {
+    @And("enter quantity {string} for {string}")
+    public void enterQuantityForProductOnPDP(String quantity, String product) {
         try {
             context.cartPdpProductName = getText(By.xpath(ITEM_NAME));
             jsClick(By.xpath("//input[@id='quantity-input']"));
             waitAndSetText(QUANTITY, quantity);
-            log.info("Quantity " + quantity + " is entered for cement");
+            log.info("Quantity " + quantity + " is entered");
             context.pdpQuantity = quantity;
         } catch (Exception e) {
-            log.info("Failed to enter quantity for cement");
-            throw new RuntimeException("Failed to enter quantity for cement", e);
+            log.info("Failed to enter quantity " + quantity + " for product " + product);
+            throw new RuntimeException("Failed to enter quantity " + quantity + " for product " + product, e);
         }
     }
 
@@ -676,14 +452,6 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
     }
 
-    /**
-     * Alias for {@link #clickOnWireProduct()}.
-     *
-     * <p>Cucumber step matching is case-sensitive and the feature files use both spellings:
-     * GuestUserToken and LoginUserToken use "wire", EditAndDeleteCart:114 uses "Wire". Binding both
-     * keeps either spelling from becoming an undefined step. @And is not repeatable in Cucumber
-     * 7.8.1, so this has to be a separate method rather than a second annotation.
-     */
     @And("click on Wire product")
     public void clickOnWireProductCapitalised() {
         clickOnWireProduct();
@@ -773,20 +541,6 @@ public class CartSteps extends AbstractWebPage {
         softAssert.assertEquals((getItemCount(getText(By.xpath(CART_COUNT)))), String.valueOf(count), "Cart count is not updated in cart icon after adding product to cart");
     }
 
-    /**
-     * Full cart-page check for TMT: product name, quantity, both selected attributes and cart count.
-     *
-     * <p>The counted variant above never looks at the diameter or the TMT form, so a cart that
-     * dropped or swapped an attribute still passed it. TMT is configured as
-     * {@code DIAMETER, FORM} in {@link #buildProductAttributes()}, and this asserts every value the
-     * PDP captured.
-     *
-     * <p>{@code cartPageAttributeValue} resolves to MORE THAN ONE node - the cart renders each
-     * attribute in its own span, so TMT's diameter and form arrive as two separate strings. Every
-     * matched node is therefore read and each expected value is looked for across all of them.
-     * {@code waitAndGetText} returns only the first match, which made whichever attribute sat in
-     * the second span read as absent.
-     */
     @Then("verify the Attribute values for TMT in cart page")
     public void verifyTheAttributeValuesForTmtInCartPage() {
         softAssert.assertTrue(
@@ -814,11 +568,41 @@ public class CartSteps extends AbstractWebPage {
                 "Cart count is not updated in cart icon after adding the TMT product to cart");
     }
 
-    /**
-     * Text of every node {@code cartPageAttributeValue} matches, blanks dropped.
-     *
-     * <p>The cart puts each attribute in its own span, so this is a list rather than one string.
-     */
+    @Then("Verify the doubled quantity for TMT in cart page with cart count {string}")
+    public void verifyDoubledQuantityForTmtInCartPage(String count) {
+        int timesAdded = 2;
+        int pdpQuantity = parseQuantity(context.pdpQuantity, "quantity entered on the TMT PDP");
+        context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
+        int cartQuantity = parseQuantity(context.cartPageQuantity, "quantity shown in the cart");
+        int expectedQuantity = pdpQuantity * timesAdded;
+
+        softAssert.assertEquals(cartQuantity, expectedQuantity,
+                "TMT was added " + timesAdded + " times at " + pdpQuantity + " MT each, so the merged"
+                        + " line item should hold " + expectedQuantity + " MT - the cart shows '"
+                        + context.cartPageQuantity + "'");
+
+        softAssert.assertEquals(getItemCount(getText(By.xpath(CART_COUNT))), count,
+                "Cart count is not '" + count + "' after adding the same TMT product " + timesAdded
+                        + " times - the cart created a duplicate line item instead of merging");
+
+        softAssert.assertTrue(
+                context.cartPdpProductName.toLowerCase().contains(context.pdpProductName.toLowerCase()),
+                "TMT product name in cart page is not matching with product name in PDP - PDP shows '"
+                        + context.cartPdpProductName + "', cart shows '" + context.pdpProductName + "'");
+
+        List<String> cartAttributeTexts = readCartAttributeTexts();
+        // Kept populated for the reports and for any later step that reads it, as the TMT
+        // attribute-values step does.
+        context.cartAttributeValue = String.join(" | ", cartAttributeTexts);
+        softAssert.assertFalse(cartAttributeTexts.isEmpty(),
+                "No attribute value is displayed in cart page for the merged TMT line item");
+        assertCartAttributeShown(cartAttributeTexts, context.pdpDiameter, "diameter");
+        assertCartAttributeShown(cartAttributeTexts, context.pdpForm, "TMT form");
+
+        log.info("Verified the merged TMT line item: " + cartQuantity + " MT across "
+                + timesAdded + " adds");
+    }
+
     private List<String> readCartAttributeTexts() {
         By locator = byForLocatorKey(CART_PAGE_ATTRIBUTE_VALUE);
         waits(locator);
@@ -837,14 +621,6 @@ public class CartSteps extends AbstractWebPage {
         return xpathOf(getLocator(key));
     }
 
-    /**
-     * Asserts one PDP-selected value is shown in the cart's attribute spans.
-     *
-     * <p>Matched against each span individually rather than against their concatenation, so a value
-     * cannot pass by straddling two spans. Matching is on whole words, so a diameter of "8" is not
-     * satisfied by a span reading "18". The failure message lists every string the cart showed,
-     * which is what tells you whether the value is missing or merely formatted differently.
-     */
     private void assertCartAttributeShown(List<String> cartTexts, String selectedValue, String attributeName) {
         if (selectedValue == null || selectedValue.trim().isEmpty()) {
             softAssert.fail("No " + attributeName + " was captured on the TMT PDP, so the value shown"
@@ -864,10 +640,6 @@ public class CartSteps extends AbstractWebPage {
                         + " Cart attribute values found: " + cartTexts);
     }
 
-    /**
-     * Whole-word, case-insensitive containment. Word boundaries are only applied at ends that are
-     * alphanumeric, because {@code \b} next to a symbol matches the opposite of what is intended.
-     */
     private static boolean containsAsWholeWord(String text, String value) {
         String prefix = Character.isLetterOrDigit(value.charAt(0)) ? "\\b" : "";
         String suffix = Character.isLetterOrDigit(value.charAt(value.length() - 1)) ? "\\b" : "";
@@ -1196,26 +968,117 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("Verify the cart page SKU and cart icon count and delete one by one")
     public void verifyTheCartPageSKUAndCartIconCountAndDeleteOneByOne() {
+        int startingCount = lineItemCount();
+        log.info("Cart holds " + startingCount + " line item(s); deleting them one by one");
 
-        String skuCount = waitAndGetText(CART_PAGE_SKU_COUNT);
-        int expectedSkuCount = Integer.parseInt(skuCount.split(" ")[0]);
-        log.info(skuCount + "========================" + expectedSkuCount);
-        int i = 0;
-        while (i < expectedSkuCount) {
-            waitAndClickOn(DELETE_LINE_ITEM);
-            Boolean deleteCartTitleFlag = true;
-            if (isElementPresent(DELETE_CTA_BUTTON) && deleteCartTitleFlag) {
-                waitAndCheckIsElementClickable(DELETE_CTA_BUTTON);
-                waitAndClickOn(DELETE_CTA_BUTTON);
-                if(i > 1){
-                    log.info(i+" items Deleted successfully the line item from cart");
-                } else {
-                    log.info(i+" item Deleted successfully the line item from cart");
-                }
+        int attemptCap = startingCount + EXTRA_DELETE_ATTEMPTS;
+        int attempts = 0;
+
+        while (lineItemCount() > 0 && attempts < attemptCap) {
+            attempts++;
+            int before = lineItemCount();
+
+            if (!deleteOneLineItem()) {
+                log.info("Stopping after " + attempts + " attempt(s) - the Delete control or its"
+                        + " confirmation dialog did not appear. The empty-cart assertion below"
+                        + " is what reports this.");
+                break;
             }
-            sleep(2000);
-            i++;
+
+            waitForFewerLineItems(before);
+            log.info("Deleted " + attempts + " of " + startingCount + " line item(s); "
+                    + lineItemCount() + " remaining");
         }
+
+        int remaining = lineItemCount();
+        softAssert.assertTrue(waitForEmptyCartMessage(),
+                "The cart does not show the empty-cart message after deleting the line items"
+                        + " - started with " + startingCount + ", " + remaining + " still on the page"
+                        + " after " + attempts + " delete attempt(s)");
+    }
+
+    private boolean deleteOneLineItem() {
+        By deleteButton = byForLocatorKey(DELETE_LINE_ITEM);
+        try {
+            if (Grid.driver().findElements(deleteButton).isEmpty()) {
+                log.info("No Delete control present on the cart line item");
+                return false;
+            }
+            scrollToCenter(deleteButton);
+            clickWithJsFallback(deleteButton, "cart line item Delete");
+        } catch (Exception e) {
+            log.info("Failed to click Delete on the cart line item: " + e.getMessage());
+            return false;
+        }
+        try {
+            By confirm = byForLocatorKey(DELETE_CTA_BUTTON);
+            if (waitForPresence(confirm, DELETE_CONFIRM_WAIT_SECONDS)) {
+                scrollToCenter(confirm);
+                clickWithJsFallback(confirm, "delete confirmation");
+            } else {
+                log.info("No delete confirmation dialog appeared - treating the first click as final");
+            }
+        } catch (Exception e) {
+            log.info("Failed to confirm the deletion: " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private void clickWithJsFallback(By locator, String description) {
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(DELETE_CONFIRM_WAIT_SECONDS))
+                    .until(ExpectedConditions.elementToBeClickable(locator)).click();
+        } catch (Exception e) {
+            log.info("Native click on the " + description + " was blocked (" + e.getClass().getSimpleName()
+                    + ") - retrying with a JS click");
+            jsClick(locator);
+        }
+    }
+
+    /** True when the locator is present within the wait. */
+    private boolean waitForPresence(By locator, int seconds) {
+        for (int attempt = 0; attempt < seconds * 2; attempt++) {
+            try {
+                if (!Grid.driver().findElements(locator).isEmpty()) {
+                    return true;
+                }
+            } catch (Exception ignored) {
+                // a re-render mid-look throws rather than returning empty; keep polling
+            }
+            sleep(500);
+        }
+        return false;
+    }
+
+    /** Line items currently rendered. Zero once the cart is empty. */
+    private int lineItemCount() {
+        try {
+            return Grid.driver().findElements(byForLocatorKey(DELETE_LINE_ITEM)).size();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private void waitForFewerLineItems(int before) {
+        for (int attempt = 0; attempt < DELETE_SETTLE_POLLS && lineItemCount() >= before; attempt++) {
+            sleep(500);
+        }
+    }
+
+    /** True when the empty-cart message renders within the wait. */
+    private boolean waitForEmptyCartMessage() {
+        for (int attempt = 0; attempt < 20; attempt++) {
+            try {
+                if (!Grid.driver().findElements(By.xpath(EMPTY_CART_MSG)).isEmpty()) {
+                    return true;
+                }
+            } catch (Exception ignored) {
+                // keep polling - a re-render mid-look throws rather than returning empty
+            }
+            sleep(500);
+        }
+        return false;
     }
 
     @And("User navigate to HomePage")
@@ -1277,13 +1140,6 @@ public class CartSteps extends AbstractWebPage {
         log.info("Cart persisted after refresh. SKU count: " + skuAfter);
     }
 
-    /**
-     * Unquoted alias for {@link #moveTheMouseToCategory(String)}.
-     *
-     * <p>{@code {string}} only matches quoted text, so the unquoted phrasing used by
-     * EditAndDeleteCart, Pdp and PlP (18 lines) had no matching step definition and failed as
-     * undefined. Delegating here keeps a single implementation for both phrasings.
-     */
     @When("move the mouse to Mild steel category")
     public void moveTheMouseToMildSteelCategoryUnquoted() {
         moveTheMouseToCategory("Mild steel");
@@ -1291,8 +1147,6 @@ public class CartSteps extends AbstractWebPage {
 
     @When("move the mouse to {string} category")
     public void moveTheMouseToCategory(String category) {
-        // Pull the customer's isTransacting flag from the preprod customer-profile API.
-        // Cached per scenario, so repeated calls to this step hit the API only once.
         boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
         log.info("isTransacting for the logged-in customer: " + transactingCustomer);
 
@@ -1346,9 +1200,6 @@ public class CartSteps extends AbstractWebPage {
 
     private void clickMildSteelSubCategory(By locator, String productName) {
         try {
-            // The mega-menu renders hidden duplicates of these anchors (wireCategory resolves to a
-            // 0x0 copy at /steel-wire-rods before the real /category/steel-wire-rods link), so
-            // jsClick would wait on visibility of the invisible one and time out after 15s.
             clickFirstVisible(locator);
             log.info("Clicked on " + productName + " product");
         } catch (Exception e) {
@@ -1415,31 +1266,208 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
+    private static final String HOT_ROLLED_LISTING_PATH = "/category/mild-steel/hot-rolled-steel";
+
     @When("move the mouse to Mild steel category and to sub category Hot rolled")
     public void moveTheMouseToMildSteelCategoryAndToSubCategoryHotRolled() {
         confirmBusinessDetailsIfDialogPresent();
-        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-        if(transactingCustomer){
-        refreshAndWaitFor(ALL_CATEGORY);
-        hoverOverElement(ALL_CATEGORY);
+        try {
+            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+            if (transactingCustomer) {
+                refreshAndWaitFor(ALL_CATEGORY);
+                hoverOverElement(ALL_CATEGORY);
+            }
+            hoverOverMildSteelCategory();
+            waits(By.xpath(msHotRolledCategory));
+            hoverOverElement(By.xpath(msHotRolledCategory));
+            log.info("cursor moved to subcategory 'Hot rolled' under mild steel");
+        } catch (Exception e) {
+            String target = siteOrigin() + HOT_ROLLED_LISTING_PATH;
+            log.info("Could not open the Mild steel > Hot rolled flyout (" + e.getClass().getSimpleName()
+                    + ": " + e.getMessage() + "). Falling back to " + target
+                    + " so the scenario continues.");
+            Grid.driver().get(target);
+            waitForPageLoad();
+            log.info("Landed on the Hot rolled listing at " + Grid.driver().getCurrentUrl());
         }
-        hoverOverMildSteelCategory();
-        waits(By.xpath(msHotRolledCategory));
-        hoverOverElement(By.xpath(msHotRolledCategory));
-        log.info("cursor moved to subcategory 'Hot rolled' under mild steel");
     }
 
-    // Step bindings for the sub-category clicks. Named distinctly from the private
-    // clickOn*Product() helpers above, which use Actions instead of a JS click.
+    @When("move the mouse to Bitumen category and to sub category Viscosity grade bitumen")
+    public void moveTheMouseToBitumenCategoryAndToSubCategoryViscosityGradeBitumen() {
+        confirmBusinessDetailsIfDialogPresent();
+            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+            if (transactingCustomer) {
+                refreshAndWaitFor(ALL_CATEGORY);
+                hoverOverElement(ALL_CATEGORY);
+            }
+            hoverOverBitumenCategory();
+            waits(By.xpath(viscosityGradeBitumenCategory));
+            hoverOverElement(By.xpath(viscosityGradeBitumenCategory));
+            log.info("cursor moved to subcategory 'Viscosity grade bitumen' under bitumen");
+    }
+
+    @And("click on Hollow sections product")
+    public void clickOnHollowSectionsProduct() {
+        if (openHotRolledSubCategoryByUrl("hollow-sections", "Hollow sections")) {
+            return;
+        }
+        jsClick(By.xpath(hollowSectionsSubCategory));
+    }
+
+     @And("click on Grade bulk bitumen product")
+    public void clickOnGradeBulkBitumenProduct() {
+        if (openHotRolledSubCategoryByUrl("grade-bulk-bitumen", "Grade bulk bitumen")) {
+            return;
+        }
+        jsClick(By.xpath(gradeBulkBitumenSubCategory));
+    }
+
+    /** Scheme and host of the environment under test, taken from the page rather than config. */
+    private String siteOrigin() {
+        URI current = URI.create(Grid.driver().getCurrentUrl());
+        return current.getScheme() + "://" + current.getAuthority();
+    }
+
+    /** Current URL path with any query, fragment and trailing slash removed. */
+    private String currentPath() {
+        String path = URI.create(Grid.driver().getCurrentUrl()).getPath();
+        if (path == null) {
+            return "";
+        }
+        return path.length() > 1 && path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+    }
+
+    private boolean openHotRolledSubCategoryByUrl(String segment, String label) {
+        if (!HOT_ROLLED_LISTING_PATH.equals(currentPath())) {
+            return false;
+        }
+        String target = siteOrigin() + HOT_ROLLED_LISTING_PATH + "/" + segment;
+        log.info("On the Hot rolled listing rather than the flyout, so opening " + label
+                + " by URL instead of clicking: " + target);
+        Grid.driver().get(target);
+        waitForPageLoad();
+        return true;
+    }
+
     @And("click on HR Sheet product")
     public void selectHRSheetProduct() {
+        if (openHotRolledSubCategoryByUrl("hot-rolled-sheets", "HR Sheet")) {
+            return;
+        }
         jsClick(By.xpath(hotRolledSheetsSubCategory));
     }
 
     @And("click on HR Coil product")
     public void selectHRCoilProduct() {
+        if (openHotRolledSubCategoryByUrl("hot-rolled-coils", "HR Coil")) {
+            return;
+        }
         jsClick(By.xpath(hotRolledCoilsSubCategory));
+    }
+
+    private static final Map<String, String> CATEGORY_PRODUCTS = buildCategoryProducts();
+
+    private static Map<String, String> buildCategoryProducts() {
+        Map<String, String> products = new LinkedHashMap<>();
+        products.put("hr sheet", "SAIL Hot Rolled Sheets IS 2062:2011 E350C");
+        products.put("hr coil", "JSW Steel Hot Rolled Coils IS 2062:2011 E250A");
+        products.put("hrpo sheet", "Neotrex Silveron+ Hot Rolled Pickled and Oiled Sheet 1079:2017 1040");
+        products.put("wire rod coils", "JSW Steel Wire Rod Coils IS 7887:1992 SAE1010");
+        products.put("galvanized sheet", "JSW Steel Galvanized Steel Sheets IS 277:2018 GP250");
+        products.put("cement", "JSW Ordinary Portland Cement 43");
+        products.put("tmt", "JSW One FE 550 TMT Rebar");
+        products.put("pipes and tubes", "One Helix Circular Hollow Section IS 1161 YSt 210 Black");
+        products.put("bitumen", "Standard IS 73:2013 VG40 Bitumen (Bulk)");
+        return products;
+    }
+
+    @And("click on the product for {string} category")
+    public void clickOnTheProductForCategory(String category) {
+        String productName = productNameFor(category);
+        By card = productCardByName(productName);
+
+        log.info("Looking for '" + productName + "' (" + category + ") on "
+                + Grid.driver().getCurrentUrl());
+
+        if (!scrollUntilVisible(card)) {
+            throw new IllegalStateException("Product '" + productName + "' for category '" + category
+                    + "' was not found on " + Grid.driver().getCurrentUrl()
+                    + " after scrolling to the bottom of the listing. Either the listing does not"
+                    + " carry that product on this environment, or its displayed name has changed -"
+                    + " the match is on the name shown on the card, exactly.");
+        }
+
+        scrollToCenter(card);
+        clickFirstVisible(card);
+        context.cartPdpProductName = productName;
+        log.info("Clicked '" + productName + "' - now at " + Grid.driver().getCurrentUrl());
+    }
+
+    /** The product name configured for a category, or a failure naming the categories that exist. */
+    private String productNameFor(String category) {
+        String product = CATEGORY_PRODUCTS.get(normaliseCategory(category));
+        if (product == null) {
+            throw new IllegalArgumentException("No product configured for category '" + category
+                    + "'. Known categories: " + CATEGORY_PRODUCTS.keySet()
+                    + ". Add it to CATEGORY_PRODUCTS rather than putting a product name in the"
+                    + " feature file, so the name lives in one place when the catalogue changes.");
+        }
+        return product;
+    }
+
+    private static String normaliseCategory(String category) {
+        if (category == null) {
+            return "";
+        }
+        String value = category.trim();
+        int lastSeparator = value.lastIndexOf('>');
+        if (lastSeparator >= 0) {
+            value = value.substring(lastSeparator + 1);
+        }
+        return value.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+    }
+
+    private By productCardByName(String productName) {
+        return By.xpath("//a[contains(@href,'/product-detail/')]"
+                + "[.//*[normalize-space(text())=" + xpathLiteral(productName) + "]]");
+    }
+
+    private static String xpathLiteral(String value) {
+        if (!value.contains("'")) {
+            return "'" + value + "'";
+        }
+        StringBuilder concat = new StringBuilder("concat(");
+        String[] parts = value.split("'", -1);
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                concat.append(", \"'\", ");
+            }
+            concat.append("'").append(parts[i]).append("'");
+        }
+        return concat.append(")").toString();
+    }
+
+    private boolean scrollUntilVisible(By locator) {
+        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        long previousOffset = -1;
+
+        for (int pass = 0; pass < 30; pass++) {
+            if (isAnyVisible(locator)) {
+                return true;
+            }
+            long offset = ((Number) js.executeScript(
+                    "window.scrollBy(0, window.innerHeight * 0.8); return window.pageYOffset;"))
+                    .longValue();
+            if (offset == previousOffset) {
+                sleep(500);
+                return isAnyVisible(locator);
+            }
+            previousOffset = offset;
+            sleep(400);
+        }
+        return isAnyVisible(locator);
     }
 
     @When("move the mouse to Mild steel category and to sub category Cold rolled")
@@ -1464,9 +1492,6 @@ public class CartSteps extends AbstractWebPage {
 
     @And("click on CR Sheet product")
     public void selectCRSheetProduct() {
-        // By.xpath(...) is required here: coldRolledSheetsSubCategory is an XPath, and passing it
-        // as a bare String previously resolved to the text-matching overload and built an invalid
-        // selector (//div[normalize-space()='//li/a[contains(@href, ...)]']).
         scrollToCenter(By.xpath(coldRolledSheetsSubCategory));
         jsClick(By.xpath(coldRolledSheetsSubCategory));
     }
@@ -1491,42 +1516,15 @@ public class CartSteps extends AbstractWebPage {
         jsClick(By.xpath(galvanizedSheetCategory));
     }
 
-    /**
-     * Opens the mild-steel mega-menu by hovering the copy of the nav item that is actually rendered.
-     *
-     * <p>{@code CustomUtil.hoverOverElement} is the correct helper here and should stay. It resolves
-     * {@code firstVisible(locator)} internally, scrolls that node to centre, and moves the pointer
-     * <em>without</em> clicking. That matters because the header renders this item twice - the
-     * {@code /mild-steel} copy measures 0x0 and the {@code /category/mild-steel} copy 66x20
-     * (measured on QA) - and {@code moveToElement} on a zero-size box dispatches no
-     * {@code pointerenter}, so the panel never opens.
-     *
-     * <p>Do not "simplify" this to {@code CustomUtil.moveToAction}. That is the helper that follows
-     * its move with a {@code click()}, and it resolves the first match through {@code findElement}
-     * rather than {@code firstVisible}. Both properties are wrong for this locator: it would aim at
-     * the 0x0 copy and then navigate to the category page instead of opening the panel.
-     *
-     * <p>{@code waits(MILD_STEEL_CATEGORY)} was dropped as redundant, not as harmful - it logs its
-     * timeout with the locator and exception class rather than swallowing it, but
-     * {@code firstVisible} already waits and throws with a message naming the locator, so the extra
-     * 10 seconds only delayed the same failure.
-     *
-     * <p>An earlier revision of this comment named this method as the root cause of 27 broken
-     * scenarios in the 3 Sep 2026 run. That claim is withdrawn, and should not be reinstated
-     * without new evidence: hovering this locator with a real pointer does open the panel (visible
-     * {@code /category/} links went from 16 to 31), and {@code firstVisible} does select the 66x20
-     * copy. The cause of those failures is not established.
-     */
     private void hoverOverMildSteelCategory() {
         hoverOverElement(MILD_STEEL_CATEGORY);
         log.info("cursor moved to mild steel category");
     }
 
-    // ---------------------------------------------------------------------
-    // Product-specific step definitions.
-    // Each one only names its product - all behaviour lives in
-    // selectProductAttributes(), so the attribute logic exists in one place.
-    // ---------------------------------------------------------------------
+    private void hoverOverBitumenCategory() {
+        hoverOverElement(BITUMEN_CATEGORY);
+        log.info("cursor moved to bitumen category");
+    }
 
     @And("select diameter, form, quantity {string} for TMT")
     public void selectAllTheTMTRebarAttribute(String quantity) {
@@ -1564,16 +1562,42 @@ public class CartSteps extends AbstractWebPage {
         selectProductAttributes("HR Coil", quantity);
     }
 
-    // =====================================================================
-    // Generic PDP attribute selection
-    //
-    // One entry point for every product. The product name decides which
-    // attributes get filled; the order below is the order they are filled in.
-    // All clicks go through jsClick and all typing through setValueJS, so an
-    // overlay or a not-yet-scrolled element cannot intercept the interaction.
-    // =====================================================================
+    @And("enter quantity {string} in PDP without verifying the committed value")
+    public void enterQuantityInPdpWithoutVerifyingTheCommittedValue(String quantity) {
+        waits(By.xpath(QUANTITY_TEXTBOX));
+        scrollToCenter(By.xpath(QUANTITY_TEXTBOX));
+        WebElement quantityInput = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX));
+        jsClick(quantityInput);
 
-    /** An attribute that can appear on a PDP. */
+        quantityInput.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
+        quantityInput.sendKeys(Keys.ENTER);
+        confirmBusinessDetailsIfDialogPresent();
+        jsClick(quantityLabel);
+
+        String held = settledQuantityValue();
+        log.info("Entered quantity '" + quantity + "' with verification disabled - field now holds '"
+                + held + "'. Not asserted: this step is for values the PDP is expected to reject.");
+        Allure.addAttachment("Quantity entered without verification",
+                "Requested: " + quantity
+                        + "\nField holds after commit: '" + held + "'"
+                        + "\nNo quantity assertion performed - the next step asserts the Add to cart state.");
+    }
+
+    private String settledQuantityValue() {
+        String previous = null;
+        for (int attempt = 0; attempt < 8; attempt++) {
+            String raw = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX)).getAttribute("value");
+            String current = (raw == null) ? "" : raw.trim();
+            if (current.equals(previous)) {
+                return current;
+            }
+            previous = current;
+            sleep(250);
+        }
+        return previous == null ? "" : previous;
+    }
+
     private enum PdpAttribute {
         DIAMETER,
         FORM,
@@ -1589,19 +1613,14 @@ public class CartSteps extends AbstractWebPage {
         SPANGLE_TYPE
     }
 
-    /**
-     * Which attributes each product needs, in fill order. Keys are normalised
-     * (lower-cased, non-alphanumerics stripped) so "HR Coil", "hr coil" and
-     * "HR-Coil" all resolve to the same entry.
-     */
     private static final Map<String, List<PdpAttribute>> PRODUCT_ATTRIBUTES = buildProductAttributes();
 
     private static Map<String, List<PdpAttribute>> buildProductAttributes() {
         Map<String, List<PdpAttribute>> map = new LinkedHashMap<>();
 
         // Long products - sized by diameter, not by sheet dimensions.
-        map.put("tmt", Arrays.asList(PdpAttribute.DIAMETER, PdpAttribute.FORM));
-        map.put("tmtrebar", Arrays.asList(PdpAttribute.DIAMETER, PdpAttribute.FORM));
+        map.put("tmt", Arrays.asList(PdpAttribute.FORM, PdpAttribute.DIAMETER));
+        map.put("tmtrebar", Arrays.asList(PdpAttribute.FORM,PdpAttribute.DIAMETER));
         map.put("wire", Collections.singletonList(PdpAttribute.DIAMETER));
 
         // Flat products - thickness and width always, length varies by product.
@@ -1621,13 +1640,6 @@ public class CartSteps extends AbstractWebPage {
         return map;
     }
 
-    /**
-     * Selects every attribute the given product needs and enters the quantity.
-     *
-     * @param productName one of: TMT, Wire, Coated Sheet, CR Sheet, CR Coil, HR Sheet, HR Coil
-     *                    (case and separators are ignored)
-     * @param quantity    value typed into the quantity box
-     */
     @And("select attributes for {string} with quantity {string}")
     public void selectProductAttributes(String productName, String quantity) {
         List<PdpAttribute> attributes = PRODUCT_ATTRIBUTES.get(normaliseProductName(productName));
@@ -1642,11 +1654,11 @@ public class CartSteps extends AbstractWebPage {
 
         for (PdpAttribute attribute : attributes) {
             switch (attribute) {
-                case DIAMETER:
-                    context.pdpDiameter = selectFirstEnabledOption(DIAMETER, "diameter", productName);
-                    break;
                 case FORM:
                     context.pdpForm = selectFirstEnabledOption(FORM, "form", productName);
+                    break;
+                case DIAMETER:
+                    context.pdpDiameter = selectFirstEnabledOption(DIAMETER, "diameter", productName);
                     break;
                 case THICKNESS:
                     context.pdpThickness = selectFirstEnabledOption(THICKNESS, "thickness", productName);
@@ -1676,47 +1688,11 @@ public class CartSteps extends AbstractWebPage {
             }
         }
         sleep(1000);
-        // Delegated rather than inlined. The inline copy that used to live here never assigned
-        // context.pdpQuantity, so every product routed through this method - Wire, Coated Sheet,
-        // CR Sheet, CR Coil, HR Sheet, HR Coil - reached the cart assertion with a null expected
-        // value and failed as "expected [Qty: null MT]".
         enterQuantityUsingText(quantity, productName);
         confirmBusinessDetailsIfDialogPresent();
         jsClick(quantityLabel);
     }
 
-    /**
-     * Selects an attribute that the PDP may legitimately not offer.
-     *
-     * <p>The option locators already filter out disabled buttons
-     * ({@code button[not(contains(@class,'disabled'))]}), so "every option disabled" and "no
-     * option rendered" both arrive here as an empty match. Either way the attribute is not
-     * selectable and the run continues - a SKU with one fixed width, or with all widths out of
-     * stock, is a property of the catalogue rather than a test failure.
-     *
-     * @return the selected text, or null when the attribute was skipped.
-     */
-    private String selectOptionalOption(String optionXpath, String attributeName, String productName) {
-        if (!waitForOptionAvailable(optionXpath)) {
-            String message = "No enabled " + attributeName + " option on the PDP for '" + productName
-                    + "' after waiting " + OPTIONAL_ATTRIBUTE_WAIT_SECONDS + "s - skipping it."
-                    + " Expected when the SKU has a single fixed " + attributeName
-                    + " or when every option is out of stock.";
-            log.info(message);
-            Allure.addAttachment(attributeName + " skipped for " + productName, message);
-            return null;
-        }
-        return selectFirstEnabledOption(optionXpath, attributeName, productName);
-    }
-
-    /**
-     * Types a custom length when the PDP offers the field, and skips it when it does not.
-     *
-     * <p>Same reasoning as {@link #selectOptionalOption}: custom length is part of the
-     * width/length family and its absence is a catalogue property.
-     *
-     * @return the length entered, or null when the field was not present.
-     */
     private String enterCustomLengthIfPresent(String productName) {
         if (!waitForElementPresent(CUSTOM_LENGTH_TEXTBOX)) {
             String message = "No custom length field on the PDP for '" + productName
@@ -1728,12 +1704,6 @@ public class CartSteps extends AbstractWebPage {
         return enterCustomLength(productName);
     }
 
-    /**
-     * Polls for an enabled option to render before concluding the attribute is not offered.
-     *
-     * <p>A bare findElements() check races the PDP: the attribute panel renders after the price
-     * call resolves, so an immediate look would skip attributes that were merely slow.
-     */
     private boolean waitForOptionAvailable(String optionXpath) {
         return pollFor(() -> isOptionAvailable(optionXpath));
     }
@@ -1783,11 +1753,6 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /**
-     * Reads the allowed custom-length range from the PDP hint, derives a valid value and types it.
-     *
-     * @return the length value entered.
-     */
     private String enterCustomLength(String productName) {
         try {
             waits(By.xpath(CUSTOM_LENGTH_MSG));
@@ -1812,26 +1777,6 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /**
-     * Types the quantity with real key events and commits it with ENTER.
-     *
-     * <p>Uses {@code enterText} (sendKeys) rather than a JS value assignment. The PDP quantity box
-     * is a React-controlled input: assigning {@code .value} directly bypasses React's internal
-     * value tracker, so the component re-renders with its previous value and the typed number
-     * never reaches the model. That is why the JS path left the field unchanged.
-     *
-     * <p>{@code enterText} appends rather than replaces, so whatever the field already holds is
-     * selected first and typed over. {@code clear()} is deliberately not used - on a controlled
-     * input it has the same tracker problem as the JS assignment.
-     *
-     * <p>What lands in {@code context.pdpQuantity} is the value read back off the input AFTER the
-     * commit, not the value that was requested. The PDP can legitimately hold a different number -
-     * a minimum order quantity, a lot-size step, a maxlength - and storing the request instead
-     * would make the cart-page assertion compare the cart against a number the PDP never held.
-     *
-     * <p>The read-back is also asserted against the request, so a clamp surfaces as its own named
-     * failure rather than quietly redefining what the rest of the scenario expects.
-     */
     private void enterQuantityUsingText(String quantity, String productName) {
         try {
             waits(By.xpath(QUANTITY_TEXTBOX));
@@ -1839,8 +1784,6 @@ public class CartSteps extends AbstractWebPage {
             WebElement quantityInput = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX));
             jsClick(quantityInput);
 
-            // Select the existing value so the typed digits replace it instead of appending - a
-            // pre-filled minimum order quantity would otherwise turn a requested "50" into "1050".
             quantityInput.sendKeys(Keys.chord(Keys.CONTROL, "a"));
             enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
             quantityInput.sendKeys(Keys.ENTER);
@@ -1861,14 +1804,6 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /**
-     * The committed quantity as the PDP holds it, digits only.
-     *
-     * <p>Polled rather than read once: the input is re-rendered after the change event, so an
-     * immediate read can still return the pre-commit value. Polls towards {@code expected} rather
-     * than towards what was typed, so a field that legitimately truncates settles immediately
-     * instead of burning the whole poll budget every time.
-     */
     private String readCommittedQuantity(String expected) {
         String value = "";
         for (int attempt = 0; attempt < 10; attempt++) {
@@ -1882,17 +1817,6 @@ public class CartSteps extends AbstractWebPage {
         return value;
     }
 
-    /**
-     * What the quantity field is expected to hold once it has applied its own length limit.
-     *
-     * <p>The PDP quantity box caps its input at a fixed number of digits, and
-     * {@code Pdp.feature:28} exercises that deliberately - entering "12345" and expecting "1234".
-     * Asserting the field equals what was TYPED therefore failed those rows for behaving exactly
-     * as specified, so the cap is read off the element itself rather than assumed.
-     *
-     * @return the request truncated to the field's {@code maxlength}, or the request unchanged when
-     *         the element declares none.
-     */
     private String expectedQuantityAfterFieldLimit(WebElement quantityInput, String quantity) {
         try {
             String maxLength = quantityInput.getAttribute("maxlength");
@@ -1908,18 +1832,6 @@ public class CartSteps extends AbstractWebPage {
         return quantity;
     }
 
-    /**
-     * Asserts the quantity field ended up holding a usable value.
-     *
-     * <p>Three outcomes, deliberately kept apart so the message says which one happened:
-     * <ul>
-     *   <li>field holds {@code expected} - nothing to report</li>
-     *   <li>the element declared a maxlength and the field disagreed with it - a real defect</li>
-     *   <li>no maxlength declared and the field holds a PREFIX of the request - the cap is enforced
-     *       in script rather than by attribute, so this is logged, not failed. Failing it would
-     *       contradict the scenario that exists to assert the cap.</li>
-     * </ul>
-     */
     private void assertQuantityAccepted(String accepted, String requested, String expected, String productName) {
         if (expected.equals(accepted)) {
             return;

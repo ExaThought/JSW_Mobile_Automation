@@ -82,10 +82,19 @@ pipeline {
         string(
             name: 'GRID_URL',
             defaultValue: '',
+            /* No session count quoted here on purpose. Jenkins renders parameter descriptions
+             * before any step runs, so this text cannot be computed from the suite - and the last
+             * hardcoded number ("5") silently went stale the moment either parallelism axis was
+             * edited, which is the same drift that broke the CPU clamp. The authoritative figure is
+             * thread-count x data-provider-thread-count on the <suite> tag; the Test stage
+             * prints it via ci/cap-parallelism.js. */
             description: 'Remote Selenium Grid, e.g. http://selenium-grid.internal:4444. Leave ' +
-                         'blank to use the grid Sauron starts on the agent - which sizes its ' +
-                         'session slots from the CPU count, so a 2-CPU agent cannot serve the 5 ' +
-                         'concurrent sessions testng_bdd.xml asks for. See docker-compose.grid.yml.'
+                         'blank to use the grid Sauron starts on the agent, which sizes its ' +
+                         'session slots from the CPU count. If the suite asks for more concurrent ' +
+                         'sessions than the agent has cores, ci/cap-parallelism.js lowers the ' +
+                         'suite for that build, so an undersized agent runs slower instead of ' +
+                         'failing - the console prints the demand and any cap it applied. Set this ' +
+                         'to run the authored parallelism instead. See docker-compose.grid.yml.'
         )
         string(
             name: 'RECIPIENTS',
@@ -165,6 +174,26 @@ pipeline {
         }
 
         stage('Test') {
+            /* Nexus credentials, needed by EVERY build - Nexus hosts the Sauron artifacts, so
+             * dependency resolution fails without them regardless of ENV or
+             * USE_JENKINS_CREDENTIALS. Bound here rather than around one of the three `sh mvnCmd`
+             * call sites below, all of which need it.
+             *
+             * credentials() on a Username-with-password credential exposes NEXUS_USR and NEXUS_PSW
+             * and masks both in the console. One id covers both halves, so only one credential has
+             * to exist.
+             *
+             * CREATE THE CREDENTIAL BEFORE THE NEXT BUILD: Manage Jenkins > Credentials > (scope) >
+             * Add Credentials > kind "Username with password", ID exactly `nexus-member`. If the id
+             * is missing the stage aborts before any test runs, which surfaces as an UNSTABLE build
+             * with zero tests - indistinguishable at a glance from a test failure.
+             *
+             * This replaced `-Dnexus-username=${NEXUS_USERNAME:-nexus}`, whose committed
+             * nexus/nexus fallback silently produced a 401 from Nexus when the real credentials
+             * were absent. Failing at bind time names the cause instead. */
+            environment {
+                NEXUS = credentials('nexus-member')
+            }
             steps {
                 /* allure-results must start empty. The summariser collapses duplicate
                  * scenario names across attempts, but results left over from a previous
@@ -325,10 +354,15 @@ pipeline {
                         # without the override it derives slots from CPU count all over again.
                         SLOTS=$(echo "$STATUS" | grep -o '"maxSessions": *[0-9]*' | grep -o '[0-9]*' | paste -sd+ - | bc 2>/dev/null || echo 0)
                         echo "Grid session slots: $SLOTS"
-                        if [ "${SLOTS:-0}" -lt 5 ]; then
-                            echo "WARNING: grid advertises $SLOTS slot(s) but the suite runs 5 tests in parallel."
-                            echo "  Set SE_NODE_MAX_SESSIONS=5 AND SE_NODE_OVERRIDE_MAX_SESSIONS=true on the node,"
-                            echo "  and give the grid host >=5 cores - slots without cores just turn session"
+                        # Derived from the suite, not hardcoded: this used to compare against a
+                        # literal 5, which was thread-count's value at the time and went stale as
+                        # soon as either axis changed. Demand is thread-count x
+                        # data-provider-thread-count.
+                        WANT=$(node ci/cap-parallelism.js "src/test/resources/${SUITE}" --demand)
+                        if [ "${SLOTS:-0}" -lt "${WANT:-1}" ]; then
+                            echo "WARNING: grid advertises $SLOTS slot(s) but the suite wants $WANT concurrent session(s)."
+                            echo "  Set SE_NODE_MAX_SESSIONS=$WANT AND SE_NODE_OVERRIDE_MAX_SESSIONS=true on the node,"
+                            echo "  and give the grid host >=$WANT cores - slots without cores just turn session"
                             echo "  failures into step timeouts."
                         fi
                         # ---------------------------------------------------------------
@@ -379,34 +413,35 @@ YAML
                     # Match the suite's parallelism to what a LOCAL grid can serve.
                     #
                     # Selenium sizes a node's session slots from the CPU count. On the 2-CPU agent
-                    # that is 2 concurrent sessions while testng_bdd.xml asks for 5, so three
-                    # sessions never start - and because Sauron's ScreenshotBddListener then throws
-                    # on the missing driver, every scenario reports "Driver not initialized. Is
-                    # @WebTest/@MobileTest missing on class/method?" and names neither the browser
-                    # nor the real cause.
+                    # that is 2 concurrent sessions, while the suite demands thread-count x
+                    # data-provider-thread-count - so any surplus session never starts, and because
+                    # Sauron's ScreenshotBddListener then throws on the missing driver, the scenario
+                    # reports "Driver not initialized. Is @WebTest/@MobileTest missing on
+                    # class/method?" and names neither the browser nor the real cause.
+                    #
+                    # No figure is quoted here; cap-parallelism.js prints the demand and any cap it
+                    # applied. Hardcoding it is what let the old clamp go stale unnoticed.
                     #
                     # Capping is a workaround, not the fix: it trades parallelism for a run that
-                    # completes. The fix is GRID_URL pointing at a host with >=5 cores.
+                    # completes. The fix is GRID_URL pointing at a host with at least as many cores
+                    # as the suite demands sessions.
                     #
-                    # Only ever LOWERS thread-count. Raising it past the authored value would break
-                    # the rule documented in global_qa.properties - two blocks that run at the same
-                    # time may not share a CCP account, because logout is server-side.
+                    # Only ever LOWERS. Raising past the authored value would break the rule
+                    # documented in global_qa.properties - two blocks that run at the same time may
+                    # not share a CCP account, because logout is server-side.
+                    #
+                    # BOTH AXES, and via a script rather than grep/sed. Concurrent sessions are
+                    # thread-count x data-provider-thread-count, and the old inline version read
+                    # only the first `thread-count="N"` anywhere in the file. That matched
+                    # data-provider-thread-count (substring) and matched inside XML comments, so
+                    # after testng_bdd.xml documented both axes in prose the clamp was reading the
+                    # documentation. Build #244 is what that cost: 1 x 5 = 5 sessions demanded on a
+                    # 2-CPU agent, unclamped, and the clamp printed "every thread gets a slot".
+                    # ci/cap-parallelism.js reads the <suite> open tag only.
                     # ---------------------------------------------------------------
                     CPUS=$(nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
                     SUITE_FILE="src/test/resources/${SUITE}"
-                    AUTHORED=$(grep -oP 'thread-count="\\K[0-9]+' "$SUITE_FILE" | head -1)
-                    AUTHORED=${AUTHORED:-1}
-
-                    if [ "$CPUS" -lt "$AUTHORED" ]; then
-                        echo "Agent has $CPUS CPU(s); ${SUITE} asks for thread-count=$AUTHORED."
-                        echo "A local Selenium node serves one session per CPU, so $((AUTHORED - CPUS)) session(s)"
-                        echo "would never start. Capping thread-count to $CPUS for this build only."
-                        sed -i "s/thread-count=\\"$AUTHORED\\"/thread-count=\\"$CPUS\\"/" "$SUITE_FILE"
-                        grep -o 'thread-count="[0-9]*"' "$SUITE_FILE" | head -1 | sed 's/^/  now: /'
-                        echo "  To restore full parallelism, run a grid (docker-compose.grid.yml) and set GRID_URL."
-                    else
-                        echo "Agent has $CPUS CPU(s) for thread-count=$AUTHORED - every thread gets a slot."
-                    fi
+                    node ci/cap-parallelism.js "$SUITE_FILE" "$CPUS"
 
                     # Force headless regardless of what is committed.
                     #
@@ -489,17 +524,26 @@ YAML
                         // ignored, keep tag selection in testng_bdd.xml instead.
                         def tagArg = params.TAGS?.trim() ? "-Dcucumber.filter.tags=\"${params.TAGS.trim()}\"" : ''
 
-                        // Nexus hosts the Sauron artifacts, so the build cannot resolve without
-                        // it. Shell default expansion means this works whether or not the agent
-                        // exports the variables, and lets them be overridden without a credential
-                        // id having to exist.
+                        /* NEXUS_USR / NEXUS_PSW come from the stage's environment block, which
+                         * binds the `nexus-member` credential. settings.xml resolves
+                         * ${nexus-username} / ${nexus-password} from these -D properties.
+                         *
+                         * Both are QUOTED. The password is free text chosen outside this repo, and
+                         * an unquoted value containing a space or a shell metacharacter would split
+                         * the argument or be interpreted - producing a 401 that looks like wrong
+                         * credentials rather than a quoting bug.
+                         *
+                         * Note this still puts the password on a command line, where it is visible
+                         * in the agent's process list for the life of the build. Jenkins masks it in
+                         * the console, not in /proc. Moving settings.xml to ${env.NEXUS_PSW} would
+                         * remove that exposure - worth doing if the agent is shared. */
                         def mvnCmd = """
                             mvn -B -ntp clean test \
                                 -s settings.xml \
                                 -Denv=${params.ENV} \
                                 -DsuiteXmlFile=${params.SUITE} \
-                                -Dnexus-username=\${NEXUS_USERNAME:-nexus} \
-                                -Dnexus-password=\${NEXUS_PASSWORD:-nexus} \
+                                -Dnexus-username="\${NEXUS_USR}" \
+                                -Dnexus-password="\${NEXUS_PSW}" \
                                 ${tagArg}
                         """
 

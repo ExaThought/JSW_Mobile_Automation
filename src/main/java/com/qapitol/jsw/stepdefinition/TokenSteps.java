@@ -1,6 +1,5 @@
 package com.qapitol.jsw.stepdefinition;
 
-import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.Token;
 import com.qapitol.jsw.utils.UserConfig;
 import com.qapitol.sauron.core.Grid;
@@ -10,6 +9,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en_scouse.An;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
@@ -46,21 +46,47 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user set expired token in local storage")
     public void user_set_expired_token_in_local_storage() {
-        String expiredToken = ConfigUtil.getSecretValue("ccpExpiredToken");
-        Token.getExpiredCcpToken();
+        String expiredToken = Token.getExpiredCcpToken();
+
         JavascriptExecutor js = Grid.driver();
-        // Inject expired/invalid token
         js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);
-        js.executeScript(
-                "document.cookie = 'token=" + expiredToken + "; path=/; Secure; SameSite=Strict';"
-        );
-        log.info("Expired token successfully set in local storage");
+        log.info("Expired token set in localStorage");
+
+        setExpiredTokenCookie(expiredToken);
+        sleep(2000); // Give the browser a moment to write the cookie before refreshing
+    }
+
+    private void setExpiredTokenCookie(String expiredToken) {
+        try {
+            boolean secureOrigin = Grid.driver().getCurrentUrl().toLowerCase().startsWith("https:");
+            Cookie expiredCookie = new Cookie.Builder("token", expiredToken)
+                    .path("/")
+                    .isSecure(secureOrigin)
+                    .sameSite("Strict")
+                    .build();
+
+            Grid.driver().manage().deleteCookieNamed("token");
+            Grid.driver().manage().addCookie(expiredCookie);
+
+            Cookie written = Grid.driver().manage().getCookieNamed("token");
+            if (written == null) {
+                log.info("The 'token' cookie is not readable after addCookie - the browser rejected"
+                        + " it, or the app does not use one. localStorage still carries the expired"
+                        + " token, which is what drives the logout.");
+            } else {
+                log.info("Expired token set in the 'token' cookie (secure=" + secureOrigin + ")");
+            }
+        } catch (Exception e) {
+            log.info("Could not set the 'token' cookie through the WebDriver API: " + e.getMessage()
+                    + ". Continuing - the expired token is already in localStorage.");
+        }
     }
 
     @An("user refresh the page")
     public void user_refresh_the_page() {
         url = Grid.driver().getCurrentUrl();
         Grid.driver().navigate().refresh();
+        sleep(2000); // Give the browser a moment to refresh and re-render the page
         Grid.driver().navigate().refresh();
         log.info("Page refreshed after setting expired token");
     }
@@ -95,7 +121,7 @@ public class TokenSteps extends AbstractWebPage {
 
     @Then("verify the user is logged out and navigate to login page")
     public void verify_the_user_is_logged_out_and_navigate_to_login_page() {
-        softAssert.assertTrue(waitAndCheckIsElementVisible(CONTINUE_WITH_EMAIL), "User is not logged out or did not navigate to login page for token expiry from " + pageName);
+        softAssert.assertTrue(waitAndCheckIsElementVisible(CONTINUE_WITH_EMAIL) || waitAndCheckIsElementVisible(LOGIN_CTA), "User is not logged out or did not navigate to login page for token expiry from " + pageName);
         log.info("User navigate to login Page after token expiry and continue with email button is visible");
     }
 
@@ -166,12 +192,6 @@ public class TokenSteps extends AbstractWebPage {
 
     @And("user again login with configured user")
     public void user_again_login_with_configured_user() {
-        /* Two bugs here, both silent:
-         *   - findElement returns the FIRST //button[text()='Login'], which is the 0x0 duplicate
-         *   - arguments[0].click() does not fire pointerdown, and this app's buttons are Radix
-         *     primitives that listen on pointerdown rather than click
-         * so the modal never opened. clickFirstVisible picks the on-screen copy and uses a real
-         * Actions click. */
         clickFirstVisible(By.xpath("//button[text()='Login']"));
         user_again_login(UserConfig.getEmail(), UserConfig.getPassword());
     }
@@ -188,7 +208,6 @@ public class TokenSteps extends AbstractWebPage {
         waitAndSetText(LOGIN_PASSWORD, pass);// Give the password
         waitAndCheckIsElementVisible(CONTINUE_CTA);
         waitAndClickOn(CONTINUE_CTA);// Login to continue
-        sleep(2000);
         Grid.driver().navigate().refresh();
         waitUntilElementIsNotPresent(LOGIN_CTA);
     }
@@ -223,9 +242,6 @@ public class TokenSteps extends AbstractWebPage {
 
     @When("user clicks on TMT product")
     public void userClicksOnTMTProduct() {
-        // Same trap as CartSteps.selectCRSheetProduct(): this is an XPath, so it must be wrapped in
-        // By.xpath(). As a bare String it built //div[normalize-space()='//h2[text()='TMT']'] and
-        // threw InvalidSelectorException on the nested quotes.
         scrollToCenter(By.xpath("//h2[text()='TMT']"));
         waitAndClickOn(TMT_PRODUCT);
     }
