@@ -35,7 +35,6 @@ public class CcpRegistrationSteps extends AbstractWebPage {
     private static final String LOGIN_CTA_BUTTON = "//button[text()='Login']";
     private static final String CONTINUE_EMAIL_BTN = "//button[contains(text(), 'Continue with email')]";
     private static final String ACCOUNT_ALREADY_EXISTS_ERROR_MSG = "//div[@role='alert']/p";
-    private static final String GST_INFO_ICON = "//div[@class='gstin-success-icon']";
     public static final String CONTINUE_CTA = "continueCTA";
 
     @And("user open the CCP web portal")

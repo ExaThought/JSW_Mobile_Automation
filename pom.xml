@@ -202,10 +202,6 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
-                <plugin>
-                    <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                    <version>1.2.1</version>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -217,26 +213,18 @@
                     <target>11</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.jsonschema2pojo</groupId>
-                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <configuration>
-                    <sourceDirectory>${project.basedir}/src/test/resources/api_responses</sourceDirectory>
-                    <targetPackage>com.qapitol.jsw.apitest.pojo</targetPackage>
-                    <outputDirectory>${project.basedir}/target/generated-sources</outputDirectory>
-                    <sourceType>json</sourceType>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>generate</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!-- jsonschema2pojo-maven-plugin was removed here.
+                 It ran on EVERY build (generate-sources) over one input file,
+                 src/test/resources/api_responses/customerDetailsResponse.json, and wrote 5 classes
+                 into target/generated-sources under package com.qapitol.jsw.apitest.pojo.
+
+                 Nothing imported them. The POJOs this project actually uses are the committed ones
+                 in com.qapitol.jsw.apitest.pojos - note the PLURAL - which 302 files import. The
+                 two packages differ by one letter, which is most of why this survived: the
+                 generated tree looked like the one in use.
+
+                 To regenerate POJOs from a new API response, run the plugin on demand rather than
+                 wiring it back into every build. -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.1</version>

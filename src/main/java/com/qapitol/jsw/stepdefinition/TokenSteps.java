@@ -39,7 +39,6 @@ public class TokenSteps extends AbstractWebPage {
     private final String ACCOUNT_TAB = "(//span[text()='Account'])[2]";
     private static final By SEARCH_BOX_LOCATOR = By.xpath("//span[text()='Search']/../following-sibling::button");
     private static final By SEARCH_INPUT_LOCATOR = By.xpath("//input[@data-slot='input']");
-    private final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     public static final String CONTINUE_CTA = "continueCTA";
     private String pageName;
     private String url;
@@ -160,12 +159,7 @@ public class TokenSteps extends AbstractWebPage {
     @When("user search for {string}")
     public void user_search_for(String product) {
         pageName = "Search Page";
-        // The header renders two search widgets with identical classes and the first is 0x0, so
-        // jsClick/findElement resolve the invisible copy and time out. clickFirstVisible filters
-        // every match by rendered state and clicks the one the user actually sees.
         clickFirstVisible(SEARCH_BOX_LOCATOR);
-        // The overlay input autofocuses when the search opens and is only 1px tall, so send keys
-        // to the focused field instead of clicking it.
         new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
                 .until(ExpectedConditions.presenceOfElementLocated(SEARCH_INPUT_LOCATOR));
         new Actions(Grid.driver()).sendKeys(product).sendKeys(Keys.ENTER).perform();
@@ -174,8 +168,6 @@ public class TokenSteps extends AbstractWebPage {
 
     @Then("verify the user is able to login successfully")
     public void verify_the_user_is_able_to_login_successfully() {
-        // The business-details dialog can appear after a token refresh and would intercept the logo
-        // click below. Its sibling step verifyUserIsAbleToLoginSuccessfully() already guards for it.
         confirmBusinessDetailsIfDialogPresent();
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
         WebElement logo = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@href='/']")));
@@ -220,7 +212,7 @@ public class TokenSteps extends AbstractWebPage {
         softAssert.assertTrue(account_label.isDisplayed(), "Account section is not displayed");
         jsClick(account_label);
         String locator = getLocator(LEDGER_PAGE);
-        scrollingToViewAndClickUsingJS(Grid.driver().findElement(By.xpath(locator)));
+        scrollToCenter(By.xpath(locator));
         waitAndCheckIsElementClickable(LEDGER_PAGE);
         waitAndClickOn(LEDGER_PAGE);
         log.info("User navigated to ledger page successfully to test token expiry in ledger page");
@@ -234,7 +226,7 @@ public class TokenSteps extends AbstractWebPage {
         softAssert.assertTrue(account_label.isDisplayed(), "Account section is not displayed");
         jsClick(account_label);
         String locator = getLocator(TRACK_MATERIAL_PAGE);
-        scrollingToViewAndClickUsingJS(Grid.driver().findElement(By.xpath(locator)));
+        scrollToCenter(By.xpath(locator));
         waitAndCheckIsElementClickable(TRACK_MATERIAL_PAGE);
         waitAndClickOn(TRACK_MATERIAL_PAGE);
         log.info("User navigated to Track Material page successfully to test token expiry in Track Material page");
@@ -272,14 +264,4 @@ public class TokenSteps extends AbstractWebPage {
         softAssert.assertTrue(isElementPresent(USER_MENU_PROFILE_OPTION));
     }
 
-    private void confirmBusinessDetailsIfDialogPresent() {
-        try{
-            if (isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
-                Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
-                log.info("Business details confirmation dialog was present and has been closed.");
-            }
-        } catch (Exception e) {
-            log.info("No business details confirmation dialog was present.");
-        }
-    }
 }

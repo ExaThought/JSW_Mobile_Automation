@@ -54,9 +54,6 @@ elements:
   profileDetails:
     en_US:
       web: xpath=//span[text()='Profile Details']
-  confirmBusinessDetails:
-    en_US:
-      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]
   continueCTA:
     en_US:
       web: xpath=//button[normalize-space(.)='Continue']

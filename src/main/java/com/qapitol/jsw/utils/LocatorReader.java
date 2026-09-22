@@ -17,7 +17,6 @@ public class LocatorReader {
             }
             Yaml yaml = new Yaml();
             locators = yaml.load(in);
-            System.out.println("Locators loaded from " + yamlFilePath);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load locators YAML: " + e.getMessage(), e);
         }

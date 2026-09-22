@@ -13,14 +13,12 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.*;
 import static com.qapitol.jsw.utils.CustomUtil.*;
@@ -40,23 +37,13 @@ public class CartSteps extends AbstractWebPage {
     private static final String WIDTH_BUTTON = "(//span[text()='Width (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))]) [1]";
     private static final String LENGTH_BUTTON = "(//span[text()='Length (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))]) [1]";
     private static final String QUANTITY = "quantity";
-    private static final String ADD_TO_CART_CTA = "addToCart";
-    private static final String VIEW_CART = "viewCart";
     private static final String SUBMIT_REQUIREMENT = "submitRequirement";
     private static final String DELETE_LINE_ITEM = "deleteLineItem";
     private static final String EDIT_LINE_ITEM = "editLineItem";
     private static final String DELETE_CTA_BUTTON = "deleteCta";
     private static final String CEMENT_PLP = "cement";
-    private static final String STAINLESS_STEEL_PLP = "stainlessSteelPlp";
-    private static final String STAINLESS_STEEL_PDP = "stainlessSteelPDP";
-    private static final String STAINLESS_STEEL_THICKNESS = "stainlessSteelThickness";
-    private static final String STAINLESS_STEEL_WIDTH = "stainlessSteelWidth";
-    private static final String STAINLESS_STEEL_LENGTH = "stainlessSteelLength";
-    private static final String RCV2_CHECKOUT = "rcCheckout";
     private static final String MY_REQUIREMENT_PAGE = "myRequirementPage";
     private static final String REQUIREMENT_ID = "requirementId";
-    private static final String SUCCESS_PAGE_RCV2 = "rcCheckoutSuccessPage";
-    private static final String CART_PAGE = "cartPage";
     private static final String PLP_FIRST_PRODUCT = "plpFirstProduct";
     private static final String LENGTH = "length";
     private static final String DIAMETER = "(//span[text()='Diameter (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))])[1]";
@@ -74,7 +61,6 @@ public class CartSteps extends AbstractWebPage {
     private static final String EDIT_WIDTH = "editWidth";
     private static final String EDIT_THICKNESS = "editThickness";
     private static final String EDIT_LENGTH = "editLength";
-    private static final String ATTRIBUTE = "attributeValue";
     private static final String PDP_PRODUCT_NAME = "pdpProductName";
     private static final String GALVANIZED_SHEET = "galvanizedSheet";
     private static final String UPDATE_ATTRIBUTE = "(//div[@data-side='bottom']//button[not(@disabled)]//span)[1]";
@@ -97,12 +83,8 @@ public class CartSteps extends AbstractWebPage {
     private static final String QUANTITY_TEXTBOX = "//input[@id='quantity-input']";
     private static final String ADD_TO_CART_BTN = "//button[text()='Add to cart']";
     private static final int OPTIONAL_ATTRIBUTE_WAIT_SECONDS = 5;
-    private static final int ADD_TO_CART_ENABLED_WAIT_SECONDS = 15;
-    /** How long the delete confirmation modal gets to open, and a click gets to become possible. */
     private static final int DELETE_CONFIRM_WAIT_SECONDS = 10;
-    /** Spare passes over the starting item count, so a cart that will not delete cannot spin forever. */
     private static final int EXTRA_DELETE_ATTEMPTS = 2;
-    /** 500ms polls allowed for the cart list to re-render after a deletion. */
     private static final int DELETE_SETTLE_POLLS = 20;
     private static final String VIEWCART = "//button[text()='View cart']";
     private static final String JSW_LOGO = "(//a[@href=\"/\"])[1]";
@@ -111,9 +93,7 @@ public class CartSteps extends AbstractWebPage {
     private static final String ITEM_NAME = "//h1";
     private static final By ALL_CATEGORY = By.xpath("//span[contains(@class, 'hover') and contains(text(),'All categories')]");
     private static final By MILD_STEEL_CATEGORY = By.xpath("//a[contains(@href, 'mild-steel')]/span");
-    private static final By STRUCTURAL_STEEL_CATEGORY = By.xpath("//a[contains(@href, 'structural-steel')]/span");
     private static final By BITUMEN_CATEGORY = By.xpath("//a[contains(@href, 'bitumen')]/span");
-    private static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private static final String wireCategory = "//li/a[contains(@href, 'wire-rods')]";
     private static final String hotRolledSheetsSubCategory = "//li/a[contains(@href, 'hot-rolled-sheets')]";
     private static final String hotRolledCoilsSubCategory = "//li/a[contains(@href, 'hot-rolled-coils')]";
@@ -214,7 +194,6 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /** Digits out of a quantity string, with a named soft failure when there are none. */
     private int parseQuantity(String text, String description) {
         String digits = (text == null) ? "" : text.replaceAll("[^0-9]", "");
         if (digits.isEmpty()) {
@@ -224,15 +203,19 @@ public class CartSteps extends AbstractWebPage {
         return Integer.parseInt(digits);
     }
 
+    private static final By ANY_PRODUCT_CARD = By.xpath("//a[contains(@href,'/product-detail')]");
+
     @And("click on first product")
     public void clickOnFirstProduct() {
-        try {
-            WebElement locator = Grid.driver().findElement(By.xpath("(//a[contains(@href, '/product-detail')]/div) [1]"));
-            jsClick(locator);
-            log.info("Clicked on first product");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to click on first product", e);
+        if (!isAnyVisible(ANY_PRODUCT_CARD)) {
+            throw new IllegalStateException("No product card is visible on "
+                    + Grid.driver().getCurrentUrl() + " after waiting, so there is no first product"
+                    + " to open. Looked for " + ANY_PRODUCT_CARD + ". Either the listing is empty on"
+                    + " this environment or the page did not finish loading.");
         }
+
+        clickFirstVisible(ANY_PRODUCT_CARD);
+        log.info("Clicked the first product - now at " + Grid.driver().getCurrentUrl());
     }
 
     @And("add to cart")
@@ -555,7 +538,6 @@ public class CartSteps extends AbstractWebPage {
 
         //verify diameter and TMT form in cart page
         List<String> cartAttributeTexts = readCartAttributeTexts();
-        // Kept populated for the reports and for the edit/update steps that read it afterwards.
         context.cartAttributeValue = String.join(" | ", cartAttributeTexts);
         softAssert.assertFalse(cartAttributeTexts.isEmpty(),
                 "No attribute value is displayed in cart page for TMT");
@@ -591,8 +573,6 @@ public class CartSteps extends AbstractWebPage {
                         + context.cartPdpProductName + "', cart shows '" + context.pdpProductName + "'");
 
         List<String> cartAttributeTexts = readCartAttributeTexts();
-        // Kept populated for the reports and for any later step that reads it, as the TMT
-        // attribute-values step does.
         context.cartAttributeValue = String.join(" | ", cartAttributeTexts);
         softAssert.assertFalse(cartAttributeTexts.isEmpty(),
                 "No attribute value is displayed in cart page for the merged TMT line item");
@@ -616,7 +596,6 @@ public class CartSteps extends AbstractWebPage {
         return texts;
     }
 
-    /** By for a locator key, tolerating the optional {@code xpath=} prefix used in cartsteps.yaml. */
     private By byForLocatorKey(String key) {
         return xpathOf(getLocator(key));
     }
@@ -640,13 +619,6 @@ public class CartSteps extends AbstractWebPage {
                         + " Cart attribute values found: " + cartTexts);
     }
 
-    private static boolean containsAsWholeWord(String text, String value) {
-        String prefix = Character.isLetterOrDigit(value.charAt(0)) ? "\\b" : "";
-        String suffix = Character.isLetterOrDigit(value.charAt(value.length() - 1)) ? "\\b" : "";
-        return Pattern.compile(prefix + Pattern.quote(value) + suffix, Pattern.CASE_INSENSITIVE)
-                .matcher(text).find();
-    }
-
     @When("move the mouse to Structural category")
     public void moveTheMouseToStructuralCategory() {
         //Reading locator from page factory
@@ -661,8 +633,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("open Angles pdp")
     public void openAnglesPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
-        scrollingToViewAndClickUsingJS(locator);
+        scrollToCenter(By.xpath(PLP_FIRST_PRODUCT));
         waitAndCheckIsElementClickable(PLP_FIRST_PRODUCT);
         waitAndClickOn(PLP_FIRST_PRODUCT, "1");
     }
@@ -675,8 +646,7 @@ public class CartSteps extends AbstractWebPage {
         waitAndCheckIsElementClickable(THICKNESS);
         waitAndClickOn(THICKNESS, "1");
 
-        WebElement locator = Grid.driver().findElement(By.xpath(length));
-        scrollingToViewAndClickUsingJS(locator);
+        scrollToCenter(By.xpath(length));
         waitAndCheckIsElementClickable(LENGTH);
         waitAndClickOn(LENGTH, "1");
 
@@ -693,8 +663,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("open Channels pdp")
     public void openChannelsPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
-        scrollingToViewAndClickUsingJS(locator);
+        scrollToCenter(By.xpath(PLP_FIRST_PRODUCT));
         waitAndClickOn(PLP_FIRST_PRODUCT, "1");
     }
 
@@ -709,8 +678,7 @@ public class CartSteps extends AbstractWebPage {
         waitAndCheckIsElementClickable(SECTION_WEIGHT);
         waitAndClickOn(SECTION_WEIGHT, "1");
 
-        WebElement locator = Grid.driver().findElement(By.xpath(length));
-        scrollingToViewAndClickUsingJS(locator);
+        scrollToCenter(By.xpath(length));
         waitAndCheckIsElementClickable(LENGTH);
         waitAndClickOn(LENGTH, "1");
 
@@ -726,8 +694,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("open Beams & Columns pdp")
     public void openBeamsColumnsPdp() {
-        WebElement locator = Grid.driver().findElement(By.xpath(PLP_FIRST_PRODUCT));
-        scrollingToViewAndClickUsingJS(locator);
+        scrollToCenter(By.xpath(PLP_FIRST_PRODUCT));
         waitAndClickOn(PLP_FIRST_PRODUCT, "1");
     }
 
@@ -742,8 +709,7 @@ public class CartSteps extends AbstractWebPage {
         waitAndCheckIsElementClickable(SECTION_WEIGHT);
         waitAndClickOn(SECTION_WEIGHT, "1");
 
-        WebElement locator = Grid.driver().findElement(By.xpath(length));
-        scrollingToViewAndClickUsingJS(locator);
+        scrollToCenter(By.xpath(length));
         waitAndCheckIsElementClickable(LENGTH);
         waitAndClickOn(LENGTH, "1");
 
@@ -1005,7 +971,7 @@ public class CartSteps extends AbstractWebPage {
                 return false;
             }
             scrollToCenter(deleteButton);
-            clickWithJsFallback(deleteButton, "cart line item Delete");
+            clickWithJsFallback(deleteButton, "cart line item Delete", DELETE_CONFIRM_WAIT_SECONDS);
         } catch (Exception e) {
             log.info("Failed to click Delete on the cart line item: " + e.getMessage());
             return false;
@@ -1014,7 +980,7 @@ public class CartSteps extends AbstractWebPage {
             By confirm = byForLocatorKey(DELETE_CTA_BUTTON);
             if (waitForPresence(confirm, DELETE_CONFIRM_WAIT_SECONDS)) {
                 scrollToCenter(confirm);
-                clickWithJsFallback(confirm, "delete confirmation");
+                clickWithJsFallback(confirm, "delete confirmation", DELETE_CONFIRM_WAIT_SECONDS);
             } else {
                 log.info("No delete confirmation dialog appeared - treating the first click as final");
             }
@@ -1025,33 +991,6 @@ public class CartSteps extends AbstractWebPage {
         return true;
     }
 
-    private void clickWithJsFallback(By locator, String description) {
-        try {
-            new WebDriverWait(Grid.driver(), Duration.ofSeconds(DELETE_CONFIRM_WAIT_SECONDS))
-                    .until(ExpectedConditions.elementToBeClickable(locator)).click();
-        } catch (Exception e) {
-            log.info("Native click on the " + description + " was blocked (" + e.getClass().getSimpleName()
-                    + ") - retrying with a JS click");
-            jsClick(locator);
-        }
-    }
-
-    /** True when the locator is present within the wait. */
-    private boolean waitForPresence(By locator, int seconds) {
-        for (int attempt = 0; attempt < seconds * 2; attempt++) {
-            try {
-                if (!Grid.driver().findElements(locator).isEmpty()) {
-                    return true;
-                }
-            } catch (Exception ignored) {
-                // a re-render mid-look throws rather than returning empty; keep polling
-            }
-            sleep(500);
-        }
-        return false;
-    }
-
-    /** Line items currently rendered. Zero once the cart is empty. */
     private int lineItemCount() {
         try {
             return Grid.driver().findElements(byForLocatorKey(DELETE_LINE_ITEM)).size();
@@ -1066,7 +1005,6 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /** True when the empty-cart message renders within the wait. */
     private boolean waitForEmptyCartMessage() {
         for (int attempt = 0; attempt < 20; attempt++) {
             try {
@@ -1074,7 +1012,6 @@ public class CartSteps extends AbstractWebPage {
                     return true;
                 }
             } catch (Exception ignored) {
-                // keep polling - a re-render mid-look throws rather than returning empty
             }
             sleep(500);
         }
@@ -1255,17 +1192,6 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    private void confirmBusinessDetailsIfDialogPresent() {
-        try{
-            if (isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
-                Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
-                log.info("Business details confirmation dialog was present and has been closed.");
-            }
-        } catch (Exception e) {
-            log.info("No business details confirmation dialog was present.");
-        }
-    }
-
     private static final String HOT_ROLLED_LISTING_PATH = "/category/mild-steel/hot-rolled-steel";
 
     @When("move the mouse to Mild steel category and to sub category Hot rolled")
@@ -1278,9 +1204,7 @@ public class CartSteps extends AbstractWebPage {
                 refreshAndWaitFor(ALL_CATEGORY);
                 hoverOverElement(ALL_CATEGORY);
             }
-            hoverOverMildSteelCategory();
-            waits(By.xpath(msHotRolledCategory));
-            hoverOverElement(By.xpath(msHotRolledCategory));
+            hoverOverMildSteelCategory(By.xpath(msHotRolledCategory));
             log.info("cursor moved to subcategory 'Hot rolled' under mild steel");
         } catch (Exception e) {
             String target = siteOrigin() + HOT_ROLLED_LISTING_PATH;
@@ -1322,21 +1246,6 @@ public class CartSteps extends AbstractWebPage {
             return;
         }
         jsClick(By.xpath(gradeBulkBitumenSubCategory));
-    }
-
-    /** Scheme and host of the environment under test, taken from the page rather than config. */
-    private String siteOrigin() {
-        URI current = URI.create(Grid.driver().getCurrentUrl());
-        return current.getScheme() + "://" + current.getAuthority();
-    }
-
-    /** Current URL path with any query, fragment and trailing slash removed. */
-    private String currentPath() {
-        String path = URI.create(Grid.driver().getCurrentUrl()).getPath();
-        if (path == null) {
-            return "";
-        }
-        return path.length() > 1 && path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
     }
 
     private boolean openHotRolledSubCategoryByUrl(String segment, String label) {
@@ -1405,7 +1314,6 @@ public class CartSteps extends AbstractWebPage {
         log.info("Clicked '" + productName + "' - now at " + Grid.driver().getCurrentUrl());
     }
 
-    /** The product name configured for a category, or a failure naming the categories that exist. */
     private String productNameFor(String category) {
         String product = CATEGORY_PRODUCTS.get(normaliseCategory(category));
         if (product == null) {
@@ -1434,42 +1342,6 @@ public class CartSteps extends AbstractWebPage {
                 + "[.//*[normalize-space(text())=" + xpathLiteral(productName) + "]]");
     }
 
-    private static String xpathLiteral(String value) {
-        if (!value.contains("'")) {
-            return "'" + value + "'";
-        }
-        StringBuilder concat = new StringBuilder("concat(");
-        String[] parts = value.split("'", -1);
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) {
-                concat.append(", \"'\", ");
-            }
-            concat.append("'").append(parts[i]).append("'");
-        }
-        return concat.append(")").toString();
-    }
-
-    private boolean scrollUntilVisible(By locator) {
-        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
-        long previousOffset = -1;
-
-        for (int pass = 0; pass < 30; pass++) {
-            if (isAnyVisible(locator)) {
-                return true;
-            }
-            long offset = ((Number) js.executeScript(
-                    "window.scrollBy(0, window.innerHeight * 0.8); return window.pageYOffset;"))
-                    .longValue();
-            if (offset == previousOffset) {
-                sleep(500);
-                return isAnyVisible(locator);
-            }
-            previousOffset = offset;
-            sleep(400);
-        }
-        return isAnyVisible(locator);
-    }
-
     @When("move the mouse to Mild steel category and to sub category Cold rolled")
     public void moveTheMouseToMildSteelCategoryAndToSubCategoryColdRolled() {
         confirmBusinessDetailsIfDialogPresent();
@@ -1479,9 +1351,7 @@ public class CartSteps extends AbstractWebPage {
         refreshAndWaitFor(ALL_CATEGORY);
         hoverOverElement(ALL_CATEGORY);
         }
-        hoverOverMildSteelCategory();
-        waits(By.xpath(msColdRolledCategory));
-        hoverOverElement(By.xpath(msColdRolledCategory));
+        hoverOverMildSteelCategory(By.xpath(msColdRolledCategory));
         log.info("cursor moved to subcategory 'Cold rolled' under mild steel");
     }
 
@@ -1505,9 +1375,7 @@ public class CartSteps extends AbstractWebPage {
         refreshAndWaitFor(ALL_CATEGORY);
         hoverOverElement(ALL_CATEGORY);
         }
-        hoverOverMildSteelCategory();
-        waits(By.xpath(coatedSteelCategory));
-        hoverOverElement(By.xpath(coatedSteelCategory));
+        hoverOverMildSteelCategory(By.xpath(coatedSteelCategory));
         log.info("cursor moved to subcategory 'Coated steel' under mild steel");
     }
 
@@ -1516,9 +1384,24 @@ public class CartSteps extends AbstractWebPage {
         jsClick(By.xpath(galvanizedSheetCategory));
     }
 
-    private void hoverOverMildSteelCategory() {
-        hoverOverElement(MILD_STEEL_CATEGORY);
-        log.info("cursor moved to mild steel category");
+    private void hoverOverMildSteelCategory(By subCategory) {
+        if (hoverChain(MILD_STEEL_CATEGORY, subCategory)) {
+            log.info("cursor moved through mild steel to '" + subCategory + "'");
+            return;
+        }
+
+        log.info("chained hover did not reach '" + subCategory + "' - trying a synthetic hover");
+        if (hoverUntilVisible(MILD_STEEL_CATEGORY, subCategory)) {
+            hoverOverElement(subCategory);
+            log.info("cursor moved to '" + subCategory + "' after a synthetic hover");
+            return;
+        }
+
+        throw new IllegalStateException("could not open Mild steel > " + subCategory
+                + " by either a chained pointer hover or a synthetic one. If the log above says the"
+                + " pointer reached Mild steel and nothing opened, the flyout is CSS :hover driven"
+                + " and something is taking the pointer off it - look for a scroll or an overlay,"
+                + " not for more synthetic events.");
     }
 
     private void hoverOverBitumenCategory() {
@@ -1575,7 +1458,7 @@ public class CartSteps extends AbstractWebPage {
         confirmBusinessDetailsIfDialogPresent();
         jsClick(quantityLabel);
 
-        String held = settledQuantityValue();
+        String held = settledValueOf(By.xpath(QUANTITY_TEXTBOX));
         log.info("Entered quantity '" + quantity + "' with verification disabled - field now holds '"
                 + held + "'. Not asserted: this step is for values the PDP is expected to reject.");
         Allure.addAttachment("Quantity entered without verification",
@@ -1584,30 +1467,13 @@ public class CartSteps extends AbstractWebPage {
                         + "\nNo quantity assertion performed - the next step asserts the Add to cart state.");
     }
 
-    private String settledQuantityValue() {
-        String previous = null;
-        for (int attempt = 0; attempt < 8; attempt++) {
-            String raw = Grid.driver().findElement(By.xpath(QUANTITY_TEXTBOX)).getAttribute("value");
-            String current = (raw == null) ? "" : raw.trim();
-            if (current.equals(previous)) {
-                return current;
-            }
-            previous = current;
-            sleep(250);
-        }
-        return previous == null ? "" : previous;
-    }
-
     private enum PdpAttribute {
         DIAMETER,
         FORM,
         THICKNESS,
         WIDTH,
-        /** Length offered as selectable buttons. */
         LENGTH,
-        /** Length only enterable as a custom value in a textbox. */
         CUSTOM_LENGTH,
-        /** Length button when one is available, otherwise the custom-length textbox. */
         LENGTH_OR_CUSTOM,
         COATING_GRADE,
         SPANGLE_TYPE
@@ -1694,7 +1560,7 @@ public class CartSteps extends AbstractWebPage {
     }
 
     private String enterCustomLengthIfPresent(String productName) {
-        if (!waitForElementPresent(CUSTOM_LENGTH_TEXTBOX)) {
+        if (!waitForElementPresent(CUSTOM_LENGTH_TEXTBOX, OPTIONAL_ATTRIBUTE_WAIT_SECONDS)) {
             String message = "No custom length field on the PDP for '" + productName
                     + "' after waiting " + OPTIONAL_ATTRIBUTE_WAIT_SECONDS + "s - skipping it.";
             log.info(message);
@@ -1705,38 +1571,10 @@ public class CartSteps extends AbstractWebPage {
     }
 
     private boolean waitForOptionAvailable(String optionXpath) {
-        return pollFor(() -> isOptionAvailable(optionXpath));
+        return pollFor(() -> isFirstMatchInteractable(By.xpath(optionXpath)),
+                OPTIONAL_ATTRIBUTE_WAIT_SECONDS);
     }
 
-    /** As {@link #waitForOptionAvailable}, but for a field that has no enabled/disabled state. */
-    private boolean waitForElementPresent(String xpath) {
-        return pollFor(() -> {
-            try {
-                List<WebElement> found = Grid.driver().findElements(By.xpath(xpath));
-                return !found.isEmpty() && found.get(0).isDisplayed();
-            } catch (Exception e) {
-                return false;
-            }
-        });
-    }
-
-    /** Re-evaluates a condition every 500ms up to {@link #OPTIONAL_ATTRIBUTE_WAIT_SECONDS}. */
-    private boolean pollFor(java.util.function.BooleanSupplier condition) {
-        for (int attempt = 0; attempt < OPTIONAL_ATTRIBUTE_WAIT_SECONDS * 2; attempt++) {
-            if (condition.getAsBoolean()) {
-                return true;
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return false;
-            }
-        }
-        return false;
-    }
-
-    /** Clicks the first enabled option for an attribute and returns the selected text. */
     private String selectFirstEnabledOption(String optionXpath, String attributeName, String productName) {
         try {
             waits(By.xpath(optionXpath));
@@ -1788,7 +1626,7 @@ public class CartSteps extends AbstractWebPage {
             enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
             quantityInput.sendKeys(Keys.ENTER);
 
-            String expected = expectedQuantityAfterFieldLimit(quantityInput, quantity);
+            String expected = truncateToMaxLength(quantityInput, quantity);
             String accepted = readCommittedQuantity(expected);
             context.pdpQuantity = accepted;
 
@@ -1817,21 +1655,6 @@ public class CartSteps extends AbstractWebPage {
         return value;
     }
 
-    private String expectedQuantityAfterFieldLimit(WebElement quantityInput, String quantity) {
-        try {
-            String maxLength = quantityInput.getAttribute("maxlength");
-            if (maxLength != null && maxLength.matches("\\d+")) {
-                int limit = Integer.parseInt(maxLength);
-                if (limit > 0 && quantity.length() > limit) {
-                    return quantity.substring(0, limit);
-                }
-            }
-        } catch (Exception e) {
-            log.info("Could not read maxlength off the quantity field: " + e.getMessage());
-        }
-        return quantity;
-    }
-
     private void assertQuantityAccepted(String accepted, String requested, String expected, String productName) {
         if (expected.equals(accepted)) {
             return;
@@ -1853,17 +1676,6 @@ public class CartSteps extends AbstractWebPage {
                 + accepted + "' after entering '" + requested + "'");
     }
 
-    /** True when at least one enabled option button exists for the locator. */
-    private boolean isOptionAvailable(String optionXpath) {
-        try {
-            List<WebElement> options = Grid.driver().findElements(By.xpath(optionXpath));
-            return !options.isEmpty() && options.get(0).isDisplayed() && options.get(0).isEnabled();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /** "HR Coil", "hr-coil" and "Hot Rolled Coil " all normalise to a single lookup key. */
     private static String normaliseProductName(String productName) {
         if (productName == null) {
             return "";

@@ -15,12 +15,6 @@ import org.testng.Assert;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 import static com.qapitol.sauron.web.WebActionListener.log;
 
-/**
- * Steps for GET {middlewareUrl}xp-mi/public/v3/customer-profile.
- *
- * The environment is picked up from the `middlewareUrl` property, so the same steps run
- * against preprod or qa without any change to the feature file.
- */
 public class CustomerProfileApiSteps {
 
     private final CustomerProfileApiImpl customerProfileApi = new CustomerProfileApiImpl();
@@ -37,8 +31,6 @@ public class CustomerProfileApiSteps {
 
     @When("we request the customer profile Api with an expired token")
     public void weRequestTheCustomerProfileApiWithAnExpiredToken() {
-        // Verified-expired, otherwise this scenario asserts a rejection the API has no reason to
-        // give: a valid token returns 200 and the test fails for the wrong reason.
         rawResponse = ApiUtils.fetchCustomerProfile(Token.getExpiredCcpToken());
         Allure.addAttachment("customer-profile response (expired token)", rawResponse.asString());
     }
@@ -66,22 +58,6 @@ public class CustomerProfileApiSteps {
         log.info("Customer profile: " + customerProfile);
     }
 
-    /**
-     * Asserts the profile returned belongs to the account the call authenticated as.
-     *
-     * <p>Without this, a 200 with a populated data node passes even if the middleware hands back
-     * somebody else's profile - which is the failure that matters most on production, and the one
-     * a status-code check cannot see.
-     *
-     * <p>Compared against {@code UserConfig.getEmail()} rather than a literal, so the same
-     * scenario works on qa, preprod and prod: each resolves {@code <test.group>.user.email} from
-     * its own properties file, and that is the same credential {@code Token.getCCPToken()} used to
-     * make the request.
-     *
-     * <p>{@code email}, not {@code customerId}: the response's data node has no customerId key.
-     * Confirmed against qa on 3 Sep 2026 - the keys are id, sfAccountId, sfUserId,
-     * customerProxyId, gstIn, pan, firstName, lastName, phoneNumber, email.
-     */
     @Then("the customer profile belongs to the signed-in account")
     public void theCustomerProfileBelongsToTheSignedInAccount() {
         if (customerProfile == null) {

@@ -39,7 +39,6 @@ public class pdpPlpSteps extends AbstractWebPage {
     private final String PROD_NAME = "//span[text()='Brand: ']/../preceding-sibling::p";
     private final String PROD_BRAND_NAME = "//span[text()='Brand: ']/following-sibling::span";
     private final String SELECTED_FILTER_NAME = "(//span[text()='%s'])[2]";
-        public static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     private final ScenarioContext context;
 
     public pdpPlpSteps(ScenarioContext context) {
@@ -56,22 +55,6 @@ public class pdpPlpSteps extends AbstractWebPage {
         log.info("Clicked on reset button in PDP page");
     }
 
-    /**
-     * Asserts the PDP has disabled Add to cart.
-     *
-     * <p>This used to assert {@code addToCart.isDisplayed()}, which cannot fail: the button is
-     * rendered whether or not it is disabled, so the step passed on every run and the only live
-     * scenario using it - the quantity = 0 case in Pdp.feature - proved nothing.
-     *
-     * <p>Disabled state is read from {@code isEnabled()} (the native {@code disabled} attribute) and
-     * from {@code aria-disabled}, for a button kept focusable and marked only for assistive tech.
-     * It is deliberately NOT read from the class list: the PDP's Tailwind build ships
-     * {@code disabled:} variant classes such as {@code disabled:hover:bg-*} that are present at all
-     * times, so {@code class.contains("disabled")} is true even on a fully enabled button.
-     *
-     * <p>Waited for rather than read once, because the PDP re-evaluates the button in response to a
-     * state change and an immediate read catches the previous state.
-     */
     @Then("check Add to cart is disabled")
     public void checkAddToCartIsDisabled() {
         boolean disabled;
@@ -90,7 +73,6 @@ public class pdpPlpSteps extends AbstractWebPage {
         }
     }
 
-    /** True when Add to cart is genuinely disabled. See {@link #checkAddToCartIsDisabled()}. */
     private boolean isAddToCartDisabled(WebElement addToCart) {
         if (!addToCart.isEnabled()) {
             return true;
@@ -141,9 +123,6 @@ public class pdpPlpSteps extends AbstractWebPage {
 
     @Then("check quantity enter below 1000 in PDP page")
     public void checkQuantityEnterBelow1000InPDPPage() {
-        // A 4-digit quantity (e.g. 1000) must be capped below 1000 (max 999).
-        // Parse the numeric part of the cart quantity text (e.g. "Qty: 1000 MT") and
-        // assert it is below 1000, instead of matching one hard-coded string.
         String pdpQuantity = waitAndGetText(CART_QUANTITY);
         String digits = pdpQuantity.replaceAll("[^0-9]", "");
         Assert.assertFalse(digits.isEmpty(), "Could not read a numeric quantity from cart text: '" + pdpQuantity + "'");
@@ -162,9 +141,6 @@ public class pdpPlpSteps extends AbstractWebPage {
 
     @Then("quantity field should treat only first 4 digits {string} as input in PDP page")
     public void quantityFieldShouldTreatOnlyFirstFourDigits(String expectedQuantity) {
-        // The PDP quantity field must accept at most 4 digits. A 4-digit value (e.g. 1000 or 9999)
-        // is kept as-is; anything longer is truncated so only the first 4 digits are treated as
-        // input (e.g. 12345 -> 1234, 99999 -> 9999).
         String pdpQuantity = waitAndGetAttribute(CART_QUANTITY, "value");            // e.g. "Qty: 1234 MT"
         String actualDigits = pdpQuantity.replaceAll("[^0-9]", "");
 
@@ -322,14 +298,4 @@ public class pdpPlpSteps extends AbstractWebPage {
         confirmBusinessDetailsIfDialogPresent();
     }
 
-    private void confirmBusinessDetailsIfDialogPresent() {
-        try{
-            if (isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
-                Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
-                log.info("Business details confirmation dialog was present and has been closed.");
-            }
-        } catch (Exception e) {
-            log.info("No business details confirmation dialog was present.");
-        }
-    }
 }

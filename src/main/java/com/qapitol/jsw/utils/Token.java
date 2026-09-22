@@ -95,9 +95,19 @@ public class Token extends BaseApiImpl {
                 + "}";
 
 
-        return given().log().all().body(requestPayload).header("content-type","application/json")
-                .when().log().all().post(ConfigUtil.getSecretValue("ccpTokenUrl"))
-                .then().log().all().statusCode(200).extract().jsonPath().getString("jwtToken");
+        /* NOT log().all(). This is the login call: the request body carries the email and the
+         * Base64 password, and the response body IS the JWT. Logging either printed a live
+         * credential into every console, every run log and every Allure report attached to one.
+         *
+         * log().uri() names the endpoint, which is the part worth seeing, and
+         * log().ifValidationFails() prints the response ONLY when the call did not return 200 -
+         * a failed login has no token in it, so the one case where the body is worth reading is
+         * also the one case where it is safe to read. See fingerprintOf() below for how a token
+         * is identified in logs without being disclosed. */
+        return given().body(requestPayload).header("content-type","application/json")
+                .when().log().uri().post(ConfigUtil.getSecretValue("ccpTokenUrl"))
+                .then().log().ifValidationFails().statusCode(200)
+                .extract().jsonPath().getString("jwtToken");
     }
 
     /**

@@ -32,9 +32,6 @@ elements:
   continueCTA:
     en_US:
       web: xpath=//button[normalize-space(.)='Continue']
-  confirmBusinessDetails:
-    en_US:
-      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]
   accountLabel:
     en_US:
       web: xpath=(//span[text()='Account'])[2]

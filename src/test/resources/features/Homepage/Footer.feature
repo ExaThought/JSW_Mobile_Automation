@@ -5,7 +5,7 @@ Feature: Validate Footer links and navigation
     Given Go to session "ccp"
     And ccp login with configured user
 
-  Scenario Outline: Verify footer link navigation
+  Scenario Outline: Verify footer link navigation - <linkName>
     Given the footer link "<linkName>" should be visible for web
     When the user clicks on the footer link "<linkName>" for web
     Then the user should be redirected to the corresponding page for web "<TextValue>"
@@ -36,7 +36,7 @@ Feature: Validate Footer links and navigation
 
 
 @productionSanity
-  Scenario Outline: Verify social media icon navigation
+  Scenario Outline: Verify social media icon navigation - <platform>
     When the user clicks on social icon "<platform>"
     Then the user should be redirected to the correct social page "<expectedDomain>"
 
@@ -48,7 +48,7 @@ Feature: Validate Footer links and navigation
       | facebook  | facebook       |
   
 @productionSanity
-  Scenario Outline: Verify app store badge navigation
+  Scenario Outline: Verify app store badge navigation - <appName>
     When the user clicks on app icon "<appName>"
     Then the user should be redirected to the correct app store "<store>"
 

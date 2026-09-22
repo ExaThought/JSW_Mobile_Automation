@@ -18,7 +18,12 @@ public class Hamburger extends AbstractWebPage {
 
     private static final Logger log = LoggerFactory.getLogger(Hamburger.class);
     private final LocatorReader locatorReader = new LocatorReader("locators/hamburger.yaml");
-    private final JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+    /** Resolved per call, never cached in a field: Grid.driver() resolves through the CURRENT
+     *  session name, so a field initialised when Cucumber built this glue instance keeps
+     *  driving whichever session was current at that moment - and throws if none existed. */
+    private JavascriptExecutor js() {
+        return (JavascriptExecutor) Grid.driver();
+    }
 
     // ── Element Keys ──────────────────────────────────────────────────────────
     private static final String HAMBURGER_ICON          = "hamburgerIcon";
@@ -95,14 +100,14 @@ public class Hamburger extends AbstractWebPage {
             WebElement el = Grid.driver().findElement(By.xpath((xpath != null && xpath.startsWith("xpath=")) ? xpath.substring(6) : xpath));
             
             // Scroll into view for safety
-            js.executeScript("arguments[0].scrollIntoView({block: 'center'});", el);
+            js().executeScript("arguments[0].scrollIntoView({block: 'center'});", el);
             sleep(500);
             
             // Try standard click, then JS click as fallback
             try {
                 el.click();
             } catch (Exception e) {
-                js.executeScript("arguments[0].click();", el);
+                js().executeScript("arguments[0].click();", el);
             }
             log.info("Clicked menu option: {}", menu);
         } catch (Exception e) {

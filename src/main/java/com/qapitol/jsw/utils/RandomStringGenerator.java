@@ -10,9 +10,7 @@ public class RandomStringGenerator {
 
     public static String getSalesforceOpportunityId(){
         // Generate a random string with a fixed prefix and random sequence
-        String randomString = generateRandomString("006Hz00000", 8);
-        System.out.println("Generated Random String for salesforce opportunity id is: " + randomString);
-        return randomString;
+        return generateRandomString("006Hz00000", 8);
     }
 
     public static String RandomInteger() {
@@ -21,7 +19,6 @@ public class RandomStringGenerator {
         int max = 99999999; // 8 digit maximum value
         // Generate random 8 digit number
         int randomNumber = random.nextInt((max - min) + 1) + min;
-        System.out.println("Random 8-digit number: " + randomNumber);
         return String.valueOf(randomNumber);
     }
 

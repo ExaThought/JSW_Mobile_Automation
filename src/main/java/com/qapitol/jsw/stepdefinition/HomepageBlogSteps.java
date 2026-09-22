@@ -35,14 +35,6 @@ public class HomepageBlogSteps extends AbstractWebPage {
         try {
             log.info("Navigating to Blogs section from homepage.");
 
-            // CategoryPages.BLOG_SECTION is anchored on //header, and the header renders TWICE
-            // with the first copy measuring 0x0. findElement returns that first copy, so the
-            // click either did nothing or threw ElementNotInteractable depending on timing.
-            //
-            // clickFirstVisible filters candidates by rendered size before clicking, and waits
-            // up to 15s for one to appear - which is why the separate waits(...) above it is
-            // gone rather than kept: a presence wait that the visibility wait already subsumes
-            // only adds a second place for this step to time out.
             clickFirstVisible(CategoryPages.BLOG_SECTION);
 
             log.info("Clicked on Blogs section.");
@@ -69,9 +61,6 @@ public class HomepageBlogSteps extends AbstractWebPage {
 
     @Then("user navigate to blog")
     public void userNavigateToBlog() {
-        // Same 0x0-first-copy problem as above. clickFirstVisible also scrolls the element to
-        // centre before clicking, so it replaces the findElement + scrollingToViewAndClickUsingJS
-        // pair outright, and its 15s visibility wait makes the sleep that preceded it redundant.
         clickFirstVisible(CategoryPages.BLOG_SECTION);
         sleep(2000);
         waitAndClickOn(BLOG_SECTION);
@@ -103,8 +92,7 @@ public class HomepageBlogSteps extends AbstractWebPage {
     @And("user should see youtube video icon")
     public void userShouldSeeYoutubeVideoIcon() {
 
-        WebElement locator = Grid.driver().findElement(CategoryPages.BLOG_Youtube);
-        CustomUtil.scrollingToViewAndClickUsingJS(locator);
+        CustomUtil.scrollToCenter(CategoryPages.BLOG_Youtube);
         sleep(2000);
 
         waitAndCheckIsElementVisible(BLOG_YOUTUBE_ICON);
@@ -117,8 +105,7 @@ public class HomepageBlogSteps extends AbstractWebPage {
 
     @And("user click on youtube video icon")
     public void userClickOnYoutubeVideoIcon() {
-        WebElement locator = Grid.driver().findElement(CategoryPages.BLOG_Youtube);
-        CustomUtil.scrollingToViewAndClickUsingJS(locator);
+        CustomUtil.scrollToCenter(CategoryPages.BLOG_Youtube);
         sleep(2000);
         waitAndCheckIsElementClickable(BLOG_YOUTUBE_ICON);
         waitAndClickOn(BLOG_YOUTUBE_ICON);

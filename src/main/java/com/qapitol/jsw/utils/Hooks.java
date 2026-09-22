@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.jsw.config.SessionBuilder;
 import com.qapitol.jsw.stepdefinition.SessionSteps;
 import com.qapitol.sauron.core.Grid;
 import io.cucumber.java.After;
@@ -25,7 +26,11 @@ public class Hooks {
     SessionSteps sessionSteps = new SessionSteps();
 
     @Before
-    public void beforeScenario() {
+    public void beforeScenario(Scenario scenario) {
+        // The scenario's NAME, then the marker. A bare "=== SCENARIO STARTED ===" says nothing
+        // about which scenario is running, which is useless the moment a run has more than one.
+        System.out.println();
+        System.out.println(scenario == null ? "Scenario: (unnamed)" : "Scenario: " + scenario.getName());
         System.out.println("=== SCENARIO STARTED ===");
         // Start this thread's own collection of failures for the scenario about to run. The
         // failures are reported with the file and line of each assertion (see JswSoftAssert).
@@ -55,14 +60,17 @@ public class Hooks {
             FailureDiagnostics.captureAll(scenario.getName());
         }
 
-        try{
-        System.out.println("=== SCENARIO ENDED ===");
-        // Assert this scenario's soft assertions - only the ones collected on this thread.
-        softAssert.assertAll();
-        } catch (RuntimeException e) {
-        e.printStackTrace();
-        }
-        finally {
+        // Hand this scenario's captured assertion origins to TestGroupListener, which owns the
+        // end-of-scenario output. Keyed by the TestNG result rather than read from a ThreadLocal
+        // in the listener, because that is the one object both sides are certain to agree on.
+        SoftFailureReport.handOver(JswSoftAssert.takeFailures());
+
+        try {
+            // Assert this scenario's soft assertions - only the ones collected on this thread.
+            // The AssertionError is deliberately NOT caught: it is what marks the scenario failed,
+            // and the listener turns it into the single "SCENARIO FAILED" block.
+            softAssert.assertAll();
+        } finally {
             // API-only scenarios run without a browser session, so there is nothing to log out
             // of and Grid.driver() would throw. Skip the UI teardown entirely in that case.
             if (!hasActiveBrowser()) {
@@ -96,7 +104,7 @@ public class Hooks {
      */
     private void reportSessionStartFailure(Scenario scenario) {
         try {
-            String failure = SessionSteps.consumeSessionStartFailure();
+            String failure = SessionBuilder.consumeStartFailure();
             if (failure == null || scenario == null) {
                 return;
             }

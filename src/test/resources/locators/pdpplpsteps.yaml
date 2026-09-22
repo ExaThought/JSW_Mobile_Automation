@@ -20,6 +20,3 @@ elements:
   pdpDescription:
     en_US:
       web: xpath=//h3[text()='Product Information']
-  confirmBusinessDetails:
-    en_US:
-      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]

@@ -227,7 +227,6 @@ public class CartApiSteps {
     @When("request and get response for app Api")
     public void request_and_get_response_for_app_api() throws IOException {
         AppResponse response=   cartRCV2ApiImp.getAppApiResponse();
-        System.out.println(response.getBusinessName());
     }
 
     private void verifyProductUOM(String keyword, String expectedPrimaryLabel, String expectedSecondaryLabel) {

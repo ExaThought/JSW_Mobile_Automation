@@ -40,15 +40,6 @@ pipeline {
     parameters {
         choice(
             name: 'ENV',
-            // 'prod' is offered now that all four prerequisites exist: EnvConfig accepts it,
-            // global_prod.properties, data/prod/ and testng_prod_sanity.xml are all present.
-            //
-            // qa stays FIRST so it remains the default for triggered and scheduled builds -
-            // selecting production has to be a deliberate act, never something a cron inherits.
-            //
-            // Choosing prod is safe by construction: the guard at the top of the Test stage
-            // refuses ENV=prod with any suite other than testng_prod_sanity.xml, and refuses a
-            // TAGS filter outright, so the ~60 order-creating scenarios cannot be reached.
             choices: ['qa', 'preprod', 'prod'],
             description: 'Target environment. Passed as -Denv and resolved by EnvConfig; ' +
                          'selects global_&lt;env&gt;.properties and the data/&lt;env&gt;/ test-data directory. ' +
@@ -69,10 +60,6 @@ pipeline {
         )
         choice(
             name: 'SUITE',
-            // testng_prod_sanity.xml is listed LAST and is the only suite ENV=prod accepts.
-            // It must be COMMITTED for this choice to work: Jenkins checks out from the remote,
-            // so an untracked file is simply absent from the workspace and the run fails on a
-            // missing suite rather than on anything informative.
             choices: ['testng_bdd.xml', 'testng_mobilebdd.xml', 'testng_prod_sanity.xml'],
             description: 'TestNG suite file. Maps to the pom\'s ${suiteXmlFile} property. ' +
                          'testng_prod_sanity.xml is the read-only suite selecting ' +
@@ -82,12 +69,6 @@ pipeline {
         string(
             name: 'GRID_URL',
             defaultValue: '',
-            /* No session count quoted here on purpose. Jenkins renders parameter descriptions
-             * before any step runs, so this text cannot be computed from the suite - and the last
-             * hardcoded number ("5") silently went stale the moment either parallelism axis was
-             * edited, which is the same drift that broke the CPU clamp. The authoritative figure is
-             * thread-count x data-provider-thread-count on the <suite> tag; the Test stage
-             * prints it via ci/cap-parallelism.js. */
             description: 'Remote Selenium Grid, e.g. http://selenium-grid.internal:4444. Leave ' +
                          'blank to use the grid Sauron starts on the agent, which sizes its ' +
                          'session slots from the CPU count. If the suite asks for more concurrent ' +
@@ -121,6 +102,7 @@ pipeline {
     environment {
         SUMMARY_BASE = 'target/run-summary'
         MAVEN_OPTS   = '-Xmx2g'
+        ALLURE_TOOL  = 'allure'
     }
 
     stages {
@@ -128,22 +110,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    /* This is a SECOND checkout. Jenkins has already cloned the repo once to read
-                     * this Jenkinsfile; this one re-checks-out at ${BRANCH_NAME}, so the pipeline
-                     * definition can stay on develop while a feature branch is tested.
-                     *
-                     * The credential is INHERITED from the job's own SCM config rather than named
-                     * here. A hardcoded id fails in a way the log barely explains: when the id does
-                     * not exist, the git plugin logs one "CredentialId ... could not be found"
-                     * warning and then runs git UNAUTHENTICATED, so GitHub replies "Password
-                     * authentication is not supported for Git operations" and it reads like a bad
-                     * token rather than a missing credential. Credential ids are usually generated
-                     * UUIDs, so the odds of a guessed name matching are nil.
-                     *
-                     * scm only exists in a "Pipeline script from SCM" job, hence the try/catch:
-                     * an inline-script job falls back to GIT_CREDENTIALS_ID, or to no credential
-                     * at all for a public repo.
-                     */
                     def gitCredentialsId = env.GIT_CREDENTIALS_ID
                     if (!gitCredentialsId) {
                         try {
@@ -164,63 +130,18 @@ pipeline {
                     ])
 
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${params.ENV} ${params.BRANCH_NAME}"
-                    /* env= is machine-read, not decoration: the mail stage walks back through
-                     * previous builds looking for this token so the trend only ever compares a run
-                     * against another run on the SAME environment. Keep it first and keep the
-                     * "env=<value>" spelling. */
                     currentBuild.description = "env=${params.ENV} | ${params.TAGS ?: 'suite defaults'}"
                 }
             }
         }
 
         stage('Test') {
-            /* Nexus credentials, needed by EVERY build - Nexus hosts the Sauron artifacts, so
-             * dependency resolution fails without them regardless of ENV or
-             * USE_JENKINS_CREDENTIALS. Bound here rather than around one of the three `sh mvnCmd`
-             * call sites below, all of which need it.
-             *
-             * credentials() on a Username-with-password credential exposes NEXUS_USR and NEXUS_PSW
-             * and masks both in the console. One id covers both halves, so only one credential has
-             * to exist.
-             *
-             * CREATE THE CREDENTIAL BEFORE THE NEXT BUILD: Manage Jenkins > Credentials > (scope) >
-             * Add Credentials > kind "Username with password", ID exactly `nexus-member`. If the id
-             * is missing the stage aborts before any test runs, which surfaces as an UNSTABLE build
-             * with zero tests - indistinguishable at a glance from a test failure.
-             *
-             * This replaced `-Dnexus-username=${NEXUS_USERNAME:-nexus}`, whose committed
-             * nexus/nexus fallback silently produced a 401 from Nexus when the real credentials
-             * were absent. Failing at bind time names the cause instead. */
             environment {
                 NEXUS = credentials('nexus-member')
             }
             steps {
-                /* allure-results must start empty. The summariser collapses duplicate
-                 * scenario names across attempts, but results left over from a previous
-                 * build would still be counted as part of this run. */
-                /* Preserve the PREVIOUS run's summary before anything deletes it, so the mail can
-                 * split failures into new / recurring / fixed.
-                 *
-                 * The Jenkins workspace persists between builds, so last build's
-                 * target/run-summary.json is still on disk right now - the rm below and
-                 * `mvn clean` are what remove it. Copying it out of target/ first is why this
-                 * needs neither the Copy Artifact plugin nor an authenticated call to the Jenkins
-                 * API to read our own previous output.
-                 *
-                 * Absent on a first build or after a workspace wipe; ci/email-body.js degrades to
-                 * "comparison not available" rather than failing. */
-                /* FILED UNDER THE ENV THAT WROTE IT, not the env being built now.
-                 *
-                 * One job runs qa, pre-prod and prod out of the same workspace, so the summary
-                 * still on disk belongs to whichever env ran last. A single
-                 * .previous-run-summary.json therefore handed a prod build the qa run to compare
-                 * against - a 7-scenario read-only suite against a 200-scenario regression, which
-                 * labels every prod failure NEW and reports every qa scenario as fixed.
-                 *
-                 * The env is read out of the file itself (summarize-allure.js writes it) rather
-                 * than taken from params.ENV, which would mislabel a leftover qa summary as prod.
-                 * sed, not node: this runs before the tool check, and the mail stage is where a
-                 * missing node is diagnosed. */
+
+
                 sh '''
                     if [ -f target/run-summary.json ]; then
                         LAST_ENV=$(sed -n 's/.*"env"[[:space:]]*:[[:space:]]*"\\([^"]*\\)".*/\\1/p' \
@@ -238,25 +159,6 @@ pipeline {
 
                 sh 'rm -rf allure-results target/run-summary.* target/email-body.html && mkdir -p allure-results'
 
-                /* ---------------------------------------------------------------------
-                 * Kill Selenium leftovers BEFORE the JVM starts.
-                 *
-                 * Sauron randomises the hub's HTTP port per run, but Grid's ZeroMQ event bus is
-                 * FIXED on 4442/4443. A hub or node left behind by a crashed build still holds
-                 * those ports and still advertises on that bus, so the new hub either cannot bind
-                 * at all or - worse - accepts the stale node's registration and routes sessions to
-                 * a process that is already dead.
-                 *
-                 * Both failure shapes were observed:
-                 *   hub cannot bind  -> SauronWebListener.onStartTest fails with "Timed out waiting
-                 *                       for 127.0.0.1 to initialize", no session is ever created,
-                 *                       and EVERY scenario then dies on
-                 *                       "IllegalStateException: Driver not initialized".
-                 *   routed to a dead node -> "session not created: Chrome instance exited".
-                 *
-                 * Stale NODES matter as much as stale hubs, which is why both are killed. Every
-                 * command is `|| true`: a clean agent has nothing to kill and that is not an error.
-                 * ------------------------------------------------------------------- */
                 sh '''
                     echo "--- Selenium leftovers before cleanup ---"
                     pgrep -af selenium-server || echo "  none"
@@ -278,20 +180,6 @@ pipeline {
                     fi
                 '''
 
-                /* ---------------------------------------------------------------------
-                 * PRODUCTION GUARD - deliberately OUTSIDE catchError, so it aborts the
-                 * build rather than degrading it to UNSTABLE and carrying on.
-                 *
-                 * Three independent barriers stop an order-creation scenario reaching
-                 * production; this is the first and the only one a human sees before the
-                 * JVM starts:
-                 *   1. this guard              - ENV=prod accepts one suite and no ad-hoc tags
-                 *   2. the "@productionSanity and @P0" filter in testng_prod_sanity.xml
-                 *   3. global_prod.properties  - salesOppUrl / OMS / DB deliberately unset
-                 *
-                 * TAGS is refused on prod because it would override the suite's own filter
-                 * and could select SFSlc/SFSlo, which place real, invoiced orders.
-                 * --------------------------------------------------------------------- */
                 script {
                     if (params.ENV == 'prod') {
                         if (params.SUITE != 'testng_prod_sanity.xml') {
@@ -304,34 +192,10 @@ pipeline {
                                   "scenarios by \"@productionSanity and @P0\"; an ad-hoc filter here " +
                                   "could select order-creation scenarios.")
                         }
-                        // Single-quoted: nothing here interpolates, so the tag expression can be
-                        // quoted inline without escaping.
                         echo 'PRODUCTION RUN - read-only suite selecting "@productionSanity and @P0" against www.jswonemsme.com'
                     }
                 }
 
-                /* ---------------------------------------------------------------------
-                 * Browser pre-flight. Deliberately OUTSIDE the catchError below, so a missing
-                 * or unusable browser fails the build here with a readable message instead of
-                 * producing several hundred identical scenario failures.
-                 *
-                 * Why this is needed: sessions.yaml is `local: true`, so Sauron starts a grid
-                 * on this agent and drives a real Chrome. The agent is `agent any` and nothing
-                 * pins Chrome to it. When Chrome is absent, every session fails to start and
-                 * every scenario reports Sauron's screenshot-listener artifact - "Driver not
-                 * initialized. Is @WebTest/@MobileTest missing on class/method?" - which names
-                 * neither Chrome nor the agent. The only other complaint the pipeline made was
-                 * a warning in the reporting stage, long after the suite had already gone red.
-                 *
-                 * The leftovers below matter for the same reason: Selenium Grid's ZeroMQ event
-                 * bus is FIXED on 4442/4443, so a selenium-server orphaned by an earlier build
-                 * keeps advertising there, registers with this run's hub, and gets sessions
-                 * routed to it - a dead node. `cleanup` removes profiles/ and sauronFiles/ at
-                 * the END of a build, which does nothing for a build that was killed or for a
-                 * process that outlived its workspace. Clear both before starting.
-                 * --------------------------------------------------------------------- */
-                // SUITE is needed as well as GRID_URL: the local-grid branch reads the selected
-                // suite's authored thread-count so it can cap it to the agent's CPU count.
                 withEnv(["GRID_URL=${params.GRID_URL}", "SUITE=${params.SUITE}"]) {
                 sh '''
                     set -e
@@ -508,35 +372,10 @@ YAML
                     rm -rf profiles/ sauronFiles/ || true
                 '''
                 }
-
-                /* catchError, not a bare failure: a red suite must still produce the report and
-                 * the email. The build is marked UNSTABLE and the summary carries the detail. */
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
-                        // NOTE: -Denv and -DsuiteXmlFile are both verified overrides
-                        // (EnvConfig.resolve reads the "env" system property first;
-                        // suiteXmlFile is a pom property).
-                        //
-                        // -Dcucumber.filter.tags is NOT yet verified against this runner -
-                        // Sauron passes Cucumber options as TestNG suite parameters, and
-                        // which source wins has not been confirmed. Run once with TAGS set
-                        // and check the scenario count before depending on it; if it is
-                        // ignored, keep tag selection in testng_bdd.xml instead.
                         def tagArg = params.TAGS?.trim() ? "-Dcucumber.filter.tags=\"${params.TAGS.trim()}\"" : ''
 
-                        /* NEXUS_USR / NEXUS_PSW come from the stage's environment block, which
-                         * binds the `nexus-member` credential. settings.xml resolves
-                         * ${nexus-username} / ${nexus-password} from these -D properties.
-                         *
-                         * Both are QUOTED. The password is free text chosen outside this repo, and
-                         * an unquoted value containing a space or a shell metacharacter would split
-                         * the argument or be interpreted - producing a 401 that looks like wrong
-                         * credentials rather than a quoting bug.
-                         *
-                         * Note this still puts the password on a command line, where it is visible
-                         * in the agent's process list for the life of the build. Jenkins masks it in
-                         * the console, not in /proc. Moving settings.xml to ${env.NEXUS_PSW} would
-                         * remove that exposure - worth doing if the agent is shared. */
                         def mvnCmd = """
                             mvn -B -ntp clean test \
                                 -s settings.xml \
@@ -548,48 +387,12 @@ YAML
                         """
 
                         if (params.ENV == 'prod') {
-                            /* ONE credential, not two.
-                             *
-                             * The production account is testnivea@yopmail.com and it is COMMITTED in
-                             * global_prod.properties - an address is not a secret, and having it in
-                             * the file pins the suite to the right account under review. Only the
-                             * PASSWORD is secret, and it ships as ${PROD_MONITOR_PASSWORD:} with an
-                             * empty default.
-                             *
-                             * Binding msme-prod-monitor-user as well used to be required here, which
-                             * meant TWO credentials had to exist or withCredentials aborted the stage -
-                             * producing an UNSTABLE build with zero tests that looks exactly like a
-                             * test failure. Only the password is bound now. Override the address for a
-                             * one-off run with -DPROD_MONITOR_USER=... instead.
-                             *
-                             * The variable name matches the ${...} placeholder in
-                             * global_prod.properties exactly, so withCredentials alone is enough - no
-                             * withEnv, and the secret is never interpolated into a Groovy string.
-                             *
-                             * The account behind it must be READ-ONLY BY POLICY: used for monitoring,
-                             * never for placing orders.
-                             *
-                             * Locally there is no Jenkins, so run-prod-sanity.sh / .ps1 reads
-                             * .env.prod (gitignored) and passes the same name as -D. ConfigUtil
-                             * resolves -D first, then the environment, then the empty default - so a
-                             * developer's local value can never leak into a CI run.
-                             */
                             withCredentials([
                                 string(credentialsId: 'msme-prod-monitor-password', variable: 'PROD_MONITOR_PASSWORD')
                             ]) {
                                 sh mvnCmd
                             }
                         } else if (params.USE_JENKINS_CREDENTIALS) {
-                            // ConfigUtil.getSecretValue resolves ${VAR:default} by reading the OS
-                            // environment variable named INSIDE the placeholder - not the property
-                            // key. The variable names below must therefore match the placeholder,
-                            // which is why they are OMS_DB_PASSWORD and X_API_KEY rather than the
-                            // property names OMS_PWD and XApiKey. Binding the property names
-                            // instead is silently ignored and the committed default wins.
-                            //
-                            // Only env-scoped ids belong here. A Jenkins credential holds one
-                            // value, so an unscoped id would override the property for BOTH
-                            // environments and defeat -Denv entirely.
                             withCredentials([
                                 string(credentialsId: "msme-oms-db-password-${params.ENV}", variable: 'OMS_DB_PASSWORD'),
                                 string(credentialsId: "msme-xapikey-${params.ENV}",         variable: 'X_API_KEY')
@@ -619,9 +422,6 @@ YAML
                             --url ${env.BUILD_URL}
                     """
 
-                    /* Chrome is already installed for the tests, so it doubles as the PDF
-                     * renderer - no wkhtmltopdf needed, and unlike wkhtmltopdf it renders
-                     * modern CSS (flexbox) correctly. */
                     sh '''
                         CHROME=""
                         for c in google-chrome google-chrome-stable chromium chromium-browser; do
@@ -638,33 +438,6 @@ YAML
                         ls -lh target/run-summary.pdf
                     '''
 
-                    /* ---------------------------------------------------------------------
-                     * Mail body.
-                     *
-                     * run-summary.html is NOT reused for this. It is laid out for Chrome's PDF
-                     * renderer, and Outlook renders HTML through Word - which ignores flexbox
-                     * and grid and mangles the result. ci/email-body.js emits a monospace <pre>
-                     * block instead, which survives Outlook, Gmail and a phone unchanged.
-                     *
-                     * The trend line needs the PREVIOUS run's pass rate, and that cannot be
-                     * derived from allure-results. It is carried in currentBuild.description,
-                     * which needs no plugin and survives workspace cleanup.
-                     * --------------------------------------------------------------------- */
-                    /* One node call for every number the build list needs, pipe-joined - the same
-                     * technique the mail stage below uses, rather than six process spawns to
-                     * assemble one line of text.
-                     *
-                     * BROKEN IS REPORTED SEPARATELY ON PURPOSE. Allure's `failed` means an
-                     * assertion returned the wrong answer; `broken` means the scenario threw. This
-                     * suite produces far more broken than failed - build #243 was 36 broken - so a
-                     * description showing only "passed / failed" reads as a near-clean run when it
-                     * was not. summarize-allure.js takes the same view: its verdict is
-                     * `failed + broken === 0`, not `failed === 0`.
-                     *
-                     * `total` is the DEDUPLICATED scenario count: a scenario that was retried is
-                     * counted once, at its best outcome, and skipped scenarios are included. So
-                     * total is "scenarios in the run", and passRate is passed/total, which means
-                     * skips count against it. */
                     def totalsLine = ''
                     def passRate = ''
                     if (fileExists("${env.SUMMARY_BASE}.json")) {
@@ -677,9 +450,6 @@ YAML
                             totalsLine = "${n[0]} total, ${n[1]} passed, ${n[2]} failed, ${n[3]} broken, ${n[4]} skipped"
                             passRate = n[5]
                         } else {
-                            /* Shape drift in our own summariser. Fall back to the pass rate alone so
-                             * the same-env trend below keeps working - losing it would silently
-                             * break the "improvement from last run" line in the mail. */
                             echo "run-summary.json totals had ${n.length} fields, expected 6 - falling back to passRate only"
                             passRate = sh(
                                 returnStdout: true,
@@ -688,21 +458,6 @@ YAML
                         }
                     }
 
-                    /* The most recent build ON THIS ENV, which is not always the preceding build.
-                     *
-                     * This used to read currentBuild.previousBuild only. In a job that runs qa,
-                     * pre-prod and prod, that makes "improvement from last run" a comparison
-                     * between two different suites on two different environments: a prod sanity
-                     * build following a qa regression reported a pass-rate swing of tens of points
-                     * that was nothing but the change of suite.
-                     *
-                     * So walk back to the newest build carrying env=<this env>, and hand its env to
-                     * the mail alongside the rate so the two cannot be separated later. The bound
-                     * keeps this cheap on a job with thousands of builds; if no same-env build is
-                     * found within it, the trend is simply absent, which is honest.
-                     *
-                     * String ops rather than a regex Matcher, which is not serializable across
-                     * pipeline steps. */
                     def previousPassRate = ''
                     def previousRateEnv = ''
                     def probe = currentBuild.previousBuild
@@ -729,14 +484,6 @@ YAML
                         echo "No previous ${params.ENV} build found within ${hops} builds - the mail will say the trend is not available"
                     }
 
-                    /* --jira-url is deliberately not passed; the body carries no ticket link.
-                     *
-                     * --previous-summary names the ENV-SCOPED file preserved at the top of the Test
-                     * stage, so a prod build can only ever be compared with the last prod run.
-                     * --previous-env travels with --previous-pass-rate: the rate is a bare number,
-                     * and email-body.js drops it if the env does not match rather than trusting the
-                     * caller. Both guards are in place because the mail is the artefact people act
-                     * on, and a cross-env trend reads as a regression that never happened. */
                     sh """
                         node ci/email-body.js \
                             --summary ${env.SUMMARY_BASE}.json \
@@ -749,16 +496,6 @@ YAML
                             ${previousRateEnv ? "--previous-env ${previousRateEnv}" : ''} \
                             > target/email-body.html
                     """
-
-                    /* Appended, not assigned: Checkout already put env= and the tag filter here and
-                     * that is what makes the build list readable.
-                     *
-                     * passRate= stays LAST. The walker above reads it with
-                     * indexOf('passRate=') + substring, and although it then splits on the first
-                     * non-numeric character, keeping it last means the counts can never be
-                     * mistaken for the rate. Do not insert anything after it, and do not let any
-                     * added text contain the literal "env=" - the same walker takes the first
-                     * "env=" it finds as the build's environment. */
                     if (passRate) {
                         currentBuild.description = "${currentBuild.description ?: ''}"
                                 + (totalsLine ? " | ${totalsLine}" : '')
@@ -771,11 +508,54 @@ YAML
 
     post {
         always {
-            // Rich interactive report, served at ${BUILD_URL}allure
-            allure([
-                results: [[path: 'allure-results']],
-                reportBuildPolicy: 'ALWAYS'
-            ])
+            script {
+                def relabelled = false
+                try {
+                    def allureBin = ''
+                    try {
+                        allureBin = tool(name: env.ALLURE_TOOL,
+                                         type: 'ru.yandex.qatools.allure.jenkins.tools.AllureCommandlineInstallation') + '/bin'
+                    } catch (ignored) {
+                        echo "No Allure Commandline tool named '${env.ALLURE_TOOL}' " +
+                             '(Manage Jenkins -> Tools); looking for allure on PATH instead.'
+                    }
+
+                    withEnv(allureBin ? ["PATH+ALLURE=${allureBin}"] : []) {
+                        sh '''
+                            set -e
+                            command -v allure >/dev/null 2>&1 || {
+                                echo "allure CLI not found - set ALLURE_TOOL to the name under Manage Jenkins -> Tools"
+                                exit 1
+                            }
+                            if [ -d allure-report/history ]; then
+                                cp -r allure-report/history allure-results/
+                                echo "Carried the previous build's Allure history forward for the Trend panel"
+                            fi
+                            allure generate allure-results --clean -o allure-report
+                        '''
+                    }
+                    sh 'node ci/relabel-allure.js allure-report'
+                    publishHTML([
+                        reportDir: 'allure-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Allure Report',
+                        keepAll: true,
+                        alwaysLinkToLastBuild: true,
+                        allowMissing: false
+                    ])
+                    relabelled = true
+                } catch (err) {
+                    echo "Could not publish the relabelled Allure report (${err.message}); " +
+                         'falling back to the Allure plugin, which will say "test cases".'
+                }
+
+                if (!relabelled) {
+                    allure([
+                        results: [[path: 'allure-results']],
+                        reportBuildPolicy: 'ALWAYS'
+                    ])
+                }
+            }
 
             // The one-pager, browsable from the build page
             publishHTML([
@@ -809,11 +589,6 @@ YAML
                               "(${p[2]}/${p[1]} passed, ${p[3]} failed, ${p[4]} broken, ${p[6]}%)"
                 }
 
-                // email-body.html first: it is the Outlook-safe monospace layout with the
-                // pass/fail counts, duration and the trend against the previous run.
-                // run-summary.html is the fallback - it is built for the PDF and Word mangles
-                // its layout, but a mangled summary still beats no summary if the Summarise
-                // stage was cut short.
                 if (fileExists('target/email-body.html')) {
                     body = readFile(file: 'target/email-body.html', encoding: 'UTF-8')
                 } else if (fileExists("${env.SUMMARY_BASE}.html")) {
@@ -831,24 +606,6 @@ YAML
                 )
             }
 
-            /* ---------------------------------------------------------------
-             * MS Teams - intentionally not wired up yet.
-             *
-             * When you add it, use a Power Automate "Workflows" incoming-webhook
-             * trigger on the channel, NOT the legacy Office 365 Connector: Microsoft
-             * has retired connector webhooks, so the old Jenkins Office 365 Connector
-             * plugin route is a dead end.
-             *
-             * The Workflows trigger accepts an Adaptive Card, and target/run-summary.json
-             * already holds every number the card needs, so this becomes roughly:
-             *
-             *   withCredentials([string(credentialsId: 'teams-workflow-url', variable: 'TEAMS_URL')]) {
-             *       sh 'node ci/teams-card.js target/run-summary.json | ' +
-             *          'curl -s -X POST -H "Content-Type: application/json" -d @- "$TEAMS_URL"'
-             *   }
-             *
-             * Nothing above needs to change to accommodate it.
-             * --------------------------------------------------------------- */
         }
 
         cleanup {
