@@ -4,8 +4,10 @@ import com.qapitol.sauron.common.sessions.AbstractTestSession;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.sessions.WebTestSession;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -164,7 +166,7 @@ public final class SessionBuilder {
             sizeWindow();
             Grid.driver().get(url);
             log.info("Successfully navigated to URL: " + url);
-            pause(2000);   // headless in particular needs a beat after navigation
+            awaitDocumentComplete();
             // sizeWindow() already zoomed, but that was on about:blank - this navigation replaced
             // the document and reset it to 100%. This is the call that actually leaves the
             // Background sitting on a 90% page.
@@ -587,6 +589,49 @@ public final class SessionBuilder {
      * <p>Never throws. A failed zoom is a cosmetic problem and must not turn into a scenario
      * failure that reads like a product defect.
      */
+    /** How long a navigated document is given to finish loading before {@link #applyZoom()} runs. */
+    private static final Duration DOCUMENT_READY_TIMEOUT = Duration.ofSeconds(30);
+
+    /**
+     * Waits for the navigated document to finish loading, before the zoom is applied to it.
+     *
+     * <p>Replaces a fixed {@code pause(2000)} that sat between {@code driver.get(url)} and
+     * {@link #applyZoom()}, commented "headless in particular needs a beat after navigation". A
+     * fixed sleep after a call that already blocks is the wrong shape twice over: it waits when
+     * there is nothing to wait for, and it does not wait long enough when there is.
+     *
+     * <p>WHAT IT IS ACTUALLY PROTECTING. {@code applyZoom()} sets a style on
+     * {@code document.documentElement} and never throws - a failure is a logged warning. So if it
+     * runs against a document the navigation is about to replace, the zoom is set on a doomed
+     * document, silently lost, and the Background carries on at 100% instead of
+     * {@link #ZOOM_LEVEL}. Nothing fails; the page is just the wrong size for the rest of the
+     * scenario. Waiting for {@code readyState == 'complete'} is what makes the zoom land on the
+     * document that survives.
+     *
+     * <p>IT DOES NOT INTRODUCE A NEW FAILURE. The sleep it replaces could not fail, so neither does
+     * this: a timeout is logged and the run continues, exactly as before. The gain is on both sides
+     * of the common case - {@code get()} already blocks until the load event under
+     * {@code pageLoadStrategy: normal}, so this usually returns immediately and gives back the two
+     * seconds every scenario was paying, while a document that genuinely never completes now says
+     * so by name instead of being silently under-waited.
+     */
+    private static void awaitDocumentComplete() {
+        try {
+            new WebDriverWait(Grid.driver(), DOCUMENT_READY_TIMEOUT)
+                    .withMessage("document.readyState never reached 'complete' within "
+                            + DOCUMENT_READY_TIMEOUT.getSeconds() + "s after navigating to "
+                            + Grid.driver().getCurrentUrl())
+                    .until(d -> "complete".equals(
+                            ((JavascriptExecutor) d).executeScript("return document.readyState")));
+        } catch (Exception e) {
+            // Deliberately non-fatal - see the Javadoc. The zoom below may be lost, which is
+            // cosmetic, and turning that into a session-start failure would report a page-load
+            // problem as a browser problem.
+            log.warning("Document did not report complete after navigation, continuing anyway: "
+                    + e.getMessage());
+        }
+    }
+
     public static void applyZoom() {
         try {
             // documentElement, not body: body is null until the document has a body element, which

@@ -77,20 +77,48 @@ public class Hooks {
                 log.info("No browser session for this scenario - skipping UI teardown");
                 return;
             }
-            try {
-                sessionSteps.ccpLogOut();
-            } catch (Exception e) {
-                log.info("No log out is found");
-                try {
-                    String expiredToken = ConfigUtil.getSecretValue("ccpExpiredToken");
-                    JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
-                    // Inject expired/invalid token
-                    js.executeScript("window.localStorage.setItem('token', arguments[0]);", expiredToken);
-                    Grid.driver().navigate().refresh();
-                } catch (Exception ex) {
-                    log.info("Could not reset the session token after a failed logout: " + ex.getMessage());
-                }
-            }
+            resetSessionClientSide();
+        }
+    }
+
+    /**
+     * Ends THIS browser's CCP session without calling the server-side logout.
+     *
+     * <p>THIS IS WHAT LETS data-provider-thread-count BE 4 ON ONE ACCOUNT. The teardown used to
+     * click the CCP Log out control. That logout is server-side, so with several scenarios signed in
+     * as the same {@code <group>.user.email} the first one to finish could end a session a sibling
+     * was still using - the failure the account-pool rule exists to prevent. Clearing the token and
+     * cookies in the browser ends only this session; every sibling keeps its own.
+     *
+     * <p>Why this is safe without a pool. CCP permits concurrent sessions for one account - measured
+     * on qa 7 Sep 2026, five scenarios signed in as qa_homepage_user at once across 44 scenarios
+     * with zero session or auth failures. And Sauron starts each session's Chrome with
+     * {@code --incognito}, so every thread already has its own cookie jar and storage; nothing is
+     * shared between them client-side. The logout was the only thing reaching across sessions.
+     *
+     * <p>It is strictly a stronger reset than what it replaces. The previous fallback - used
+     * whenever the Log out control could not be found, which the logs show happened often - injected
+     * an EXPIRED token over the live one. Clearing localStorage, sessionStorage and cookies removes
+     * the credential outright rather than replacing it with a stale one.
+     *
+     * <p>{@code SessionSteps.ccpLogOut()} is left in place and unchanged. It is still bound as the
+     * {@code account logout} step for any scenario that wants to test logging out as behaviour;
+     * this hook was its only caller, so no scenario changes.
+     */
+    private void resetSessionClientSide() {
+        try {
+            // Each clear is guarded separately: a page served from a context where storage access
+            // throws would otherwise skip the cookie deletion below.
+            ((JavascriptExecutor) Grid.driver()).executeScript(
+                    "try { window.localStorage.clear(); } catch (e) {}"
+                  + "try { window.sessionStorage.clear(); } catch (e) {}");
+            Grid.driver().manage().deleteAllCookies();
+            Grid.driver().navigate().refresh();
+            log.info("Session reset in the browser - storage and cookies cleared, no server-side logout");
+        } catch (Exception e) {
+            // Teardown must never turn a passing scenario into a failing one. The next scenario
+            // calls Grid.driver().get(ccpPortalUrl) and logs in again regardless.
+            log.info("Client-side session reset did not complete: " + e.getMessage());
         }
     }
 

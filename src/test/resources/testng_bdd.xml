@@ -1,8 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
+<!-- ===========================================================================================
+     TWO PARALLELISM AXES, AND THEY MULTIPLY. Concurrent browser sessions =
+     thread-count (how many <test> BLOCKS run at once) x data-provider-thread-count (how many
+     SCENARIOS run at once INSIDE one block). Read both before changing either.
+
+     data-provider-thread-count IS 2, ON ONE ACCOUNT PER GROUP, AND THAT IS DELIBERATE.
+
+     Two, not four, so the 2-CPU Jenkins agent runs the authored value instead of being capped: at
+     4 the clamp reduced every CI build to 1x2 anyway, so CI never saw 4. Two is what both a CI
+     build and a developer machine actually execute. See the core-budget note at the bottom before
+     reading "2 sessions on 2 cores" as free.
+
+     The hazard it used to carry: every scenario inside a block resolves the SAME credential -
+     UserConfig.getEmail() maps the group to a single <group>.user.email with no per-thread or
+     pooled variant, and global_qa.properties defines one email/password per group. So four
+     concurrent Homepage scenarios all sign in as qa_homepage_user.
+
+     WHY THAT IS NO LONGER A PROBLEM, WITHOUT A SINGLE NEW ACCOUNT. Sharing an account was never the
+     thing that broke; the SERVER-SIDE LOGOUT was. Hooks.afterScenario used to click the CCP Log out
+     control after every scenario, which ends the session for that customer and could take a sibling
+     with it. It now clears localStorage, sessionStorage and cookies in the browser instead
+     (Hooks.resetSessionClientSide), which ends only that session. Nothing reaches across threads
+     any more.
+
+     Two measured facts underpin this:
+       - CCP permits concurrent sessions for one account. Measured on qa 7 Sep 2026: the Homepage
+         block at data-provider-thread-count=5 ran 44 scenarios with five concurrent logins on
+         qa_homepage_user and produced ZERO session or auth failures.
+       - Each session already has its own cookie jar. Sauron starts every Chrome with the
+         "incognito" flag, so nothing is shared between threads client-side. (Spelled without its
+         leading dashes deliberately: a literal double hyphen is illegal inside an XML comment and
+         makes TestNG fail to parse this whole file.)
+
+     An account POOL - <group>.user.email.1..N handed out per thread - is still the more rigorous
+     answer and remains the right move if CCP ever enforces one session per customer. It is not
+     needed for this, and it would require N real accounts for each of the five signed-in groups.
+
+     THE OTHER HAZARD OF RAISING THIS, which is about the grid rather than accounts: several
+     scenarios reach awaitDriverReady at t=0 and all find no session while the hub is still
+     starting. That is handled - SessionSteps now waits out a 90s COLD budget for the first session
+     of a run and only latches the grid on positive evidence - but it is the thing to re-check if a
+     run dies at start-up rather than mid-way.
+
+     CORES, NOT JUST SLOTS. ci/cap-parallelism.js no longer caps this on the 2-CPU agent - 2
+     sessions for 2 cores passes its check - but passing the slot check is not the same as having
+     the capacity. Budget roughly one core and ~1GB of RAM per concurrent session, and the Maven
+     JVM, the Selenium hub and the node itself all want a share on those same 2 cores. So the agent
+     is now fully committed with nothing spare for the build.
+
+     What that changes is the FAILURE MODE, not the pass rate: an over-committed agent stops failing
+     as "session not created" and starts failing as step timeouts, which read like flaky product
+     bugs and cost more to diagnose. If timeouts start appearing on CI at this setting and not
+     locally, suspect core contention before the application - and the fix is a bigger agent or
+     GRID_URL pointing at a real grid, not a longer timeout.
+
+     A NOTE ON THE CLAMP ITSELF: ci/cap-parallelism.js REWRITES the suite file in place. Use a copy
+     when answering "what would it do on an N-core agent", or the diagnostic silently edits the
+     source it is being asked about.
+     =========================================================================================== -->
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
-       data-provider-thread-count="4" annotations="JDK">
+       data-provider-thread-count="2" annotations="JDK">
 
     <listeners>
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
@@ -27,7 +86,7 @@
         <parameter name="test.group" value="login"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@registration"/>
+        <parameter name="cucumber.filter.tags" value="@login or @registration or @forgetPassword"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
