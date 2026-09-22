@@ -223,6 +223,26 @@ jobs:
               which exists in CI.
             - If the diff is sound, say so briefly rather than inventing findings.
 
-          # --max-turns bounds a runaway review. Raise it for very large PRs.
+          # --allowedTools is ADDITIVE - it extends the action's own tool list rather than
+          # replacing it, so Read/Grep/Glob and the comment-posting MCP tool are unaffected.
+          #
+          # These five read-only git commands are not optional. The action's harness prompt tells
+          # the reviewer "To see PR changes: use 'git diff origin/develop...HEAD'", but the tool
+          # list it computes contains only git add, git commit, git rm and git-push.sh. So every
+          # attempt to read the diff was denied. Run 35714219992 on PR #103 is the evidence:
+          # permission_denials_count 8, then error_max_turns at turn 41. Unable to diff, the review
+          # fell back to opening 58 changed files one at a time and ran out of turns before it
+          # could post anything. Nothing in that log says "permission denied" in words - the only
+          # visible symptom is the turn limit, which makes this look like a budget problem when it
+          # is an access problem. Removing any of these re-creates it.
+          #
+          # All five are read-only. Nothing here can alter the repository; the write-side git
+          # commands stay with the action's own list, which this does not touch.
+          #
+          # --max-turns 80, not 40: with the diff readable the review needs far fewer turns, but
+          # 40 was already the wall on a 58-file PR. At ~6.6s/turn (272s for 41 turns) 80 turns is
+          # roughly 9 minutes against the job's 30-minute timeout, so the ceiling that actually
+          # bounds a runaway review is still timeout-minutes, not this.
           claude_args: |
-            --max-turns 40
+            --max-turns 80
+            --allowedTools "Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git status:*),Bash(git ls-files:*)"
