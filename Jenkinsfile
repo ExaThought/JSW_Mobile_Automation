@@ -60,8 +60,14 @@ pipeline {
         )
         choice(
             name: 'SUITE',
-            choices: ['testng_bdd.xml', 'testng_mobilebdd.xml', 'testng_prod_sanity.xml'],
+            choices: ['testng_bdd.xml', 'testng_all.xml', 'testng_serial.xml',
+                      'testng_mobilebdd.xml', 'testng_prod_sanity.xml'],
             description: 'TestNG suite file. Maps to the pom\'s ${suiteXmlFile} property. ' +
+                         'testng_all.xml is a MASTER suite that runs testng_bdd.xml and then ' +
+                         'testng_serial.xml, each keeping its own thread counts - that is why the ' +
+                         'split exists, since data-provider-thread-count is a per-suite attribute ' +
+                         'and cannot differ between blocks of one suite. testng_serial.xml is the ' +
+                         'cart and SF order features at one scenario at a time. ' +
                          'testng_prod_sanity.xml is the read-only suite selecting ' +
                          '"@productionSanity and @P0", and is required when ENV=prod; it is also ' +
                          'safe to run against qa or preprod.'
@@ -301,7 +307,10 @@ YAML
                     # after testng_bdd.xml documented both axes in prose the clamp was reading the
                     # documentation. Build #244 is what that cost: 1 x 5 = 5 sessions demanded on a
                     # 2-CPU agent, unclamped, and the clamp printed "every thread gets a slot".
-                    # ci/cap-parallelism.js reads the <suite> open tag only.
+                    # ci/cap-parallelism.js reads the <suite> open tag only, and follows
+                    # <suite-files> when the selected suite is a master such as testng_all.xml -
+                    # that file declares no counts of its own, so reading its tag alone would
+                    # report a demand of 1 and cap nothing while its children asked for 4.
                     # ---------------------------------------------------------------
                     CPUS=$(nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
                     SUITE_FILE="src/test/resources/${SUITE}"

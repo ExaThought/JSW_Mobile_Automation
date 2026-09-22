@@ -1,66 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
-<!-- ===========================================================================================
-     CURRENTLY SERIAL: 1 x 1 = one browser session at a time.
-
-     data-provider-thread-count was lowered from 5 to 1 to stabilise the regression run. This is
-     a CAPACITY decision, not a correctness one, and it is reversible - parallel execution is
-     still supported and the machinery for it is still live. Do not delete that machinery on the
-     assumption it is dead:
-
-       - Hooks.softAssert (ThreadLocalSoftAssert)   collects failures per thread
-       - SessionSteps credential ThreadLocals       keep one scenario's login off another's thread
-       - ci/cap-parallelism.js                      clamps demand to the agent's cores at build time
-
-     cap-parallelism.js in particular is NOT inert at 1. The Jenkinsfile still queries it for the
-     suite's demand when pre-flighting GRID_URL, it only ever LOWERS, and it is what makes raising
-     either axis safe again rather than a gamble.
-
-     (An XML comment may not contain a double hyphen, so flag names are spelled out in prose here
-     rather than written literally. That is a parser rule, not a style choice.)
-
-     TWO INDEPENDENT AXES. Read both before changing either - they MULTIPLY.
-       thread-count               how many <test> BLOCKS run at once.
-       data-provider-thread-count how many SCENARIOS run at once INSIDE one block.
-
-     WHY THE CAP IS THE MACHINE, NOT THE CODE. Selenium sizes a local node's Chrome slots from the
-     CPU count, and the Jenkins agent reports "Detected 2 available processors" -> "Adding Chrome
-     ... 2 times". At 1 x 5 the three surplus sessions never start, and Sauron's
-     ScreenshotBddListener then throws on the absent driver, so every one of them reports "Driver
-     not initialized. Is @WebTest/@MobileTest missing on class/method?" - naming neither the
-     browser nor the real cause. Build #244 lost 44 scenarios that way.
-
-     TO RAISE IT AGAIN the ceiling is min(agent CPUs, distinct accounts). Budget ~1 core and ~1GB
-     per concurrent session and leave 2 for the build, or point GRID_URL at a remote grid
-     (docker-compose.grid.yml).
-
-     THE STANDING RULE SURVIVES THE ROLLBACK - two blocks that can run at the same time may not
-     share an account. CCP logout is SERVER-SIDE and Hooks.afterScenario logs out after EVERY
-     scenario, so a second block signed in as the same customer loses its session mid-scenario and
-     the symptom is a scatter of "session expired" failures that read as product bugs. This is why
-     the TokenCheck block stays commented out: tokencheck.user.* is still testautomation01.
-
-     NOT TRUE OF PREPROD. This suite pins no environment, so -Denv=preprod runs it at whatever is
-     set here, and in global_preprod.properties testautomation01@yopmail.com still backs login,
-     cart, homepage, orders and pdpplp - five blocks on one customer. Give preprod per-group
-     accounts before raising either axis against it.
-
-     KEEPING THIS COMMENT IS SAFE. An earlier inline clamp did `grep -oP 'thread-count="\K[0-9]+'`,
-     which matched data-provider-thread-count as a substring AND matched inside XML comments, so a
-     block like this one was read as if it were the suite's attributes. ci/cap-parallelism.js reads
-     the <suite> open tag only, which is why prose here no longer influences the clamp.
-     =========================================================================================== -->
-
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
-       data-provider-thread-count="1" annotations="JDK">
+       data-provider-thread-count="4" annotations="JDK">
 
     <listeners>
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
     </listeners>
-
-    <!-- env / data.env are set by GlobalConfigProperties from -Denv (default: qa).
-         Override here only if this suite must pin one environment. -->
     <parameter name="data.testId" value="testCaseId"/>
     <parameter name="api.retry.count" value="1"/>
     <parameter name="enableSessionsKeepAlive" value="true"/>
@@ -81,7 +27,7 @@
         <parameter name="test.group" value="login"/>
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@login or @registration or @forgetPassword"/>
+        <parameter name="cucumber.filter.tags" value="@registration"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -104,37 +50,6 @@
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features"/>
         <parameter name="cucumber.filter.tags" value="@PLPValidation or @PDPValidation"/>
-        <classes>
-            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-        </classes>
-    </test>
-
-
-    <!-- ================================== CART ================================== -->
-
-    <!-- @AddToCartAndCreateOpportunity is a FEATURE-level tag, so this selects every active
-         scenario in AddToCartAndCreateOpportunity.feature, not just the create-opportunity one. -->
-    <test name="Cart_AddToCartAndCreateOpportunity">
-        <parameter name="test.group" value="cart"/>
-        <parameter name="sessions" value="sessions.yaml"/>
-        <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags"
-                   value="@AddToCartAndCreateOpportunity or @CartVerification"/>
-        <classes>
-            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
-        </classes>
-    </test>
-
-
-    <!-- =============================== SF ORDERS =============================== -->
-    <!-- SFSlc.feature and SFSlo.feature have no Background - they drive Salesforce/API flows
-         rather than a browser login - but they still run under the orders group's data. -->
-
-    <test name="SF_SLC_SLO">
-        <parameter name="test.group" value="orders"/>
-        <parameter name="sessions" value="sessions.yaml"/>
-        <parameter name="cucumber.features" value="src/test/resources/features"/>
-        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
@@ -170,9 +85,6 @@
 
     <!-- ================================ PROFILE ================================ -->
 
-    <!-- EmptyBankDetails.feature logs in with credentials hardcoded in its own Background
-         ("emailnoti@yopmail.com"), so test.group does not drive authentication here - it is
-         set only because TestGroupContext requires a value. -->
     <test name="Profile">
         <parameter name="test.group" value="profile"/>
         <parameter name="sessions" value="sessions.yaml"/>

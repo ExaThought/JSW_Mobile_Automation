@@ -16,6 +16,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -774,47 +775,79 @@ public class CustomUtil {
     }
 
     public static boolean isDisplayed(Object target) {
-        try {
-            WebElement element= resolveElement(target);
-
-                new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOf(element));
-
-                if(element.isDisplayed())
-                {
-                    return true;
-                }else {
+        for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
+            try {
+                WebElement element = resolveElement(target);
+                new WebDriverWait(Grid.driver(), Duration.ofMillis(1000))
+                        .until(ExpectedConditions.visibilityOf(element));
+                return element.isDisplayed();
+            } catch (StaleElementReferenceException e) {
+                if (target instanceof WebElement) {
                     return false;
                 }
-            }catch (Exception e)
-            {
-                return  false;
+                pauseBetweenStaleRetries();
+            } catch (Exception e) {
+                return false;
             }
+        }
+        return false;
+    }
+
+    private static <T> T withStaleRetry(Object target, Supplier<T> read) {
+        StaleElementReferenceException lastStale = null;
+
+        for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
+            try {
+                return read.get();
+            } catch (StaleElementReferenceException e) {
+                lastStale = e;
+
+                if (target instanceof WebElement) {
+                    throw new IllegalStateException("The element passed here went stale and cannot be"
+                            + " re-resolved, because a WebElement carries no locator to search with."
+                            + " Pass the By instead of a pre-found element.", e);
+                }
+
+                logger.log(Level.INFO, "Stale element reading " + target + " (attempt " + attempt
+                        + " of " + STALE_RETRY_ATTEMPTS + ") - re-resolving against the new DOM.");
+                pauseBetweenStaleRetries();
+            }
+        }
+
+        throw new IllegalStateException("Could not read " + target + ": the element went stale on all "
+                + STALE_RETRY_ATTEMPTS + " attempts.", lastStale);
     }
 
     public static String getText(Object target) {
-        return resolveElement(target).getText().trim();
+        return withStaleRetry(target, () -> resolveElement(target).getText().trim());
     }
 
 
     public static String getTextJS(Object target) {
-        WebElement element = resolveElement(target);
-        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        return withStaleRetry(target, () -> {
+            WebElement element = resolveElement(target);
+            JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
 
-        Object innerText = js.executeScript("return arguments[0].innerText;", element);
-        if (innerText instanceof String && !((String) innerText).trim().isEmpty()) {
-            return ((String) innerText).trim();
-        }
+            Object innerText = js.executeScript("return arguments[0].innerText;", element);
+            if (innerText instanceof String && !((String) innerText).trim().isEmpty()) {
+                return ((String) innerText).trim();
+            }
 
-        Object textContent = js.executeScript("return arguments[0].textContent;", element);
-        if (textContent instanceof String) {
-            return ((String) textContent).trim();
-        }
+            Object textContent = js.executeScript("return arguments[0].textContent;", element);
+            if (textContent instanceof String) {
+                return ((String) textContent).trim();
+            }
 
-        return "";
+            return "";
+        });
     }
 
 
     public static String getTextResilient(Object target) {
+        return withStaleRetry(target, () -> readAllTextSources(target));
+    }
+
+    private static String readAllTextSources(Object target) {
         WebElement element = resolveElement(target);
 
         String rendered = element.getText();
