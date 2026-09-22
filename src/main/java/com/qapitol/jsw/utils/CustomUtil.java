@@ -178,6 +178,10 @@ public class CustomUtil {
 
 
 
+    public static void scrollToCenterByText(String text) {
+        scrollToCenter(By.xpath("//div[normalize-space()=" + xpathLiteral(text) + "]"));
+    }
+
     public static void scrollToCenter(By locator) {
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
         WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
