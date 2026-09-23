@@ -14,19 +14,25 @@ import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import java.io.ByteArrayInputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import static com.qapitol.jsw.pageFactory.CategoryPages.*;
 import static com.qapitol.jsw.utils.CustomUtil.*;
@@ -1192,29 +1198,155 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
+    /* ==========================================================================================
+     * CATEGORY FLYOUT, FALLING BACK TO THE LISTING URL
+     *
+     * The four "move the mouse to X category" steps below are navigation SETUP for the PLP and PDP
+     * scenarios (PlP.feature:11 and its neighbours): what those scenarios assert is what the
+     * listing renders, not the header. When a flyout will not open, landing on the listing by URL
+     * keeps the scenario testing the thing it was written to test instead of losing it to the
+     * header.
+     *
+     * That is only acceptable because a fallback can no longer pass unnoticed:
+     *
+     *   1. THE CATCH IS SCOPED. Only WebDriverException - timeout, stale element, not
+     *      interactable, move-target-out-of-bounds - and the IllegalStateException that
+     *      hoverOverElement and hoverOverMildSteelCategory throw when a hover does not land count
+     *      as "the flyout did not open". Anything else propagates and fails the scenario exactly
+     *      as it would have before the fallback existed: an assertion, a bug in a step, a cart or
+     *      profile API failure.
+     *
+     *   2. EVERY FALLBACK IS IN THE REPORT, not just at log.info in the console. Each one attaches
+     *      an Allure note AND a screenshot taken BEFORE the navigation, so the report carries the
+     *      header as it was at the moment the hover gave up. Reading a green scenario is enough to
+     *      see that the flyout did not open.
+     *
+     *   3. A HEADER-WIDE BREAKAGE READS AS ONE. The note carries a running count of the DISTINCT
+     *      categories that have fallen back in the run, so a deploy that breaks the mega-menu
+     *      everywhere reports "3 distinct category flyouts" rather than three unrelated blips.
+     *      The count is CUMULATIVE and static, so it is the HIGHEST number across the run that is
+     *      the total - the first scenario to fall back always reports 1. No denominator is printed
+     *      on purpose: a literal count of these steps would be one more number to go stale the
+     *      moment a fifth category is added, and grep for openCategoryFlyoutOrListing answers it.
+     *
+     * WHAT THIS DELIBERATELY DOES NOT DO: fail the scenario. These steps are setup, so failing
+     * them would report a header problem as a broken PLP filter assertion - the wrong defect, in
+     * the wrong scenario, and it would take the PLP and PDP coverage down with it. The regression
+     * signal is the Allure note plus the count in item 3.
+     *
+     * AND THE HEADER HOVER IS NOT LEFT UNCOVERED BY THIS. Header.feature:28-29 hovers Mild Steel
+     * and asserts the mega-menu panel carries sub-category links, with no fallback of any kind. A
+     * deploy that breaks the mega-menu fails THAT scenario, which is the one whose job it is to
+     * say so. Adding a fifth way to fail here would report a header defect as a broken PLP filter
+     * assertion instead - the wrong defect in the wrong scenario.
+     * ========================================================================================== */
+    private static final Set<String> FLYOUT_FALLBACKS =
+            Collections.synchronizedSet(new LinkedHashSet<String>());
+
+    /**
+     * @param trail       the header path being opened, as it reads in the report, e.g.
+     *                    "Mild steel &gt; Cold rolled".
+     * @param listingPath the site-relative listing to open when the flyout will not open.
+     * @param expected    true only where the category is known to be absent from the header, so
+     *                    the fallback is the documented route rather than evidence of a
+     *                    regression. It keeps that category out of the count in item 3 above.
+     * @param openFlyout  the hover chain for this category.
+     */
+    private void openCategoryFlyoutOrListing(String trail, String listingPath, boolean expected,
+                                             Runnable openFlyout) {
+        confirmBusinessDetailsIfDialogPresent();
+        try {
+            if (isTransactingCustomerOrFalse()) {
+                refreshAndWaitFor(ALL_CATEGORY);
+                hoverOverElement(ALL_CATEGORY);
+            }
+            openFlyout.run();
+            log.info("cursor moved through the header to '" + trail + "'");
+        } catch (WebDriverException | IllegalStateException e) {
+            fallBackToListing(trail, listingPath, expected, e);
+        }
+    }
+
+    /**
+     * Reads the isTransacting flag, treating an unreadable one as false.
+     *
+     * <p>Needed because the catch above is scoped to hover failures: this lookup is an API call and
+     * must not throw past it. Treating the flag as false only costs the pre-hover refresh, and if
+     * the flyout then fails to open the fallback still lands the scenario on its listing - which is
+     * where the previous blanket {@code catch (Exception e)} sent it anyway.
+     */
+    private boolean isTransactingCustomerOrFalse() {
+        try {
+            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+            return transactingCustomer;
+        } catch (RuntimeException e) {
+            log.info("Could not read isTransacting (" + e.getClass().getSimpleName() + ": "
+                    + e.getMessage() + ") - treating the customer as non-transacting for this hover.");
+            return false;
+        }
+    }
+
+    private void fallBackToListing(String trail, String listingPath, boolean expected,
+                                   Exception cause) {
+        String target = siteOrigin() + listingPath;
+        String reason = cause.getClass().getSimpleName() + ": " + cause.getMessage();
+        String note;
+
+        if (expected) {
+            note = "The " + trail + " flyout did not open, which is expected: that category is not"
+                    + " in the header at all any more, so there is nothing to hover. Opened the"
+                    + " listing directly." + System.lineSeparator()
+                    + "Opened : " + target + System.lineSeparator()
+                    + "Cause  : " + reason;
+        } else {
+            FLYOUT_FALLBACKS.add(trail);
+            int distinct = FLYOUT_FALLBACKS.size();
+            note = "HEADER FLYOUT DID NOT OPEN. The scenario continued by URL and its own"
+                    + " assertions still ran, but the header hover was NOT exercised - do not read"
+                    + " this scenario passing as the mega-menu working." + System.lineSeparator()
+                    + "Trail  : " + trail + System.lineSeparator()
+                    + "Opened : " + target + System.lineSeparator()
+                    + "Cause  : " + reason + System.lineSeparator()
+                    + "Run    : " + distinct + " distinct category flyout(s) have fallen back in"
+                    + " this run so far"
+                    + (distinct > 1
+                       ? " - more than one points at the mega-menu itself, not at one flaky category."
+                       : ".");
+        }
+
+        log.info(note);
+        Allure.addAttachment("Category flyout fell back to a URL - " + trail, "text/plain",
+                note, ".txt");
+        if (!expected) {
+            // Only for the unexplained ones. Bitumen falls back on every run by design, so a
+            // screenshot there would attach a known condition to every scenario that touches it.
+            attachHeaderScreenshot(trail);
+        }
+
+        Grid.driver().get(target);
+        waitForPageLoad();
+        log.info("Landed on the " + trail + " listing at " + Grid.driver().getCurrentUrl());
+    }
+
+    /** Captured before the fallback navigates, so the report shows the header, not the listing. */
+    private void attachHeaderScreenshot(String trail) {
+        try {
+            byte[] png = ((TakesScreenshot) Grid.driver()).getScreenshotAs(OutputType.BYTES);
+            Allure.addAttachment("Header when the " + trail + " flyout did not open", "image/png",
+                    new ByteArrayInputStream(png), ".png");
+        } catch (Throwable t) {
+            // Reporting must never turn a recovered step into a failed one.
+            log.info("Could not attach a screenshot of the header: " + t.getMessage());
+        }
+    }
+
     private static final String HOT_ROLLED_LISTING_PATH = "/category/mild-steel/hot-rolled-steel";
 
     @When("move the mouse to Mild steel category and to sub category Hot rolled")
     public void moveTheMouseToMildSteelCategoryAndToSubCategoryHotRolled() {
-        confirmBusinessDetailsIfDialogPresent();
-        try {
-            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-            if (transactingCustomer) {
-                refreshAndWaitFor(ALL_CATEGORY);
-                hoverOverElement(ALL_CATEGORY);
-            }
-            hoverOverMildSteelCategory(By.xpath(msHotRolledCategory));
-            log.info("cursor moved to subcategory 'Hot rolled' under mild steel");
-        } catch (Exception e) {
-            String target = siteOrigin() + HOT_ROLLED_LISTING_PATH;
-            log.info("Could not open the Mild steel > Hot rolled flyout (" + e.getClass().getSimpleName()
-                    + ": " + e.getMessage() + "). Falling back to " + target
-                    + " so the scenario continues.");
-            Grid.driver().get(target);
-            waitForPageLoad();
-            log.info("Landed on the Hot rolled listing at " + Grid.driver().getCurrentUrl());
-        }
+        openCategoryFlyoutOrListing("Mild steel > Hot rolled", HOT_ROLLED_LISTING_PATH, false,
+                () -> hoverOverMildSteelCategory(By.xpath(msHotRolledCategory)));
     }
 
     /* Bitumen is NOT in the header any more. Measured on qa, 23 Sep 2026: zero anchors in <header>
@@ -1229,27 +1361,15 @@ public class CartSteps extends AbstractWebPage {
 
     @When("move the mouse to Bitumen category and to sub category Viscosity grade bitumen")
     public void moveTheMouseToBitumenCategoryAndToSubCategoryViscosityGradeBitumen() {
-        confirmBusinessDetailsIfDialogPresent();
-        try {
-            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-            if (transactingCustomer) {
-                refreshAndWaitFor(ALL_CATEGORY);
-                hoverOverElement(ALL_CATEGORY);
-            }
-            hoverOverBitumenCategory();
-            waits(By.xpath(viscosityGradeBitumenCategory));
-            hoverOverElement(By.xpath(viscosityGradeBitumenCategory));
-            log.info("cursor moved to subcategory 'Viscosity grade bitumen' under bitumen");
-        } catch (Exception e) {
-            String target = siteOrigin() + VISCOSITY_GRADE_BITUMEN_LISTING_PATH;
-            log.info("Could not open the Bitumen > Viscosity grade bitumen flyout ("
-                    + e.getClass().getSimpleName() + ": " + e.getMessage() + "). Bitumen is no"
-                    + " longer in the header, so falling back to " + target);
-            Grid.driver().get(target);
-            waitForPageLoad();
-            log.info("Landed on the Viscosity grade bitumen listing at " + Grid.driver().getCurrentUrl());
-        }
+        // expected = true: the category is gone from the header (see the note above), so this
+        // fallback is the documented route and is reported as such rather than as a regression.
+        openCategoryFlyoutOrListing("Bitumen > Viscosity grade bitumen",
+                VISCOSITY_GRADE_BITUMEN_LISTING_PATH, true,
+                () -> {
+                    hoverOverBitumenCategory();
+                    waits(By.xpath(viscosityGradeBitumenCategory));
+                    hoverOverElement(By.xpath(viscosityGradeBitumenCategory));
+                });
     }
 
     @And("click on Hollow sections product")
@@ -1418,25 +1538,8 @@ public class CartSteps extends AbstractWebPage {
      */
     @When("move the mouse to Mild steel category and to sub category Cold rolled")
     public void moveTheMouseToMildSteelCategoryAndToSubCategoryColdRolled() {
-        confirmBusinessDetailsIfDialogPresent();
-        try {
-            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-            if (transactingCustomer) {
-                refreshAndWaitFor(ALL_CATEGORY);
-                hoverOverElement(ALL_CATEGORY);
-            }
-            hoverOverMildSteelCategory(By.xpath(msColdRolledCategory));
-            log.info("cursor moved to subcategory 'Cold rolled' under mild steel");
-        } catch (Exception e) {
-            String target = siteOrigin() + COLD_ROLLED_LISTING_PATH;
-            log.info("Could not open the Mild steel > Cold rolled flyout (" + e.getClass().getSimpleName()
-                    + ": " + e.getMessage() + "). Falling back to " + target
-                    + " so the scenario continues.");
-            Grid.driver().get(target);
-            waitForPageLoad();
-            log.info("Landed on the Cold rolled listing at " + Grid.driver().getCurrentUrl());
-        }
+        openCategoryFlyoutOrListing("Mild steel > Cold rolled", COLD_ROLLED_LISTING_PATH, false,
+                () -> hoverOverMildSteelCategory(By.xpath(msColdRolledCategory)));
     }
 
     @And("click on CR Coil product")
@@ -1463,25 +1566,8 @@ public class CartSteps extends AbstractWebPage {
 
     @When("move the mouse to Mild steel category and to sub category Coated steel")
     public void moveTheMouseToMildSteelCategoryAndToSubCategoryCoatedSteel() {
-        confirmBusinessDetailsIfDialogPresent();
-        try {
-            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-            if (transactingCustomer) {
-                refreshAndWaitFor(ALL_CATEGORY);
-                hoverOverElement(ALL_CATEGORY);
-            }
-            hoverOverMildSteelCategory(By.xpath(coatedSteelCategory));
-            log.info("cursor moved to subcategory 'Coated steel' under mild steel");
-        } catch (Exception e) {
-            String target = siteOrigin() + COATED_STEEL_LISTING_PATH;
-            log.info("Could not open the Mild steel > Coated steel flyout (" + e.getClass().getSimpleName()
-                    + ": " + e.getMessage() + "). Falling back to " + target
-                    + " so the scenario continues.");
-            Grid.driver().get(target);
-            waitForPageLoad();
-            log.info("Landed on the Coated steel listing at " + Grid.driver().getCurrentUrl());
-        }
+        openCategoryFlyoutOrListing("Mild steel > Coated steel", COATED_STEEL_LISTING_PATH, false,
+                () -> hoverOverMildSteelCategory(By.xpath(coatedSteelCategory)));
     }
 
     @And("click on Galvanized sheet product")
