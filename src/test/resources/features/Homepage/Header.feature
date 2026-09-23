@@ -46,7 +46,6 @@ Feature: Validate Home Page Header
       | Structural steel | /category/structural-steel |
       | Cement           | /category/cement           |
       | TMT              | /category/TMT-Bar-steel    |
-      | Bitumen          | /category/bitumen          |
       | Blogs            | /blogs                     |
 
   @productionSanity @prodSafe

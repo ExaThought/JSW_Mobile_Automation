@@ -61,7 +61,10 @@ public class HomeHeaderSteps extends AbstractWebPage {
         paths.put("structural steel", "/category/structural-steel");
         paths.put("cement", "/category/cement");
         paths.put("tmt", "/category/TMT-Bar-steel");
-        paths.put("bitumen", "/category/bitumen");
+        // Bitumen was removed from the header nav; confirmed on qa 22 Sep 2026 - the header carries
+        // no /category/bitumen anchor and no "Bitumen" text, while /category/bitumen itself still
+        // answers 200. The category is unlinked, not gone, so this is a nav change rather than a
+        // dead page. Restore this entry if Bitumen returns to the menu.
         paths.put("blogs", "/blogs");
         return paths;
     }
@@ -264,7 +267,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
         softAssert.assertTrue(matchedPanels > 0,
                 "No mega-menu panel in the DOM for '" + lastHoveredNavPath + "'. Either this nav"
                         + " item has no mega-menu - Cement and TMT genuinely have none, only Mild"
-                        + " Steel, Structural steel, Bitumen and Help & Support do - or the header"
+                        + " Steel, Structural steel and Help & Support do - or the header"
                         + " markup changed, in which case re-capture it and update"
                         + " MEGA_MENU_PANEL_FOR_NAV.");
         if (matchedPanels == 0) {

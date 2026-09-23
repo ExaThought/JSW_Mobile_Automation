@@ -158,10 +158,54 @@ public final class SessionBuilder {
      * <p>This is the whole Background-level concern in one call: session, driver, window sizing,
      * navigation. Callers get a browser sitting on the page, or a diagnosed exception.
      */
+    /**
+     * Post-condition for {@link #open(String)}: a Sauron test session must be bound to the thread
+     * that is about to run the steps.
+     *
+     * <p>Without this the failure surfaces much later as a bare {@code NullPointerException} with
+     * no message, thrown from inside Sauron:
+     *
+     * <pre>
+     *   java.lang.NullPointerException
+     *     at AbstractPage.lambda$new$0(AbstractPage.java:249)
+     *     at Page.getLocator(Page.java:31)
+     *     at AbstractPage.getLocator(AbstractPage.java:149)
+     * </pre>
+     *
+     * <p>Line 249 is the {@code supplySiteLocale} supplier, which does
+     * {@code Grid.getTestSession().getSiteLocale()} with no null check. {@code getTestSession()}
+     * resolves through a ThreadLocal - {@code getTestSession(getSessionName())} - and returns null
+     * whenever no session has been STARTED on the executing thread. Binding the name alone is not
+     * enough: {@code Grid.setSessionName("ccp")} followed by {@code Grid.getTestSession()} still
+     * returns null, verified directly, because the lookup needs a started session, not a name.
+     *
+     * <p>So the NPE is neither a missing locator file nor a null {@code page} - both were checked
+     * and are fine. It means "no browser session on this thread", and the only reason it reads as
+     * a locator problem is that resolving a locator is the first thing that touches the session.
+     *
+     * <p>In the 22 Sep 2026 run this accounted for 16 of 22 failures, every one of them in the
+     * contiguous tail: once the condition appeared, no later scenario recovered.
+     */
+    private static void requireBoundTestSession() {
+        if (Grid.getTestSession() == null) {
+            String diagnosis = DIAGNOSIS_PREFIX
+                    + " No Sauron test session is bound to thread '" + Thread.currentThread().getName()
+                    + "' (session name '" + Grid.getSessionName() + "'). The driver is up, but"
+                    + " Grid.getTestSession() is null, so the first locator lookup would throw a"
+                    + " bare NullPointerException from AbstractPage.lambda$new$0 instead of"
+                    + " reporting this. Check that the scenario ran 'Given Go to session \"ccp\"'"
+                    + " on this thread and that nothing tore the session down mid-scenario.";
+            recordSessionStartFailure(diagnosis);
+            log.log(Level.SEVERE, diagnosis);
+            throw new IllegalStateException(diagnosis);
+        }
+    }
+
     public static void open(String url) {
         log.entering();
         try {
             awaitDriverReady();
+            requireBoundTestSession();
             Grid.driver().manage().timeouts().implicitlyWait(IMPLICIT_WAIT);
             sizeWindow();
             Grid.driver().get(url);
@@ -397,6 +441,26 @@ public final class SessionBuilder {
                     continue;
                 }
 
+                /* On Chrome, "CdpVersionFinder WARNING Unable to find CDP implementation matching
+                 * <major>" in system-err is EXPECTED and harmless - do not chase it as a cause.
+                 *
+                 * WebTestSession always attempts getDevTools() on Chrome/Edge, and Selenium 4.23.0
+                 * ships CDP v125/v126/v127 only, so anything newer finds no match and the attempt
+                 * throws. Sauron swallows it, and setWebDriver() has already run by then, so the
+                 * session is unaffected. Nothing in this repo needs CDP: HAR capture is never
+                 * enabled, no step grants permissions through it, and NetworkCapture deliberately
+                 * uses a window.fetch/XHR shim instead - see its class javadoc.
+                 *
+                 * It cannot be fixed by bumping Selenium either. Sauron is compiled against
+                 * org.openqa.selenium.devtools.v127.*, and 4.25.0 is the last release shipping
+                 * selenium-devtools-v127, which caps CDP support at Chrome 129. Raising it any
+                 * further needs Sauron rebuilt against a current Selenium.
+                 *
+                 * Checked against the 22 Sep 2026 run: the warning appears in 16 of 22 failures
+                 * but 0 of 72 passes, which looks damning until you notice it tracks new-session
+                 * creation, not outcome - and 4 of the NullPointerException failures carry no
+                 * warning at all. The NPEs are a null AbstractPage.page (no locator file resolved),
+                 * which is a separate defect. */
                 // ---- Stage 3: driver assigned ------------------------------------------------
                 RemoteWebDriver driver = awaitDriverAssigned(session, attemptDeadline);
                 if (driver == null) {

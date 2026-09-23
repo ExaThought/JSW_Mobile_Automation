@@ -84,7 +84,10 @@ public class Hooks {
     /**
      * Ends THIS browser's CCP session without calling the server-side logout.
      *
-     * <p>THIS IS WHAT LETS data-provider-thread-count BE 4 ON ONE ACCOUNT. The teardown used to
+     * <p>THIS IS WHAT LETS data-provider-thread-count BE GREATER THAN 1 ON ONE ACCOUNT. The
+     * currently configured value is not repeated here - read it off the {@code <suite>} tag in
+     * testng_bdd.xml, which is the only place it is true. An earlier revision of this line named a
+     * specific number and was left behind the moment that number changed. The teardown used to
      * click the CCP Log out control. That logout is server-side, so with several scenarios signed in
      * as the same {@code <group>.user.email} the first one to finish could end a session a sibling
      * was still using - the failure the account-pool rule exists to prevent. Clearing the token and
