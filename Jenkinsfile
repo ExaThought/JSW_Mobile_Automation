@@ -136,7 +136,13 @@ pipeline {
                     ])
 
                     currentBuild.displayName = "#${env.BUILD_NUMBER} ${params.ENV} ${params.BRANCH_NAME}"
-                    currentBuild.description = "env=${params.ENV} | ${params.TAGS ?: 'suite defaults'}"
+                    // testng_prod_sanity.xml -> prod_sanity. The job runs five different suites
+                    // and nothing in the build list said which; two builds with the same env and
+                    // pass rate can be a 24-scenario serial run and a 94-scenario regression.
+                    def suiteLabel = params.SUITE.replaceFirst(/^testng_/, '').replaceFirst(/\.xml$/, '')
+
+                    currentBuild.description = "env=${params.ENV} | ${suiteLabel}" +
+                            (params.TAGS?.trim() ? " | ${params.TAGS.trim()}" : '')
                 }
             }
         }
@@ -447,26 +453,6 @@ YAML
                         ls -lh target/run-summary.pdf
                     '''
 
-                    def totalsLine = ''
-                    def passRate = ''
-                    if (fileExists("${env.SUMMARY_BASE}.json")) {
-                        def raw = sh(
-                            returnStdout: true,
-                            script: """node -e "const t=require('./${env.SUMMARY_BASE}.json').totals;console.log([t.total,t.passed,t.failed,t.broken,t.skipped,t.passRate].join('|'))" """
-                        ).trim()
-                        def n = raw.split(/\|/)
-                        if (n.length == 6) {
-                            totalsLine = "${n[0]} total, ${n[1]} passed, ${n[2]} failed, ${n[3]} broken, ${n[4]} skipped"
-                            passRate = n[5]
-                        } else {
-                            echo "run-summary.json totals had ${n.length} fields, expected 6 - falling back to passRate only"
-                            passRate = sh(
-                                returnStdout: true,
-                                script: """node -e "console.log(require('./${env.SUMMARY_BASE}.json').totals.passRate)" """
-                            ).trim()
-                        }
-                    }
-
                     def previousPassRate = ''
                     def previousRateEnv = ''
                     def probe = currentBuild.previousBuild
@@ -505,10 +491,30 @@ YAML
                             ${previousRateEnv ? "--previous-env ${previousRateEnv}" : ''} \
                             > target/email-body.html
                     """
-                    if (passRate) {
-                        currentBuild.description = "${currentBuild.description ?: ''}"
-                                + (totalsLine ? " | ${totalsLine}" : '')
-                                + " | passRate=${passRate}"
+                    /* Appended, not assigned: Checkout already put env= and the suite here, and
+                     * that is what makes the build list readable.
+                     *
+                     * ci/build-description.js emits everything from "N tests" to "passRate=" in one
+                     * go, including how many of the failures are NEW against the previous same-env
+                     * run - the one thing that separates "yesterday's four failures" from "four
+                     * fresh ones". It uses the same scenario key as ci/email-body.js so the
+                     * description and the mail cannot disagree about what counts as new.
+                     *
+                     * passRate= stays LAST. The walker above reads it with
+                     * indexOf('passRate=') + substring, so nothing may follow it, and no added
+                     * text may contain the literal "env=" - the same walker takes the first "env="
+                     * it finds as the build's environment. */
+                    def descriptionTail = sh(
+                        returnStdout: true,
+                        script: """
+                            node ci/build-description.js \
+                                --summary ${env.SUMMARY_BASE}.json \
+                                --previous .previous-run-summary-${params.ENV}.json
+                        """
+                    ).trim()
+
+                    if (descriptionTail) {
+                        currentBuild.description = "${currentBuild.description ?: ''} | ${descriptionTail}"
                     }
                 }
             }

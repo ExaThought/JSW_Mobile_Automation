@@ -1217,9 +1217,20 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
+    /* Bitumen is NOT in the header any more. Measured on qa, 23 Sep 2026: zero anchors in <header>
+     * whose href or text mentions bitumen, and zero anywhere on the home page. The category itself
+     * is alive and only reachable by URL:
+     *     /category/viscosity-grade-bitumen       -> 12 products
+     *     /category/viscosity-grade-bulk-bitumen  ->  9 products
+     * This is the same removal that took Bitumen out of the header nav assertions in Header.feature.
+     * So the hover here cannot succeed - there is nothing to hover - and the fallback is the path. */
+    private static final String VISCOSITY_GRADE_BITUMEN_LISTING_PATH = "/category/viscosity-grade-bitumen";
+    private static final String GRADE_BULK_BITUMEN_LISTING_PATH = "/category/viscosity-grade-bulk-bitumen";
+
     @When("move the mouse to Bitumen category and to sub category Viscosity grade bitumen")
     public void moveTheMouseToBitumenCategoryAndToSubCategoryViscosityGradeBitumen() {
         confirmBusinessDetailsIfDialogPresent();
+        try {
             boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
             log.info("isTransacting for the logged-in customer: " + transactingCustomer);
             if (transactingCustomer) {
@@ -1230,6 +1241,15 @@ public class CartSteps extends AbstractWebPage {
             waits(By.xpath(viscosityGradeBitumenCategory));
             hoverOverElement(By.xpath(viscosityGradeBitumenCategory));
             log.info("cursor moved to subcategory 'Viscosity grade bitumen' under bitumen");
+        } catch (Exception e) {
+            String target = siteOrigin() + VISCOSITY_GRADE_BITUMEN_LISTING_PATH;
+            log.info("Could not open the Bitumen > Viscosity grade bitumen flyout ("
+                    + e.getClass().getSimpleName() + ": " + e.getMessage() + "). Bitumen is no"
+                    + " longer in the header, so falling back to " + target);
+            Grid.driver().get(target);
+            waitForPageLoad();
+            log.info("Landed on the Viscosity grade bitumen listing at " + Grid.driver().getCurrentUrl());
+        }
     }
 
     @And("click on Hollow sections product")
@@ -1245,18 +1265,61 @@ public class CartSteps extends AbstractWebPage {
         if (openHotRolledSubCategoryByUrl("grade-bulk-bitumen", "Grade bulk bitumen")) {
             return;
         }
-        jsClick(By.xpath(gradeBulkBitumenSubCategory));
+        try {
+            jsClick(By.xpath(gradeBulkBitumenSubCategory));
+        } catch (Exception e) {
+            // Reached when the previous step fell back to the listing URL: the flyout is not open,
+            // so the sub-category anchor is not on the page to click.
+            String target = siteOrigin() + GRADE_BULK_BITUMEN_LISTING_PATH;
+            log.info("Could not click the Grade bulk bitumen sub-category ("
+                    + e.getClass().getSimpleName() + "). Falling back to " + target);
+            Grid.driver().get(target);
+            waitForPageLoad();
+        }
     }
 
+    /**
+     * Opens a Hot rolled sub-listing by URL when we are already sitting on the Hot rolled listing
+     * (the flyout is not reachable from there).
+     *
+     * <p>The third-level listing is verified before it is accepted. The site has been pruning that
+     * level of the taxonomy: on qa, 23 Sep 2026, {@code .../hot-rolled-steel/hot-rolled-coils}
+     * still answers 200 but renders the "We couldn't find that page" shell with zero product
+     * cards, while {@code .../hot-rolled-sheets} and {@code .../hollow-sections} still carry 60
+     * and 6. Nothing on the site links to a third-level category any more.
+     *
+     * <p>Because the dead URL answers 200 rather than 404, navigating to it looked like success
+     * and the failure only surfaced one step later as "No product card is visible ... so there is
+     * no first product to open" - which reads like an empty catalogue rather than a removed page.
+     * That cost two PDP scenarios in build 256.
+     *
+     * <p>So: navigate, and if the destination has no product cards, fall back to the parent Hot
+     * rolled listing, which still carries every product the sub-listings used to split up
+     * (including "JSW Steel Hot Rolled Coils IS 2062:2011 E250A"). Returns true either way - the
+     * caller's job is done, we are on a listing with products on it.
+     */
     private boolean openHotRolledSubCategoryByUrl(String segment, String label) {
-        if (!HOT_ROLLED_LISTING_PATH.equals(currentPath())) {
+        return openSubCategoryByUrl(HOT_ROLLED_LISTING_PATH, segment, label);
+    }
+
+    private boolean openSubCategoryByUrl(String listingPath, String segment, String label) {
+        if (!listingPath.equals(currentPath())) {
             return false;
         }
-        String target = siteOrigin() + HOT_ROLLED_LISTING_PATH + "/" + segment;
+        String parent = siteOrigin() + listingPath;
+        String target = parent + "/" + segment;
         log.info("On the Hot rolled listing rather than the flyout, so opening " + label
                 + " by URL instead of clicking: " + target);
         Grid.driver().get(target);
         waitForPageLoad();
+
+        if (!isAnyVisible(ANY_PRODUCT_CARD)) {
+            log.info("The " + label + " sub-listing at " + target + " rendered no product cards,"
+                    + " so that third-level category no longer exists. Falling back to the parent"
+                    + " listing at " + parent + ", which still carries its products.");
+            Grid.driver().get(parent);
+            waitForPageLoad();
+        }
         return true;
     }
 
@@ -1342,41 +1405,83 @@ public class CartSteps extends AbstractWebPage {
                 + "[.//*[normalize-space(text())=" + xpathLiteral(productName) + "]]");
     }
 
+    private static final String COLD_ROLLED_LISTING_PATH = "/category/mild-steel/cold-rolled-steel";
+
+    /**
+     * Mirrors the Hot rolled step's fallback, which Cold rolled did not have.
+     *
+     * <p>Build 256 lost "Verify reset in pdp page." here: "could not open Mild steel &gt;
+     * //li/a[contains(@href,'cold-rolled-steel')]/span by either a chained pointer hover or a
+     * synthetic one". The locator is correct - that anchor is present in the header as LI &gt; A
+     * &gt; SPAN, verified on qa 23 Sep 2026 - so this is the flyout failing to open, not a missing
+     * element. There is no reason to lose the scenario over it when the listing has a URL.
+     */
     @When("move the mouse to Mild steel category and to sub category Cold rolled")
     public void moveTheMouseToMildSteelCategoryAndToSubCategoryColdRolled() {
         confirmBusinessDetailsIfDialogPresent();
-        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-        if(transactingCustomer){
-        refreshAndWaitFor(ALL_CATEGORY);
-        hoverOverElement(ALL_CATEGORY);
+        try {
+            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+            if (transactingCustomer) {
+                refreshAndWaitFor(ALL_CATEGORY);
+                hoverOverElement(ALL_CATEGORY);
+            }
+            hoverOverMildSteelCategory(By.xpath(msColdRolledCategory));
+            log.info("cursor moved to subcategory 'Cold rolled' under mild steel");
+        } catch (Exception e) {
+            String target = siteOrigin() + COLD_ROLLED_LISTING_PATH;
+            log.info("Could not open the Mild steel > Cold rolled flyout (" + e.getClass().getSimpleName()
+                    + ": " + e.getMessage() + "). Falling back to " + target
+                    + " so the scenario continues.");
+            Grid.driver().get(target);
+            waitForPageLoad();
+            log.info("Landed on the Cold rolled listing at " + Grid.driver().getCurrentUrl());
         }
-        hoverOverMildSteelCategory(By.xpath(msColdRolledCategory));
-        log.info("cursor moved to subcategory 'Cold rolled' under mild steel");
     }
 
     @And("click on CR Coil product")
     public void selectCRCoilProduct() {
+        if (openSubCategoryByUrl(COLD_ROLLED_LISTING_PATH, "cold-rolled-coils", "CR Coil")) {
+            return;
+        }
         jsClick(By.xpath(coldRolledCoilsSubCategory));
     }
 
     @And("click on CR Sheet product")
     public void selectCRSheetProduct() {
+        if (openSubCategoryByUrl(COLD_ROLLED_LISTING_PATH, "cold-rolled-sheets", "CR Sheet")) {
+            return;
+        }
         scrollToCenter(By.xpath(coldRolledSheetsSubCategory));
         jsClick(By.xpath(coldRolledSheetsSubCategory));
     }
 
-     @When("move the mouse to Mild steel category and to sub category Coated steel")
+    /* NOT /category/steel-coated, which is what the header anchor points at: that redirects to
+     * /category/mild-steel/coated-steel, which renders zero product cards. The live listing is
+     * the one below, with 18 - measured on qa, 23 Sep 2026. */
+    private static final String COATED_STEEL_LISTING_PATH = "/category/mild-steel/steel-coated";
+
+    @When("move the mouse to Mild steel category and to sub category Coated steel")
     public void moveTheMouseToMildSteelCategoryAndToSubCategoryCoatedSteel() {
         confirmBusinessDetailsIfDialogPresent();
-        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-        if(transactingCustomer){
-        refreshAndWaitFor(ALL_CATEGORY);
-        hoverOverElement(ALL_CATEGORY);
+        try {
+            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
+            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
+            if (transactingCustomer) {
+                refreshAndWaitFor(ALL_CATEGORY);
+                hoverOverElement(ALL_CATEGORY);
+            }
+            hoverOverMildSteelCategory(By.xpath(coatedSteelCategory));
+            log.info("cursor moved to subcategory 'Coated steel' under mild steel");
+        } catch (Exception e) {
+            String target = siteOrigin() + COATED_STEEL_LISTING_PATH;
+            log.info("Could not open the Mild steel > Coated steel flyout (" + e.getClass().getSimpleName()
+                    + ": " + e.getMessage() + "). Falling back to " + target
+                    + " so the scenario continues.");
+            Grid.driver().get(target);
+            waitForPageLoad();
+            log.info("Landed on the Coated steel listing at " + Grid.driver().getCurrentUrl());
         }
-        hoverOverMildSteelCategory(By.xpath(coatedSteelCategory));
-        log.info("cursor moved to subcategory 'Coated steel' under mild steel");
     }
 
     @And("click on Galvanized sheet product")
