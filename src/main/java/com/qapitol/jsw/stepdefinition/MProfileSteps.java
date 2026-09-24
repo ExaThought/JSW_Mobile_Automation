@@ -17,13 +17,19 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.List;
 
+import static com.qapitol.jsw.utils.CustomUtil.getTextResilient;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class MProfileSteps extends AbstractWebPage {
 
         private static final Logger log = LoggerFactory.getLogger(MProfileSteps.class);
         private final LocatorReader locatorReader = new LocatorReader("locators/mprofilesteps.yaml");
-        private final JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        /** Resolved per call, never cached in a field: Grid.driver() resolves through the CURRENT
+         *  session name, so a field initialised when Cucumber built this glue instance keeps
+         *  driving whichever session was current at that moment - and throws if none existed. */
+        private JavascriptExecutor js() {
+            return (JavascriptExecutor) Grid.driver();
+        }
 
         // ── Locator Constants ─────────────────────────────────────────────────────
         private static final String PROFILE_ICON              = "profileIcon";
@@ -98,7 +104,7 @@ public class MProfileSteps extends AbstractWebPage {
                     el.click();
                 } catch (Exception e) {
                     // Try JS click
-                    js.executeScript("arguments[0].click();", el);
+                    js().executeScript("arguments[0].click();", el);
                 }
                 
                 sleep(2000);
@@ -134,7 +140,7 @@ public class MProfileSteps extends AbstractWebPage {
             By by = byFor(PAYMENT_REMINDER_CLOSE_BTN);
             List<WebElement> closeBtns = Grid.driver().findElements(by);
             if (!closeBtns.isEmpty() && closeBtns.get(0).isDisplayed()) {
-                js.executeScript("arguments[0].click();", closeBtns.get(0));
+                js().executeScript("arguments[0].click();", closeBtns.get(0));
                 sleep(1000);
                 log.info("Payment reminder popup closed");
             } else {
@@ -380,12 +386,12 @@ public class MProfileSteps extends AbstractWebPage {
 
                 // Try several scrolling methods
                 try {
-                    js.executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
+                    js().executeScript("arguments[0].scrollIntoView({block: 'center', inline: 'nearest'});", element);
                 } catch (Exception e1) {
                     try {
-                        js.executeScript("arguments[0].scrollIntoView(true);", element);
+                        js().executeScript("arguments[0].scrollIntoView(true);", element);
                     } catch (Exception e2) {
-                        js.executeScript("window.scrollTo(0, arguments[0].offsetTop - 100);", element);
+                        js().executeScript("window.scrollTo(0, arguments[0].offsetTop - 100);", element);
                     }
                 }
 
@@ -402,14 +408,14 @@ public class MProfileSteps extends AbstractWebPage {
             try {
                 By by = byFor(locatorKey);
                 WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(by));
-                js.executeScript("arguments[0].scrollIntoView({block:'center', inline:'nearest'});", element);
+                js().executeScript("arguments[0].scrollIntoView({block:'center', inline:'nearest'});", element);
                 wait.until(ExpectedConditions.visibilityOf(element));
                 wait.until(ExpectedConditions.elementToBeClickable(element));
                 try {
                     element.click();
                 } catch (Exception e) {
                     log.warn("Standard click failed for {}, attempting JS click", locatorKey);
-                    js.executeScript("arguments[0].click();", element);
+                    js().executeScript("arguments[0].click();", element);
                 }
                 log.info("Clicked element: {}", locatorKey);
             } catch (Exception e) {
@@ -429,28 +435,19 @@ public class MProfileSteps extends AbstractWebPage {
             return By.xpath(raw != null ? raw : "//" + key);
         }
 
+    /**
+     * Waits for an element and reads its text through every source that can carry one.
+     *
+     * <p>The four-way cascade this used to inline - getText, innerText, textContent, then the
+     * value attribute - now lives in {@link com.qapitol.jsw.utils.CustomUtil#getTextResilient}.
+     * What stays here is the part that is specific to this class: resolving a locator KEY and
+     * waiting for it.
+     */
     private String waitAndGetNonEmptyText(String locatorKey, int timeoutInSeconds) {
         try {
             WebElement el = new WebDriverWait(Grid.driver(), Duration.ofSeconds(timeoutInSeconds))
                     .until(ExpectedConditions.presenceOfElementLocated(byFor(locatorKey)));
-
-            // Try getText() first
-            String text = el.getText();
-            if (text != null && !text.trim().isEmpty()) return text.trim();
-
-            // Try innerText via JS
-            text = (String) js.executeScript("return arguments[0].innerText;", el);
-            if (text != null && !text.trim().isEmpty()) return text.trim();
-
-            // Try textContent via JS
-            text = (String) js.executeScript("return arguments[0].textContent;", el);
-            if (text != null && !text.trim().isEmpty()) return text.trim();
-
-            // Try value attribute
-            text = el.getAttribute("value");
-            if (text != null && !text.trim().isEmpty()) return text.trim();
-
-            return "";
+            return getTextResilient(el);
         } catch (Exception e) {
             log.warn("Could not get text for: {} | {}", locatorKey, e.getMessage());
             return "";

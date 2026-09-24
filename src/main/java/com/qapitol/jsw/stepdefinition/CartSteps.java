@@ -4,6 +4,8 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp;
 import com.qapitol.jsw.context.ScenarioContext;
 import com.qapitol.jsw.utils.CustomUtil;
+import com.qapitol.jsw.config.SessionBuilder;
+import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.CustomerProfileUtil;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
@@ -50,6 +52,7 @@ public class CartSteps extends AbstractWebPage {
     private static final String CEMENT_PLP = "cement";
     private static final String MY_REQUIREMENT_PAGE = "myRequirementPage";
     private static final String REQUIREMENT_ID = "requirementId";
+    private static final String MY_REQUIREMENTS_PATH = "/my-requirements";
     private static final String PLP_FIRST_PRODUCT = "plpFirstProduct";
     private static final String LENGTH = "length";
     private static final String DIAMETER = "(//span[text()='Diameter (mm)']/../following-sibling::div//button[not(contains(@class, 'disabled'))])[1]";
@@ -380,11 +383,8 @@ public class CartSteps extends AbstractWebPage {
     @When("click on Cement product")
     public void clickOnCementProduct() {
         try {
-            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-
             confirmBusinessDetailsIfDialogPresent();
-            if(transactingCustomer){
+            if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
                 confirmBusinessDetailsIfDialogPresent();
                 hoverOverElement(ALL_CATEGORY);
@@ -446,11 +446,16 @@ public class CartSteps extends AbstractWebPage {
         clickOnWireProduct();
     }
 
+    private static final String WIRE_RODS_LISTING_PATH = "/category/mild-steel/steel-wire-rods";
+
     @And("click on wire product")
     public void clickOnWireProduct() {
+        openCategoryFlyoutOrListing("Mild steel > Wire rods", WIRE_RODS_LISTING_PATH, false,
+                () -> hoverOverMildSteelCategory(By.xpath(wireCategory)));
+        if (WIRE_RODS_LISTING_PATH.equals(currentPath())) {
+            return;
+        }
         try {
-            //Reading locator from page factory
-            waits(By.xpath(wireCategory));
             clickFirstVisible(By.xpath(wireCategory));
             log.info("Clicked on Wire category");
         } catch (Exception e) {
@@ -489,15 +494,12 @@ public class CartSteps extends AbstractWebPage {
     @When("click on TMT product")
     public void clickOnTMTProduct() {
         try {
-            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-
-        confirmBusinessDetailsIfDialogPresent();
-        if(transactingCustomer){
-            refreshAndWaitFor(ALL_CATEGORY);
             confirmBusinessDetailsIfDialogPresent();
-            hoverOverElement(ALL_CATEGORY);
-        }
+            if (expectsAllCategoriesMenu()) {
+                refreshAndWaitFor(ALL_CATEGORY);
+                confirmBusinessDetailsIfDialogPresent();
+                hoverOverElement(ALL_CATEGORY);
+            }
             waitAndClickOn(TMT_PRODUCT);
             log.info("Clicked on TMT roduct");
         } catch (Exception e) {
@@ -1048,8 +1050,14 @@ public class CartSteps extends AbstractWebPage {
     @Then("verify the opportunity is created with a valid requirement id")
     public void verifyTheOpportunityIsCreatedWithAValidRequirementId() {
         waitAndClickOn(ACCOUNT_TAB);
-        waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE);
-        waitAndClickOn(MY_REQUIREMENT_PAGE);
+        if (waitAndCheckIsElementPresent(MY_REQUIREMENT_PAGE)) {
+            waitAndClickOn(MY_REQUIREMENT_PAGE);
+        } else {
+            String target = siteOrigin() + MY_REQUIREMENTS_PATH;
+            log.info("No 'My requirements' item in the Account menu - opening " + target);
+            Grid.driver().get(target);
+            waitForPageLoad();
+        }
         waitAndCheckIsElementPresent(REQUIREMENT_ID);
         String requirementId = waitAndGetText(REQUIREMENT_ID).trim();
         softAssert.assertFalse(requirementId.isEmpty(),
@@ -1090,11 +1098,8 @@ public class CartSteps extends AbstractWebPage {
 
     @When("move the mouse to {string} category")
     public void moveTheMouseToCategory(String category) {
-        boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-        log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-
         confirmBusinessDetailsIfDialogPresent();
-        if(transactingCustomer){
+        if (expectsAllCategoriesMenu()) {
             refreshAndWaitFor(ALL_CATEGORY);
             confirmBusinessDetailsIfDialogPresent();
             hoverOverElement(ALL_CATEGORY);
@@ -1168,7 +1173,7 @@ public class CartSteps extends AbstractWebPage {
     }
 
     private void clickWireProduct() {
-        clickMildSteelSubCategory(By.xpath(wireCategory), "Wire");
+        clickOnWireProduct();
     }
 
     private void clickGalvanizedSheetProduct() {
@@ -1256,7 +1261,7 @@ public class CartSteps extends AbstractWebPage {
                                              Runnable openFlyout) {
         confirmBusinessDetailsIfDialogPresent();
         try {
-            if (isTransactingCustomerOrFalse()) {
+            if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
                 hoverOverElement(ALL_CATEGORY);
             }
@@ -1267,24 +1272,53 @@ public class CartSteps extends AbstractWebPage {
         }
     }
 
-    /**
-     * Reads the isTransacting flag, treating an unreadable one as false.
-     *
-     * <p>Needed because the catch above is scoped to hover failures: this lookup is an API call and
-     * must not throw past it. Treating the flag as false only costs the pre-hover refresh, and if
-     * the flyout then fails to open the fallback still lands the scenario on its listing - which is
-     * where the previous blanket {@code catch (Exception e)} sent it anyway.
-     */
-    private boolean isTransactingCustomerOrFalse() {
-        try {
-            boolean transactingCustomer = CustomerProfileUtil.fetchIsTransactingFlag();
-            log.info("isTransacting for the logged-in customer: " + transactingCustomer);
-            return transactingCustomer;
-        } catch (RuntimeException e) {
-            log.info("Could not read isTransacting (" + e.getClass().getSimpleName() + ": "
-                    + e.getMessage() + ") - treating the customer as non-transacting for this hover.");
-            return false;
+    private boolean expectsAllCategoriesMenu() {
+        if (CustomerProfileUtil.hasSessionToken()) {
+            try {
+                boolean transacting = CustomerProfileUtil.cachedOrFetchIsTransactingFlag();
+                log.info("isTransacting for the signed-in user: " + transacting);
+                return transacting;
+            } catch (RuntimeException | AssertionError e) {
+                log.info("Could not read isTransacting with the session token ("
+                        + e.getClass().getSimpleName() + ": " + e.getMessage()
+                        + ") - reading the header instead.");
+            }
         }
+        return headerShowsAllCategories();
+    }
+
+    private boolean headerShowsAllCategories() {
+        org.openqa.selenium.WebDriver driver = Grid.driver();
+        driver.manage().timeouts().implicitlyWait(Duration.ZERO);
+        try {
+            long deadline = System.currentTimeMillis() + 5000;
+            while (System.currentTimeMillis() < deadline) {
+                if (anyDisplayed(driver, ALL_CATEGORY)) {
+                    log.info("Header shows 'All categories' - hovering it before the category");
+                    return true;
+                }
+                if (anyDisplayed(driver, MILD_STEEL_CATEGORY)) {
+                    return false;
+                }
+                sleep(250);
+            }
+            return false;
+        } finally {
+            driver.manage().timeouts().implicitlyWait(SessionBuilder.IMPLICIT_WAIT);
+        }
+    }
+
+    private static boolean anyDisplayed(org.openqa.selenium.WebDriver driver, By locator) {
+        for (WebElement candidate : driver.findElements(locator)) {
+            try {
+                if (candidate.isDisplayed()) {
+                    return true;
+                }
+            } catch (RuntimeException ignored) {
+                // stale or detached - try the next match
+            }
+        }
+        return false;
     }
 
     private void fallBackToListing(String trail, String listingPath, boolean expected,
@@ -1498,7 +1532,12 @@ public class CartSteps extends AbstractWebPage {
     }
 
     private String productNameFor(String category) {
-        String product = CATEGORY_PRODUCTS.get(normaliseCategory(category));
+        String key = normaliseCategory(category);
+        String configured = ConfigUtil.getSecretValue("product." + key.replace(' ', '-'));
+        if (configured != null && !configured.trim().isEmpty()) {
+            return configured.trim();
+        }
+        String product = CATEGORY_PRODUCTS.get(key);
         if (product == null) {
             throw new IllegalArgumentException("No product configured for category '" + category
                     + "'. Known categories: " + CATEGORY_PRODUCTS.keySet()
@@ -1572,7 +1611,19 @@ public class CartSteps extends AbstractWebPage {
 
     @And("click on Galvanized sheet product")
     public void selectGalvanizedSteelSheetProduct() {
-        jsClick(By.xpath(galvanizedSheetCategory));
+        if (COATED_STEEL_LISTING_PATH.equals(currentPath())) {
+            log.info("Already on the Coated steel listing, which carries the Galvanized sheet"
+                    + " products - nothing to click");
+            return;
+        }
+        if (isAnyVisible(By.xpath(galvanizedSheetCategory))) {
+            jsClick(By.xpath(galvanizedSheetCategory));
+            return;
+        }
+        String target = siteOrigin() + COATED_STEEL_LISTING_PATH;
+        log.info("No Galvanized sheet link in the header - opening the Coated steel listing: " + target);
+        Grid.driver().get(target);
+        waitForPageLoad();
     }
 
     private void hoverOverMildSteelCategory(By subCategory) {

@@ -43,4 +43,16 @@
         </classes>
     </test>
 
+    <!-- =============================== MULTI USER =============================== -->
+
+    <test name="MultiUser">
+        <parameter name="test.group" value="multiuser"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features/multiUser"/>
+        <parameter name="cucumber.filter.tags" value="@multiUser"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
 </suite>

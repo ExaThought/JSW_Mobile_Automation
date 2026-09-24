@@ -15,11 +15,13 @@ public class UserConfig {
      * {@code <group>.user.email} / {@code <group>.user.password} keys in EVERY
      * {@code global_<env>.properties}, or the run fails at login with a null credential.
      *
-     * Note "secondary" is intentionally absent: the properties define secondary.user.* but no
-     * suite runs under it, and adding it here without a suite would suggest otherwise.
+     * Note "secondary" is gone entirely. It was a second account kept alive purely so two
+     * ApiUtils lookups could fetch a token; those now use the configured user's own token, and
+     * the secondary.user.* keys have been deleted from every environment.
      */
     private static final Set<String> VALID_GROUPS =
-            Set.of("login", "homepage", "pdpplp", "cart", "profile", "orders", "msite", "Guest", "tokencheck");
+            Set.of("login", "homepage", "pdpplp", "cart", "profile", "orders", "msite", "Guest",
+                    "tokencheck", "multiuser");
 
     public static String getEmail() {
         return requireGroupValue(emailKey());

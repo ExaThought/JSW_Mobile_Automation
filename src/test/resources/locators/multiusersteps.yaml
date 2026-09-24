@@ -1,0 +1,292 @@
+# Locators for MultiUserSteps (features/multiUser).
+#
+# Copied rather than shared with loginsteps.yaml on purpose: the multi-user suite is free to
+# re-point a locator at a multi-user-specific control without moving the login suite with it.
+elements:
+  loginButton:
+    en_US:
+      web: //button[text()='Login']
+  continueWithEmailCta:
+    en_US:
+      web: //button[contains(normalize-space(),'Continue with email')]
+  ccpLoginEmail:
+    en_US:
+      web: //input[@id='email']
+  ccpLoginPassword:
+    en_US:
+      web: //input[@id='password']
+  ccpLoginCTA:
+    en_US:
+      web: //button[@type='submit' and normalize-space()='Continue']
+  errorMessage:
+    en_US:
+      web: //p[contains(text(),'Credentials are not valid. Please try again')]
+  accountMenu:
+    en_US:
+      web: //header//span[normalize-space()='Account']
+  headerLoginCta:
+    en_US:
+      web: //header//button[normalize-space()='Login']
+  accountButton:
+    en_US:
+      web: (//span[text()='Account'])[2]
+  logout:
+    en_US:
+      web: xpath=//button/span[normalize-space(.)='Logout']
+  usersPermissionsTab:
+    en_US:
+      web: //a/span[normalize-space()='Users & permissions']
+  # Same shape as usersPermissionsTab above, which is the one entry in this menu already proven to
+  # work - so the "Profile details" entry is matched the same way rather than by href, which
+  # differs between /my-profile and /my-profile?tab=...
+  accountProfileDetailsLink:
+    en_US:
+      web: //a[@href= '/my-profile']
+
+  # --- Personal details on the profile page ---
+  # Same xpaths as customerdetailsteps.yaml. Duplicated rather than shared because Sauron resolves
+  # a locator key against the yaml named for the class that asks, and these are read by
+  # MultiUserSteps. The COMPANY fields are deliberately NOT duplicated - the multi-user scenarios
+  # reuse CustomerDetailSteps' own company steps, which already read them.
+  profileNameValue:
+    en_US:
+      web: //h2[text()='Personal details']/following-sibling::div//p[text()='Name']/following-sibling::p
+  profilePhoneValue:
+    en_US:
+      web: //h2[text()='Personal details']/following-sibling::div//p[text()='Phone number']/following-sibling::p
+  profileEmailValue:
+    en_US:
+      web: //h2[text()='Personal details']/following-sibling::div//p[text()='Email address']/following-sibling::p
+  usersPermissionsHeading:
+    en_US:
+      web: //h2[text()='Users & permissions']
+  primaryUserTag:
+    en_US:
+      web: (//*[contains(normalize-space(text()),'Primary user')])[1]
+  userEmailOnPage:
+    en_US:
+      web: (//*[contains(normalize-space(text()),'%s')])[1]
+
+  # --- Add-user / invitation form ---
+  # The SAME xpaths UserPermissionStep drives - the one add-user flow known to work on this page.
+  # Copied rather than imported: that class keeps them as fields on a step class, this suite keeps
+  # locators in yaml. A change to the form needs updating in both places.
+  addUserButton:
+    en_US:
+      web: //h2/../following-sibling::button//span[text()='Add user']
+  addUserDialogTitle:
+    en_US:
+      web: //p[text()='Add user']
+  addUserName:
+    en_US:
+      web: //input[@id="add-user-name"]
+  addUserMobile:
+    en_US:
+      web: //input[@id="add-user-mobile"]
+  addUserEmail:
+    en_US:
+      web: //input[@id="add-user-email"]
+  # Keyed on its own test id rather than on the Department label's sibling: the View/Edit form for
+  # an existing user carries the same label, so the label-relative xpath could resolve to a
+  # different form's trigger and leave the Add user dialog's department unset.
+  departmentDropdown:
+    en_US:
+      web: //button[@data-test-id='department-multiselect-trigger']
+  # The chip for a chosen department. %s = the department name.
+  #
+  # NOT the trigger's own text: this is a MULTI-select, so the trigger keeps the "Select"
+  # placeholder however many departments are chosen, and the selection shows as chips beneath it.
+  # An assertion on the trigger text therefore always reads "Select" and proves nothing - which is
+  # exactly the wrong diagnosis the 18 Sep investigation reached.
+  selectedDepartmentChip:
+    en_US:
+      web: //span[text()='%s']/following-sibling::button[@data-test-id='user-form-remove-department-button']
+  # %s = department name. FALLBACK ONLY - MultiUserSteps.selectDepartment scopes the option to the
+  # popover named by the trigger's aria-controls, because this unscoped form is what broke:
+  # "Operations Manager" also appears as a selected-department CHIP elsewhere on the page, and the
+  # click landed on the chip's button instead of the option, leaving the department as "Select"
+  # and the Add user submit permanently disabled.
+  departmentOption:
+    en_US:
+      web: //span[text()='%s']/preceding-sibling::button
+  orderManagementToggle:
+    en_US:
+      web: //p[text()='Order & materials management']/../following-sibling::button
+  # Any one of the three Roles & permissions toggles. %s = the role's heading exactly as the
+  # screen prints it. One parameterised locator rather than three keys, because the three rows
+  # are the same component and a per-role key would drift apart the first time one is fixed.
+  roleToggle:
+    en_US:
+      web: //p[text()='%s']/../following-sibling::button
+  # The dialog's submit. BOTH test ids, because this app renders desktop and mobile variants of
+  # the same control and hides one with CSS - the same pattern as
+  # users-permissions-add-user-button / -desktop. MultiUserSteps.presence picks whichever is
+  # actually displayed.
+  #
+  # Was (//button[text()='Add user'])[2]. A positional index cannot tell the variants apart: [2]
+  # resolved to the HIDDEN one, Sauron's wait-for-clickable returned null, and the click on that
+  # null threw a bare NullPointerException that looked like a form-validation problem for three
+  # investigations.
+  addUserSubmit:
+    en_US:
+      web: //button[@data-test-id='user-form-add-button']
+
+  # --- Row controls. %s = the invited user's mobile number or name ---
+  viewEditButtonForMobile:
+    en_US:
+      web: //p[text()='+91 %s']/../../../following-sibling::button
+  deleteUserButton:
+    en_US:
+      web: //button[text()='Delete user']
+  confirmDeleteButton:
+    en_US:
+      web: //button[text()='Yes, delete']
+  # The invited user's card. %s = the email slugified by MultiUserSteps.userCardTestId.
+  #
+  # Was //h3[text()='<name>'], which never matched: the h3 is not just the name - the original
+  # UserPermissionStep locator searched for "<name> ." - so an exact text() test fails while the
+  # contains() in statusForUser directly below succeeds. That is why "not listed on the Users &
+  # permissions tab" was reported for a user who was plainly listed.
+  userCardForEmail:
+    en_US:
+      web: //div[@data-test-id="user-card-%s"]
+  # The status badge beside a row. UserPermissionStep asserts only that this EXISTS; the
+  # invitation scenarios read its TEXT, which is why it is here as a value-bearing locator.
+  statusForUser:
+    en_US:
+      web: //h3[contains(text(),'%s')]/preceding-sibling::div/span
+  # The role chips on a user's card. %s = the user's email SLUGIFIED - '@' and '.' become '-', so
+  # autogen1789647156095@yopmail.com is user-card-autogen1789647156095-yopmail-com. Built by
+  # MultiUserSteps.userCardTestId, never by hand.
+  #
+  # Keyed on the card's data-test-id rather than on the user's NAME, which is what the previous
+  # locator did and why the roles assertion kept reporting an empty row: the name-based xpath
+  # walked up from an h3 to a sibling div that does not hold the chips, so it matched nothing and
+  # every combination looked as though no roles had been granted.
+  permissionsForEmail:
+    en_US:
+      web: //div[@data-test-id="user-card-%s"]//h4[@id='permissions']/../div/div/span
+
+  # --- Invitation acceptance and expiry pages ---
+  #
+  # UNVERIFIED: the only locators in this file not read off a captured page. Neither screen can
+  # be reached without a live invitation, so each is a text-based guess at what it says, kept
+  # deliberately loose (contains + case-folded) so a near miss still matches. Expect to correct
+  # them from the page source on the first real run - the step definitions need no change.
+  invitationSetupHeading:
+    en_US:
+      web: //*[contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'set up') or contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'create your account') or contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'accept invitation')]
+  invitationSetupEmailField:
+    en_US:
+      web: //input[@type='email' or @id='email' or @name='email']
+  # The call-to-action inside the invitation email body (searched INSIDE Yopmail's #ifmail frame).
+  # Matched on its text, case-folded, because the email is a rendered template with generated
+  # class names and no test ids of its own.
+  acceptInviteInEmail:
+    en_US:
+      web: //*[self::a or self::button][contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'accept')]
+  # --- Accept-invite page: /accept-invite?id=<base64>, opened from the email --------------------
+  # The id is per-invitation, so nothing here keys on the URL.
+  permissionsGrantedHeading:
+    en_US:
+      web: //h2[@id='permissions-granted']
+  # One h3 per role the primary user granted. Read as a SET and compared with the roles chosen at
+  # invitation, so this screen is what proves the choice survived the invitation.
+  grantedRoleNames:
+    en_US:
+      web: //h2[@id='permissions-granted']/following-sibling::div/div/h3
+  acceptInviteContinue:
+    en_US:
+      web: //button[text()='Continue']
+  # --- Phone + OTP login, used when the additional user signs in for themselves ---
+  # The OTP field and Verify button below are reused from the acceptance flow - the product uses
+  # the same one-field data-input-otp control in both places.
+  #
+  # id='mobile' exactly, not contains: the Add user dialog's own field is id='add-user-mobile',
+  # and a partial match would resolve to that one whenever both are mounted.
+  loginPhoneInput:
+    en_US:
+      web: //input[@id='mobile']
+  getOtpButton:
+    en_US:
+      web: //button[text()='Get OTP']
+
+  otpDialogTitle:
+    en_US:
+      web: //h2[text()='Enter the OTP']
+  # data-input-otp is the shadcn one-field OTP control: a single input that takes the whole code.
+  # Handled either way in code - if it ever becomes one box per digit, the characters are split.
+  otpInput:
+    en_US:
+      web: //input[@data-input-otp="true"]
+  whatsappConsent:
+    en_US:
+      web: //button[@id="whatsapp-consent"]
+  termsConsent:
+    en_US:
+      web: //button[@id="terms-consent"]
+  verifyOtpButton:
+    en_US:
+      web: //button[text()='Verify']
+
+  invitationSetupPassword:
+    en_US:
+      web: (//input[@type='password'])[1]
+  invitationSetupConfirmPassword:
+    en_US:
+      web: (//input[@type='password'])[2]
+  invitationSetupSubmit:
+    en_US:
+      web: //button[@type='submit' or contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'continue') or contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'submit') or contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'set password')]
+  invitationExpiredMessage:
+    en_US:
+      web: //*[contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'expired')]
+  requestNewInvitationGuidance:
+    en_US:
+      web: //*[contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'new invitation') or contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'request another') or contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'ask your admin')]
+  resendInvitationButton:
+    en_US:
+      web: //button[contains(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'resend')]
+  # %s = the invited email address; the status badge in the row holding it.
+  statusForEmail:
+    en_US:
+      web: //*[contains(normalize-space(text()),'%s')]/ancestor::div[3]//span[contains(translate(normalize-space(text()),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'invitation')]
+  rolesErrorMessage:
+    en_US:
+      web: //section[contains(@aria-label, 'Notifications')]//div/div[normalize-space()="Enable at least one from 'Manage orders' or 'Manage finances'"]
+  anyUserCardEditButton:
+    en_US:
+      web: //button[contains(@data-test-id, 'user-card-edit-button-')]
+  autogenUserCardEditButton:
+    en_US:
+      web: //button[contains(@data-test-id, 'user-card-edit-button-autogen')]
+  userModalRemoveUserButton:
+    en_US:
+      web: //button[@data-test-id='user-modal-mobile-remove-user-button']
+  deleteUserConfirmButton:
+    en_US:
+      web: //button[@data-test-id='delete-user-confirm-button']
+  permissionAlert:
+    en_US:
+      web: //div[@role='alert']
+  permissionAlertText:
+    en_US:
+      web: //div[@role='alert']/p
+  paymentReminderHeading:
+    en_US:
+      web: //h2[@id='payment-reminder']
+  paymentDueNowValue:
+    en_US:
+      web: //p[normalize-space()='Payments due now']/following-sibling::p
+  paymentReminderCloseButton:
+    en_US:
+      web: //button[@data-test-id='payment-reminder-close-button']
+  headerLogo:
+    en_US:
+      web: //header//a[@data-test-id='desktop-header-logo-link' or .//*[name()='title' and normalize-space()='JSW Logo']]
+  logoutPopup:
+    en_US:
+      web: //h2[text()='Logout']
+  confirmLogoutButton:
+    en_US:
+      web: //div[@role='dialog' and @data-state='open']//button[@data-test-id='logout-confirm-button' or normalize-space()='Yes, logout']

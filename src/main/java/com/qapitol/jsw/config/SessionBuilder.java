@@ -97,7 +97,7 @@ public final class SessionBuilder {
 
     /** Viewport used when the browser cannot be maximised, and in headless. */
     private static final Dimension DEFAULT_WINDOW = new Dimension(1920, 1080);
-    private static final Duration IMPLICIT_WAIT = Duration.ofSeconds(10);
+    public static final Duration IMPLICIT_WAIT = Duration.ofSeconds(10);
 
     /**
      * Page zoom applied once the window has been sized. Chrome starts every automation profile at

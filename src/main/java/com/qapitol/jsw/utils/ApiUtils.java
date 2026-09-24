@@ -252,11 +252,12 @@ public class ApiUtils extends BaseApiImpl
     public static Map<String, String> fetchUserByMobile(String mobileNumber) {
 
 
-        String jwtToken=null;
-        if (jwtToken == null) {
-            String pwd = Base64.getEncoder().encodeToString(ConfigUtil.getSecretValue("secondary.user.password").getBytes());
-            jwtToken = Token.getCCPToken(ConfigUtil.getSecretValue("secondary.user.email"),pwd);
-        }
+        // The CONFIGURED user's token, the same identity every other call in this class uses.
+        // This used to log in as secondary.user.*, a second account that existed only to serve
+        // these two lookups: it was never the customer under test, had to be kept alive in every
+        // environment, and its failures surfaced as errors about a user the feature never named.
+        // fetch-user is scoped to the caller's own account, so the caller's token is the right one.
+        String jwtToken = Token.getCCPToken();
 
         Response response=null;
         Map<String, String> sfIds = new HashMap<>();
@@ -320,15 +321,31 @@ public class ApiUtils extends BaseApiImpl
 
     }
 
-    public static boolean isSecondaryUserDeleted(String mobileNumber)
+    /**
+     * True when the user on this mobile number holds NO departments and NO permissions.
+     *
+     * <p>Renamed from {@code isSecondaryUserDeleted}, which named neither what it asks nor what it
+     * answers. It does not check deletion, and nothing about it is specific to a "secondary" user:
+     * it reads {@code data.departments} and {@code data.permissions} off fetch-user and reports
+     * whether both are absent.
+     *
+     * <p>That is why the same call serves two callers that sound unrelated - a user who was just
+     * DELETED and a user who was never created both come back with neither field. So it answers
+     * "does this number have any access to the account", and the caller decides what that means.
+     *
+     * <p>Returns false on any transport failure, so a network problem reads as "still has access"
+     * rather than as a silent pass.
+     */
+    public static boolean hasNoDepartmentsOrPermissions(String mobileNumber)
     {
 
 
-        String jwtToken=null;
-        if (jwtToken == null) {
-            String pwd = Base64.getEncoder().encodeToString(ConfigUtil.getSecretValue("secondary.user.password").getBytes());
-            jwtToken = Token.getCCPToken(ConfigUtil.getSecretValue("secondary.user.email"),pwd);
-        }
+        // The CONFIGURED user's token, the same identity every other call in this class uses.
+        // This used to log in as secondary.user.*, a second account that existed only to serve
+        // these two lookups: it was never the customer under test, had to be kept alive in every
+        // environment, and its failures surfaced as errors about a user the feature never named.
+        // fetch-user is scoped to the caller's own account, so the caller's token is the right one.
+        String jwtToken = Token.getCCPToken();
 
         try {
             Thread.sleep(3000);
@@ -413,7 +430,15 @@ public class ApiUtils extends BaseApiImpl
      *                               surfaces at the point of failure rather than as a later NPE.
      */
     public static CustomerProfileResponse getCustomerProfile() {
-        Response response = fetchCustomerProfile();
+        return getCustomerProfile(Token.getCCPToken());
+    }
+
+    /**
+     * {@link #getCustomerProfile()} for a caller-supplied access_token - e.g. the jwtToken the
+     * browser received from otp/verify - so no REST login to auth/login is made.
+     */
+    public static CustomerProfileResponse getCustomerProfile(String accessToken) {
+        Response response = fetchCustomerProfile(accessToken);
 
         if (response.getStatusCode() != 200) {
             throw new IllegalStateException("customer-profile API returned HTTP "
@@ -439,7 +464,12 @@ public class ApiUtils extends BaseApiImpl
      *                               change is reported instead of silently defaulting to false.
      */
     public static boolean isTransacting() {
-        CustomerProfileResponse profile = getCustomerProfile();
+        return isTransacting(Token.getCCPToken());
+    }
+
+    /** {@link #isTransacting()} for a caller-supplied access_token. */
+    public static boolean isTransacting(String accessToken) {
+        CustomerProfileResponse profile = getCustomerProfile(accessToken);
         Boolean isTransacting = profile.findFirstBoolean("isTransacting");
 
         if (isTransacting == null) {
