@@ -1,10 +1,14 @@
 package com.qapitol.jsw.config;
 
+import com.qapitol.jsw.utils.JswSoftAssert;
+import com.qapitol.jsw.utils.SoftFailureReport;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
+
+import java.util.List;
 
 public class TestGroupListener implements ITestListener, ISuiteListener {
 
@@ -23,48 +27,74 @@ public class TestGroupListener implements ITestListener, ISuiteListener {
     }
 
     /**
-     * Prints where a failure originated inside project code. TestNG's default console output
-     * shows the assertion message but the useful frames are buried under Cucumber/TestNG
-     * internals, so the project frames are surfaced here.
+     * Prints the cause of a failure and closes the scenario block.
      *
-     * Reporting only - it never rethrows, so scenario outcomes are unaffected.
+     * <p>The whole end-of-scenario output is here and nowhere else: one CAUSE section, then one
+     * SCENARIO FAILED line. Two kinds of failure reach this method and they are reported from
+     * different places, because only one of them carries a usable stack trace:
+     *
+     * <ul>
+     *   <li>SOFT assertion failures. The throwable is the aggregate one {@code assertAll()} threw
+     *       in the {@code @After} hook, and its trace points at that hook - useless. The real
+     *       lines were captured at each assertion by {@link JswSoftAssert} and arrive through
+     *       {@link SoftFailureReport}.</li>
+     *   <li>HARD exceptions thrown by a step. Nothing intercepts these, so the throwable's own
+     *       trace is the right source; only this project's frames are printed.</li>
+     * </ul>
+     *
+     * <p>Reporting only - it never rethrows, so scenario outcomes are unaffected.
      */
     @Override
     public void onTestFailure(ITestResult result) {
         try {
-            Throwable throwable = result.getThrowable();
-            if (throwable == null) {
-                return;
-            }
-
-            System.out.println("[FAILED] " + describeScenario(result));
-            System.out.println("    " + throwable.getClass().getSimpleName()
-                    + ": " + throwable.getMessage());
-
-            int printed = 0;
-            for (StackTraceElement frame : throwable.getStackTrace()) {
-                if (frame.getClassName().startsWith(PROJECT_PACKAGE)) {
-                    System.out.println("    at " + frame.getFileName() + ":" + frame.getLineNumber()
-                            + " (" + frame.getClassName() + "." + frame.getMethodName() + ")");
-                    if (++printed == 5) {
-                        break;
-                    }
+            List<String> softFailures = SoftFailureReport.take(result);
+            if (!softFailures.isEmpty()) {
+                for (String failure : softFailures) {
+                    System.out.println("[CAUSE] " + failure);
                 }
-            }
-            if (printed == 0) {
-                System.out.println("    (no " + PROJECT_PACKAGE + " frame in the stack trace)");
+            } else {
+                printThrowable(result.getThrowable());
             }
         } catch (Throwable ignored) {
             // Reporting must never break the run.
+        } finally {
+            System.out.println("=== SCENARIO FAILED ===");
         }
     }
 
-    private String describeScenario(ITestResult result) {
-        Object[] parameters = result.getParameters();
-        if (parameters != null && parameters.length > 0 && parameters[0] != null) {
-            return String.valueOf(parameters[0]);
+    @Override
+    public void onTestSuccess(ITestResult result) {
+        SoftFailureReport.discard(result);
+        System.out.println("=== SCENARIO PASSED ===");
+    }
+
+    /**
+     * Skipped is neither passed nor failed, and staying silent about it would leave a scenario
+     * block with no closing line at all - which reads as a run that hung.
+     */
+    @Override
+    public void onTestSkipped(ITestResult result) {
+        SoftFailureReport.discard(result);
+        System.out.println("=== SCENARIO SKIPPED ===");
+    }
+
+    /** The exception message, then the step definition line and who called it. */
+    private void printThrowable(Throwable throwable) {
+        if (throwable == null) {
+            return;
         }
-        return result.getName();
+        System.out.println("[CAUSE] " + throwable.getClass().getSimpleName()
+                + ": " + throwable.getMessage());
+
+        List<String> frames = JswSoftAssert.projectFrames(throwable.getStackTrace());
+        String label = "at";
+        for (String frame : frames) {
+            System.out.println("      " + label + " " + frame);
+            label = "from";                       // first frame failed; the rest reference it
+        }
+        if (frames.isEmpty()) {
+            System.out.println("      (no " + PROJECT_PACKAGE + " frame in the stack trace)");
+        }
     }
 
     @Override

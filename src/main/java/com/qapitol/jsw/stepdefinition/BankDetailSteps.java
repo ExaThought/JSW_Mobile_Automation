@@ -36,15 +36,22 @@ public class BankDetailSteps extends AbstractWebPage {
     // ✅ Load YAML File
     LocatorReader locatorReader =
             new LocatorReader("locators/bankdetailsteps.yaml");
-    WebDriverWait wait =
-            new WebDriverWait(Grid.driver(), Duration.ofSeconds(15));
-
-
     // ================= COMMON METHODS =================
 
+    /**
+     * Resolves a locator key to a visible element.
+     *
+     * <p>The wait is built here rather than held in a field. A field initialiser calls
+     * {@code Grid.driver()} when Cucumber constructs this glue instance, which binds the wait to
+     * whichever session was current at that moment - so it would keep driving the old session
+     * after a switch, and it throws outright if no session exists yet. Built per call, it always
+     * resolves the calling thread's current driver.
+     */
     public WebElement getElement(String key) {
         String xpath = locatorReader.getXpath("elements." + key + ".en_US.web");
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+        return new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
+                .withMessage("no visible element for locator key '" + key + "' (" + xpath + ") within 15s")
+                .until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
     }
 
     public void clickOn(String key) {

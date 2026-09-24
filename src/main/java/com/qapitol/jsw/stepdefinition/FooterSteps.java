@@ -20,8 +20,29 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 public class FooterSteps extends AbstractWebPage {
 
     private final LocatorReader locatorReader = new LocatorReader("locators/footersteps.yaml");
-    private static final String STRUCTURE_STEEL = "//a[text()='%s']";
+
+    /* Scoped to <footer> and matched case-insensitively on purpose.
+     *
+     * Every footer link renders twice - one 0x0 copy and one visible - and the header renders a
+     * third copy whose text is doubled ("Mild SteelMild Steel"). Scoping to <footer> drops the
+     * header copy; clickFirstVisible then picks the visible one of the remaining two.
+     *
+     * The case folding is what fixes the 22 Sep 2026 failures. The Examples table passes the label
+     * as authored - "Mild steel", "Structural Steel" - while the footer renders "Mild Steel" and
+     * "Structural steel". An exact text() match found ZERO nodes for those two rows and reported
+     * them as "Footer link not visible", which read like a missing element rather than a case
+     * mismatch. The other eleven rows matched only because their casing happened to agree.
+     *
+     * XPath 1.0 has no lower-case(), hence translate(). */
+    private static final String FOOTER_LINK =
+            "//footer//a[translate(normalize-space(.),"
+                    + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='%s']";
     private static final String BUY_ONLINE = "//p[text()='%s']";
+
+    /** Footer link locator for a label as written in the feature's Examples table. */
+    private static By footerLinkBy(String linkName) {
+        return By.xpath(String.format(FOOTER_LINK, linkName.toLowerCase()));
+    }
     private static final String SUPPORT_PHONE = "//a[@href=\"tel: +917208055523\"]";
     private static final String SUPPORT_EMAIL = "//a[@href=\"mailto:support@jswonemsme.com\"]";
 
@@ -52,7 +73,7 @@ public class FooterSteps extends AbstractWebPage {
         try {
             log.info("Verifying visibility of footer link: " + linkName);
 
-            By footerLink = By.xpath(String.format(STRUCTURE_STEEL, linkName));
+            By footerLink = footerLinkBy(linkName);
 
             softAssert.assertTrue(
                     isAnyVisible(footerLink),
@@ -148,7 +169,7 @@ public class FooterSteps extends AbstractWebPage {
         try {
             log.info("Clicking on footer link: " + linkName);
 
-            By footerLink = By.xpath(String.format(STRUCTURE_STEEL, linkName));
+            By footerLink = footerLinkBy(linkName);
 
             softAssert.assertTrue(
                     isAnyVisible(footerLink),

@@ -6,6 +6,7 @@ import com.qapitol.jsw.apitest.pojos.order.customerDetails.CustomerDetailsRespon
 import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.UserConfig;
+import com.qapitol.jsw.config.SessionBuilder;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -16,8 +17,6 @@ import org.openqa.selenium.*;
 import java.io.IOException;
 import java.util.Base64;
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
 import static com.qapitol.jsw.utils.ApiUtils.deleteAllCartItems;
 import static com.qapitol.jsw.utils.CustomUtil.*;
@@ -56,28 +55,8 @@ public  class SessionSteps extends AbstractWebPage {
     public static final String CONTINUE_BTN = "//button[text()='Continue browsing']";
     public static final String CONTINUE_WITH_EMAIL_CTA = "continueWithEmailCta";
     public static final String CONTINUE_CTA = "continueCTA";
-    public static final String CONFIRM_BUSINESS_DETAILS_DIALOG = "confirmBusinessDetails";
     public static final String ACCOUNT_LABEL = "accountLabel";
 
-    /**
-     * The credentials the CURRENT SCENARIO logged in with, per thread.
-     *
-     * <p>These were {@code public static String}, which is a cross-scenario data leak as soon as
-     * more than one scenario is in flight. The suite runs data-provider-thread-count scenarios
-     * concurrently inside a single {@code <test>} block, so: thread A logs in as X, thread B logs in
-     * as Y and overwrites both fields, then A calls {@link #getCustomerDetail()} and receives Y's
-     * customer record - and asserts X's UI against it.
-     *
-     * <p>It fails silently rather than loudly. Nothing throws; the wrong customer is simply compared,
-     * and it only becomes visible when the two accounts happen to differ on an asserted field. The
-     * Profile block's "Validate personal details/company details against the customer record"
-     * scenarios are exactly this comparison, and they run in the same block.
-     *
-     * <p>Same fix as {@link #SESSION_START_FAILURE} above and {@code ThreadLocalSoftAssert}: keep one
-     * shared handle, store the value per thread. Cleared by {@link #clearCredentials()} from
-     * {@code Hooks.beforeScenario} so a pooled TestNG thread cannot serve a stale value to a later
-     * scenario that never logged in.
-     */
     private static final ThreadLocal<String> USER_EMAIL = new ThreadLocal<>();
     private static final ThreadLocal<String> USER_PASSWORD = new ThreadLocal<>();
 
@@ -91,11 +70,6 @@ public  class SessionSteps extends AbstractWebPage {
         return USER_PASSWORD.get();
     }
 
-    /**
-     * Drops this thread's credentials. Called at the start of every scenario, not the end: a
-     * scenario that fails before logging in never reaches its own teardown, and TestNG hands the
-     * same pool thread to the next scenario.
-     */
     public static void clearCredentials() {
         USER_EMAIL.remove();
         USER_PASSWORD.remove();
@@ -107,368 +81,18 @@ public  class SessionSteps extends AbstractWebPage {
     public void loginAndGoToSession(String sessionName) throws Exception {
 
         log.entering();
-        if (sessionName.equalsIgnoreCase("ccp")) {
-            // Switching to "zoho_creator" session present in the sessions.yaml
-            Grid.setSessionName("ccp");
-            if(!Grid.getTestSession().isStarted()) {
-                log.info("Starting browser with CCP...");
-                initCCPSession(ConfigUtil.getSecretValue("ccpPortalUrl"));
-                log.info("Started browser and navigated to CCP portal.");
-            }
-        } else {
-            throw new RuntimeException("No session name given. Please provide a valid session name specified in the sessions yaml file.");
+        if (!sessionName.equalsIgnoreCase("ccp")) {
+            throw new RuntimeException("No session name given. Please provide a valid session name"
+                    + " specified in the sessions yaml file.");
         }
-        log.info(String.format("Browser already running and switched to session named %s", sessionName));
-        log.exiting();
-    }
-    
-    public void initCCPSession(String url) {
-        log.entering();
-        try {
-            awaitDriverReady();
+        Grid.setSessionName("ccp");
 
-            // Set implicit wait first
-            Grid.driver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-            
-            // Handle window management - check if headless mode
-            try {
-                boolean isHeadless = ((com.qapitol.sauron.web.sessions.WebTestSession) Grid.getTestSession()).isBrowserRunHeadless();
-                if (!isHeadless) {
-                    // Only maximize window in non-headless mode
-                    try {
-                        Grid.driver().manage().window().maximize();
-                        log.info("Browser window maximized successfully");
-                    } catch (WebDriverException e) {
-                        log.warning("maximize() failed, falling back to setSize: " + e.getMessage());
-                        Grid.driver().manage().window().setSize(new Dimension(1920, 1080));
-                    }
-                } else {
-                    log.info("Running in headless mode - skipping window maximize");
-                    // Set viewport size via JavaScript for headless
-                    try {
-                        Grid.driver().executeScript("window.resizeTo(1920, 1080);");
-                    } catch (Exception e) {
-                        log.warning("Failed to set viewport via JavaScript: " + e.getMessage());
-                    }
-                }
-            } catch (Exception e) {
-                log.warning("Error checking headless mode: " + e.getMessage() + ". Attempting window size setting.");
-                try {
-                    Grid.driver().manage().window().setSize(new Dimension(1920, 1080));
-                } catch (Exception ex) {
-                    log.warning("Window size setting also failed: " + ex.getMessage());
-                }
-            }
-            
-            Grid.driver().get(url);
-            log.info("Successfully navigated to URL: " + url);
-            sleep(2000);  // Extra wait for page load in headless mode
-           // defocusSearchOverlay();
-            //Logout the user incase already logged for jenkin's run
-           // if (!isElementPresent(LOGIN_CTA_BUTTON))
-            {
-             //   log.info("CCP User is already logged in, logging out to continue with fresh login");
-               // if (isElementPresent(PAYMENT_DUE_POP_UP))
-                {
-                 //  waitAndCheckIsElementVisible(PAYMENT_DUE_CLOSE);
-                  // waitAndClickOn(PAYMENT_DUE_CLOSE);
-                }
-               // ccpLogOut();
-            }
-        }  catch (Exception e) {
-            // Already diagnosed AND already recorded by awaitDriverReady(), which throws from
-            // inside this try. Re-wrapping printed the whole diagnosis paragraph twice.
-            if (e instanceof IllegalStateException
-                    && String.valueOf(e.getMessage()).startsWith(DIAGNOSIS_PREFIX)) {
-                throw (IllegalStateException) e;
-            }
-            String diagnosis = diagnose(e);
-            recordSessionStartFailure(diagnosis);
-            log.log(Level.SEVERE, diagnosis, e);
-            throw new IllegalStateException(diagnosis, e);
-        }
+        SessionBuilder.open(ConfigUtil.getSecretValue("ccpPortalUrl"));
+
+        log.info(String.format("Browser ready and switched to session named %s", sessionName));
         log.exiting();
     }
 
-    /**
-     * Waits for a usable WebDriver on a budget that depends on what the grid has already proved.
-     *
-     * <p>TWO BUDGETS, because "no driver yet" has two completely different causes and the same
-     * timeout cannot serve both:
-     *
-     * <ul>
-     *   <li>COLD - nothing has started a session yet. Two very different things look identical
-     *       here: the grid is dead, or the HUB IS STILL STARTING. The first scenarios of a run hit
-     *       the second case, because Sauron spawns the hub lazily on the first session request -
-     *       a Java process, hub init, then node registration. On the 2-CPU Jenkins agent that took
-     *       about 41 seconds in build #244 (clamp finished 05:06:11, first session 05:06:52), so a
-     *       budget under that guarantees the first scenario fails and, being cold, latches the
-     *       whole run.</li>
-     *   <li>WARM - a session has already started, so the grid works and this scenario is queuing
-     *       for a browser slot. Minutes, not milliseconds. Build #244 is the case: one second was
-     *       applied to a scenario waiting its turn behind 2 Chrome slots, and it lost.</li>
-     * </ul>
-     *
-     * <p>WHY COLD IS NO LONGER ONE SECOND. It was, for a millisecond-scale race: on build #233 four
-     * scenarios failed within 131ms of each other (21:15:50.644 / .698 / .743 / .775), each with
-     * "Added test session to the Grid" arriving AFTER the failure - the session was nine
-     * milliseconds late. The stated objection to a longer poll was that it "cost ten seconds per
-     * scenario when no session was ever coming".
-     *
-     * <p>That objection no longer applies, because the latch below already short-circuits every
-     * scenario after the first. A cold wait is therefore paid AT MOST ONCE PER RUN, not per
-     * scenario. One second was optimising away a cost the latch had already removed, while
-     * reintroducing the failure it was meant to prevent.</p>
-     *
-     * <p>The suite-wide latch is likewise conditional. A grid that never came up dooms every
-     * scenario and should short-circuit the rest of the run - but a single warm timeout does not,
-     * and treating it as fatal is exactly what turned build #244's one queuing loss into 44 broken
-     * scenarios while the grid went on serving 131 sessions.
-     */
-    private static final long SESSION_READY_POLL_MILLIS = 125;
-
-    /**
-     * COLD budget - nothing has started a session yet, so the hub may still be starting OR the grid
-     * may be dead. Must exceed hub spawn on the slowest agent; ~41s was measured on the 2-CPU
-     * Jenkins agent in build #244, so this leaves room without being open-ended.
-     *
-     * <p>Paid at most once per run: the latch short-circuits every later scenario. A genuinely dead
-     * grid therefore costs this once, which is nothing against a 50-minute build - and in exchange
-     * a slow hub no longer writes off the entire run.
-     */
-    private static final long COLD_BUDGET_MILLIS = 90_000;
-
-    /**
-     * WARM budget - a session HAS started in this run, so the grid demonstrably works and this
-     * scenario is queuing for a browser slot rather than facing a dead grid.
-     *
-     * <p>Sized from Jenkins build #244. The agent reported "Detected 2 available processors" and
-     * Selenium sized the node to "Adding Chrome ... 2 times", while the suite runs
-     * data-provider-thread-count scenarios at once. At 5 scenarios against 2 slots, three of them
-     * must wait for a slot, and a scenario holds its browser for minutes - so a queued scenario
-     * legitimately waits far longer than the cold budget. One second was never a queuing timeout.
-     */
-    private static final long WARM_BUDGET_MILLIS = 120_000;
-
-    /**
-     * How many scenarios in a row may exhaust the WARM budget before the grid is declared dead.
-     *
-     * <p>Without this, a grid that dies mid-run after some successes would make every remaining
-     * scenario pay the full warm budget - 100 scenarios x 120s is hours of a build spent waiting
-     * for something that is never coming. Three strikes bounds that at ~6 minutes while still
-     * absorbing the single isolated timeout that build #244 turned into 43 write-offs.
-     */
-    private static final int WARM_FAILURES_BEFORE_LATCH = 3;
-
-    private static volatile String gridFailure;
-
-    /**
-     * True once ANY scenario in this run has obtained a usable driver.
-     *
-     * <p>This is what separates "the grid never came up" from "this scenario could not get a slot
-     * in time", and build #244 is why it exists. That run created 131 sessions and passed 58
-     * scenarios over 34 healthy minutes; then at 11:11:05 one scenario exhausted its 1000ms wait,
-     * {@link #gridFailure} latched suite-wide, and the remaining 43 scenarios were written off
-     * against a grid that was still working. The hub was fine throughout - one "Added node", zero
-     * "Timed out waiting for 127.0.0.1 to initialize".
-     */
-    private static volatile boolean sessionEverStarted;
-
-    /**
-     * Consecutive scenarios that have exhausted the WARM budget. Reset by any success.
-     *
-     * <p>Atomic, not a volatile int: up to data-provider-thread-count scenarios can time out at the
-     * same moment, and {@code ++} on a volatile field is a read-modify-write that silently loses
-     * increments under exactly that concurrency.
-     */
-    private static final AtomicInteger CONSECUTIVE_WARM_FAILURES = new AtomicInteger();
-
-    /**
-     * Why the grid was latched, in words, for the skip message.
-     *
-     * <p>The first version of that message said "failed for 3 scenarios in a row (or never came up
-     * at all)" and left the reader to work out which. It reads as though three scenarios failed
-     * even when only the first one did, which is the cold case - and that ambiguity sent the first
-     * reader of this failure looking for two failures that never happened. The message now states
-     * the condition that actually fired.
-     */
-    private static volatile String gridFailureReason;
-
-    /**
-     * The session-start failure for the scenario running on THIS thread, read back by
-     * {@code Hooks.reportSessionStartFailure} so the real cause reaches the Allure report rather
-     * than only the console.
-     *
-     * <p>Thread-local, not static: testng_bdd.xml runs at thread-count 5, so a shared field would
-     * let one block's failure be reported against another block's scenario. That is the opposite of
-     * {@link #gridFailure}, which is deliberately suite-wide because a grid that never started
-     * dooms every thread equally.
-     */
-    private static final ThreadLocal<String> SESSION_START_FAILURE = new ThreadLocal<>();
-
-    /** Records the text that should appear in the report for this scenario's session failure. */
-    private static void recordSessionStartFailure(String failure) {
-        SESSION_START_FAILURE.set(failure);
-    }
-
-    /**
-     * The session-start failure recorded on this thread, or null. Clears it, so a later scenario
-     * that started its browser fine is not annotated with an earlier scenario's failure.
-     */
-    public static String consumeSessionStartFailure() {
-        String failure = SESSION_START_FAILURE.get();
-        SESSION_START_FAILURE.remove();
-        return failure;
-    }
-
-    private void awaitDriverReady() {
-        if (gridFailure != null) {
-            String skipped = "Skipping the browser start: " + gridFailureReason
-                    + " so the grid is treated as dead for the rest of this run. Fix the first"
-                    + " failure and the rest go with it. First failure was: " + gridFailure;
-            // Recorded as well as thrown - otherwise every scenario after the first shows the
-            // bare "Driver not initialized" message in the report with no pointer to the cause.
-            recordSessionStartFailure(skipped);
-            throw new IllegalStateException(skipped);
-        }
-
-        // A demonstrably working grid gets the queuing budget; an unproven one waits for the hub.
-        boolean warm = sessionEverStarted;
-        long budgetMillis = warm ? WARM_BUDGET_MILLIS : COLD_BUDGET_MILLIS;
-        long deadline = System.currentTimeMillis() + budgetMillis;
-
-        if (!warm) {
-            // Said out loud, because this is the one wait in the run that can look like a hang:
-            // the first scenario blocks here while Sauron spawns the hub, with nothing else in the
-            // log to explain the pause.
-            log.info("No browser session has started in this run yet - waiting up to "
-                    + (COLD_BUDGET_MILLIS / 1000) + "s for the Selenium hub to come up. Sauron"
-                    + " spawns it lazily on the first session request, so this wait is expected"
-                    + " once per run.");
-        }
-
-        IllegalStateException last = null;
-        int attempt = 0;
-        do {
-            attempt++;
-            try {
-                Grid.driver();
-                // Order matters: record the success BEFORE returning, so the next scenario to queue
-                // gets the warm budget even if this one is the only session that ever worked.
-                sessionEverStarted = true;
-                CONSECUTIVE_WARM_FAILURES.set(0);
-                if (attempt > 1) {
-                    log.info("Browser session became usable on attempt " + attempt
-                            + " (" + (warm ? "warm" : "cold") + " budget)");
-                }
-                return;
-            } catch (IllegalStateException e) {
-                last = e;
-                sleep(SESSION_READY_POLL_MILLIS);
-            }
-        } while (System.currentTimeMillis() < deadline);
-
-        String diagnosis = diagnose(last);
-        // Both, and they are not redundant: SESSION_START_FAILURE carries the full diagnosis into
-        // THIS scenario's report, gridFailure short-circuits every later scenario in the run.
-        recordSessionStartFailure(diagnosis);
-
-        /* Latch only when the grid has not proved itself, or has stopped working for several
-         * scenarios running. A single warm timeout is a queuing loss, not a dead grid - latching on
-         * it is what cost build #244 forty-three scenarios while 131 sessions were being served. */
-        if (!warm) {
-            gridFailureReason = "no scenario in this run ever obtained a browser session, and the"
-                    + " first to try waited " + (budgetMillis / 1000) + "s for the hub,";
-            gridFailure = String.valueOf(last);
-        } else {
-            // Captured, not re-read: another thread can reset this to 0 between the increment and
-            // the log, which would print a count that did not choose this branch.
-            int warmFailures = CONSECUTIVE_WARM_FAILURES.incrementAndGet();
-            if (warmFailures >= WARM_FAILURES_BEFORE_LATCH) {
-                gridFailureReason = warmFailures + " scenarios in a row failed to get a session"
-                        + " after the grid had already served at least one,";
-                gridFailure = String.valueOf(last);
-                log.log(Level.SEVERE, warmFailures + " scenarios in a row could not obtain a session"
-                        + " despite the grid having worked earlier - treating it as dead for the rest"
-                        + " of this run.");
-            } else {
-                log.log(Level.SEVERE, "Scenario could not obtain a browser session within "
-                        + budgetMillis + "ms, but the grid has served sessions in this run, so it is"
-                        + " NOT being latched. Consecutive warm failures: " + warmFailures + " of "
-                        + WARM_FAILURES_BEFORE_LATCH + ". Most likely this scenario queued for a"
-                        + " browser slot: check whether thread-count x data-provider-thread-count"
-                        + " exceeds the agent's Chrome slots.");
-            }
-        }
-
-        log.log(Level.SEVERE, "No usable browser session after " + budgetMillis + "ms ("
-                + (warm ? "warm" : "cold") + " budget, " + attempt + " attempts). " + diagnosis, last);
-        throw new IllegalStateException(diagnosis, last);
-    }
-
-    /** Marker so {@link #initCCPSession} can tell an already-diagnosed failure from a fresh one. */
-    private static final String DIAGNOSIS_PREFIX = "Could not start the CCP browser session.";
-
-    /**
-     * Builds a session-start message whose advice matches the failure actually seen.
-     *
-     * <p>The previous version stated the orphaned-grid theory unconditionally, prefixed with "if the
-     * underlying message is 'session not created'". For the commonest failure - "Driver not
-     * initialized" - that sent readers to look at Chrome and chromedriver versions when the real
-     * problem was that no session had ever been created. The two causes are unrelated and now get
-     * separate advice.
-     */
-    private static String diagnose(Throwable cause) {
-        String text = (cause == null) ? "" : String.valueOf(cause.getMessage());
-        String advice;
-        if (text.contains("Driver not initialized")) {
-            advice = NO_SESSION_ADVICE;
-        } else if (text.contains("session not created") || text.contains("Chrome instance exited")) {
-            advice = ORPHANED_GRID_ADVICE;
-        } else {
-            advice = GENERIC_ADVICE;
-        }
-        return DIAGNOSIS_PREFIX + " " + advice + " Underlying failure: " + cause;
-    }
-
-    /**
-     * "Driver not initialized" means no WebDriver was ever bound to this thread - Chrome did not
-     * crash, it was never asked to start. Nothing in this repository starts a session:
-     * {@code Grid.getTestSession().isStarted()} in loginAndGoToSession is the only reference to
-     * session lifecycle anywhere in src/main, and it only READS the flag. The session is created by
-     * Sauron's own listener, so that is where to look.
-     */
-    private static final String NO_SESSION_ADVICE =
-            "No browser session was ever created for this scenario - Chrome did not crash, it was"
-            + " never started, so this is NOT a Chrome or chromedriver version problem. The session"
-            + " is created by Sauron's SauronWebListener.onStartTest via"
-            + " LocalGridManager.spawnLocalHub, not by this suite. In the console log find"
-            + " \"Executing command [java, ... selenium-server-*.jar, hub, --host, 127.0.0.1, -p,"
-            + " <port>]\" and read what follows it: \"Added node ... at http://127.0.0.1:<port>\""
-            + " means the hub is fine and the cause is elsewhere, while \"Timed out waiting for"
-            + " 127.0.0.1 to initialize\" means the hub never came up and no scenario in this run"
-            + " can get a browser.";
-
-    /**
-     * The orphaned-grid theory, now stated only when the symptom actually matches. Sauron randomises
-     * the hub's HTTP port per run, but Grid's ZeroMQ event bus is FIXED on 4442/4443, so nodes left
-     * behind by an earlier run keep advertising there, register with the new hub, and the hub routes
-     * the session to a long-dead node. Observed 24 Aug 2026: the run spawned its node on port 28308
-     * while the hub handed the session to orphaned node 9917 from a previous run.
-     */
-    private static final String ORPHANED_GRID_ADVICE =
-            "Chrome was asked to start and exited. On a LOCAL grid suspect orphaned selenium-server"
-            + " processes from an earlier run before suspecting Chrome or chromedriver versions:"
-            + " Grid's ZeroMQ event bus is fixed on ports 4442/4443, so stale nodes keep advertising"
-            + " there, get registered with the new hub, and the hub then routes the session to a"
-            + " dead node. Check with `netstat -ano | findstr \"4442 4443\"` (Windows) or"
-            + " `lsof -i:4442 -i:4443` (Linux) and terminate any selenium-server java process that"
-            + " is not part of this run.";
-
-    private static final String GENERIC_ADVICE =
-            "The failure below is not one of the two known session-start causes (no session created,"
-            + " or Chrome exiting on a stale local grid), so read it directly rather than assuming"
-            + " either.";
     @And("ccp login with configured user")
     public void ccpLoginWithConfiguredUser() throws IOException {
         ccpLogin(UserConfig.getEmail(), UserConfig.getPassword());
@@ -524,7 +148,7 @@ public  class SessionSteps extends AbstractWebPage {
             pageRefresh();
         }
         if (!isElementPresent(LOGIN_CTA_BUTTON)){
-            log.info("CCP User is already logged in, logging out to continue with fresh login");
+            log.info("CCP User is already logged in");
             if (isElementPresent(PAYMENT_DUE_POP_UP)){
                 waitAndCheckIsElementVisible(PAYMENT_DUE_CLOSE);
                 waitAndClickOn(PAYMENT_DUE_CLOSE);
@@ -583,8 +207,6 @@ public  class SessionSteps extends AbstractWebPage {
     public CustomerDetailsResponse getCustomerDetail(){
         String email = userEmail();
         if (email == null) {
-            // Was a silent wrong-customer comparison when these were static: this thread would read
-            // whichever scenario logged in last, on any thread. Now it is a named failure.
             throw new IllegalStateException("getCustomerDetail() was called before this scenario"
                     + " logged in, so there are no credentials to query the customer record with."
                     + " Add a 'ccp login with ...' step to the scenario's Background.");
@@ -592,14 +214,4 @@ public  class SessionSteps extends AbstractWebPage {
         return ApiUtils.getCustomerDetails(email, userPassword());
     }
 
-    private void confirmBusinessDetailsIfDialogPresent() {
-        try{
-            if (isElementPresent(CONFIRM_BUSINESS_DETAILS_DIALOG)) {
-                Grid.driver().findElement(By.xpath("//div[@role='dialog']/div/button")).click();
-                log.info("Business details confirmation dialog was present and has been closed.");
-            }
-        } catch (Exception e) {
-            log.info("No business details confirmation dialog was present.");
-        }
-    }
 }

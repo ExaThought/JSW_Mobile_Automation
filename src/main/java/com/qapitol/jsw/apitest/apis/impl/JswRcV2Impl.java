@@ -68,7 +68,6 @@ public class JswRcV2Impl extends BaseApiImpl {
             // sending cartId
             return addToCartApiResponse;
         } catch (Exception e) {
-            System.out.println(addToCartApiResponse);
             return null;
         }
 

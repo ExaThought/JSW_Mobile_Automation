@@ -135,8 +135,7 @@ public class ApiUtils extends BaseApiImpl
                                 ))
                                 .post("v2/cart/delete-items")
                                 .then()
-                                .log().all().extract().response();
-                        //System.out.println(res.body());
+                                .log().ifValidationFails().extract().response();
                     }
                 } else {
                     logger.info("cart is empty");
@@ -176,20 +175,18 @@ public class ApiUtils extends BaseApiImpl
             throw new RuntimeException("GST validation API returned empty response");
         }
 
-        System.out.println("GST Validation Response: " + response.asPrettyString());
-
         String companyName = response.jsonPath().getString("companyName");
         String message = response.jsonPath().getString("data.message");
 
         // GSTIN exists -> false
         // GSTIN does not exist -> true
         if (companyName != null && !companyName.isEmpty()) {
-            System.out.println("GSTIN already do not exist and company: " + companyName);
+            logger.info("GSTIN " + gstin + " is not registered (company: " + companyName + ")");
             return true;
         }
 
         if ("Please login to your existing account or contact support for assistance".equals(message)) {
-            System.out.println("GSTIN already exists: " + gstin);
+            logger.info("GSTIN " + gstin + " is already registered");
             return false;
         }
 
@@ -257,8 +254,6 @@ public class ApiUtils extends BaseApiImpl
 
         String jwtToken=null;
         if (jwtToken == null) {
-            //secondary.user.email
-            System.out.println("The email is "+ConfigUtil.getSecretValue("secondary.user.email")+"  the password is"+ConfigUtil.getSecretValue("secondary.user.password"));
             String pwd = Base64.getEncoder().encodeToString(ConfigUtil.getSecretValue("secondary.user.password").getBytes());
             jwtToken = Token.getCCPToken(ConfigUtil.getSecretValue("secondary.user.email"),pwd);
         }
@@ -266,14 +261,17 @@ public class ApiUtils extends BaseApiImpl
         Response response=null;
         Map<String, String> sfIds = new HashMap<>();
         try {
+            // log().ifValidationFails(), never log().all(): the request carries the JWT in its
+            // authorization header and the response carries the user's record, so logging either
+            // unconditionally printed a live token on every call.
              response = given()
                     .header("authorization", jwtToken)
                     .queryParam("includePermission", true)
                     .queryParam("phoneNumber", mobileNumber)
-                    .when().log().all()
+                    .when()
                     .get(ConfigUtil.getSecretValue("middlewareUrl")+"xp-mi/public/v1/fetch-user")
                     .then()
-                    .statusCode(200).log().all()
+                    .statusCode(200).log().ifValidationFails()
                     .extract()
                     .response();
 
@@ -283,7 +281,6 @@ public class ApiUtils extends BaseApiImpl
 
             sfIds.put("contactSfid", contactSfid);
             sfIds.put("customerSfId", customerSfId);
-            System.out.println("-----"+sfIds);
         }catch (Exception e)
         {
 
@@ -313,7 +310,6 @@ public class ApiUtils extends BaseApiImpl
                     .response();
 
             List<Map<String, Object>> users = response.jsonPath().getList("data");
-            System.out.println("---"+users);
              found = users.stream()
                     .anyMatch(user -> expectedContactSfid.equals(user.get("contactSfId")));
         }catch (Exception e)
@@ -330,7 +326,6 @@ public class ApiUtils extends BaseApiImpl
 
         String jwtToken=null;
         if (jwtToken == null) {
-            System.out.println("The email is "+ConfigUtil.getSecretValue("secondary.user.email")+"  the password is"+ConfigUtil.getSecretValue("secondary.user.password"));
             String pwd = Base64.getEncoder().encodeToString(ConfigUtil.getSecretValue("secondary.user.password").getBytes());
             jwtToken = Token.getCCPToken(ConfigUtil.getSecretValue("secondary.user.email"),pwd);
         }
@@ -352,7 +347,7 @@ public class ApiUtils extends BaseApiImpl
                     && response.jsonPath().get("data.permissions") == null;
 
         } catch (Exception e) {
-            System.err.println("Failed to fetch user details: " + e.getMessage());
+            logger.info("Failed to fetch user details: " + e.getMessage());
             return false;
         }
     }

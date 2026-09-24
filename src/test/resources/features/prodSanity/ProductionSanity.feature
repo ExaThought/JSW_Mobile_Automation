@@ -1,17 +1,7 @@
 @productionSanity @prodSafe @regression
 Feature: Production sanity - critical business functionality
 
-  # Every scenario here is STRICTLY READ-ONLY and carries @prodSafe, which is what
-  # ProdSafetyHooks requires before a scenario may run with -Denv=prod. Nothing below
-  # creates, modifies or deletes an order, cart, address, account or password.
-  #
-  # The registration scenario is the one to watch: it fills the form to prove client-side
-  # validation blocks submission, and deliberately stops before Next is ever enabled.
 
-  # The campaign popup step runs FIRST on every page that has one, before anything reads the
-  # page. An interstitial covering the viewport intercepts clicks and hides the header and
-  # footer, so a shell assertion made underneath it fails for the wrong reason. It never fails
-  # on absence - no campaign running is the normal case.
   @P0
   Scenario Outline: Critical page loads without error - <page>
     When a visitor opens the "<page>" page
@@ -46,10 +36,6 @@ Feature: Production sanity - critical business functionality
       | mildSteelCategory   | 6       |
       | tmtCategory         | 1       |
 
-  # The PDP had no coverage at all - the listing scenarios above only prove the cards LINK to a
-  # product detail page, nothing opened one. Added so the campaign popup check has a PDP to run
-  # on, and it earns its place anyway: a listing full of cards whose detail pages are broken is
-  # a catalogue that cannot be sold from.
   @P0
   Scenario: A product detail page opens from the listing
     When a visitor opens the "mildSteelCategory" page
@@ -71,9 +57,6 @@ Feature: Production sanity - critical business functionality
       | HR Coil    |
       | Cement     |
 
-  # Dismissed twice on purpose: once on the guest homepage, where the popup can block the Login
-  # button, and again after authenticating, because a campaign aimed at signed-in customers is a
-  # different popup that only appears once there is a session.
   @P0
   Scenario: A real customer can sign in and see their account
     Given Go to session "ccp"
@@ -82,10 +65,6 @@ Feature: Production sanity - critical business functionality
     And the campaign popup is dismissed if it is shown
     Then the account menu is available in the header
 
-  # Read-only: a GET of the signed-in customer's own profile, no write path anywhere in it.
-  # Worth a P0 because this is the failure the UI cannot show you - the middleware can answer
-  # 200 with the wrong customer's profile, or stop answering entirely, and the site keeps
-  # rendering. Endpoint comes from middlewareUrl, so this runs unchanged on qa and preprod.
   @P0
   Scenario: The customer profile API answers for the signed-in account
     When we request the customer profile Api

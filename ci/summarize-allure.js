@@ -54,6 +54,9 @@ for (const f of fs.readdirSync(RESULTS)) {
   const label = (n) => (d.labels || []).find((l) => l.name === n)?.value || null;
   results.push({
     name: d.name || '(unnamed)',
+    /* Allure's own identity for a test case: stable across retries of the same scenario, and
+     * distinct per Examples row of a Scenario Outline. See the dedupe below. */
+    historyId: d.historyId || null,
     status: (d.status || 'unknown').toLowerCase(),
     message: (d.statusDetails && d.statusDetails.message || '').split('\n')[0].slice(0, 300),
     feature: label('feature') || '(no feature)',
@@ -66,12 +69,24 @@ for (const f of fs.readdirSync(RESULTS)) {
 }
 
 /* Allure writes one result per scenario ATTEMPT, so a retried scenario appears more than once.
- * Counting raw files would inflate totals and double-report the same failure. Collapse on
- * feature+name and keep the best outcome, which is what a human means by "did it pass". */
+ * Counting raw files would inflate totals and double-report the same failure. Collapse the
+ * attempts and keep the best outcome, which is what a human means by "did it pass".
+ *
+ * Collapse on historyId, NOT on feature+name. A Scenario Outline whose title carries no
+ * <placeholder> renders every Examples row under the identical name, so a name-based key silently
+ * merged them into one scenario: build #247 reported 106 where Allure showed 134, the 28
+ * difference being 20 footer rows folded into 4 names, plus header, search and PDP outlines. All
+ * 28 happened to be passing, so the summary under-reported passes and matched Allure on failures,
+ * which is exactly the shape that makes the bug easy to miss.
+ *
+ * historyId is right for both halves of the job: retries of one scenario share it, and separate
+ * Examples rows get different ones. Falls back to feature+name if an adapter ever omits it -
+ * wrong in the same old way, but better than treating every result as unique and inflating the
+ * total by counting retries. */
 const RANK = { passed: 0, skipped: 1, unknown: 2, broken: 3, failed: 4 };
 const byKey = new Map();
 for (const r of results) {
-  const key = `${r.feature}||${r.name}`;
+  const key = r.historyId || `${r.feature}||${r.name}`;
   const prev = byKey.get(key);
   if (!prev) {
     byKey.set(key, { ...r, attempts: 1 });

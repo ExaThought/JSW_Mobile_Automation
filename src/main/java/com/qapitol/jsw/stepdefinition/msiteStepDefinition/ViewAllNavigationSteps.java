@@ -104,10 +104,6 @@ public class ViewAllNavigationSteps extends AbstractWebPage {
     }
 
 
-    /** Expected URL slug for validation */
-    private String getExpectedSlug(String category) {
-        return category.toLowerCase().replace(" ", "-");
-    }
 
     private WebElement getViewAllElement(String categoryKey) {
         String yamlPath = "elements." + categoryKey + ".en_US.web";

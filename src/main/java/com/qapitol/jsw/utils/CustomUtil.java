@@ -8,12 +8,15 @@ import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,15 +25,7 @@ import static com.qapitol.sauron.core.actions.ActionListener.logger;
 
 public class CustomUtil {
 
-    @Deprecated
-    public static void scrollingToViewAndClickUsingJS(WebElement locator) {
-        try {
-            JavascriptExecutor js = Grid.driver();
-            js.executeScript("arguments[0].scrollIntoView(true);", locator);
-        } catch (Exception e) {
-            logger.log(Level.FINEST, "clickUsingJS", e);
-        }
-    }
+    private static final int STALE_RETRY_ATTEMPTS = 3;
 
     public static void waits(WebElement locator, WebDriver driver) {
         WebDriverWait wait = new WebDriverWait(driver, java.time.Duration.ofSeconds(10));
@@ -119,7 +114,6 @@ public class CustomUtil {
                                 return candidate;
                             }
                         } catch (StaleElementReferenceException e) {
-                            // React re-rendered this node mid-check; the next poll picks up the new one.
                         }
                     }
                     return null;
@@ -136,10 +130,27 @@ public class CustomUtil {
     }
 
     public static void clickFirstVisible(By locator) {
-        WebElement element = firstVisible(locator);
-        ((JavascriptExecutor) Grid.driver())
-                .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
-        new Actions(Grid.driver()).moveToElement(element).click().perform();
+        StaleElementReferenceException lastStale = null;
+
+        for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
+            try {
+                WebElement element = firstVisible(locator);
+                ((JavascriptExecutor) Grid.driver())
+                        .executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+                new Actions(Grid.driver()).moveToElement(element).click().perform();
+                return;
+            } catch (StaleElementReferenceException e) {
+                lastStale = e;
+                logger.log(Level.INFO, "Stale element clicking " + locator + " (attempt " + attempt
+                        + " of " + STALE_RETRY_ATTEMPTS + ") - re-resolving against the new DOM.");
+                pauseBetweenStaleRetries();
+            }
+        }
+
+        throw new IllegalStateException("Could not click " + locator + ": the element went stale on"
+                + " all " + STALE_RETRY_ATTEMPTS + " attempts. The page is re-rendering faster than"
+                + " the click can land - wait for whatever is still loading before clicking.",
+                lastStale);
     }
 
     public static void scrollToViewAndClick(By locator) {
@@ -166,24 +177,9 @@ public class CustomUtil {
     }
 
 
-    public static boolean isElementVisibleJS(By locator) {
-        try {
-            new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
-                    .until(ExpectedConditions.presenceOfElementLocated(locator));
-            WebElement element = Grid.driver().findElement(locator);
-            Object visible = ((JavascriptExecutor) Grid.driver()).executeScript(
-                    "var e = arguments[0];" +
-                    "if (!e) { return false; }" +
-                    "var style = window.getComputedStyle(e);" +
-                    "var rect = e.getBoundingClientRect();" +
-                    "return (style.display !== 'none' && style.visibility !== 'hidden'" +
-                    "        && style.opacity !== '0' && rect.width > 0 && rect.height > 0);",
-                    element);
-            return Boolean.TRUE.equals(visible);
-        } catch (Exception e) {
-            logger.log(Level.FINEST, "isElementVisibleJS: not present/visible for " + locator, e);
-            return false;
-        }
+
+    public static void scrollToCenterByText(String text) {
+        scrollToCenter(By.xpath("//div[normalize-space()=" + xpathLiteral(text) + "]"));
     }
 
     public static void scrollToCenter(By locator) {
@@ -199,64 +195,13 @@ public class CustomUtil {
         }
     }
 
-    public static void scrollToCenterByText(String text) {
-        // XPath 1.0 has no escape syntax, so pick a quote character the text does not contain.
-        String quoted = text.contains("'") ? "\"" + text + "\"" : "'" + text + "'";
-        scrollToCenter(By.xpath("//div[normalize-space()=" + quoted + "]"));
-    }
 
 
 
-    public static void scrollAboveSticky(String xpath) {
-        WebDriver driver = Grid.driver();
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-
-        WebElement element = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
-
-        int y = element.getLocation().getY();
-        int offset = 180; // height of sticky footer
-
-        js.executeScript(
-                "window.scrollTo(0, arguments[0] - arguments[1]);",
-                y, offset);
-    }
-
-    public static void safeClick(By locator) {
-        WebDriver driver = Grid.driver();
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-
-        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
-
-        // Scroll to center
-        ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].scrollIntoView({block: 'center'});", element);
-
-        // Move up slightly to avoid sticky footer
-        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0, -200);");
-
-        // Wait until clickable
-        wait.until(ExpectedConditions.elementToBeClickable(locator));
-
-        try {
-            element.click();
-        } catch (Exception e) {
-            // Fallback JS click (mobile safe)
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
-        }
-    }
 
 
 
-    public static void doubleClickAction(By locator) {
-        new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(locator));
-        WebElement element = Grid.driver().findElement(locator);
 
-        new Actions(Grid.driver())
-                .doubleClick(element).click()
-                .perform();
-    }
 
     private static final int HOVER_ATTEMPTS = 3;
 
@@ -284,8 +229,6 @@ public class CustomUtil {
 
         for (int attempt = 1; attempt <= HOVER_ATTEMPTS; attempt++) {
             try {
-                // Re-resolved every attempt: a reference taken before the scroll can be stale by the
-                // time the move runs.
                 WebElement element = firstVisible(locator);
                 JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
 
@@ -306,8 +249,6 @@ public class CustomUtil {
                             + reachability);
                 }
                 int height = Integer.parseInt(ok[1]);
-                // Offsets are from the element's CENTRE in the W3C Actions spec, so this lands just
-                // above the top edge. Safe because the element was centred first.
                 int above = -(height / 2 + 12);
 
                 new Actions(Grid.driver())
@@ -333,6 +274,128 @@ public class CustomUtil {
                 + ". If this says 'covered by', a sticky header or modal is over the element - dismiss"
                 + " it first. If it says 'ok', the pointer reached the element and the component did"
                 + " not react, which is a product question, not a locator one.", last);
+    }
+
+    private static final Duration HOVER_REVEAL_TIMEOUT = Duration.ofSeconds(3);
+
+    private static final String FORCE_HOVER_JS =
+            "var el = arguments[0], r = el.getBoundingClientRect();"
+          + "var opts = {bubbles:true, cancelable:true, view:window,"
+          + "            clientX: r.left + r.width / 2, clientY: r.top + r.height / 2};"
+          + "['pointerover','pointerenter','mouseover','mouseenter','mousemove']"
+          + "  .forEach(function (type) {"
+          + "     var evt = type.indexOf('pointer') === 0 && window.PointerEvent"
+          + "               ? new PointerEvent(type, opts) : new MouseEvent(type, opts);"
+          + "     el.dispatchEvent(evt);"
+          + "  });";
+
+    public static void forceHover(By locator) {
+        WebElement element = firstVisible(locator);
+        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        js.executeScript(
+                "arguments[0].scrollIntoView({block:'center', inline:'nearest', behavior:'instant'});",
+                element);
+        js.executeScript(FORCE_HOVER_JS, element);
+        logger.info("forceHover dispatched a synthetic pointer-enter sequence on " + locator);
+    }
+
+    public static boolean hoverUntilVisible(By hoverTarget, By revealed) {
+        try {
+            hoverOverElement(hoverTarget);
+            if (visibleWithin(revealed, HOVER_REVEAL_TIMEOUT)) {
+                return true;
+            }
+            logger.info("real hover on " + hoverTarget + " did not reveal " + revealed + " within "
+                    + HOVER_REVEAL_TIMEOUT.getSeconds() + "s - falling back to forceHover");
+        } catch (RuntimeException e) {
+            logger.info("real hover on " + hoverTarget + " failed (" + e.getClass().getSimpleName()
+                    + ": " + e.getMessage() + ") - falling back to forceHover");
+        }
+
+        try {
+            forceHover(hoverTarget);
+        } catch (RuntimeException e) {
+            logger.warning("forceHover on " + hoverTarget + " failed: " + e);
+            return false;
+        }
+
+        boolean opened = visibleWithin(revealed, HOVER_REVEAL_TIMEOUT);
+        if (!opened) {
+            logger.warning("neither a real nor a synthetic hover on " + hoverTarget + " revealed "
+                    + revealed + ". If this opens on CSS :hover alone, forceHover cannot open it -"
+                    + " only a real pointer can, so treat this as a pointer/overlay problem rather"
+                    + " than adding more synthetic events.");
+        }
+        return opened;
+    }
+
+    private static final Duration HOVER_SETTLE = Duration.ofMillis(200);
+
+    private static final String SCROLL_INTO_VIEW_IF_NEEDED_JS =
+            "var el = arguments[0], r = el.getBoundingClientRect();"
+          + "var vh = window.innerHeight, vw = window.innerWidth;"
+          + "if (vh && vw && r.top >= 0 && r.left >= 0 && r.bottom <= vh && r.right <= vw)"
+          + "  return 'already in view';"
+          + "el.scrollIntoView({block:'center', inline:'nearest', behavior:'instant'});"
+          + "return 'scrolled';";
+
+    public static boolean hoverChain(By... targets) {
+        if (targets == null || targets.length == 0) {
+            return false;
+        }
+
+        for (int i = 0; i < targets.length; i++) {
+            By target = targets[i];
+            Duration budget = (i == 0) ? Duration.ofSeconds(15) : HOVER_REVEAL_TIMEOUT;
+
+            if (!visibleWithin(target, budget)) {
+                logger.warning("hoverChain stopped at step " + (i + 1) + " of " + targets.length
+                        + ": " + target + " was not visible within " + budget.getSeconds() + "s."
+                        + (i == 0 ? " The chain never started."
+                                  : " The level above it either did not open, or opened and closed"
+                                    + " again before the pointer arrived."));
+                return false;
+            }
+
+            try {
+                WebElement element = firstVisible(target);
+                if (i == 0) {
+                    Object outcome = ((JavascriptExecutor) Grid.driver())
+                            .executeScript(SCROLL_INTO_VIEW_IF_NEEDED_JS, element);
+                    if (!"already in view".equals(outcome)) {
+                        element = firstVisible(target);
+                    }
+                }
+                new Actions(Grid.driver()).moveToElement(element).pause(HOVER_SETTLE).perform();
+            } catch (StaleElementReferenceException e) {
+                new Actions(Grid.driver())
+                        .moveToElement(firstVisible(target)).pause(HOVER_SETTLE).perform();
+            } catch (MoveTargetOutOfBoundsException e) {
+                logger.warning("hoverChain could not move to " + target + " at step " + (i + 1)
+                        + " of " + targets.length + ": " + e.getMessage());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean visibleWithin(By locator, Duration timeout) {
+        try {
+            return new WebDriverWait(Grid.driver(), timeout).until(driver -> {
+                for (WebElement candidate : driver.findElements(locator)) {
+                    try {
+                        Dimension size = candidate.getSize();
+                        if (candidate.isDisplayed() && size.getWidth() > 0 && size.getHeight() > 0) {
+                            return true;
+                        }
+                    } catch (StaleElementReferenceException e) {
+                    }
+                }
+                return false;
+            });
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     public static void moveToAction(By locator)
@@ -380,20 +443,10 @@ public class CustomUtil {
         throw new IllegalArgumentException("No number found in: " + text);
     }
 
-    public static int getSheetCount(String text) {
-        Pattern pattern = Pattern.compile("\\((\\d+)\\s*Sheets\\)");
-        Matcher matcher = pattern.matcher(text);
-
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-
-        throw new IllegalArgumentException("Sheet count not found in: " + text);
-    }
 
     public static String generateAutoGenName() {
         int randomNum = ThreadLocalRandom.current().nextInt(100000, 1000000);
-        return "Autogen" + randomNum;
+        return "Auto gen" + randomNum;
     }
 
 
@@ -438,8 +491,6 @@ public class CustomUtil {
         }
         return Duration.ofSeconds(20);
     }
-    /** Refresh and wait for document ready only — for call sites whose
-     *  landmark is a sauron yaml key (resolved by waitAnd* methods, not By). */
     public static void refreshAndWaitForPageLoad() {
         WebDriver driver = Grid.driver();
         driver.navigate().refresh();
@@ -462,8 +513,6 @@ public class CustomUtil {
                 .until(d -> "complete".equals(
                         ((JavascriptExecutor) d).executeScript("return document.readyState")));
 
-        // 2. The element the caller actually needs next — this is what
-        //    proves the SPA has re-rendered, readyState alone is not enough
         wait.until(ExpectedConditions.visibilityOfElementLocated(landmark));
     }
     public static void refreshAndWaitFor(String locator) {
@@ -504,53 +553,305 @@ public class CustomUtil {
     }
 
     public static void clickButton(Object target) {
-        WebElement element = resolveElement(target);
-        new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.elementToBeClickable(element));
-        element.click();
+        StaleElementReferenceException lastStale = null;
+
+        for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
+            try {
+                WebElement element = resolveElement(target);
+                new WebDriverWait(Grid.driver(), Duration.ofMillis(1000))
+                        .until(ExpectedConditions.elementToBeClickable(element));
+                element.click();
+                return;
+            } catch (StaleElementReferenceException e) {
+                lastStale = e;
+
+                if (target instanceof WebElement) {
+                    throw new IllegalStateException("The element passed to clickButton went stale and"
+                            + " cannot be re-resolved, because a WebElement carries no locator to"
+                            + " search with. Pass the By instead of a pre-found element so the click"
+                            + " can find the re-rendered node.", e);
+                }
+
+                logger.log(Level.INFO, "Stale element clicking " + target + " (attempt " + attempt
+                        + " of " + STALE_RETRY_ATTEMPTS + ") - the page re-rendered mid-click."
+                        + " Re-resolving and trying again.");
+                pauseBetweenStaleRetries();
+            }
+        }
+
+        throw new IllegalStateException("Could not click " + target + ": the element went stale on"
+                + " all " + STALE_RETRY_ATTEMPTS + " attempts. The page is re-rendering faster than"
+                + " the click can land - wait for whatever is still loading before clicking.",
+                lastStale);
+    }
+
+    private static void pauseBetweenStaleRetries() {
+        pause(300);
+    }
+
+    private static void pause(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+
+    public static String siteOrigin() {
+        URI current = URI.create(Grid.driver().getCurrentUrl());
+        return current.getScheme() + "://" + current.getAuthority();
+    }
+
+    public static String currentPath() {
+        String path = URI.create(Grid.driver().getCurrentUrl()).getPath();
+        if (path == null) {
+            return "";
+        }
+        return path.length() > 1 && path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+    }
+
+    public static String xpathLiteral(String value) {
+        if (!value.contains("'")) {
+            return "'" + value + "'";
+        }
+        StringBuilder concat = new StringBuilder("concat(");
+        String[] parts = value.split("'", -1);
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                concat.append(", \"'\", ");
+            }
+            concat.append("'").append(parts[i]).append("'");
+        }
+        return concat.append(")").toString();
+    }
+
+    public static boolean containsAsWholeWord(String text, String value) {
+        if (text == null || value == null || value.isEmpty()) {
+            return false;
+        }
+        String prefix = Character.isLetterOrDigit(value.charAt(0)) ? "\\b" : "";
+        String suffix = Character.isLetterOrDigit(value.charAt(value.length() - 1)) ? "\\b" : "";
+        return Pattern.compile(prefix + Pattern.quote(value) + suffix, Pattern.CASE_INSENSITIVE)
+                .matcher(text).find();
+    }
+
+    public static boolean scrollUntilVisible(By locator) {
+        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        long previousOffset = -1;
+
+        for (int pass = 0; pass < 30; pass++) {
+            if (isAnyVisible(locator)) {
+                return true;
+            }
+            long offset = ((Number) js.executeScript(
+                    "window.scrollBy(0, window.innerHeight * 0.8); return window.pageYOffset;"))
+                    .longValue();
+            if (offset == previousOffset) {
+                pause(500);
+                return isAnyVisible(locator);
+            }
+            previousOffset = offset;
+            pause(400);
+        }
+        return isAnyVisible(locator);
+    }
+
+    public static void clickWithJsFallback(By locator, String description, int seconds) {
+        try {
+            new WebDriverWait(Grid.driver(), Duration.ofSeconds(seconds))
+                    .until(ExpectedConditions.elementToBeClickable(locator)).click();
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Native click on the " + description + " was blocked ("
+                    + e.getClass().getSimpleName() + ") - retrying with a JS click");
+            jsClick(locator);
+        }
+    }
+
+    public static boolean waitForPresence(By locator, int seconds) {
+        for (int attempt = 0; attempt < seconds * 2; attempt++) {
+            try {
+                if (!Grid.driver().findElements(locator).isEmpty()) {
+                    return true;
+                }
+            } catch (Exception ignored) {
+            }
+            pause(500);
+        }
+        return false;
+    }
+
+    public static boolean pollFor(BooleanSupplier condition, int seconds) {
+        for (int attempt = 0; attempt < seconds * 2; attempt++) {
+            if (condition.getAsBoolean()) {
+                return true;
+            }
+            pause(500);
+        }
+        return false;
+    }
+
+    public static boolean isFirstMatchInteractable(By locator) {
+        try {
+            java.util.List<WebElement> matches = Grid.driver().findElements(locator);
+            return !matches.isEmpty() && matches.get(0).isDisplayed() && matches.get(0).isEnabled();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static String truncateToMaxLength(WebElement element, String value) {
+        try {
+            String maxLength = element.getAttribute("maxlength");
+            if (maxLength != null && maxLength.matches("\\d+")) {
+                int limit = Integer.parseInt(maxLength);
+                if (limit > 0 && value.length() > limit) {
+                    return value.substring(0, limit);
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Could not read maxlength off " + element + ": " + e.getMessage());
+        }
+        return value;
+    }
+
+    public static String settledValueOf(By locator) {
+        String previous = null;
+        for (int attempt = 0; attempt < 8; attempt++) {
+            String raw;
+            try {
+                raw = Grid.driver().findElement(locator).getAttribute("value");
+            } catch (StaleElementReferenceException e) {
+                raw = null;
+            }
+            String current = (raw == null) ? "" : raw.trim();
+            if (current.equals(previous)) {
+                return current;
+            }
+            previous = current;
+            pause(250);
+        }
+        return previous == null ? "" : previous;
+    }
+
+    private static final By BUSINESS_DETAILS_DIALOG = By.xpath(
+            "//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]");
+
+    private static final By BUSINESS_DETAILS_DIALOG_BUTTON =
+            By.xpath("//div[@role='dialog']/div/button");
+
+    public static void confirmBusinessDetailsIfDialogPresent() {
+        try {
+            if (!isRenderedNow(BUSINESS_DETAILS_DIALOG)) {
+                return;
+            }
+            clickFirstVisible(BUSINESS_DETAILS_DIALOG_BUTTON);
+            logger.log(Level.INFO, "Business details confirmation dialog was present and has been closed.");
+        } catch (Exception e) {
+            logger.log(Level.INFO, "No business details confirmation dialog was present.");
+        }
+    }
+
+    public static boolean isRenderedNow(By locator) {
+        try {
+            for (WebElement candidate : Grid.driver().findElements(locator)) {
+                try {
+                    if (candidate.isDisplayed()) {
+                        return true;
+                    }
+                } catch (StaleElementReferenceException ignored) {
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    public static boolean waitForElementPresent(String xpath, int seconds) {
+        return pollFor(() -> {
+            try {
+                java.util.List<WebElement> found = Grid.driver().findElements(By.xpath(xpath));
+                return !found.isEmpty() && found.get(0).isDisplayed();
+            } catch (Exception e) {
+                return false;
+            }
+        }, seconds);
     }
 
     public static boolean isDisplayed(Object target) {
-        try {
-            WebElement element= resolveElement(target);
-
-                new WebDriverWait(Grid.driver(),Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOf(element));
-
-                if(element.isDisplayed())
-                {
-                    return true;
-                }else {
+        for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
+            try {
+                WebElement element = resolveElement(target);
+                new WebDriverWait(Grid.driver(), Duration.ofMillis(1000))
+                        .until(ExpectedConditions.visibilityOf(element));
+                return element.isDisplayed();
+            } catch (StaleElementReferenceException e) {
+                if (target instanceof WebElement) {
                     return false;
                 }
-            }catch (Exception e)
-            {
-                return  false;
+                pauseBetweenStaleRetries();
+            } catch (Exception e) {
+                return false;
             }
+        }
+        return false;
+    }
+
+    private static <T> T withStaleRetry(Object target, Supplier<T> read) {
+        StaleElementReferenceException lastStale = null;
+
+        for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
+            try {
+                return read.get();
+            } catch (StaleElementReferenceException e) {
+                lastStale = e;
+
+                if (target instanceof WebElement) {
+                    throw new IllegalStateException("The element passed here went stale and cannot be"
+                            + " re-resolved, because a WebElement carries no locator to search with."
+                            + " Pass the By instead of a pre-found element.", e);
+                }
+
+                logger.log(Level.INFO, "Stale element reading " + target + " (attempt " + attempt
+                        + " of " + STALE_RETRY_ATTEMPTS + ") - re-resolving against the new DOM.");
+                pauseBetweenStaleRetries();
+            }
+        }
+
+        throw new IllegalStateException("Could not read " + target + ": the element went stale on all "
+                + STALE_RETRY_ATTEMPTS + " attempts.", lastStale);
     }
 
     public static String getText(Object target) {
-        return resolveElement(target).getText().trim();
+        return withStaleRetry(target, () -> resolveElement(target).getText().trim());
     }
 
 
     public static String getTextJS(Object target) {
-        WebElement element = resolveElement(target);
-        JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
+        return withStaleRetry(target, () -> {
+            WebElement element = resolveElement(target);
+            JavascriptExecutor js = (JavascriptExecutor) Grid.driver();
 
-        Object innerText = js.executeScript("return arguments[0].innerText;", element);
-        if (innerText instanceof String && !((String) innerText).trim().isEmpty()) {
-            return ((String) innerText).trim();
-        }
+            Object innerText = js.executeScript("return arguments[0].innerText;", element);
+            if (innerText instanceof String && !((String) innerText).trim().isEmpty()) {
+                return ((String) innerText).trim();
+            }
 
-        Object textContent = js.executeScript("return arguments[0].textContent;", element);
-        if (textContent instanceof String) {
-            return ((String) textContent).trim();
-        }
+            Object textContent = js.executeScript("return arguments[0].textContent;", element);
+            if (textContent instanceof String) {
+                return ((String) textContent).trim();
+            }
 
-        return "";
+            return "";
+        });
     }
 
 
     public static String getTextResilient(Object target) {
+        return withStaleRetry(target, () -> readAllTextSources(target));
+    }
+
+    private static String readAllTextSources(Object target) {
         WebElement element = resolveElement(target);
 
         String rendered = element.getText();
@@ -574,7 +875,7 @@ public class CustomUtil {
                 .replace("-", "")
                 .replaceAll("[0-9]", "");
 
-        return "Autogen" + randomString.substring(0, 6);
+        return "Auto gen" + randomString.substring(0, 6);
     }
     public static String generateEmail() {
         return "autogen" + System.currentTimeMillis() + "@yopmail.com";

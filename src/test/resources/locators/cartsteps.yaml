@@ -198,9 +198,6 @@ elements:
   cartOrderTotal:
     en_US:
       web: xpath=//div[contains(text(),'Order total') or contains(text(),'Grand total')]/following-sibling::div
-  confirmBusinessDetails:
-    en_US:
-      web: xpath=//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]
   accountTab:
     en_US:
       web: xpath=//div[@data-test-id='desktop-header-user-type-dropdown-toggle']/span

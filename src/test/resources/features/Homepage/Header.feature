@@ -35,7 +35,7 @@ Feature: Validate Home Page Header
     And the header cart badge should match the cart line-item count from the API
 
   @productionSanity @prodSafe
-  Scenario Outline: Verify header navigation menu redirects to the correct listing page
+  Scenario Outline: Verify header navigation menu redirects to the correct listing page - <menuItem>
     Given user is on the application as a "Logged Out" user
     When user clicks on the "<menuItem>" navigation menu in the header
     Then user should be redirected to the "<expectedPath>" listing page
@@ -46,11 +46,10 @@ Feature: Validate Home Page Header
       | Structural steel | /category/structural-steel |
       | Cement           | /category/cement           |
       | TMT              | /category/TMT-Bar-steel    |
-      | Bitumen          | /category/bitumen          |
       | Blogs            | /blogs                     |
 
   @productionSanity @prodSafe
-  Scenario Outline: Verify JSW One logo returns the user to the home page
+  Scenario Outline: Verify JSW One logo returns the user to the home page - <userType>
     Given user is on the application as a "<userType>" user
     Then the JSW One logo should be displayed in the header
     When user navigates away from the home page

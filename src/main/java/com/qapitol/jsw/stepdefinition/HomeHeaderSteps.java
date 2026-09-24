@@ -37,52 +37,13 @@ public class HomeHeaderSteps extends AbstractWebPage {
     private static final String NAV_ITEM_BY_HREF = "//header//a[@href='%s']";
     private static final By ANY_CATEGORY_LINK = By.xpath("//a[contains(@href,'/category/')]");
 
-    /**
-     * The mega-menu panel belonging to one nav item.
-     *
-     * <p>CAPTURED FROM THE LIVE DOM on 8 Sep 2026 at 1440x900, which the previous version of this
-     * step could not do - it counted {@code /category/} links before and after the hover because
-     * "the panel's markup could not be captured". It can be, with a real pointer move, and the
-     * panel is:
-     *
-     * <pre>
-     *   div.relative.group.flex.items-center           &lt;- the hover target's ancestor
-     *     a[href='/category/mild-steel']               &lt;- 1 match, 84x32, nothing overlaying it
-     *     div.absolute.left-0.top-full.z-50.hidden.group-hover:block.pt-1
-     *       a[href='/category/hot-rolled-steel'] ... 5 sub-category links
-     * </pre>
-     *
-     * <p>It opens on CSS {@code :hover} alone - {@code hidden} to {@code group-hover:block}, no JS
-     * state, no {@code role="menu"}, no {@code data-state}. The header carries FOUR of these panels
-     * (Mild Steel, Structural steel, Bitumen, Help &amp; Support), so the panel is reached through
-     * the hovered anchor's own {@code group} ancestor rather than matched globally.
-     *
-     * <p>{@code concat(' ', normalize-space(@class), ' ')} matches the {@code group} class as a
-     * whole token. {@code contains(@class,'group')} would also match {@code group-hover:*} utility
-     * classes, which sit on the label span and would resolve the ancestor to the wrong node.
-     */
     private static final String MEGA_MENU_PANEL_FOR_NAV =
             "//header//a[@href='%s']"
                     + "/ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' group ')][1]"
                     + "//div[contains(@class,'group-hover:block')]";
 
-    /** Path of the nav item most recently hovered, so the Then step can find its panel. */
     private String lastHoveredNavPath;
 
-    /**
-     * The numeric badge on the header cart icon, if one is rendered.
-     *
-     * <p>Anchored on {@code data-test-id="desktop-header-cart-link"}, which was read off the live
-     * header on 8 Sep 2026 and is the cart anchor itself - not a guessed Tailwind class. Inside it,
-     * the badge is matched as "a descendant whose whole text is one to three digits", so the count
-     * is found without depending on the badge's own class, which is exactly the kind of generated
-     * class name that has rotted other locators in this suite.
-     *
-     * <p>NOT OBSERVED DIRECTLY. A signed-out visitor has an empty cart and no badge is rendered at
-     * all, so the badge element itself could not be captured - only the anchor that must contain
-     * it. {@link #readCartBadge()} therefore treats "no match" as zero rather than as an error,
-     * which is also the correct reading of an empty cart.
-     */
     private static final By CART_BADGE = By.xpath(
             "//header//a[@data-test-id='desktop-header-cart-link']"
                     + "//*[normalize-space(text()) != ''"
@@ -100,17 +61,18 @@ public class HomeHeaderSteps extends AbstractWebPage {
         paths.put("structural steel", "/category/structural-steel");
         paths.put("cement", "/category/cement");
         paths.put("tmt", "/category/TMT-Bar-steel");
-        paths.put("bitumen", "/category/bitumen");
+        // Bitumen was removed from the header nav; confirmed on qa 22 Sep 2026 - the header carries
+        // no /category/bitumen anchor and no "Bitumen" text, while /category/bitumen itself still
+        // answers 200. The category is unlinked, not gone, so this is a nav change rather than a
+        // dead page. Restore this entry if Bitumen returns to the menu.
         paths.put("blogs", "/blogs");
         return paths;
     }
 
-    /** Resolve a locator key from homeheadersteps.yaml into a By.xpath. */
     private By by(String key) {
         return By.xpath(locators.getXpath("elements." + key + ".en_US.web"));
     }
 
-    /** Destination path for a menu label, failing with the supported set rather than a null. */
     private String pathFor(String menuItem) {
         String path = NAV_ITEM_PATHS.get(menuItem == null ? "" : menuItem.trim().toLowerCase());
         if (path == null) {
@@ -120,17 +82,10 @@ public class HomeHeaderSteps extends AbstractWebPage {
         return path;
     }
 
-    /** By for a header nav item, resolved through its href rather than its label. */
     private By navItem(String menuItem) {
         return By.xpath(String.format(NAV_ITEM_BY_HREF, pathFor(menuItem)));
     }
 
-    /**
-     * Counts how many matches are actually rendered.
-     *
-     * Needed because the duplicated header makes findElements().size() meaningless - it counts
-     * the hidden copy's nodes too.
-     */
     private int countVisible(By locator) {
         int visible = 0;
         try {
@@ -168,16 +123,12 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     @Then("the JSW One logo should be displayed in the header")
     public void theJSWOneLogoShouldBeDisplayedInTheHeader() {
-        // Previously the second assertion checked FIRST_NAV_ITEM while reporting "logo is not
-        // displayed" - a copy-paste that meant the logo's visibility was never actually asserted.
         softAssert.assertTrue(isAnyVisible(by(JSW_LOGO)),
                 "JSW One logo is not displayed in the header");
     }
 
     @When("user navigates away from the home page")
     public void userNavigatesAwayFromTheHomePage() {
-        // Any primary nav item leaves the home page. Resolved by href through the visibility
-        // filter, so the click lands on the rendered header rather than the 0x0 duplicate.
         clickFirstVisible(navItem("Mild Steel"));
         waitForPageLoad();
         log.info("Navigated away from home page. Current URL: " + Grid.driver().getCurrentUrl());
@@ -202,8 +153,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     @Then("the header should display the primary navigation menu items")
     public void theHeaderShouldDisplayThePrimaryNavigationMenuItems() {
-        // Asserted per item rather than as a total, so a failure names the menu that went missing
-        // instead of reporting "expected 5 but was 4".
         for (String menuItem : NAV_ITEM_PATHS.keySet()) {
             softAssert.assertTrue(isAnyVisible(navItem(menuItem)),
                     "Header navigation menu item not displayed: '" + menuItem
@@ -275,8 +224,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     @When("user hovers over the {string} navigation menu in the header")
     public void userHoversOverTheNavigationMenuInTheHeader(String menuItem) {
-        // Snapshot first: the mega-menu is detected by the sub-category links it adds, so the
-        // baseline has to be taken before the panel opens.
         categoryLinksBeforeHover = countVisible(ANY_CATEGORY_LINK);
         log.info("Visible category links before hover: " + categoryLinksBeforeHover);
 
@@ -320,7 +267,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
         softAssert.assertTrue(matchedPanels > 0,
                 "No mega-menu panel in the DOM for '" + lastHoveredNavPath + "'. Either this nav"
                         + " item has no mega-menu - Cement and TMT genuinely have none, only Mild"
-                        + " Steel, Structural steel, Bitumen and Help & Support do - or the header"
+                        + " Steel, Structural steel and Help & Support do - or the header"
                         + " markup changed, in which case re-capture it and update"
                         + " MEGA_MENU_PANEL_FOR_NAV.");
         if (matchedPanels == 0) {
@@ -332,7 +279,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
                 "The mega-menu panel for '" + lastHoveredNavPath + "' is in the DOM but contains no"
                         + " /category/ links, so a customer who opens it gets an empty flyout.");
 
-        // Reported, not asserted - see the note above on why the reveal is not a useful assertion.
         boolean revealed = waitForVisible(panel);
         log.info("Mega-menu for '" + lastHoveredNavPath + "': " + links.size()
                 + " sub-category link(s) in the DOM" + (links.isEmpty() ? "" : " " + hrefsOf(links))
@@ -340,7 +286,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
                 + " (not asserted - the reveal is CSS-only)");
     }
 
-    /** Hrefs of the given links, for the log. */
     private String hrefsOf(List<WebElement> links) {
         StringBuilder hrefs = new StringBuilder("[");
         for (int i = 0; i < links.size(); i++) {
@@ -356,7 +301,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
         return hrefs.append("]").toString();
     }
 
-    /** Polls briefly for a locator to have a visible match. */
     private boolean waitForVisible(By locator) {
         for (int attempt = 0; attempt < 10; attempt++) {
             if (isAnyVisible(locator)) {
@@ -385,8 +329,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
     @Then("the location selector should be displayed in the header")
     public void theLocationSelectorShouldBeDisplayedInTheHeader() {
         if (loggedIn == null) {
-            // No user-state step ran, so there is nothing to select on. Accept either variant and
-            // say so, rather than silently assuming guest and reporting a misleading failure.
             log.info("User state is unknown - accepting either location selector variant."
                     + " Add 'user is on the application as a \"...\" user' to assert a specific one.");
             softAssert.assertTrue(
@@ -440,7 +382,6 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     // ------------------- Helpers -------------------
 
-    /** True when both URLs point at the same page, ignoring trailing slash and query string. */
     private boolean isSameUrl(String actual, String expected) {
         if (actual == null || expected == null) {
             return false;

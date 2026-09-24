@@ -22,7 +22,6 @@ import static java.util.Objects.nonNull;
 
 public class CartRCV2ApiImp extends BaseApiImpl {
 
-    /** The cart the CCP requirements journey uses - the pair the portal itself sends. */
     private static final String REQUIREMENTS_CART_TYPE = "enquiry_v2";
     private static final String REQUIREMENTS_CART_JOURNEY_TYPE = "REQUIREMENTS_CART_V2";
 
@@ -132,21 +131,6 @@ public class CartRCV2ApiImp extends BaseApiImpl {
         return cart;
     }
 
-    /**
-     * Deletes every line item from the logged-in user's requirements cart in a single call.
-     *
-     * <p>Self-contained, unlike {@link #emptyCart()}, which reads the payload file name and the
-     * customer id out of {@code Data.get()}. That map only exists for scenarios declaring a
-     * {@code @dataFile}, so UI features cannot use it. Here the request is built in code and the
-     * customer id comes from the {@code userId} claim of the CCP login token - so it always acts
-     * on the cart of whoever the run actually logged in as, rather than a configured id that can
-     * drift out of step with the account and empty a different customer's cart.
-     *
-     * <p>The {@code access_token} header is not set here: {@code LoginApiImpl} injects it for the
-     * {@code ccpUrl} address from {@code Token.getCCPToken()}, which performs the CCP login.
-     *
-     * @return the number of line items deleted; 0 when the cart was already empty.
-     */
     public int emptyCartForLoggedInUser() {
         List<String> lineItemIds = collectLineItemIds(getCartResponse());
         if (lineItemIds.isEmpty()) {
@@ -163,8 +147,6 @@ public class CartRCV2ApiImp extends BaseApiImpl {
         DeleteLineItemRequest requestBody = new DeleteLineItemRequest();
         requestBody.setCustomerDetails(customerDetails);
         requestBody.setCartIdentifier(cartIdentifier);
-        // The whole list in one request, matching what the portal sends. Deleting one id per call
-        // leaves the cart half-emptied when a later call fails.
         requestBody.setLineItemIdList(lineItemIds);
 
         ccpUrl().create(RequestApi.class).rcv2DeleteLineItem(requestBody);
@@ -172,16 +154,10 @@ public class CartRCV2ApiImp extends BaseApiImpl {
         return lineItemIds.size();
     }
 
-    /** Number of line items currently in the cart. */
     public int getCartLineItemCount() {
         return collectLineItemIds(getCartResponse()).size();
     }
 
-    /**
-     * Line item ids in the cart. Empty when the cart has none, and also when the response carries
-     * no data at all - an unreadable cart is treated as nothing to delete rather than as a crash,
-     * because the caller re-reads the cart afterwards to confirm the outcome.
-     */
     private List<String> collectLineItemIds(Rcv2Response cart) {
         List<String> ids = new ArrayList<>();
         if (cart == null || cart.getData() == null || cart.getData().getLineItemList() == null) {

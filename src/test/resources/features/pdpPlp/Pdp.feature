@@ -27,7 +27,7 @@ Feature: Check PDP page
     And select length "2500"
     Then check Add to cart is disabled
 
-  Scenario Outline: Verify the PDP quantity field accepts only 4 digits
+  Scenario Outline: Verify the PDP quantity field accepts only 4 digits - <enteredQuantity>
     When click cart icon
     Then check the empty cart page display with message "Your cart is empty"
     When move the mouse to Mild steel category and to sub category Hot rolled

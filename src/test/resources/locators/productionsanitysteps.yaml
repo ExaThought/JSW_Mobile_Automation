@@ -1,122 +1,53 @@
 elements:
-  # ---------------------------------------------------------------------------
-  # Every locator here was verified against PRODUCTION (www.jswonemsme.com) on
-  # 2026-09-03, not against qa. That matters: the production build strips
-  # data-test-id attributes entirely - qa's category listing exposes ~69
-  # product-card-<slug> ids and production exposes ZERO - so nothing here may
-  # depend on one. These are all structural or text based.
-  #
-  # Header, footer and nav render 3-4 times with only one copy visible, so every
-  # step that uses these goes through isAnyVisible / firstVisible rather than
-  # findElement. Counts below are recorded as total/visible at 1440x900.
-  # ---------------------------------------------------------------------------
 
-  # 404 page. Verified 1/1 on production; the literal "404" appears in 3 nodes
-  # but NONE of them is visible, so matching on "404" silently fails.
   notFoundHeading:
     en_US:
       web: //h1[normalize-space()='Page not found']
 
-  # The branded 404 keeps the site chrome and offers a way back. 1/1.
   notFoundHomeLink:
     en_US:
       web: //a[contains(normalize-space(),'Home page')]
 
-  # Site chrome, used to prove a page rendered the shell rather than a bare
-  # error. 4 copies on production, 1 visible.
   siteHeader:
     en_US:
       web: //header
 
-  # TWO alternatives on purpose, not belt-and-braces. The SSR app renders a semantic <footer>,
-  # but production's 404 page is served by a different stack - Bootstrap-style classes
-  # (main-footer, footer-out, d-flex align-items-start, s-pb-24) and NO <footer> element at all.
-  # Measured on production 7 Sep 2026 at 1440x900:
-  #     /this-page-does-not-exist-...   //footer -> 0 matches
-  #                                     //div[@id='footer-cotain'] -> 1 match, visible
-  # The 7 Sep run reported "No visible site footer ... the page did not render the app shell",
-  # which read as a production defect. It was not: the footer is there under a different tag.
-  #
-  # 'footer-cotain' is spelled that way in the product. It is not a typo in this file - do not
-  # "correct" it to footer-contain, which matches nothing.
   siteFooter:
     en_US:
       web: //footer | //div[@id='footer-cotain']
 
-  # Category listing heading - carries the category name. 3/1 on production,
-  # sample text "Mild Steel".
   listingHeading:
     en_US:
       web: //h1
 
-  # A product card on a category listing or search results page.
-  #
-  # href-based on purpose: production has no data-test-id, and the anchor is the
-  # card. 72 total / 24 visible on production /category/mild-steel, each with an
-  # image and a name. The [.//img] predicate excludes text-only links that share
-  # the /product-detail/ prefix.
   productCard:
     en_US:
       web: //a[contains(@href,'/product-detail/')][.//img]
 
-  # Breadcrumb on a listing page. 6/1.
   allProductsBreadcrumb:
     en_US:
       web: //a[normalize-space()='All products']
 
-  # Account entry point for a signed-in customer. The header renders several
-  # copies; only one is visible.
   accountMenu:
     en_US:
       web: //header//span[normalize-space()='Account']
 
-  # Guest header CTA. Two copies on the guest home page and the FIRST is 0x0,
-  # which is why clicks must go through clickFirstVisible.
   headerLoginCta:
     en_US:
       web: //button[normalize-space()='Login']
 
-  # Login dialog. The auth modal opens in place - the URL does not change to
-  # /login - so presence of this button is the signal, not a redirect.
   continueWithEmail:
     en_US:
       web: //button[contains(normalize-space(),'Continue with email')]
 
-  # Registration form fields, used only to prove client-side validation blocks
-  # submission. NOTHING in the production suite ever submits this form.
   registrationNextButton:
     en_US:
       web: //button[normalize-space()='Next']
 
-  # ---------------------------------------------------------------------------
-  # Campaign / promotional interstitial.
-  #
-  # THESE TWO ARE NOT VERIFIED AGAINST A LIVE POPUP, unlike everything above.
-  # Looked for on 7 Sep 2026 at 1440x900 as a signed-out visitor and found on
-  # neither environment:
-  #     www.jswonemsme.com      //a[contains(@href,'campaign')]    -> 0 matches
-  #                             //button[@data-id='CLOSE']         -> 0 matches
-  #     qa-ssr.msme.jswone.in   both                               -> 0 matches
-  # The homepage also renders NO element carrying data-id at all, so the
-  # attribute only exists while this component is mounted.
-  #
-  # It is genuinely conditional rather than missing. The homepage sets
-  # segmentDrawerCloseCount (localStorage) and segmentDrawerSessionClosed
-  # (sessionStorage), so an interstitial of this family is suppressed once
-  # dismissed; clearing both and reloading still did not raise this one, which
-  # points at a scheduled campaign or a signed-in-only audience.
-  #
-  # Consequence for the steps: presence is NEVER asserted. The step dismisses it
-  # when it is there and records that it was absent when it is not, so a run is
-  # not tied to whether a campaign happens to be live. If the popup is present
-  # but the close button is not, THAT is asserted - a modal with no way out
-  # blocks every step after it.
   campaignPopupLink:
     en_US:
       web: //a[contains(@href, 'campaign')]
 
-  # The close control. data-id, not data-test-id - this is the only place in the
-  # suite that reads that attribute, so do not "fix" it to match the others.
   campaignPopupClose:
     en_US:
       web: //button[@data-id='CLOSE']

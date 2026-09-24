@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite verbose="1" name="Jsw automation - serial" parallel="tests" thread-count="1"
+       data-provider-thread-count="1" annotations="JDK">
+
+    <listeners>
+        <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
+    </listeners>
+
+    <parameter name="data.testId" value="testCaseId"/>
+    <parameter name="api.retry.count" value="1"/>
+    <parameter name="enableSessionsKeepAlive" value="true"/>
+    <parameter name="executionTimeout" value="10000"/>
+    <parameter name="cucumber.publish.quiet" value="true"/>
+    <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
+    <parameter name="selfHeal" value="true"/>
+    <parameter name="selfHeal.recovery.tries" value="2"/>
+    <parameter name="selfHeal.score.cap" value="0.7"/>
+    <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
+    <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
+
+    <test name="Cart">
+        <parameter name="test.group" value="cart"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features/cart"/>
+        <parameter name="cucumber.filter.tags"
+                   value="@AddToCartAndCreateOpportunity or @CartVerification"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
+    <test name="SF_SLC_SLO">
+        <parameter name="test.group" value="orders"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features/sf"/>
+        <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
+</suite>

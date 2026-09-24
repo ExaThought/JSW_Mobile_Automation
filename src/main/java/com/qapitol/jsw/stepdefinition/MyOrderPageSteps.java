@@ -48,9 +48,8 @@ public class MyOrderPageSteps extends AbstractWebPage {
         waitAndCheckIsElementVisible(CART_PAGE);
         waitAndClickOn(CART_PAGE);
         sleep(2000);
-        WebElement locater=Grid.driver().findElement(CategoryPages.CONFIRM_ORDER_BTN);
         //confirm order CTA
-        CustomUtil.scrollingToViewAndClickUsingJS(locater);
+        CustomUtil.scrollToCenter(CategoryPages.CONFIRM_ORDER_BTN);
         sleep(2000);
         waitAndCheckIsElementPresent(CCP_CREATE_ORDER_CTA);
         waitAndCheckIsElementVisible(CCP_CREATE_ORDER_CTA);
@@ -59,7 +58,6 @@ public class MyOrderPageSteps extends AbstractWebPage {
         sleep(3000);
         //Copy order number remove sleep method
         ccpOrderNumber = waitAndGetText(CCP_ORDER_NUMBER);
-        System.out.println(ccpOrderNumber);
 
     }
     @And("user clicks on My orders tab")

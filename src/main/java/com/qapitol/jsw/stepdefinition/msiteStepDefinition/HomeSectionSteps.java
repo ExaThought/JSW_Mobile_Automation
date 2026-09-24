@@ -58,15 +58,6 @@ public class HomeSectionSteps
     }
 
 
-    private String extractSectionNameFromKey(String key) {
-        // Example: extract from the key string for friendly name
-        if (key.contains("fromOurCustomers")) {
-            return "From our customers";
-        } else if (key.contains("msmeMasterclass")) {
-            return "MSME Masterclass";
-        } else {
-            return key; // fallback
-        }}
 
 
 

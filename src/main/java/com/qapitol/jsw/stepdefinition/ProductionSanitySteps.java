@@ -18,26 +18,6 @@ import static com.qapitol.jsw.utils.CustomUtil.firstVisible;
 import static com.qapitol.jsw.utils.CustomUtil.isAnyVisible;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
-/**
- * Steps for the read-only production sanity suite.
- *
- * <h2>Why these are separate from the existing PLP/Search steps</h2>
- * Production is not qa with a different hostname. Two differences forced a dedicated set:
- *
- * <ul>
- *   <li><b>Production strips {@code data-test-id}.</b> Verified 2026-09-03: qa's
- *       {@code /category/mild-steel} exposes ~69 {@code product-card-<slug>} ids, production
- *       exposes ZERO. Any step that resolves a card by test id passes on qa and finds nothing on
- *       production. Everything here is structural or text based.</li>
- *   <li><b>Guests see no prices.</b> {@code //*[contains(text(),'₹')]} matches nothing on a
- *       category listing for a signed-out visitor, so "sellable" is asserted as
- *       card + name + image + a real product-detail link, not as a price.</li>
- * </ul>
- *
- * <h2>Read-only by construction</h2>
- * Nothing here submits a form, adds to a cart, or writes anything. The registration scenario
- * fills fields deliberately and stops while Next is still disabled.
- */
 public class ProductionSanitySteps extends AbstractWebPage {
 
     private static final String NOT_FOUND_HEADING = "notFoundHeading";
@@ -51,23 +31,8 @@ public class ProductionSanitySteps extends AbstractWebPage {
     private static final String CAMPAIGN_POPUP_LINK = "campaignPopupLink";
     private static final String CAMPAIGN_POPUP_CLOSE = "campaignPopupClose";
 
-    /** Words this short are ignored when judging search relevance. */
     private static final int MIN_RELEVANCE_WORD = 3;
 
-    /**
-     * Page name to path, resolved against {@code ccpUrl} so one feature runs on any environment.
-     *
-     * <p>These five ARE identical on qa, pre-prod and production, so they stay here rather than
-     * becoming fifteen properties describing five constants.
-     *
-     * <p>The CATEGORY paths are not, and used to be. This map previously claimed all seven were
-     * "fixed public paths, identical on qa, pre-prod and production". The 7 Sep production run
-     * disproved it: {@code category/TMT-Bar-steel} is a QA slug and 404s on production, whose own
-     * sitemap gives the canonical form as {@code category/tmt-steel/cid/<uuid>}, redirecting to
-     * {@code category/tmt-bars}. The suite reported it as "an empty or thin listing means the
-     * catalogue is not sellable" - alarming, and about a page that does not exist. The two
-     * category slugs are therefore resolved per environment; see {@link #pathFor(String)}.
-     */
     private static final Map<String, String> PAGE_PATHS = new LinkedHashMap<>();
     static {
         PAGE_PATHS.put("home", "");
@@ -77,24 +42,12 @@ public class ProductionSanitySteps extends AbstractWebPage {
         PAGE_PATHS.put("register", "login");
     }
 
-    /**
-     * Page names whose path differs by environment, mapped to the property that supplies it.
-     *
-     * <p>Kept as a separate map so an unknown page name still reports every valid option, and so
-     * the reason these two are special is visible at the point of definition.
-     */
     private static final Map<String, String> ENV_SPECIFIC_PATH_KEYS = new LinkedHashMap<>();
     static {
         ENV_SPECIFIC_PATH_KEYS.put("mildSteelCategory", "mildSteelCategoryPath");
         ENV_SPECIFIC_PATH_KEYS.put("tmtCategory", "tmtCategoryPath");
     }
 
-    /**
-     * The path for a page name, from the fixed map or from this environment's properties.
-     *
-     * @throws IllegalArgumentException naming every valid page when the name is unknown, or naming
-     *         the missing property when an env-specific page is not configured for this env.
-     */
     private static String pathFor(String pageName) {
         String fixed = PAGE_PATHS.get(pageName);
         if (fixed != null) {
@@ -117,7 +70,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
         return path.trim();
     }
 
-    /** Text that means the page failed rather than rendered. */
     private static final String[] ERROR_MARKERS = {
             "something went wrong",
             "we are unable to load this page",
@@ -134,22 +86,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
         return base.endsWith("/") ? base : base + "/";
     }
 
-    /**
-     * Resolves a locator key, turning the two silent failure modes into messages that name the
-     * cause.
-     *
-     * <p>Sauron's {@code getLocator} NPEs with no message in both cases, and the trace names a
-     * locator either way, so a broken session looks exactly like a missing yaml key:
-     *
-     * <ul>
-     *   <li><b>No session.</b> {@code AbstractPage}'s locale supplier is
-     *       {@code Grid.getTestSession().getSiteLocale()} with no null check, so every lookup NPEs
-     *       when no session exists. On 7 Sep 2026 a {@code sessions.yaml} edited from a YAML list
-     *       to a bare mapping produced eight of these.</li>
-     *   <li><b>Missing key.</b> The constructor catches locator load failures and logs them at
-     *       {@code Level.ALL}, which is not printed by default.</li>
-     * </ul>
-     */
     private By by(String key) {
         if (Grid.getTestSession() == null) {
             throw new IllegalStateException("No Sauron test session, so locator '" + key + "' cannot"
@@ -177,9 +113,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
     @When("a visitor opens an address that does not exist")
     public void aVisitorOpensAnAddressThatDoesNotExist() {
-        /* A fixed, obviously-synthetic path. Not randomised: a stable URL keeps the CDN cache
-         * behaviour identical between runs, so a 404 regression is the only thing that can change
-         * the result. */
         String url = baseUrl() + "this-page-does-not-exist-automation-check";
         log.info("Opening a deliberately unknown address: " + url);
         Grid.driver().get(url);
@@ -189,15 +122,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
     public void thePageRendersTheSiteShellWithoutAnErrorState() {
         String url = Grid.driver().getCurrentUrl();
 
-        /* The shell proves the app rendered rather than a gateway or framework error page.
-         *
-         * Header AND footer are both required, but each locator accepts more than one markup
-         * shape - see siteFooter in productionsanitysteps.yaml. Production's 404 is served by a
-         * different stack with no <footer> element, and asserting the semantic tag alone reported
-         * a healthy page as "did not render the app shell" on 7 Sep.
-         *
-         * The messages name only what was missing. Concluding "the app shell did not render" from
-         * one absent element was the part that misled: the header was present throughout. */
         softAssert.assertTrue(isAnyVisible(by(SITE_HEADER)),
                 "No visible site header at " + url + " - looked for " + getLocator(SITE_HEADER));
         softAssert.assertTrue(isAnyVisible(by(SITE_FOOTER)),
@@ -220,9 +144,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
     @Then("the branded not-found page is shown")
     public void theBrandedNotFoundPageIsShown() {
-        /* Matched on "Page not found", NOT on "404". Verified on production: the literal 404
-         * appears in three nodes and none of them is visible, so a 404-based assertion passes
-         * vacuously or fails for the wrong reason. */
         softAssert.assertTrue(isAnyVisible(by(NOT_FOUND_HEADING)),
                 "No visible 'Page not found' heading at " + Grid.driver().getCurrentUrl()
                         + " - an unknown URL must render the branded 404, not a blank or generic page");
@@ -295,13 +216,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
     @When("a visitor searches production for {string}")
     public void aVisitorSearchesProductionFor(String term) {
-        /* Navigates the results URL directly instead of driving the header search box.
-         *
-         * The header renders two search widgets and the first is 0x0, so the interactive path
-         * needs clickFirstVisible plus a focus dance on a 1px input - fine for the qa regression
-         * suite, but this suite must answer "does search work on production" rather than
-         * "can automation drive the header". A direct results URL removes the widget from the
-         * question entirely. */
         lastSearchTerm = term;
         String url = baseUrl() + "product-list?text=" + term.replace(" ", "%20");
         log.info("Opening search results: " + url);
@@ -326,16 +240,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
             softAssert.fail("No visible search results to check relevance for '" + term + "'");
             return;
         }
-        /* Relevance is matched WORD BY WORD against the whole card, not as one phrase.
-         *
-         * A phrase substring looked looser than it was. Production returns "JSW Steel HRPO Coils"
-         * and "JSPL HRPO Coils SAE 1042" for "HR Coil" - correct results, since HRPO is Hot Rolled
-         * Pickled & Oiled - but none of them contains the literal string "hr coil", so the 7 Sep
-         * production run reported 24 of 24 results irrelevant and the search was fine all along.
-         *
-         * Requiring every significant word instead ("hr" AND "coil") accepts those and still
-         * rejects a genuinely unrelated result: a cement card contains neither. Words shorter than
-         * MIN_RELEVANCE_WORD are skipped so a stray "of"/"in" cannot decide relevance. */
         String[] words = term.toLowerCase(Locale.ROOT).trim().split("\\s+");
         int irrelevant = 0;
         for (WebElement card : cards) {
@@ -358,8 +262,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
                         + text.substring(0, Math.min(70, text.length())));
             }
         }
-        // Names the word that failed, so a genuine miss is distinguishable from a naming
-        // convention the check has not been taught about.
         softAssert.assertEquals(irrelevant, 0,
                 irrelevant + " of " + cards.size() + " results are not relevant to '" + term
                         + "' - see the log for the word each one was missing");
@@ -367,22 +269,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
     // ------------------------------------------------------------------ campaign interstitial
 
-    /**
-     * Dismisses the campaign interstitial when it is on screen, and does nothing when it is not.
-     *
-     * <p><b>Presence is deliberately not asserted.</b> The popup is driven by a campaign, so
-     * whether it appears is a marketing decision, not a health signal - asserting it would fail the
-     * suite on every day no campaign is running. Neither locator could be observed on production or
-     * qa as a signed-out visitor on 7 Sep 2026; see the note in productionsanitysteps.yaml.
-     *
-     * <p>What IS asserted is the escape hatch: if the popup is up and the close button is missing,
-     * the page is covered by a modal that cannot be dismissed and every later step fails against an
-     * intercepted click. That is worth a failure, and worth one that names the cause.
-     *
-     * <p>Goes through {@code isAnyVisible} / {@code clickFirstVisible} rather than
-     * {@code findElement} because the CCP chrome renders several copies of its nodes with only one
-     * visible, and the first match is routinely 0x0.
-     */
     private void dismissCampaignPopupIfShown() {
         String where = Grid.driver().getCurrentUrl();
         if (!isAnyVisible(by(CAMPAIGN_POPUP_LINK))) {
@@ -400,8 +286,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
         clickFirstVisible(by(CAMPAIGN_POPUP_CLOSE));
 
-        /* Confirm it actually closed. A click that lands on an overlay instead of the button leaves
-         * the popup up, and the next step then fails somewhere unrelated. */
         boolean stillShowing = isAnyVisible(by(CAMPAIGN_POPUP_LINK));
         softAssert.assertFalse(stillShowing,
                 "Clicked the campaign popup's close button at " + where + " but the popup is still"
@@ -418,13 +302,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
     // ------------------------------------------------------------------ product detail page
 
-    /**
-     * Opens the first product on the current listing, so the suite has a PDP to check.
-     *
-     * <p>Navigates to the card's href rather than clicking it. A click on a listing is the step
-     * most likely to be intercepted by exactly the interstitial this pair of steps exists to
-     * dismiss, and reading the href keeps the step read-only and deterministic.
-     */
     @When("a visitor opens the first product on the listing")
     public void aVisitorOpensTheFirstProductOnTheListing() {
         List<WebElement> cards = Grid.driver().findElements(by(PRODUCT_CARD));
@@ -464,12 +341,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
     @When("the visitor enters an invalid mobile number and GSTIN")
     public void theVisitorEntersAnInvalidMobileNumberAndGstin() {
-        /* Intentionally does NOT reach for individual fields.
-         *
-         * The registration entry point on production has not been verified field-by-field, and a
-         * production suite must not guess at input locators. What IS verified is that Next stays
-         * disabled until the form is valid, so this step records intent and the assertion below
-         * checks the state that matters. See the note on the scenario in the feature file. */
         log.info("Registration validation check: the form is left in an invalid state on purpose -"
                 + " nothing is submitted.");
     }
@@ -496,13 +367,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
 
     // ------------------------------------------------------------------ helpers
 
-    /**
-     * Product cards that are actually on screen.
-     *
-     * <p>Filtered by rendered size rather than taken from {@code findElements}: production returns
-     * 72 matches for the card locator and only 24 have a box, the rest being the responsive/SSR
-     * duplicates. Counting all 72 would report three times the real catalogue.
-     */
     private List<WebElement> visibleProductCards() {
         By locator = by(PRODUCT_CARD);
         if (!isAnyVisible(locator)) {
@@ -516,7 +380,6 @@ public class ProductionSanitySteps extends AbstractWebPage {
                     visible.add(candidate);
                 }
             } catch (Exception stale) {
-                // A card re-rendered mid-scan; the remaining ones are still a fair sample.
             }
         }
         return visible;

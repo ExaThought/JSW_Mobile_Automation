@@ -39,7 +39,6 @@ public class CentralCartRcImpl extends BaseApiImpl {
         // Load request body from JSON file
         centralCartRcAddToCartReq = getPayloadJsonFileAsPOJO((String) Data.get().get("CENTRAL_CART_RC_ADD_TO_CART"), CentralCartRcAddToCartReq.class);
 
-        System.out.println(centralCartRcAddToCartReq);
         // Read values from YAML/test data
         String deviceType = (String) Data.get().get("device_type");
         String storeFront = (String) Data.get().get("store_front");
@@ -304,7 +303,6 @@ public class CentralCartRcImpl extends BaseApiImpl {
         lineItems.add(lineItem);
 
        // Proceed with request
-        System.out.println(centralCartRcAddToCartReq);
         return null;
     }
 }

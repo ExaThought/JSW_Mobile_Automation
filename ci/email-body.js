@@ -529,7 +529,7 @@ const body =
   ${row('❌ Failed', failed, failed > 0 ? '#d93025' : INK)}
   ${row('⚠️ Skipped', skipped)}
   ${row('📊 Pass Rate', passRate + '%', passRate >= 90 ? '#0f9d58' : passRate >= 70 ? '#f29900' : '#d93025')}
-  ${row('🧮 Total', total)}
+  ${row('🧮 Total Scenarios', total)}
 
   ${section('📈 TREND vs PREVIOUS RUN')}
   ${trendRows}

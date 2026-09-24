@@ -46,6 +46,9 @@ public final class ThreadLocalSoftAssert extends SoftAssert {
      */
     static void startScenario() {
         CURRENT.set(new ScenarioSoftAssert());
+        // Also drop any failure descriptions left on this worker thread. TestNG reuses threads,
+        // so without this a scenario could report the previous one's failures as its own.
+        JswSoftAssert.resetFailures();
     }
 
     /**

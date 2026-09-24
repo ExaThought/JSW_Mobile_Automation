@@ -32,6 +32,8 @@
  */
 
 const fs = require('fs');
+const path = require('path');
+const { execFileSync } = require('child_process');
 
 const [, , suiteFile, cpuArg] = process.argv;
 if (!suiteFile) {
@@ -45,6 +47,32 @@ if (!suiteFile) {
 const demandOnly = cpuArg === '--demand';
 const cpus = demandOnly ? 0 : Math.max(1, parseInt(cpuArg, 10) || 1);
 const src = fs.readFileSync(suiteFile, 'utf8');
+
+// A MASTER SUITE delegates to others through <suite-files> and declares no counts of its own, so
+// reading its <suite> tag yields 1 x 1 - a demand of 1 - while the children it runs may ask for
+// far more. That would report "no cap needed" and let the surplus sessions fail at start.
+//
+// So recurse: a master suite's demand is the highest of its children, and capping it means capping
+// each child in turn. Paths in <suite-file path="..."> are relative to the file that lists them.
+const suiteFiles = [...src.matchAll(/<suite-file\b[^>]*\bpath="([^"]+)"/g)].map(m => m[1]);
+if (suiteFiles.length) {
+  const dir = path.dirname(suiteFile);
+  const children = suiteFiles.map(p => path.resolve(dir, p));
+
+  if (demandOnly) {
+    const demands = children.map(child =>
+      parseInt(execFileSync(process.execPath, [__filename, child, '--demand'], { encoding: 'utf8' }), 10) || 1);
+    process.stdout.write(String(Math.max(...demands)));
+    process.exit(0);
+  }
+
+  console.log(`cap-parallelism: ${suiteFile} is a master suite - capping each child`);
+  for (const child of children) {
+    console.log('');
+    execFileSync(process.execPath, [__filename, child, String(cpus)], { stdio: 'inherit' });
+  }
+  process.exit(0);
+}
 
 // The <suite ...> open tag, and nothing else. Attributes outside it are documentation.
 const tagMatch = /<suite\b[^>]*>/.exec(src);

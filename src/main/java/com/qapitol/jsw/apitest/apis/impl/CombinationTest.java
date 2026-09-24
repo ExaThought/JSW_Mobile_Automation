@@ -29,7 +29,6 @@ public class CombinationTest extends BaseApiImpl {
         requestBody = getPayloadJsonFileAsPOJO((String) Data.get().get("CENTRAL_CART_UPDATE_LINE_ITEM"), CentralCartUpdateLineItemReq.class);
 
         requestBody.getCartIdentifier().setDeviceType(deviceType);
-        System.out.println(cartResponse);
         requestBody.setSfCustomerId(cartResponse.getData().getCustomerDetails().getSfCustomerId());
         requestBody.setCartId(cartResponse.getData().getCartId());
         requestBody.setLineItemId(cartResponse.getData().getLineItems().get(0).getLineItemId());
