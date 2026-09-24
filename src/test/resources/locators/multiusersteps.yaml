@@ -284,9 +284,3 @@ elements:
   headerLogo:
     en_US:
       web: //header//a[@data-test-id='desktop-header-logo-link' or .//*[name()='title' and normalize-space()='JSW Logo']]
-  logoutPopup:
-    en_US:
-      web: //h2[text()='Logout']
-  confirmLogoutButton:
-    en_US:
-      web: //div[@role='dialog' and @data-state='open']//button[@data-test-id='logout-confirm-button' or normalize-space()='Yes, logout']

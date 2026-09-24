@@ -30,6 +30,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -122,8 +123,6 @@ public class MultiUserSteps extends AbstractWebPage {
     private static final String WHATSAPP_CONSENT = "whatsappConsent";
     private static final String TERMS_CONSENT = "termsConsent";
     private static final String VERIFY_OTP_BUTTON = "verifyOtpButton";
-    private static final String LOGOUT_POPUP = "logoutPopup";
-    private static final String CONFIRM_LOGOUT_BUTTON = "confirmLogoutButton";
     private static final String HEADER_LOGO = "headerLogo";
     /** Times the Account menu is (re)opened before a menu click gives up. */
     private static final int ACCOUNT_MENU_ATTEMPTS = 3;
@@ -349,7 +348,6 @@ public class MultiUserSteps extends AbstractWebPage {
     // --------------------------------- Helpers ---------------------------------
 
     private void openLoginForm() {
-        sleep(1000);
         pageRefresh();
         sleep(2000);
         // The refresh loaded a new document, which reset the zoom set during session start.
@@ -1193,7 +1191,7 @@ public class MultiUserSteps extends AbstractWebPage {
             return;
         }
         String actual = getText(status);
-        softAssert.assertTrue(actual != null && actual.toLowerCase().contains(expected.toLowerCase()),
+        softAssert.assertTrue(statusReads(actual, expected),
                 "Expected the invited user's status to read '" + expected + "' but it reads '"
                         + actual + "'");
         log.info("Invitation status for " + context.secondaryUserFullName + ": " + actual);
@@ -1220,11 +1218,23 @@ public class MultiUserSteps extends AbstractWebPage {
             return;
         }
         String actual = getText(status);
-        boolean active = actual != null && actual.trim().toLowerCase().matches("(.*\\W)?active(\\W.*)?");
+        boolean active = statusReads(actual, "active");
         softAssert.assertFalse(active, "The invited user '" + context.secondaryUserFullName
                 + "' is already listed as '" + actual + "' before accepting the invitation, so the"
                 + " invitation activated the account instead of waiting to be accepted");
         log.info("Invited user is not active yet - status reads '" + actual + "'");
+    }
+
+    /**
+     * True when the status badge reads {@code expected} as a whole word or phrase, ignoring case.
+     *
+     * <p>Not {@code contains()}: "active" is a substring of "Inactive", so an "Active" assertion
+     * would pass on a deactivated user. The expected text must sit at the start or end of the
+     * badge, or next to a non-word character.
+     */
+    private static boolean statusReads(String actual, String expected) {
+        return actual != null && Pattern.compile("(.*\\W)?" + Pattern.quote(expected.trim()) + "(\\W.*)?",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL).matcher(actual.trim()).matches();
     }
 
     @Then("the additional user should have no active permissions yet")
@@ -1800,17 +1810,14 @@ public class MultiUserSteps extends AbstractWebPage {
         sleep(1000);
     }
 
+    /**
+     * A yaml locator key. Clicks the element {@link #presence} chose rather than calling
+     * {@code waitAndClickOn(locatorKey)}: Sauron re-resolves the key with
+     * {@code driver.findElement}, which takes the first DOM match - the 0x0 header copy for
+     * header controls such as the Login CTA and the logo, not the displayed one checked here.
+     */
     private void clickWhenReady(String locatorKey, String description) {
-        WebElement element = presence(getBy(locatorKey), description);
-        scrollIntoView(element);
-        requireClickable(element, description);
-        String blocker = awaitUnobstructed(element);
-        try {
-            waitAndClickOn(locatorKey);
-        } catch (ElementClickInterceptedException e) {
-            scriptedClick(element, description, blocker, e);
-        }
-        log.info("Clicked " + description);
+        clickWhenReady(getBy(locatorKey), description);
     }
 
     /**
@@ -2234,13 +2241,6 @@ public class MultiUserSteps extends AbstractWebPage {
     public void the_additional_user_logs_out() {
         clickHeaderLogo();
         clickInAccountMenu(By.xpath(MENU_LOGOUT), "Logout");
-        // if(isElementPresent(LOGOUT_POPUP)) {
-        //    clickWhenReady(CONFIRM_LOGOUT_BUTTON, "Confirm Logout");
-        //     log.info("The additional user logged out pop up appeared and log out button was clicked");
-        // } else {
-        //     log.warning("The additional user clicked Logout but the header Login CTA did not appear"
-        //             + " within 5s, so the logout may have failed. Current URL: " + currentUrl());
-        // }
         softAssert.assertTrue(waitForVisible(HEADER_LOGIN_CTA),
                 "The additional user is still signed in after logging out, so the primary user"
                         + " cannot sign in to check the status.");
@@ -2352,7 +2352,7 @@ public class MultiUserSteps extends AbstractWebPage {
             return;
         }
         String actual = getText(status);
-        softAssert.assertTrue(actual != null && actual.toLowerCase().contains(expected.toLowerCase()),
+        softAssert.assertTrue(statusReads(actual, expected),
                 "Expected the lapsed invitation to read '" + expected + "' but it reads '"
                         + actual + "'");
     }
