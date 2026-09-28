@@ -93,7 +93,9 @@ public class Hooks {
 
         // Capture diagnostics FIRST. The teardown below logs out, injects an expired token and
         // refreshes, so anything captured after it would show a logged-out page, not the failure.
-        if (scenario != null && scenario.isFailed()) {
+        // isFailed() alone misses soft-assert failures: they only fail the scenario at
+        // assertAll() below, after this point, so those scenarios used to leave no screenshot.
+        if (scenario != null && (scenario.isFailed() || JswSoftAssert.hasFailures())) {
             FailureDiagnostics.captureAll(scenario.getName());
         }
 
