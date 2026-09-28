@@ -35,5 +35,7 @@ public class ScenarioContext
     public String secondaryUserFullName;
     public String secondaryUserMobileNo;
     public String secondaryUserEmail;
+    /** "Payments due now" from the primary user's payment reminder popup; null when none was shown. */
+    public String primaryPaymentDueNow;
 
 }

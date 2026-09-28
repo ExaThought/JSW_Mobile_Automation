@@ -278,7 +278,13 @@ public class UserPermissionStep extends AbstractWebPage
         pageRefresh();
         sleep(500);
         softAssert.assertFalse(isDisplayed(By.xpath(String.format(VIEW_EDIT_BUTTON,context.secondaryUserMobileNo))),"Secondary user not deleted "+context.secondaryUserMobileNo);
-        softAssert.assertTrue(isSecondaryUserDeleted(context.secondaryUserMobileNo));
+        // Distinct from the row check above: that one says the user is gone from the SCREEN, this
+        // one says the back end no longer grants them anything. A delete that only removed the row
+        // would pass the first and fail here, which is the failure worth telling apart.
+        softAssert.assertTrue(hasNoDepartmentsOrPermissions(context.secondaryUserMobileNo),
+                "The deleted user " + context.secondaryUserMobileNo + " still holds departments or"
+                        + " permissions in fetch-user, so the delete removed the row but left their"
+                        + " access in place");
         log.info("User completes the SF validation for mobile number "+context.secondaryUserMobileNo);
 
     }

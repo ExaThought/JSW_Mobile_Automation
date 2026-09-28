@@ -24,6 +24,13 @@ public final class CustomerProfileUtil {
 
     private static final ThreadLocal<Boolean> IS_TRANSACTING = new ThreadLocal<>();
 
+    /**
+     * The access_token of the user the BROWSER is signed in as, when a step captured one - e.g.
+     * the jwtToken from the app's own otp/verify response. When set, profile lookups use it
+     * instead of a REST login to auth/login as the configured user.
+     */
+    private static final ThreadLocal<String> SESSION_TOKEN = new ThreadLocal<>();
+
     private CustomerProfileUtil() {
         // utility class
     }
@@ -34,6 +41,36 @@ public final class CustomerProfileUtil {
      */
     public static void reset() {
         IS_TRANSACTING.remove();
+        SESSION_TOKEN.remove();
+    }
+
+    /**
+     * Makes {@code accessToken} the identity for profile lookups until {@link #clearSessionToken()}
+     * or the next scenario. Drops the cached flag, which belonged to whoever was signed in before.
+     */
+    public static void useSessionToken(String accessToken) {
+        SESSION_TOKEN.set(accessToken);
+        IS_TRANSACTING.remove();
+    }
+
+    /** Back to the configured user - call when the user whose token was captured signs out. */
+    public static void clearSessionToken() {
+        SESSION_TOKEN.remove();
+        IS_TRANSACTING.remove();
+    }
+
+    public static boolean hasSessionToken() {
+        return SESSION_TOKEN.get() != null;
+    }
+
+    /**
+     * The cached flag, or a strict fetch when none is cached. Unlike {@link #isTransactingCustomer()}
+     * it throws on failure rather than soft-failing and defaulting, so a caller with another way
+     * to decide can fall back to it.
+     */
+    public static boolean cachedOrFetchIsTransactingFlag() {
+        Boolean cached = IS_TRANSACTING.get();
+        return cached != null ? cached : fetchIsTransactingFlag();
     }
 
     /**
@@ -44,10 +81,14 @@ public final class CustomerProfileUtil {
      * Use this when the API itself is what you are testing.
      */
     public static boolean fetchIsTransactingFlag() {
-        boolean isTransacting = ApiUtils.isTransacting();
+        String sessionToken = SESSION_TOKEN.get();
+        boolean isTransacting = sessionToken != null
+                ? ApiUtils.isTransacting(sessionToken)
+                : ApiUtils.isTransacting();
         IS_TRANSACTING.set(isTransacting);
 
-        log.info("isTransacting flag for the logged-in customer: " + isTransacting);
+        log.info("isTransacting flag for the logged-in customer: " + isTransacting
+                + (sessionToken != null ? " (browser session token)" : " (configured user)"));
         Allure.addAttachment("isTransacting", String.valueOf(isTransacting));
         return isTransacting;
     }

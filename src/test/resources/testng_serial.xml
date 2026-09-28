@@ -13,6 +13,8 @@
     <parameter name="enableSessionsKeepAlive" value="true"/>
     <parameter name="executionTimeout" value="10000"/>
     <parameter name="cucumber.publish.quiet" value="true"/>
+    <parameter name="cucumber.plugin"
+               value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
     <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
     <parameter name="selfHeal" value="true"/>
     <parameter name="selfHeal.recovery.tries" value="2"/>
@@ -36,6 +38,18 @@
         <parameter name="sessions" value="sessions.yaml"/>
         <parameter name="cucumber.features" value="src/test/resources/features/sf"/>
         <parameter name="cucumber.filter.tags" value="@slcOrderCreation or @sloOrderCreation"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
+    <!-- =============================== MULTI USER =============================== -->
+
+    <test name="MultiUser">
+        <parameter name="test.group" value="multiuser"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features/multiUser"/>
+        <parameter name="cucumber.filter.tags" value="@multiUser"/>
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
