@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.jsw.config.EnvConfig;
 import com.qapitol.jsw.config.SessionBuilder;
 import com.qapitol.jsw.stepdefinition.SessionSteps;
 import com.qapitol.sauron.core.Grid;
@@ -7,6 +8,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import org.openqa.selenium.JavascriptExecutor;
+import org.testng.SkipException;
 import org.testng.asserts.SoftAssert;
 
 //import static com.qapitol.jsw.stepdefinition.SessionSteps.ACCOUNT_LABEL;
@@ -42,7 +44,42 @@ public class Hooks {
         // wrong customer record. Cleared at the START because a scenario that fails before logging
         // in never reaches its own teardown.
         SessionSteps.clearCredentials();
+        // Last, so a skipped scenario still starts with a clean soft-assert collection and
+        // no stale credentials for the After hook to see.
+        skipIfForAnotherEnv(scenario);
 
+    }
+
+    /**
+     * Skips a scenario, or an Examples row, tagged for a different environment.
+     *
+     * <p>Tag with {@code @qaOnly}, {@code @preprodOnly} or {@code @prodOnly} - on a Scenario, or on
+     * an Examples block when the rows differ per environment, as the footer links do. Untagged
+     * scenarios run everywhere. Done here rather than in the suite's tag filter because a Jenkins
+     * TAGS value replaces that filter, which would quietly run the other environment's rows.
+     *
+     * <p>SkipException is what Cucumber reports as "skipped" rather than "failed".
+     */
+    private static void skipIfForAnotherEnv(Scenario scenario) {
+        if (scenario == null) {
+            return;
+        }
+        String env = EnvConfig.current();
+        boolean envTagged = false;
+        for (String tag : scenario.getSourceTagNames()) {
+            for (String supported : EnvConfig.supportedEnvs()) {
+                if (tag.equalsIgnoreCase("@" + supported + "Only")) {
+                    if (supported.equals(env)) {
+                        return;
+                    }
+                    envTagged = true;
+                }
+            }
+        }
+        if (envTagged) {
+            throw new SkipException("Not for env '" + env + "': tagged for "
+                    + scenario.getSourceTagNames());
+        }
     }
 
     @After

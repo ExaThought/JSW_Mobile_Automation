@@ -10,7 +10,11 @@ Feature: Validate Footer links and navigation
     When the user clicks on the footer link "<linkName>" for web
     Then the user should be redirected to the corresponding page for web "<TextValue>"
 
-    Examples:
+    # The two footers differ, so each environment has its own rows. Rows tagged for the other
+    # environment are reported as skipped (Hooks.skipIfForAnotherEnv).
+    # TextValue only has to be CONTAINED in the landing URL.
+    @qaOnly
+    Examples: QA - https://qa-ssr.msme.jswone.in/
       | linkName           | TextValue                     |
       | Mild steel         | /category/mild-steel          |
       | Structural Steel   | /category/structural-steel    |
@@ -25,6 +29,27 @@ Feature: Validate Footer links and navigation
       | Terms & conditions | /terms-conditions             |
       | Privacy policy     | /privacy-policy               |
       | Return Policy      | /return-policy                |
+
+    # Pre-prod has no "About us" / "Investor relations" (replaced by "JSW One Corporate"), names
+    # the One Helix links in full, and adds "One Helix HR sheets". Its Mild steel link points at
+    # /category/steel?cid=<id>, which redirects to /category/mild-steel?cid=<id> - the value
+    # below is where it LANDS.
+    @preprodOnly
+    Examples: Pre-prod - https://preprod.jswonemsme.com/
+      | linkName                  | TextValue                     |
+      | Mild steel                | /category/mild-steel          |
+      | Structural Steel          | /category/structural-steel    |
+      | TMT                       | /category/TMT-Bar-steel       |
+      | Cement                    | /category/cement              |
+      | JSW One Corporate         | /corporate                    |
+      | One Helix Pipes and Tubes | /lp/one-helix-pipes-and-tubes |
+      | One Helix HR sheets       | /lp/one-helix-hr-sheets       |
+      | Blogs                     | /blogs                        |
+      | Site map                  | /sitemap                      |
+      | Help & support            | /help-support                 |
+      | Terms & conditions        | /terms-conditions             |
+      | Privacy policy            | /privacy-policy               |
+      | Return Policy             | /return-policy                |
 
   Scenario: Verify footer support details and branding are visible
     Then the "Support" section should be visible in the footer for web

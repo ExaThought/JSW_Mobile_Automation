@@ -160,6 +160,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     @When("user clicks on the {string} navigation menu in the header")
     public void userClicksOnTheNavigationMenuInTheHeader(String menuItem) {
+        waitForPageLoad();
         confirmBusinessDetailsDialogWithin(10);
         By target = navItem(menuItem);
         softAssert.assertTrue(isAnyVisible(target),
