@@ -121,7 +121,8 @@ public class SearchSteps extends AbstractWebPage {
     /** Opens the modal, types the keyword and submits, landing on /product-list?text=... */
     @When("user searches for {string} from the header for web")
     public void search_and_submit_for_web(String keyword) {
-        confirmBusinessDetailsDialogWithin(10);
+        // No dialog wait here: enter_search_keyword_for_web waits for it right before its click,
+        // and a second wait costs the full 10s whenever the dialog never opens.
         enter_search_keyword_for_web(keyword);
         By modalInput = by(SEARCH_MODAL_INPUT);
         waitFor().until(ExpectedConditions.elementToBeClickable(modalInput)).sendKeys(Keys.ENTER);
