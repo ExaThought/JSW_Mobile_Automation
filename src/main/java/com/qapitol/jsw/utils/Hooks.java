@@ -58,7 +58,13 @@ public class Hooks {
      * scenarios run everywhere. Done here rather than in the suite's tag filter because a Jenkins
      * TAGS value replaces that filter, which would quietly run the other environment's rows.
      *
-     * <p>SkipException is what Cucumber reports as "skipped" rather than "failed".
+     * <p>WHY org.testng.SkipException IS A SKIP, NOT A FAILURE. cucumber-core decides which hook
+     * exceptions abort a scenario as SKIPPED in {@code io.cucumber.core.runner.TestAbortedExceptions},
+     * which matches by class NAME - so it needs no TestNG dependency to recognise this one. In the
+     * cucumber-core 7.8.1 this project resolves, that list is JUnit's two AssumptionViolatedException
+     * types, opentest4j's TestAbortedException and org.testng.SkipException. Verified on pre-prod,
+     * 28 Sep 2026: the footer run reported "Skipped: 13" - exactly its @qaOnly rows - not failures.
+     * Re-check that class before upgrading cucumber-core or swapping this for another exception.
      */
     private static void skipIfForAnotherEnv(Scenario scenario) {
         if (scenario == null) {
