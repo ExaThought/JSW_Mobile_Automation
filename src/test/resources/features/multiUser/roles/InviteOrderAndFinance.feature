@@ -39,8 +39,6 @@ Feature: Invite an additional user with Order & materials management and Finance
   # Appended to this scenario rather than split into a second one: the invited address is
   # generated per scenario and lives in ScenarioContext, so a separate Scenario would have no way
   # to know which autogen@yopmail.com to open.
-    And the primary user logs out
-    And the page is refreshed after logout
     And the invited user closes the primary user window and opens Yopmail
     And the invited user opens the Yopmail inbox for the invited address
     And the invited user refreshes the Yopmail inbox

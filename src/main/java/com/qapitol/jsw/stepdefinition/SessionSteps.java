@@ -52,6 +52,9 @@ public  class SessionSteps extends AbstractWebPage {
     public static final String MASTER_CLASS_MSME_LINKS = "//h2[text()='MSME Masterclass']/../following-sibling::div//button";
     public static final String FORM_OUR_CUSTOMER = "//h2[text()='From our customers']/../following-sibling::div//button[@aria-label=\"Play video\"]/div";
     public static final String USER_DATA_POPUP = "//button[text()='Yes, details are correct']";
+    // Same element the header steps assert on (homeheadersteps.yaml accountMenu).
+    private static final String HEADER_ACCOUNT_MENU = "//header//span[normalize-space()='Account']";
+    private static final int LOGIN_CONFIRM_WAIT_SECONDS = 15;
     public static final String CONTINUE_BTN = "//button[text()='Continue browsing']";
     public static final String CONTINUE_WITH_EMAIL_CTA = "continueWithEmailCta";
     public static final String CONTINUE_CTA = "continueCTA";
@@ -97,6 +100,7 @@ public  class SessionSteps extends AbstractWebPage {
     public void ccpLoginWithConfiguredUser() throws IOException {
         ccpLogin(UserConfig.getEmail(), UserConfig.getPassword());
         deleteAllCartItems();
+        confirmBusinessDetailsDialogWithin(10);
     }
 
     @And("ccp login with {string} and {string}")
@@ -155,7 +159,30 @@ public  class SessionSteps extends AbstractWebPage {
             }
         }
         refreshAndWaitForPageLoad();
-        confirmBusinessDetailsIfDialogPresent();
+        confirmBusinessDetailsDialogWithin(10);
+        assertLoggedIn(emailId);
+    }
+
+    /**
+     * Fails the login step when the header does not show the Account menu afterwards.
+     *
+     * <p>Nothing above checks the outcome, so a rejected password or a session that did not stick
+     * passed this step and surfaced later as an unrelated assertion - on pre-prod, 25 Sep 2026,
+     * "Account menu is not displayed in the header" in the header suite.
+     */
+    private void assertLoggedIn(String emailId) {
+        // Any visible match, not the first: the header renders the label twice, an aria-hidden
+        // copy first and the visible one after it, so a first-match check never sees it.
+        if (pollFor(() -> isRenderedNow(By.xpath(HEADER_ACCOUNT_MENU)), LOGIN_CONFIRM_WAIT_SECONDS)) {
+            log.info("CCP login confirmed for " + emailId + " - Account menu is in the header");
+            return;
+        }
+        boolean loginStillOffered = isElementPresent(LOGIN_CTA_BUTTON);
+        throw new IllegalStateException("CCP login did not complete for " + emailId + ": no Account"
+                + " menu in the header after " + LOGIN_CONFIRM_WAIT_SECONDS + "s"
+                + (loginStillOffered ? " and the Login button is still shown" : "")
+                + ", at " + Grid.driver().getCurrentUrl() + ". Check this account's password for"
+                + " the environment, or whether the site rejected the login.");
     }
 
     @And("open Login page to enter email and password")

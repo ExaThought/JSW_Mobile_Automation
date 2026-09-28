@@ -1354,12 +1354,18 @@ public class MultiUserSteps extends AbstractWebPage {
      * follows would then run inside a session belonging to somebody else - which is not what an
      * invitee's browser looks like and can authenticate the wrong user.
      *
+     * <p>The primary user is LOGGED OUT first. A new window is still the same browser, sharing its
+     * cookies, so closing the window alone would leave the primary user's session alive for the
+     * invitee's window to inherit. Skipped when the primary user is already signed out - some
+     * scenarios log out in a step of their own just before this one.
+     *
      * <p>The driver itself must survive, so the order is open-then-close: closing the only window
      * first would end the session and every step after this would report "no such window".
      */
     @And("the invited user closes the primary user window and opens Yopmail")
     public void the_invited_user_closes_the_primary_user_window_and_opens_yopmail() {
         requireInvitee();
+        logOutPrimaryUserIfSignedIn();
         WebDriver driver = Grid.driver();
         String primaryWindow = driver.getWindowHandle();
 
@@ -1388,6 +1394,31 @@ public class MultiUserSteps extends AbstractWebPage {
         YopmailInbox.openSite();
         SessionBuilder.applyZoom();
         announce("INVITEE", "opened Yopmail for " + context.secondaryUserEmail);
+    }
+
+    /**
+     * Logs the primary user out through the header Account menu when they are still signed in,
+     * and checks the header then offers Login. A failed logout is a soft failure: the window swap
+     * still goes ahead, and the report says the invitee's window may carry the primary session.
+     */
+    private void logOutPrimaryUserIfSignedIn() {
+        // Up to 3s rather than one look, so a header still rendering does not read as "signed out".
+        if (!waitForVisible(ACCOUNT_MENU, 6)) {
+            log.info("The primary user is already signed out - no logout needed before opening Yopmail");
+            return;
+        }
+        try {
+            SessionBuilder.applyZoom();
+            clickInAccountMenu(By.xpath(MENU_LOGOUT), "Logout");
+            softAssert.assertTrue(waitForVisible(HEADER_LOGIN_CTA),
+                    "The primary user is still signed in after logging out before opening Yopmail, so"
+                            + " the invited user's window shares the primary user's session");
+            announce("ACCOUNT", "primary user logged out before opening Yopmail");
+        } catch (RuntimeException | AssertionError e) {
+            softAssert.fail("Could not log the primary user out before opening Yopmail ("
+                    + e.getMessage() + "), so the invited user's window may share the primary"
+                    + " user's session");
+        }
     }
 
     @And("the invited user opens the Yopmail inbox for the invited address")
