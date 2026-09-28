@@ -176,14 +176,15 @@ public class FooterSteps extends AbstractWebPage {
             // is how "Blogs" was clicked yet never navigated.
             confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
             By footerLink = footerLinkBy(linkName);
-            scrollToCenter(footerLink);
             softAssert.assertTrue(
                     isAnyVisible(footerLink),
                     "Footer link not displayed: " + linkName
             );
 
             // clickFirstVisible, not clickButton: clickButton resolves the first match, which is a
-            // hidden 0x0 copy, so the click silently lands on nothing.
+            // hidden 0x0 copy, so the click silently lands on nothing. No separate scroll either:
+            // scrollToCenter(By) has the same first-match problem, and clickFirstVisible already
+            // scrolls the VISIBLE copy to the centre before clicking - keep that if it is refactored.
             clickFirstVisible(footerLink);
 
             log.info("Successfully clicked on footer link: " + linkName);
