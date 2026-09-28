@@ -4,6 +4,7 @@ package com.qapitol.jsw.stepdefinition;
 import com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp;
 import com.qapitol.jsw.context.ScenarioContext;
 import com.qapitol.jsw.utils.CustomUtil;
+import com.qapitol.jsw.config.EnvConfig;
 import com.qapitol.jsw.config.SessionBuilder;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.CustomerProfileUtil;
@@ -106,14 +107,17 @@ public class CartSteps extends AbstractWebPage {
     private static final String wireCategory = "//li/a[contains(@href, 'wire-rods')]";
     private static final String hotRolledSheetsSubCategory = "//li/a[contains(@href, 'hot-rolled-sheets')]";
     private static final String hotRolledCoilsSubCategory = "//li/a[contains(@href, 'hot-rolled-coils')]";
-    private static final String coldRolledSheetsSubCategory = "//li/a[contains(@href, 'cold-rolled-steel-sheet') or contains(@href, 'steel-cold-rolled-sheet')]";
+    // 'cold-rolled-sheets' is pre-prod's header link (/category/cold-rolled-sheets, 25 Sep 2026).
+    private static final String coldRolledSheetsSubCategory = "//li/a[contains(@href, 'cold-rolled-steel-sheet') or contains(@href, 'steel-cold-rolled-sheet') or contains(@href, 'cold-rolled-sheets')]";
     private static final String coldRolledCoilsSubCategory = "//li/a[contains(@href, 'cold-rolled-coils')]";
     private static final String galvanizedSheetCategory = "//li/a[contains(@href, 'coated-gi-sheet') or contains(@href, 'coated-galvanized-sheets')]";
     public static final String msHotRolledCategory = "//li/a[contains(@href,'hot-rolled-steel')]/span";
     public static final String msColdRolledCategory = "//li/a[contains(@href,'cold-rolled-steel')]/span";
     public static final String coatedSteelCategory = "(//a[contains(@href,'/category/steel-coated')])[1]";
     public static final By quantityTextbox = By.xpath("//input[@id='quantity-input']");
-    public static final By quantityLabel = By.xpath("//label[contains(normalize-space(), 'Specify quantity')]");
+    // Clicked only to blur the quantity input. Pre-prod's TMT PDP has no "Specify quantity" label,
+    // just the unit label ("MT") carrying data-test-id pdp-quantity-label (25 Sep 2026).
+    public static final By quantityLabel = By.xpath("(//label[contains(normalize-space(), 'Specify quantity') or @data-test-id='pdp-quantity-label'])[1]");
     public static final String pipesAndTubesCategory = "//a[contains(@href,'/category/pipes-and-tubes')]/span";
     public static final String hollowSectionsSubCategory = "//a[contains(@href,'/category/hollow-sections')]/span";
     public static final String viscosityGradeBitumenCategory = "//a[contains(@href,'/category/viscosity-grade-bitumen')]/span";
@@ -278,12 +282,17 @@ public class CartSteps extends AbstractWebPage {
 
     @Then("verify the Attribute values for Cement in cart page")
     public void verifyTheAttributeValuesForCementInCartPage() {
+        verifyTheAttributeValuesForCementInCartPage("1");
+    }
+
+    @Then("verify the Attribute values for Cement in cart page with cart count {string}")
+    public void verifyTheAttributeValuesForCementInCartPage(String count) {
         //Verify product name in cart page for cement
         softAssert.assertTrue(context.cartPdpProductName.equals(context.pdpProductName), "Product name in cart page is not matching with product name in PDP or product name is not displayed in cart page");
 
         waits(By.xpath(CART_COUNT));
         String cementCartCount = CustomUtil.getItemCount(CustomUtil.getText(By.xpath(CART_COUNT)));
-        softAssert.assertEquals(cementCartCount, "1", "Cart count is not updated in cart icon after adding product to cart");
+        softAssert.assertEquals(cementCartCount, count, "Cart count is not updated in cart icon after adding product to cart");
         //Verify the quantity in cart page for cement
         context.cartPageQuantity = waitAndGetText(CART_PAGE_QUANTITY);
         softAssert.assertEquals(context.cartPageQuantity, "Qty: " + context.pdpQuantity + " bags", "Quantity in cart page is not matching with selected quantity in PDP or quantity is not displayed in cart page");
@@ -383,10 +392,10 @@ public class CartSteps extends AbstractWebPage {
     @When("click on Cement product")
     public void clickOnCementProduct() {
         try {
-            confirmBusinessDetailsIfDialogPresent();
+            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsIfDialogPresent();
+                confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
                 hoverOverElement(ALL_CATEGORY);
             }
             waitAndClickOn(CEMENT_PLP);
@@ -494,10 +503,10 @@ public class CartSteps extends AbstractWebPage {
     @When("click on TMT product")
     public void clickOnTMTProduct() {
         try {
-            confirmBusinessDetailsIfDialogPresent();
+            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsIfDialogPresent();
+                confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
                 hoverOverElement(ALL_CATEGORY);
             }
             waitAndClickOn(TMT_PRODUCT);
@@ -896,10 +905,14 @@ public class CartSteps extends AbstractWebPage {
         refreshAndWaitFor(CART_ICON);
         clickButton(CART_ICON);
         log.info("Clicked on cart icon");
+        // Pre-prod opens "Personalize your procurement" over the cart page after it loads, which
+        // hides the empty-cart message from the next step (build of 25 Sep 2026, CR Sheet).
+        confirmBusinessDetailsDialogWithin(5);
     }
 
     @Then("check the empty cart page display with message {string}")
     public void checkTheEmptyCartPageDisplayWithMessage(String expectedMessage) {
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         try {
             try {
                 new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath(EMPTY_CART_MSG)));
@@ -1028,6 +1041,9 @@ public class CartSteps extends AbstractWebPage {
 
     @And("User navigate to HomePage")
     public void userNavigateToHomePage() {
+        // Pre-prod reshows "Personalize your procurement" on the cart page, and its overlay
+        // intercepts the logo click (build of 25 Sep 2026, HR Coil scenario).
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         clickButton(By.xpath(JSW_LOGO));
     }
 
@@ -1098,15 +1114,15 @@ public class CartSteps extends AbstractWebPage {
 
     @When("move the mouse to {string} category")
     public void moveTheMouseToCategory(String category) {
-        confirmBusinessDetailsIfDialogPresent();
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         if (expectsAllCategoriesMenu()) {
             refreshAndWaitFor(ALL_CATEGORY);
-            confirmBusinessDetailsIfDialogPresent();
+            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
             hoverOverElement(ALL_CATEGORY);
         }
 
         if (category.equalsIgnoreCase("mild steel")) {
-            confirmBusinessDetailsIfDialogPresent();
+            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
             waits(MILD_STEEL_CATEGORY);
             hoverOverElement(MILD_STEEL_CATEGORY);
             log.info("cursor moved to mild steel category");
@@ -1121,7 +1137,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("click on {string} product")
     public void clickOnProduct(String product) {
-        confirmBusinessDetailsIfDialogPresent();
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         switch (product.trim().toLowerCase()) {
             case "hr sheet":
                 clickHRSheetProduct();
@@ -1259,10 +1275,13 @@ public class CartSteps extends AbstractWebPage {
      */
     private void openCategoryFlyoutOrListing(String trail, String listingPath, boolean expected,
                                              Runnable openFlyout) {
-        confirmBusinessDetailsIfDialogPresent();
+        // Waits rather than checks: straight after login pre-prod has not opened the dialog yet,
+        // then opens it over the flyout (build of 25 Sep 2026, Coated Steel scenario).
+        confirmBusinessDetailsDialogWithin(3);
         try {
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
+                confirmBusinessDetailsDialogWithin(3);
                 hoverOverElement(ALL_CATEGORY);
             }
             openFlyout.run();
@@ -1493,22 +1512,6 @@ public class CartSteps extends AbstractWebPage {
         jsClick(By.xpath(hotRolledCoilsSubCategory));
     }
 
-    private static final Map<String, String> CATEGORY_PRODUCTS = buildCategoryProducts();
-
-    private static Map<String, String> buildCategoryProducts() {
-        Map<String, String> products = new LinkedHashMap<>();
-        products.put("hr sheet", "SAIL Hot Rolled Sheets IS 2062:2011 E350C");
-        products.put("hr coil", "JSW Steel Hot Rolled Coils IS 2062:2011 E250A");
-        products.put("hrpo sheet", "Neotrex Silveron+ Hot Rolled Pickled and Oiled Sheet 1079:2017 1040");
-        products.put("wire rod coils", "JSW Steel Wire Rod Coils IS 7887:1992 SAE1010");
-        products.put("galvanized sheet", "JSW Steel Galvanized Steel Sheets IS 277:2018 GP250");
-        products.put("cement", "JSW Ordinary Portland Cement 43");
-        products.put("tmt", "JSW One FE 550 TMT Rebar");
-        products.put("pipes and tubes", "One Helix Circular Hollow Section IS 1161 YSt 210 Black");
-        products.put("bitumen", "Standard IS 73:2013 VG40 Bitumen (Bulk)");
-        return products;
-    }
-
     @And("click on the product for {string} category")
     public void clickOnTheProductForCategory(String category) {
         String productName = productNameFor(category);
@@ -1531,20 +1534,25 @@ public class CartSteps extends AbstractWebPage {
         log.info("Clicked '" + productName + "' - now at " + Grid.driver().getCurrentUrl());
     }
 
+    /**
+     * The product to open for a category, read from {@code product.<category>} in
+     * {@code global_<env>.properties} - e.g. "HR Coil" reads {@code product.hr-coil}.
+     *
+     * <p>Per-environment because the catalogues differ, so there is deliberately no shared
+     * fallback: a QA product name silently used on another environment would fail later as
+     * "not found on the listing" instead of here, where the missing key is named.
+     */
     private String productNameFor(String category) {
-        String key = normaliseCategory(category);
-        String configured = ConfigUtil.getSecretValue("product." + key.replace(' ', '-'));
-        if (configured != null && !configured.trim().isEmpty()) {
-            return configured.trim();
-        }
-        String product = CATEGORY_PRODUCTS.get(key);
-        if (product == null) {
+        String key = "product." + normaliseCategory(category).replace(' ', '-');
+        String product = ConfigUtil.getSecretValue(key);
+        if (product == null || product.trim().isEmpty()) {
             throw new IllegalArgumentException("No product configured for category '" + category
-                    + "'. Known categories: " + CATEGORY_PRODUCTS.keySet()
-                    + ". Add it to CATEGORY_PRODUCTS rather than putting a product name in the"
-                    + " feature file, so the name lives in one place when the catalogue changes.");
+                    + "' on env '" + EnvConfig.current() + "'. Add '" + key + "=<product name>' to "
+                    + EnvConfig.propertiesFileFor(EnvConfig.current()) + " rather than putting a"
+                    + " product name in the feature file, so the name lives in one place when the"
+                    + " catalogue changes.");
         }
-        return product;
+        return product.trim();
     }
 
     private static String normaliseCategory(String category) {
@@ -1697,7 +1705,7 @@ public class CartSteps extends AbstractWebPage {
         quantityInput.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
         quantityInput.sendKeys(Keys.ENTER);
-        confirmBusinessDetailsIfDialogPresent();
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         jsClick(quantityLabel);
 
         String held = settledValueOf(By.xpath(QUANTITY_TEXTBOX));
@@ -1715,6 +1723,7 @@ public class CartSteps extends AbstractWebPage {
         THICKNESS,
         WIDTH,
         LENGTH,
+        OPTIONAL_LENGTH,
         CUSTOM_LENGTH,
         LENGTH_OR_CUSTOM,
         COATING_GRADE,
@@ -1727,8 +1736,12 @@ public class CartSteps extends AbstractWebPage {
         Map<String, List<PdpAttribute>> map = new LinkedHashMap<>();
 
         // Long products - sized by diameter, not by sheet dimensions.
-        map.put("tmt", Arrays.asList(PdpAttribute.FORM, PdpAttribute.DIAMETER));
-        map.put("tmtrebar", Arrays.asList(PdpAttribute.FORM,PdpAttribute.DIAMETER));
+        // Picked in whichever order the PDP enables them - see nextSelectableAttribute. Length is
+        // pre-prod only: there "JSW One Private Brands TMT IS 1786:2008 FE 550" shows diameter,
+        // length, form, with form disabled until the others are chosen; qa shows form, diameter
+        // with diameter disabled until form is chosen (both checked 25 Sep 2026).
+        map.put("tmt", Arrays.asList(PdpAttribute.FORM, PdpAttribute.DIAMETER, PdpAttribute.OPTIONAL_LENGTH));
+        map.put("tmtrebar", Arrays.asList(PdpAttribute.FORM, PdpAttribute.DIAMETER, PdpAttribute.OPTIONAL_LENGTH));
         map.put("wire", Collections.singletonList(PdpAttribute.DIAMETER));
 
         // Flat products - thickness and width always, length varies by product.
@@ -1760,45 +1773,82 @@ public class CartSteps extends AbstractWebPage {
         log.info("Selecting attributes " + attributes + " for '" + productName
                 + "' on PDP '" + context.cartPdpProductName + "'");
 
-        for (PdpAttribute attribute : attributes) {
-            switch (attribute) {
-                case FORM:
-                    context.pdpForm = selectFirstEnabledOption(FORM, "form", productName);
-                    break;
-                case DIAMETER:
-                    context.pdpDiameter = selectFirstEnabledOption(DIAMETER, "diameter", productName);
-                    break;
-                case THICKNESS:
-                    context.pdpThickness = selectFirstEnabledOption(THICKNESS, "thickness", productName);
-                    break;
-                case WIDTH:
-                    context.pdpWidth = selectFirstEnabledOption(WIDTH_BUTTON, "width", productName);
-                    break;
-                case LENGTH:
-                    context.pdpLength = selectFirstEnabledOption(LENGTH_BUTTON, "length", productName);
-                    break;
-                case CUSTOM_LENGTH:
-                    context.pdpLength = enterCustomLengthIfPresent(productName);
-                    break;
-                case LENGTH_OR_CUSTOM:
-                    context.pdpLength = waitForOptionAvailable(LENGTH_BUTTON)
-                            ? selectFirstEnabledOption(LENGTH_BUTTON, "length", productName)
-                            : enterCustomLengthIfPresent(productName);
-                    break;
-                case COATING_GRADE:
-                    context.pdpCoatingGrade = selectFirstEnabledOption(COATING_GRADE, "coating grade", productName);
-                    break;
-                case SPANGLE_TYPE:
-                    context.pdpSpangleType = selectFirstEnabledOption(SPANGLE_TYPE, "spangle type", productName);
-                    break;
-                default:
-                    throw new IllegalStateException("Unhandled PDP attribute: " + attribute);
-            }
+        boolean dependentOptions = attributes.contains(PdpAttribute.FORM);
+        List<PdpAttribute> pending = new ArrayList<>(attributes);
+        while (!pending.isEmpty()) {
+            PdpAttribute attribute = dependentOptions ? nextSelectableAttribute(pending) : pending.get(0);
+            pending.remove(attribute);
+            selectAttribute(attribute, productName);
         }
         sleep(1000);
         enterQuantityUsingText(quantity, productName);
-        confirmBusinessDetailsIfDialogPresent();
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         jsClick(quantityLabel);
+    }
+
+    private void selectAttribute(PdpAttribute attribute, String productName) {
+        switch (attribute) {
+            case FORM:
+                context.pdpForm = selectFirstEnabledOption(FORM, "form", productName);
+                break;
+            case DIAMETER:
+                context.pdpDiameter = selectFirstEnabledOption(DIAMETER, "diameter", productName);
+                break;
+            case THICKNESS:
+                context.pdpThickness = selectFirstEnabledOption(THICKNESS, "thickness", productName);
+                break;
+            case WIDTH:
+                context.pdpWidth = selectFirstEnabledOption(WIDTH_BUTTON, "width", productName);
+                break;
+            case LENGTH:
+                context.pdpLength = selectFirstEnabledOption(LENGTH_BUTTON, "length", productName);
+                break;
+            case OPTIONAL_LENGTH:
+                context.pdpLength = selectOptionalOption(LENGTH_BUTTON, "length", productName);
+                break;
+            case CUSTOM_LENGTH:
+                context.pdpLength = enterCustomLengthIfPresent(productName);
+                break;
+            case LENGTH_OR_CUSTOM:
+                context.pdpLength = waitForOptionAvailable(LENGTH_BUTTON)
+                        ? selectFirstEnabledOption(LENGTH_BUTTON, "length", productName)
+                        : enterCustomLengthIfPresent(productName);
+                break;
+            case COATING_GRADE:
+                context.pdpCoatingGrade = selectOptionalOption(COATING_GRADE, "coating grade", productName);
+                break;
+            case SPANGLE_TYPE:
+                context.pdpSpangleType = selectOptionalOption(SPANGLE_TYPE, "spangle type", productName);
+                break;
+            default:
+                throw new IllegalStateException("Unhandled PDP attribute: " + attribute);
+        }
+    }
+
+    /**
+     * The first pending attribute whose option is enabled right now, else the first pending one.
+     *
+     * <p>TMT options unlock each other in a different order per environment (see the "tmt"
+     * profile), so a fixed order clicks a disabled button on one of them.
+     */
+    private PdpAttribute nextSelectableAttribute(List<PdpAttribute> pending) {
+        for (PdpAttribute candidate : pending) {
+            String option = optionXpathFor(candidate);
+            if (option != null && isFirstMatchInteractable(By.xpath(option))) {
+                return candidate;
+            }
+        }
+        return pending.get(0);
+    }
+
+    private static String optionXpathFor(PdpAttribute attribute) {
+        switch (attribute) {
+            case FORM: return FORM;
+            case DIAMETER: return DIAMETER;
+            case LENGTH:
+            case OPTIONAL_LENGTH: return LENGTH_BUTTON;
+            default: return null;
+        }
     }
 
     private String enterCustomLengthIfPresent(String productName) {
@@ -1810,6 +1860,24 @@ public class CartSteps extends AbstractWebPage {
             return null;
         }
         return enterCustomLength(productName);
+    }
+
+    /**
+     * Selects the first option when the PDP offers the attribute, and skips it when it does not.
+     *
+     * <p>Pre-prod's "JSW Steel Galvanized Steel Sheets IS 277:2018 GP250" offers only thickness,
+     * width and length (25 Sep 2026), while qa also offers coating grade and spangle type. The
+     * cart assertion reads thickness x width x length only, so a missing one changes nothing.
+     */
+    private String selectOptionalOption(String optionXpath, String attributeName, String productName) {
+        if (!waitForOptionAvailable(optionXpath)) {
+            String message = "No " + attributeName + " selector on the PDP for '" + productName
+                    + "' after waiting " + OPTIONAL_ATTRIBUTE_WAIT_SECONDS + "s - skipping it.";
+            log.info(message);
+            Allure.addAttachment(attributeName + " skipped for " + productName, message);
+            return null;
+        }
+        return selectFirstEnabledOption(optionXpath, attributeName, productName);
     }
 
     private boolean waitForOptionAvailable(String optionXpath) {
@@ -1858,6 +1926,24 @@ public class CartSteps extends AbstractWebPage {
     }
 
     private void enterQuantityUsingText(String quantity, String productName) {
+        // Pre-prod reopens "Personalize your procurement" on the PDP at any moment - before the
+        // quantity is typed or while it is - and its overlay makes the box not interactable
+        // (Coated Sheet and Wire, 25 Sep 2026). So close it first, and retry once if it was the
+        // reason the entry failed.
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        try {
+            enterQuantityOnce(quantity, productName);
+        } catch (RuntimeException e) {
+            if (!confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS)) {
+                throw e;
+            }
+            log.info("Quantity entry for " + productName + " was blocked by the business details"
+                    + " dialog - closed it, retrying once");
+            enterQuantityOnce(quantity, productName);
+        }
+    }
+
+    private void enterQuantityOnce(String quantity, String productName) {
         try {
             waits(By.xpath(QUANTITY_TEXTBOX));
             scrollToCenter(By.xpath(QUANTITY_TEXTBOX));

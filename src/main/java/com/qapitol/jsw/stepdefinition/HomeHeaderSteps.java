@@ -20,9 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.qapitol.jsw.utils.CustomUtil.clickFirstVisible;
-import static com.qapitol.jsw.utils.CustomUtil.hoverOverElement;
-import static com.qapitol.jsw.utils.CustomUtil.isAnyVisible;
+import static com.qapitol.jsw.utils.CustomUtil.*;
 import static com.qapitol.jsw.utils.Hooks.softAssert;
 
 public class HomeHeaderSteps extends AbstractWebPage {
@@ -162,6 +160,7 @@ public class HomeHeaderSteps extends AbstractWebPage {
 
     @When("user clicks on the {string} navigation menu in the header")
     public void userClicksOnTheNavigationMenuInTheHeader(String menuItem) {
+        confirmBusinessDetailsDialogWithin(10);
         By target = navItem(menuItem);
         softAssert.assertTrue(isAnyVisible(target),
                 "Header navigation menu item not displayed, cannot click: " + menuItem);

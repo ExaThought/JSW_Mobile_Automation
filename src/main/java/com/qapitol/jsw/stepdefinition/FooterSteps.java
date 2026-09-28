@@ -234,6 +234,7 @@ public class FooterSteps extends AbstractWebPage {
 
     @When("the user clicks on social icon {string}")
     public void click_social_icon(String iconName) {
+        confirmBusinessDetailsDialogWithin(10);
 
         String key = getSocialKey(iconName);
 

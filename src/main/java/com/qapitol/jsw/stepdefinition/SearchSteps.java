@@ -110,6 +110,7 @@ public class SearchSteps extends AbstractWebPage {
 
     @When("user enters {string} in search bar for web")
     public void enter_search_keyword_for_web(String keyword) {
+        confirmBusinessDetailsDialogWithin(10);
         log.info("Entering search keyword: " + keyword);
         clickButton(by(SEARCH_TRIGGER));
         By modalInput = by(SEARCH_MODAL_INPUT);
@@ -120,6 +121,7 @@ public class SearchSteps extends AbstractWebPage {
     /** Opens the modal, types the keyword and submits, landing on /product-list?text=... */
     @When("user searches for {string} from the header for web")
     public void search_and_submit_for_web(String keyword) {
+        confirmBusinessDetailsDialogWithin(10);
         enter_search_keyword_for_web(keyword);
         By modalInput = by(SEARCH_MODAL_INPUT);
         waitFor().until(ExpectedConditions.elementToBeClickable(modalInput)).sendKeys(Keys.ENTER);
