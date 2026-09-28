@@ -38,10 +38,10 @@ Feature: Invite an additional user with Order & materials management and Finance
   # --- Accept the invitation as the invited user ---------------------------------------------
   # Appended to this scenario rather than split into a second one: the invited address is
   # generated per scenario and lives in ScenarioContext, so a separate Scenario would have no way
-  # to know which autogen@yopmail.com to open.
-    And the invited user closes the primary user window and opens Yopmail
-    And the invited user opens the Yopmail inbox for the invited address
-    And the invited user refreshes the Yopmail inbox
+  # to know which generated @maildrop.cc address to open.
+    And the invited user closes the primary user window and opens a clean window
+    And the invited user opens the mailbox for the invited address
+    And the invited user refreshes the mailbox
     And the invited user opens the first email
     And the invited user scrolls to the Accept invite button in the email
     When the invited user clicks Accept invite

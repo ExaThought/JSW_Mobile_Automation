@@ -6,7 +6,7 @@ import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.jsw.utils.CustomerProfileUtil;
 import com.qapitol.jsw.utils.NetworkCapture;
 import com.qapitol.jsw.utils.UserConfig;
-import com.qapitol.jsw.utils.YopmailInbox;
+import com.qapitol.jsw.utils.MaildropInbox;
 import com.qapitol.sauron.core.Grid;
 import com.qapitol.sauron.web.AbstractWebPage;
 import io.cucumber.java.en.And;
@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static com.qapitol.jsw.utils.CustomUtil.enterText;
-import static com.qapitol.jsw.utils.CustomUtil.generateEmail;
 import static com.qapitol.jsw.utils.CustomUtil.generateFirstName;
 import static com.qapitol.jsw.utils.ApiUtils.generateMobileNumber;
 import static com.qapitol.jsw.utils.CustomUtil.getText;
@@ -212,8 +211,7 @@ public class MultiUserSteps extends AbstractWebPage {
      *
      * <p>ThreadLocal because scenarios run concurrently at thread-count &gt; 1 and this is the one
      * piece of invitation state ScenarioContext has no field for. Set when the email is read, so
-     * the step that opens it does not have to reopen the mailbox - every extra mailbox visit is
-     * another chance for Yopmail to present a CAPTCHA.
+     * the step that opens it does not have to query the mailbox again.
      */
     private static final ThreadLocal<String> INVITATION_LINK = new ThreadLocal<>();
 
@@ -494,11 +492,11 @@ public class MultiUserSteps extends AbstractWebPage {
      * The email as it appears inside a user card's {@code data-test-id}.
      *
      * <p>The page builds {@code user-card-<email>} with every '@' and '.' turned into '-', so
-     * {@code autogen1789647156095@yopmail.com} becomes
-     * {@code user-card-autogen1789647156095-yopmail-com}.
+     * {@code jswqa1789647156095a1b2c3d4@maildrop.cc} becomes
+     * {@code user-card-jswqa1789647156095a1b2c3d4-maildrop-cc}.
      *
      * <p>The WHOLE address is slugified, not just the part before the '@'. The generated invitees
-     * are all @yopmail.com today, so hardcoding the suffix would work and would break silently the
+     * are all @maildrop.cc today, so hardcoding the suffix would work and would break silently the
      * first time an invitee comes from anywhere else - a locator that quietly matches nothing, and
      * an empty role list that reads as "the product granted no roles".
      */
@@ -542,7 +540,7 @@ public class MultiUserSteps extends AbstractWebPage {
         // generateMobileNumber, NOT generateNotRegisteredMobileNumber: the latter calls the
         // registration-check API, which logs in over REST to get a token. See the note below.
         context.secondaryUserMobileNo = generateMobileNumber();
-        context.secondaryUserEmail = generateEmail();
+        context.secondaryUserEmail = MaildropInbox.newAddress();
         // The invitee is generated, so this address exists nowhere else - without it on the
         // console there is no way to tell afterwards which mailbox to open or which row was left
         // behind on the Users & permissions tab.
@@ -566,7 +564,7 @@ public class MultiUserSteps extends AbstractWebPage {
      *     nothing to do with invitations, and named an account nobody had configured for this
      *     feature. That account has since been removed from the framework entirely.
      *   - Both asked the server to confirm something the run already guarantees. The email is
-     *     CustomUtil.generateEmail(), which is millisecond-timestamped, and the mobile is ten
+     *     MaildropInbox.newAddress(), which is millisecond-timestamped, and the mobile is ten
      *     random digits starting 6-9. A collision needs the same millisecond or one chance in a
      *     billion.
      *   - The product itself is the better check anyway. A duplicate mobile is rejected by the Add
@@ -1270,18 +1268,18 @@ public class MultiUserSteps extends AbstractWebPage {
     @Then("the additional user should receive the invitation email within {int} minutes")
     public void the_additional_user_should_receive_the_invitation_email_within_minutes(int minutes) {
         requireInvitee();
-        boolean delivered = YopmailInbox.waitForMail(
+        boolean delivered = MaildropInbox.waitForMail(
                 context.secondaryUserEmail, Duration.ofMinutes(minutes));
         softAssert.assertTrue(delivered,
                 "No invitation email reached " + context.secondaryUserEmail + " within " + minutes
-                        + " minute(s). Check the failure screenshot for a Yopmail CAPTCHA before"
-                        + " reporting this as a missing notification.");
+                        + " minute(s). Check the log for a Maildrop API error before reporting"
+                        + " this as a missing notification.");
     }
 
     @Then("the invitation email should name the inviting company")
     public void the_invitation_email_should_name_the_inviting_company() {
         requireInvitee();
-        String body = YopmailInbox.latestMailText(context.secondaryUserEmail);
+        String body = MaildropInbox.latestMailText(context.secondaryUserEmail);
         // "JSW" rather than the customer's own company name: the account's registered name is not
         // known to this scenario, and an invitation that does not identify its sender at all is
         // the failure actually worth catching.
@@ -1292,13 +1290,12 @@ public class MultiUserSteps extends AbstractWebPage {
 
     /**
      * The mail must carry the link the next step opens, so the href is captured here rather than
-     * read twice - opening a second copy of the mailbox would be a second chance for Yopmail to
-     * show a CAPTCHA.
+     * read twice.
      */
     @Then("the invitation email should carry a link to accept the invitation")
     public void the_invitation_email_should_carry_a_link_to_accept_the_invitation() {
         requireInvitee();
-        String link = YopmailInbox.latestMailFirstLink(context.secondaryUserEmail);
+        String link = MaildropInbox.latestMailFirstLink(context.secondaryUserEmail);
         INVITATION_LINK.set(link);
         softAssert.assertTrue(link != null,
                 "The invitation email to " + context.secondaryUserEmail + " contains no link to"
@@ -1309,7 +1306,7 @@ public class MultiUserSteps extends AbstractWebPage {
     public void the_additional_user_opens_the_invitation_link_from_the_email() {
         String link = INVITATION_LINK.get();
         if (link == null) {
-            link = YopmailInbox.latestMailFirstLink(requireInvitee().secondaryUserEmail);
+            link = MaildropInbox.latestMailFirstLink(requireInvitee().secondaryUserEmail);
         }
         if (link == null) {
             throw new AssertionError("There is no invitation link to open: none was found in the"
@@ -1343,11 +1340,14 @@ public class MultiUserSteps extends AbstractWebPage {
     }
 
     // =============================================================================
-    // Accepting the invitation as the invited user, through Yopmail
+    // Accepting the invitation as the invited user, through the Maildrop inbox
     // =============================================================================
 
+    /** How long the invitee's mailbox is polled for the invitation before the scenario gives up. */
+    private static final Duration INVITATION_MAIL_WAIT = Duration.ofMinutes(2);
+
     /**
-     * Discards the primary user's window and opens Yopmail in a clean one.
+     * Discards the primary user's window and continues in a clean one.
      *
      * <p>A new window is opened and the old one closed, rather than simply navigating away.
      * Navigating keeps the primary user's cookies and localStorage, and the acceptance flow that
@@ -1362,8 +1362,8 @@ public class MultiUserSteps extends AbstractWebPage {
      * <p>The driver itself must survive, so the order is open-then-close: closing the only window
      * first would end the session and every step after this would report "no such window".
      */
-    @And("the invited user closes the primary user window and opens Yopmail")
-    public void the_invited_user_closes_the_primary_user_window_and_opens_yopmail() {
+    @And("the invited user closes the primary user window and opens a clean window")
+    public void the_invited_user_closes_the_primary_user_window_and_opens_a_clean_window() {
         requireInvitee();
         logOutPrimaryUserIfSignedIn();
         WebDriver driver = Grid.driver();
@@ -1391,9 +1391,7 @@ public class MultiUserSteps extends AbstractWebPage {
             log.warning("Could not maximize the invited user's window: " + e.getMessage());
         }
 
-        YopmailInbox.openSite();
-        SessionBuilder.applyZoom();
-        announce("INVITEE", "opened Yopmail for " + context.secondaryUserEmail);
+        announce("INVITEE", "clean window for " + context.secondaryUserEmail);
     }
 
     /**
@@ -1404,49 +1402,53 @@ public class MultiUserSteps extends AbstractWebPage {
     private void logOutPrimaryUserIfSignedIn() {
         // Up to 3s rather than one look, so a header still rendering does not read as "signed out".
         if (!waitForVisible(ACCOUNT_MENU, 6)) {
-            log.info("The primary user is already signed out - no logout needed before opening Yopmail");
+            log.info("The primary user is already signed out - no logout needed before switching to the invitee window");
             return;
         }
         try {
             SessionBuilder.applyZoom();
             clickInAccountMenu(By.xpath(MENU_LOGOUT), "Logout");
             softAssert.assertTrue(waitForVisible(HEADER_LOGIN_CTA),
-                    "The primary user is still signed in after logging out before opening Yopmail, so"
+                    "The primary user is still signed in after logging out before switching to the invitee window, so"
                             + " the invited user's window shares the primary user's session");
-            announce("ACCOUNT", "primary user logged out before opening Yopmail");
+            announce("ACCOUNT", "primary user logged out before switching to the invitee window");
         } catch (RuntimeException | AssertionError e) {
-            softAssert.fail("Could not log the primary user out before opening Yopmail ("
+            softAssert.fail("Could not log the primary user out before switching to the invitee window ("
                     + e.getMessage() + "), so the invited user's window may share the primary"
                     + " user's session");
         }
     }
 
-    @And("the invited user opens the Yopmail inbox for the invited address")
-    public void the_invited_user_opens_the_yopmail_inbox() {
+    /**
+     * Waits for the invitation to reach the invitee's Maildrop inbox. Read over Maildrop's API,
+     * so no mailbox page is loaded in the browser.
+     */
+    @And("the invited user opens the mailbox for the invited address")
+    public void the_invited_user_opens_the_mailbox() {
         requireInvitee();
-        YopmailInbox.openInboxByTyping(context.secondaryUserEmail);
+        MaildropInbox.waitForMail(context.secondaryUserEmail, INVITATION_MAIL_WAIT);
     }
 
-    @And("the invited user refreshes the Yopmail inbox")
-    public void the_invited_user_refreshes_the_yopmail_inbox() {
-        YopmailInbox.refreshInbox();
-        softAssert.assertTrue(YopmailInbox.messageCount() > 0,
-                "The Yopmail inbox for " + context.secondaryUserEmail + " is still empty after a"
-                        + " refresh, so the invitation email has not arrived. Check the failure"
-                        + " screenshot for a CAPTCHA before reporting a missing notification.");
+    @And("the invited user refreshes the mailbox")
+    public void the_invited_user_refreshes_the_mailbox() {
+        softAssert.assertTrue(MaildropInbox.messageCount(context.secondaryUserEmail) > 0,
+                "The Maildrop inbox for " + context.secondaryUserEmail + " is still empty after "
+                        + INVITATION_MAIL_WAIT.toMinutes() + " minute(s), so the invitation email"
+                        + " has not arrived. Check the log for a Maildrop API error before"
+                        + " reporting a missing notification.");
     }
 
     /**
-     * Opens the newest message and leaves the driver inside Yopmail's reading frame.
+     * Renders the newest message in the invitee's window.
      *
-     * <p>Everything located by the next two steps lives in that frame, not in the top document -
-     * which is why they must run in order and why {@link #leaveTheMailBody} exists.
+     * <p>The mail's own HTML is loaded from a data: URL, so the next two steps locate the Accept
+     * invite call-to-action in the top document, with no frames to switch into.
      */
     @And("the invited user opens the first email")
     public void the_invited_user_opens_the_first_email() {
-        boolean opened = YopmailInbox.openFirstMailAndFocusBody();
+        boolean opened = MaildropInbox.openLatestMailInCurrentWindow(context.secondaryUserEmail);
         if (!opened) {
-            throw new AssertionError("No email could be opened in the Yopmail inbox for "
+            throw new AssertionError("No email could be opened in the Maildrop inbox for "
                     + context.secondaryUserEmail + ", so the invitation cannot be accepted.");
         }
     }
@@ -1464,9 +1466,8 @@ public class MultiUserSteps extends AbstractWebPage {
     /**
      * Clicks Accept invite and follows it out of the mail frame.
      *
-     * <p>The link opens in a new window - it is an email, so its anchor targets a blank one. The
-     * driver is left on that window, outside every Yopmail frame, which is where the account-setup
-     * page is.
+     * <p>The link may open in a new window - it is an email, so its anchor can target a blank one.
+     * The driver is left on that window, which is where the account-setup page is.
      */
     @When("the invited user clicks Accept invite")
     public void the_invited_user_clicks_accept_invite() {
@@ -1475,7 +1476,6 @@ public class MultiUserSteps extends AbstractWebPage {
 
         clickWhenReady(acceptInviteButton(), "Accept invite");
         sleep(3000);
-        YopmailInbox.leaveMailBody();
 
         for (String handle : driver.getWindowHandles()) {
             if (!before.contains(handle)) {
@@ -2290,7 +2290,6 @@ public class MultiUserSteps extends AbstractWebPage {
      */
     @And("the browser returns to the CCP portal")
     public void the_browser_returns_to_the_ccp_portal() {
-        YopmailInbox.leaveMailBody();
         Grid.driver().get(ConfigUtil.getSecretValue("ccpPortalUrl"));
         SessionBuilder.applyZoom();
         sleep(2000);
@@ -2299,7 +2298,7 @@ public class MultiUserSteps extends AbstractWebPage {
         verifyInviteeSeesPrimaryPaymentReminder();
     }
 
-    /** The Accept invite element inside the currently focused mail frame. */
+    /** The Accept invite element in the rendered invitation email. */
     private WebElement acceptInviteButton() {
         By locator = getBy(ACCEPT_INVITE_IN_EMAIL);
         if (!isAnyVisible(locator)) {
@@ -2311,10 +2310,13 @@ public class MultiUserSteps extends AbstractWebPage {
         return Grid.driver().findElement(locator);
     }
 
-    /** Explicit escape from Yopmail's frames, for a scenario that stops mid-mailbox. */
+    /**
+     * Kept for feature files that still call it. The email is rendered in the top document now,
+     * so there is no frame to leave; this only resets any frame a later change might add.
+     */
     @And("the invited user leaves the email body")
     public void leaveTheMailBody() {
-        YopmailInbox.leaveMailBody();
+        Grid.driver().switchTo().defaultContent();
     }
 
     // ------------------------------ Expired invitation ------------------------------
