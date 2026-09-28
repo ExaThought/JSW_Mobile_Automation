@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!-- ===========================================================================================
+     MULTI-USER ONLY. Runs every scenario tagged @multiUser under features/multiUser:
+     primaryUserLogin.feature and the eight roles/Invite*.feature files.
+
+     Serial on purpose (thread-count=1, data-provider-thread-count=1): every role feature signs in
+     as the same primary user and invites/edits additional users on that one account, so running
+     scenarios concurrently would have them racing over the same invitation and user list.
+
+     Run with:  mvn test -DsuiteXmlFile=testng_multiuser.xml
+     Narrow to one role by swapping the tag, e.g. @roleFinanceAccount or @primaryUserLogin.
+     =========================================================================================== -->
+<suite verbose="1" name="Jsw automation - multi user" parallel="tests" thread-count="1"
+       data-provider-thread-count="1" annotations="JDK">
+
+    <listeners>
+        <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
+    </listeners>
+
+    <parameter name="data.testId" value="testCaseId"/>
+    <parameter name="api.retry.count" value="1"/>
+    <parameter name="enableSessionsKeepAlive" value="true"/>
+    <parameter name="executionTimeout" value="10000"/>
+    <parameter name="cucumber.publish.quiet" value="true"/>
+    <parameter name="cucumber.plugin"
+               value="com.qapitol.sauron.report.core.cucumber.CucumberSauronReportEventsProvider"/>
+    <parameter name="cucumber.glue" value="com.qapitol.jsw.stepdefinition,com.qapitol.jsw.utils"/>
+    <parameter name="selfHeal" value="true"/>
+    <parameter name="selfHeal.recovery.tries" value="2"/>
+    <parameter name="selfHeal.score.cap" value="0.7"/>
+    <parameter name="selfHeal.server" value="http://34.47.228.105:7878"/>
+    <parameter name="selfHeal.imitator.server" value="http://34.47.228.105:8000"/>
+
+    <!-- =============================== MULTI USER =============================== -->
+
+    <test name="MultiUser">
+        <parameter name="test.group" value="multiuser"/>
+        <parameter name="sessions" value="sessions.yaml"/>
+        <parameter name="cucumber.features" value="src/test/resources/features/multiUser"/>
+        <parameter name="cucumber.filter.tags" value="@multiUser"/>
+        <classes>
+            <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
+        </classes>
+    </test>
+
+</suite>
