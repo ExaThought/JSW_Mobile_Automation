@@ -24,6 +24,9 @@ public class TestGroupListener implements ITestListener, ISuiteListener {
     @Override
     public void onStart(ISuite suite) {
         GridInstanceListGuard.apply();
+        // Also here for the same reason: every block's filter must be rewritten before the first
+        // block reads it.
+        RunTagsFilter.apply(suite);
     }
 
     /**

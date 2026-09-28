@@ -55,8 +55,9 @@ public class Hooks {
      *
      * <p>Tag with {@code @qaOnly}, {@code @preprodOnly} or {@code @prodOnly} - on a Scenario, or on
      * an Examples block when the rows differ per environment, as the footer links do. Untagged
-     * scenarios run everywhere. Done here rather than in the suite's tag filter because a Jenkins
-     * TAGS value replaces that filter, which would quietly run the other environment's rows.
+     * scenarios run everywhere. Done here rather than in the suite's tag filter because that filter
+     * can be dropped - by -Dcucumber.filter.tags, or by the TAGS fallback in RunTagsFilter - which
+     * would quietly run the other environment's rows.
      *
      * <p>WHY org.testng.SkipException IS A SKIP, NOT A FAILURE. cucumber-core decides which hook
      * exceptions abort a scenario as SKIPPED in {@code io.cucumber.core.runner.TestAbortedExceptions},
