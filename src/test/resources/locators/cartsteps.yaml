@@ -28,7 +28,9 @@ elements:
       web: xpath=//p[contains(normalize-space(.), 'delete this item')]/following-sibling::div/button[normalize-space(.)='Delete']
   cement:
     en_US:
-      web: xpath=//a[@href='/category/cement' and normalize-space() = 'Cement']
+      # data-test-id: from the cart page the header link reads "Cement Cement" (a hidden bold copy
+      # plus the visible label), so the text match alone misses it - pre-prod, 25 Sep 2026.
+      web: xpath=//a[@href='/category/cement' and (normalize-space() = 'Cement' or @data-test-id='desktop-navbar-category-cement')]
   cementPDP:
     en_US:
       web: xpath=(//div[@class='card-title'])[2]

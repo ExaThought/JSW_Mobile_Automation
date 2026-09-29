@@ -295,7 +295,7 @@ public class pdpPlpSteps extends AbstractWebPage {
     @And("User lands on PLP")
     public void userLandsOnPLP(){
         softAssert.assertTrue(Grid.driver().getCurrentUrl().contains("/category/"));
-        confirmBusinessDetailsIfDialogPresent();
+        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
     }
 
 }

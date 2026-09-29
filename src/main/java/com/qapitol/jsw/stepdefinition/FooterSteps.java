@@ -72,6 +72,10 @@ public class FooterSteps extends AbstractWebPage {
     public void the_footer_link_should_be_visible_for_web(String linkName) {
         try {
             log.info("Verifying visibility of footer link: " + linkName);
+            // First step after login: pre-prod opens the business details dialog a few seconds
+            // after the page loads. While it is open the page cannot scroll, so every footer link
+            // below the fold reads as not visible and clicks land on the overlay.
+            confirmBusinessDetailsDialogWithin(10);
 
             By footerLink = footerLinkBy(linkName);
 
@@ -168,16 +172,19 @@ public class FooterSteps extends AbstractWebPage {
     public void the_user_clicks_on_the_footer_link_for_web(String linkName) {
         try {
             log.info("Clicking on footer link: " + linkName);
-
+            // Again here: the dialog can open between the visibility check and the click, which
+            // is how "Blogs" was clicked yet never navigated.
+            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
             By footerLink = footerLinkBy(linkName);
-
             softAssert.assertTrue(
                     isAnyVisible(footerLink),
                     "Footer link not displayed: " + linkName
             );
 
             // clickFirstVisible, not clickButton: clickButton resolves the first match, which is a
-            // hidden 0x0 copy, so the click silently lands on nothing.
+            // hidden 0x0 copy, so the click silently lands on nothing. No separate scroll either:
+            // scrollToCenter(By) has the same first-match problem, and clickFirstVisible already
+            // scrolls the VISIBLE copy to the centre before clicking - keep that if it is refactored.
             clickFirstVisible(footerLink);
 
             log.info("Successfully clicked on footer link: " + linkName);
@@ -234,6 +241,7 @@ public class FooterSteps extends AbstractWebPage {
 
     @When("the user clicks on social icon {string}")
     public void click_social_icon(String iconName) {
+        confirmBusinessDetailsDialogWithin(10);
 
         String key = getSocialKey(iconName);
 

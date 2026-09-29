@@ -1,5 +1,6 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.jsw.config.SessionBuilder;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
 import org.openqa.selenium.*;
@@ -669,26 +670,33 @@ public class CustomUtil {
     }
 
     public static boolean waitForPresence(By locator, int seconds) {
-        for (int attempt = 0; attempt < seconds * 2; attempt++) {
+        return pollFor(() -> {
             try {
-                if (!Grid.driver().findElements(locator).isEmpty()) {
-                    return true;
-                }
+                return !Grid.driver().findElements(locator).isEmpty();
             } catch (Exception ignored) {
+                return false;
             }
-            pause(500);
-        }
-        return false;
+        }, seconds);
     }
 
+    /**
+     * Explicitly waits up to {@code seconds} for {@code condition}; false if it never holds.
+     *
+     * <p>The implicit wait is off for the duration: with it on, each check against an absent
+     * element blocks for the full implicit wait, so the timeout could not end the wait on time.
+     */
     public static boolean pollFor(BooleanSupplier condition, int seconds) {
-        for (int attempt = 0; attempt < seconds * 2; attempt++) {
-            if (condition.getAsBoolean()) {
-                return true;
-            }
-            pause(500);
+        WebDriver driver = Grid.driver();
+        driver.manage().timeouts().implicitlyWait(Duration.ZERO);
+        try {
+            return new WebDriverWait(driver, Duration.ofSeconds(seconds))
+                    .pollingEvery(Duration.ofMillis(250))
+                    .until(d -> condition.getAsBoolean());
+        } catch (TimeoutException e) {
+            return false;
+        } finally {
+            driver.manage().timeouts().implicitlyWait(SessionBuilder.IMPLICIT_WAIT);
         }
-        return false;
     }
 
     public static boolean isFirstMatchInteractable(By locator) {
@@ -740,15 +748,31 @@ public class CustomUtil {
     private static final By BUSINESS_DETAILS_DIALOG_BUTTON =
             By.xpath("//div[@role='dialog']/div/button");
 
-    public static void confirmBusinessDetailsIfDialogPresent() {
+    /**
+     * How long callers without a reason to wait longer give the dialog to appear. Short because
+     * most calls find nothing, and every call that finds nothing waits this long.
+     */
+    public static final int BUSINESS_DETAILS_QUICK_WAIT_SECONDS = 2;
+
+    /**
+     * Waits up to {@code seconds} for the business details dialog and closes it if it opens.
+     * Returns whether it was open.
+     *
+     * <p>Pre-prod opens it after the page has loaded, again on every refresh, so an instant check
+     * misses it and it then covers whatever the next step reads or clicks.
+     */
+    public static boolean confirmBusinessDetailsDialogWithin(int seconds) {
+        if (!pollFor(() -> isRenderedNow(BUSINESS_DETAILS_DIALOG), seconds)) {
+            return false;
+        }
         try {
-            if (!isRenderedNow(BUSINESS_DETAILS_DIALOG)) {
-                return;
-            }
             clickFirstVisible(BUSINESS_DETAILS_DIALOG_BUTTON);
             logger.log(Level.INFO, "Business details confirmation dialog was present and has been closed.");
+            return true;
         } catch (Exception e) {
-            logger.log(Level.INFO, "No business details confirmation dialog was present.");
+            logger.log(Level.INFO, "Business details dialog was showing but could not be closed: "
+                    + e.getClass().getSimpleName());
+            return false;
         }
     }
 

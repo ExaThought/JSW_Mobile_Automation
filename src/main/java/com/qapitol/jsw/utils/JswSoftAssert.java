@@ -51,6 +51,14 @@ public class JswSoftAssert extends SoftAssert {
         FAILURES.remove();
     }
 
+    /**
+     * Whether this thread's scenario has collected a soft failure yet. Does NOT detach them - the
+     * {@code @After} hook asks this before capturing diagnostics, then reports them as usual.
+     */
+    public static boolean hasFailures() {
+        return !FAILURES.get().isEmpty();
+    }
+
     /** This thread's failures so far, detached so nothing can be reported twice. */
     public static List<String> takeFailures() {
         List<String> collected = new ArrayList<>(FAILURES.get());

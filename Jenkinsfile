@@ -103,6 +103,12 @@ pipeline {
         timestamps()
         buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '15'))
         timeout(time: 3, unit: 'HOURS')
+        /* ONE BUILD AT A TIME. Sauron's hub binds the Grid event bus on the FIXED ports 4442/4443,
+         * so two builds on one agent cannot both have a grid: the second hub fails with
+         * "ZMQException: Errno 48 : Address already in use". Worse, the cleanup in the Test stage
+         * kills every selenium-server on the agent, so a second build also kills the first
+         * build's grid mid-run. Queued builds wait here instead. */
+        disableConcurrentBuilds()
     }
 
     environment {
@@ -183,13 +189,29 @@ pipeline {
                     sleep 2
 
                     echo "--- after cleanup (4442/4443 must be free) ---"
-                    if command -v lsof >/dev/null && lsof -i:4442 -i:4443; then
-                        echo "WARNING: 4442/4443 are STILL held. The hub will fail to start and every"
-                        echo "scenario will report 'Driver not initialized'. The owning process is"
-                        echo "listed above and is not owned by this build."
-                    else
-                        echo "  4442/4443 free"
+                    # ss sees sockets of every user; lsof only this user's, so a grid started by
+                    # another job's user would pass an lsof check and still break the hub.
+                    ports_held() {
+                        (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) | grep -qE ":(4442|4443)\\b"
+                    }
+                    # Waited out rather than warned about: a grid still on these ports makes the
+                    # hub die with "Address already in use" and every scenario then reports
+                    # "Driver not initialized", which reads like a test failure, not a busy agent.
+                    WAITED=0
+                    while ports_held && [ "$WAITED" -lt 300 ]; do
+                        [ "$WAITED" -eq 0 ] && echo "4442/4443 still held - waiting up to 5 min for them to be released:"
+                        [ "$WAITED" -eq 0 ] && { (ss -ltnp 2>/dev/null || true) | grep -E ":(4442|4443)\\b"; pgrep -af selenium-server || true; }
+                        sleep 10
+                        WAITED=$((WAITED + 10))
+                    done
+                    if ports_held; then
+                        echo "FATAL: 4442/4443 are still bound after ${WAITED}s. The Selenium hub cannot"
+                        echo "start while they are held, so this run would fail every scenario. The"
+                        echo "holder is listed above - another job's grid on this agent, or a process"
+                        echo "this build's user cannot kill. Stop it, or run with GRID_URL set."
+                        exit 1
                     fi
+                    echo "  4442/4443 free"
                 '''
 
                 script {
