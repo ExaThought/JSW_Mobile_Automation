@@ -61,9 +61,9 @@ The variables below override the committed defaults. They are what Jenkins shoul
 | `OMS_USER_EMAIL` / `OMS_USER_PASSWORD` | OMS / ERP | **Preferred.** `Token.getOmsToken` logs in and caches a fresh token, so nothing long-lived is stored. |
 | `OMS_TOKEN` | OMS / ERP | Alternative to the pair above: a static bearer token. Leave unset if `oms.user.*` are supplied. |
 | `OMS_LOGIN` | ERP hand-off URL | Optional. Built from `omsBaseUrl + omsErpRedirectPath + getOmsToken()` when unset, which avoids writing the token down. |
-| `OMS_DB_PASSWORD` | DB-backed assertions | With `OMS_DB_URL`, `OMS_DB_SCHEMA`, `OMS_DB_USER`. |
-| `OMS_INTERNAL_API_KEY` | `@ledger` due payments (`customer-due-payments-list`) | **No committed default** - must be supplied. Jenkins id `msme-oms-internal-api-key` (one for both qa and preprod). |
-| `LEDGER_SERVICE_CLIENT_ID` / `LEDGER_SERVICE_AUTHORIZATION` | `@ledger` usable ledger balance (`fetch-ledger-transaction`) | **No committed default** - must be supplied. Jenkins ids `msme-ledger-service-client-id` / `msme-ledger-service-authorization` (one each for both qa and preprod). |
+| `OMS_DB_PASSWORD` | Nothing today | Backs `OMS_PWD` (with `OMS_DB_URL`, `OMS_DB_SCHEMA`, `OMS_DB_USER`), but no scenario, step or framework class reads the `OMS_*` DB keys, so the Jenkinsfile no longer binds it. |
+| `OMS_INTERNAL_API_KEY` | `@ledger` due payments (`customer-due-payments-list`) | **No committed default** - must be supplied. Jenkins id `msme-oms-internal-api-key` (one for both qa and preprod), bound on every qa/preprod build. |
+| `LEDGER_SERVICE_CLIENT_ID` / `LEDGER_SERVICE_AUTHORIZATION` | `@ledger` usable ledger balance (`fetch-ledger-transaction`) | **No committed default** - must be supplied. Jenkins ids `msme-ledger-service-client-id` / `msme-ledger-service-authorization` (one each for both qa and preprod), bound on every qa/preprod build. |
 
 A local `@ledger` run supplies those three - as environment variables in the IDE run
 configuration, or on the command line (single-quote the Authorization value, it contains `$`):
