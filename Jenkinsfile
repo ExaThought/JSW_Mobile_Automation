@@ -11,6 +11,28 @@
  * Requires plugins: Allure, Email Extension, HTML Publisher.
  */
 
+/** Every @tag in {@code text} - a tag expression, feature tag lines or suite XML filter values. */
+@NonCPS
+Set<String> tagsIn(String text) {
+    Set<String> tags = new LinkedHashSet<>()
+    def m = (text ?: '') =~ /@[A-Za-z0-9_\-]+/
+    while (m.find()) {
+        tags.add(m.group())
+    }
+    return tags
+}
+
+/** Capture group 1 of every match of {@code regex} in {@code text}. */
+@NonCPS
+List<String> groupsOf(String text, String regex) {
+    List<String> out = []
+    def m = (text ?: '') =~ regex
+    while (m.find()) {
+        out.add(m.group(1))
+    }
+    return out
+}
+
 pipeline {
     agent any
 
@@ -87,15 +109,6 @@ pipeline {
             name: 'RECIPIENTS',
             defaultValue: 'ritika.jaggi@jsw.in,v_akash.garg@jsw.in, piyush.dwivedi@jsw.in',
             description: 'Comma-separated Outlook recipients for the summary email.'
-        )
-        booleanParam(
-            name: 'USE_JENKINS_CREDENTIALS',
-            defaultValue: false,
-            description: 'Bind per-environment Jenkins credentials over the committed ' +
-                         'global_&lt;env&gt;.properties defaults. Leave OFF until every id listed in ' +
-                         'the Test stage exists for BOTH environments - withCredentials aborts ' +
-                         'the stage when an id is missing, which produces an UNSTABLE build with ' +
-                         'zero tests executed and looks exactly like a test failure.'
         )
     }
 
@@ -429,17 +442,56 @@ YAML
                             ]) {
                                 sh mvnCmd
                             }
-                        } else if (params.USE_JENKINS_CREDENTIALS) {
-                            withCredentials([
-                                string(credentialsId: "msme-oms-db-password-${params.ENV}", variable: 'OMS_DB_PASSWORD'),
-                                string(credentialsId: "msme-xapikey-${params.ENV}",         variable: 'X_API_KEY')
-                            ]) {
+                        } else {
+                            // qa / preprod. The ledger API secrets have no committed fallback;
+                            // everything else, X_API_KEY included, comes from the committed
+                            // global_<env>.properties defaults (OMS_DB_PASSWORD is read by nothing).
+                            //
+                            // A missing credential id aborts this stage with zero tests run, so the
+                            // three are bound only when the run can reach Ledger.feature: its own
+                            // tags - read from the file, not hardcoded, since it is also @regression -
+                            // are compared with TAGS, or with the suite's cucumber.filter.tags values
+                            // (following <suite-file> includes) when TAGS is blank. Over-matching
+                            // (a "not @ledger" expression, a commented-out suite block) only binds
+                            // credentials that are not needed; it never skips ones that are.
+                            // qa and preprod share the values, so the ids carry no -<env> suffix;
+                            // add "-${params.ENV}" to an id if its owners issue separate values.
+                            // The Jenkinsfile can come from a different branch than BRANCH_NAME (the
+                            // job loads it from develop), so a checkout without Ledger.feature is
+                            // "no ledger tags", not a readFile failure.
+                            def ledgerFeature = 'src/test/resources/features/Homepage/Ledger.feature'
+                            def ledgerTagLines = fileExists(ledgerFeature)
+                                    ? readFile(ledgerFeature).split('\n').findAll { it.trim().startsWith('@') }.join(' ')
+                                    : ''
+                            def ledgerTags = tagsIn(ledgerTagLines)
+
+                            def tagSource = params.TAGS?.trim()
+                            if (!tagSource) {
+                                def suiteText = readFile("src/test/resources/${params.SUITE}")
+                                for (String include : groupsOf(suiteText, /<suite-file\s+path="([^"]+)"/)) {
+                                    def includePath = "src/test/resources/${include.replaceFirst(/^\.\//, '')}"
+                                    if (fileExists(includePath)) {
+                                        suiteText += '\n' + readFile(includePath)
+                                    }
+                                }
+                                tagSource = groupsOf(suiteText, /name="cucumber\.filter\.tags"\s+value="([^"]*)"/).join(' ')
+                            }
+                            def runTags = tagsIn(tagSource)
+                            def shared = ledgerTags.findAll { runTags.contains(it) }
+
+                            if (shared) {
+                                echo "Binding the ledger API credentials: this run selects ${shared} (Ledger.feature is ${ledgerTags})."
+                                withCredentials([
+                                    string(credentialsId: 'msme-oms-internal-api-key',         variable: 'OMS_INTERNAL_API_KEY'),
+                                    string(credentialsId: 'msme-ledger-service-client-id',     variable: 'LEDGER_SERVICE_CLIENT_ID'),
+                                    string(credentialsId: 'msme-ledger-service-authorization', variable: 'LEDGER_SERVICE_AUTHORIZATION')
+                                ]) {
+                                    sh mvnCmd
+                                }
+                            } else {
+                                echo "Not binding the ledger API credentials: none of Ledger.feature's tags ${ledgerTags} are in this run's tags ${runTags}."
                                 sh mvnCmd
                             }
-                        } else {
-                            // Defaults come from global_<env>.properties, which are already
-                            // correct per environment.
-                            sh mvnCmd
                         }
                     }
                 }
