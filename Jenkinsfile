@@ -11,26 +11,42 @@
  * Requires plugins: Allure, Email Extension, HTML Publisher.
  */
 
-/** Every @tag in {@code text} - a tag expression, feature tag lines or suite XML filter values. */
-@NonCPS
-Set<String> tagsIn(String text) {
-    Set<String> tags = new LinkedHashSet<>()
-    def m = (text ?: '') =~ /@[A-Za-z0-9_\-]+/
-    while (m.find()) {
-        tags.add(m.group())
+/*
+ * Helpers for the ledger credential check in the Test stage. Deliberately plain: only String
+ * methods, split(), for loops and lists - no regex matchers, closures or @NonCPS - so the
+ * pipeline sandbox cannot reject them and stop every qa/preprod build over a ledger concern.
+ */
+
+/** Every @tag token in text - a tag expression, feature tag lines or suite filter values. */
+List<String> tagsIn(String text) {
+    List<String> tags = []
+    for (String token : (text ?: '').split('[^A-Za-z0-9_@\-]+')) {
+        if (token.startsWith('@') && token.length() > 1 && !tags.contains(token)) {
+            tags.add(token)
+        }
     }
     return tags
 }
 
-/** Capture group 1 of every match of {@code regex} in {@code text}. */
-@NonCPS
-List<String> groupsOf(String text, String regex) {
-    List<String> out = []
-    def m = (text ?: '') =~ regex
-    while (m.find()) {
-        out.add(m.group(1))
+/** The text between every occurrence of prefix and the next double quote. */
+List<String> quotedValuesAfter(String text, String prefix) {
+    List<String> values = []
+    String source = text ?: ''
+    int from = 0
+    while (true) {
+        int start = source.indexOf(prefix, from)
+        if (start < 0) {
+            break
+        }
+        start += prefix.length()
+        int end = source.indexOf('"', start)
+        if (end < 0) {
+            break
+        }
+        values.add(source.substring(start, end))
+        from = end + 1
     }
-    return out
+    return values
 }
 
 pipeline {
@@ -460,27 +476,55 @@ YAML
                             // job loads it from develop), so a checkout without Ledger.feature is
                             // "no ledger tags", not a readFile failure.
                             def ledgerFeature = 'src/test/resources/features/Homepage/Ledger.feature'
-                            def ledgerTagLines = fileExists(ledgerFeature)
-                                    ? readFile(ledgerFeature).split('\n').findAll { it.trim().startsWith('@') }.join(' ')
-                                    : ''
-                            def ledgerTags = tagsIn(ledgerTagLines)
-
-                            def tagSource = params.TAGS?.trim()
-                            if (!tagSource) {
-                                def suiteText = readFile("src/test/resources/${params.SUITE}")
-                                for (String include : groupsOf(suiteText, /<suite-file\s+path="([^"]+)"/)) {
-                                    def includePath = "src/test/resources/${include.replaceFirst(/^\.\//, '')}"
-                                    if (fileExists(includePath)) {
-                                        suiteText += '\n' + readFile(includePath)
+                            def bindLedger = false
+                            try {
+                                // Ledger.feature's own tag lines. The Jenkinsfile can come from a
+                                // different branch than BRANCH_NAME (the job loads it from develop),
+                                // so a checkout without the file simply has no ledger tags.
+                                String ledgerTagLines = ''
+                                if (fileExists(ledgerFeature)) {
+                                    for (String line : readFile(ledgerFeature).split('\n')) {
+                                        if (line.trim().startsWith('@')) {
+                                            ledgerTagLines += ' ' + line.trim()
+                                        }
                                     }
                                 }
-                                tagSource = groupsOf(suiteText, /name="cucumber\.filter\.tags"\s+value="([^"]*)"/).join(' ')
-                            }
-                            def runTags = tagsIn(tagSource)
-                            def shared = ledgerTags.findAll { runTags.contains(it) }
+                                List<String> ledgerTags = tagsIn(ledgerTagLines)
 
-                            if (shared) {
-                                echo "Binding the ledger API credentials: this run selects ${shared} (Ledger.feature is ${ledgerTags})."
+                                // This run's tags: TAGS, else the suite's filters (+ <suite-file> includes).
+                                String tagSource = params.TAGS?.trim()
+                                if (!tagSource) {
+                                    String suiteText = readFile("src/test/resources/${params.SUITE}")
+                                    for (String include : quotedValuesAfter(suiteText, '<suite-file path="')) {
+                                        String includePath = "src/test/resources/${include.replaceFirst('^\./', '')}"
+                                        if (fileExists(includePath)) {
+                                            suiteText += '\n' + readFile(includePath)
+                                        }
+                                    }
+                                    tagSource = quotedValuesAfter(suiteText, 'name="cucumber.filter.tags" value="').join(' ')
+                                }
+                                List<String> runTags = tagsIn(tagSource)
+
+                                List<String> shared = []
+                                for (String tag : ledgerTags) {
+                                    if (runTags.contains(tag)) {
+                                        shared.add(tag)
+                                    }
+                                }
+                                bindLedger = !shared.isEmpty()
+                                echo(bindLedger
+                                        ? "Binding the ledger API credentials: this run selects ${shared} (Ledger.feature is ${ledgerTags})."
+                                        : "Not binding the ledger API credentials: none of Ledger.feature's tags ${ledgerTags} are in this run's tags ${runTags}.")
+                            } catch (Exception e) {
+                                // The check must never be what fails a build. Fall back to binding
+                                // whenever the checkout has ledger scenarios at all.
+                                bindLedger = fileExists(ledgerFeature)
+                                echo "WARNING: ledger credential check failed (${e.class.simpleName}: ${e.message}); " +
+                                     (bindLedger ? 'binding the ledger credentials because Ledger.feature exists.'
+                                                 : 'not binding - this checkout has no Ledger.feature.')
+                            }
+
+                            if (bindLedger) {
                                 withCredentials([
                                     string(credentialsId: 'msme-oms-internal-api-key',         variable: 'OMS_INTERNAL_API_KEY'),
                                     string(credentialsId: 'msme-ledger-service-client-id',     variable: 'LEDGER_SERVICE_CLIENT_ID'),
@@ -489,7 +533,6 @@ YAML
                                     sh mvnCmd
                                 }
                             } else {
-                                echo "Not binding the ledger API credentials: none of Ledger.feature's tags ${ledgerTags} are in this run's tags ${runTags}."
                                 sh mvnCmd
                             }
                         }
