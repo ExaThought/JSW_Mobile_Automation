@@ -20,7 +20,8 @@
 /** Every @tag token in text - a tag expression, feature tag lines or suite filter values. */
 List<String> tagsIn(String text) {
     List<String> tags = []
-    for (String token : (text ?: '').split('[^A-Za-z0-9_@\-]+')) {
+    // '-' last in the class needs no escape - and a Groovy '...' string rejects an unknown "\-".
+    for (String token : (text ?: '').split('[^A-Za-z0-9_@-]+')) {
         if (token.startsWith('@') && token.length() > 1 && !tags.contains(token)) {
             tags.add(token)
         }
@@ -496,7 +497,8 @@ YAML
                                 if (!tagSource) {
                                     String suiteText = readFile("src/test/resources/${params.SUITE}")
                                     for (String include : quotedValuesAfter(suiteText, '<suite-file path="')) {
-                                        String includePath = "src/test/resources/${include.replaceFirst('^\./', '')}"
+                                        String relative = include.startsWith('./') ? include.substring(2) : include
+                                        String includePath = "src/test/resources/${relative}"
                                         if (fileExists(includePath)) {
                                             suiteText += '\n' + readFile(includePath)
                                         }
