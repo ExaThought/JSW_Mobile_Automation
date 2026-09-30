@@ -100,6 +100,8 @@ public class LedgerSteps extends AbstractWebPage {
     private static final ThreadLocal<JsonPath> LEDGER_TRANSACTIONS = new ThreadLocal<>();
     /** Transacting entity being validated by a per-entity step, for failure messages. */
     private static final ThreadLocal<String> CURRENT_ENTITY = new ThreadLocal<>();
+    /** Load more clicks that timed out in the table currently being loaded, for later failure messages. */
+    private static final ThreadLocal<List<String>> LOAD_MORE_TIMEOUTS = ThreadLocal.withInitial(ArrayList::new);
     /** The OMS credit info response fetched by this thread's scenario. */
     private static final ThreadLocal<com.fasterxml.jackson.databind.JsonNode> CREDIT_INFO = new ThreadLocal<>();
 
@@ -107,12 +109,19 @@ public class LedgerSteps extends AbstractWebPage {
     public void verifyHelpAndSupportButtonIsDisplayedAndClickable() {
         By helpAndSupport = By.xpath(HELP_AND_SUPPORT_BTN);
         log.info("Verifying 'Help & Support' button is displayed.");
-        softAssert.assertTrue(isDisplayed(helpAndSupport), "Help & Support button is not displayed.");
+        // The visible copy only: the header/footer render hidden 0x0 duplicates of their buttons.
+        WebElement button;
+        try {
+            button = firstVisible(helpAndSupport);
+        } catch (TimeoutException e) {
+            softAssert.fail("Help & Support button is not displayed.");
+            return;
+        }
 
         log.info("Verifying 'Help & Support' button is clickable.");
         try {
             new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
-                    .until(ExpectedConditions.elementToBeClickable(helpAndSupport));
+                    .until(ExpectedConditions.elementToBeClickable(button));
         } catch (TimeoutException e) {
             softAssert.fail("Help & Support button is not clickable within 10 seconds.");
         }
@@ -141,17 +150,17 @@ public class LedgerSteps extends AbstractWebPage {
 
     @And("user opens ledger page through direct url")
     public void userOpensLedgerPageThroughDirectUrl() {
-        String ledgerUrl = ConfigUtil.getSecretValue("ledgerUrl");
+        String ledgerUrl = ConfigUtil.resolveOrThrow("ledgerUrl");
         log.info("Opening ledger page directly: " + ledgerUrl);
         Grid.driver().get(ledgerUrl);
-        waits(By.xpath(PAYMENT_INST));
+        isAnyVisible(By.xpath(PAYMENT_INST));
     }
 
     @And("user refreshes the ledger page")
     public void userRefreshesTheLedgerPage() {
         log.info("Refreshing ledger page.");
         refreshAndWaitForPageLoad();
-        waits(By.xpath(PAYMENT_INST));
+        isAnyVisible(By.xpath(PAYMENT_INST));
     }
 
     @When("user fetches due payments from OMS for GSTIN {string} with entityName {string}, dueInDays {string} and dueLater {string}")
@@ -161,14 +170,14 @@ public class LedgerSteps extends AbstractWebPage {
                 Boolean.parseBoolean(dueLater));
         if (response.getStatusCode() != 200) {
             throw new IllegalStateException("OMS customer-due-payments-list returned HTTP "
-                    + response.getStatusCode() + " for GSTIN " + gstin + ": " + response.asString());
+                    + response.getStatusCode() + " for GSTIN " + ApiUtils.maskId(gstin) + ": " + ApiUtils.maskIdsInJson(response.asString()));
         }
         DUE_PAYMENTS.set(exactJson(response));
         assertNoDuplicateRecords("GET " + ConfigUtil.resolveOrThrow("omsBaseUrl")
-                        + "joms/api/internal/v1/customer-due-payments-list/" + gstin + "?entityName=" + entityName
+                        + "joms/api/internal/v1/customer-due-payments-list/" + ApiUtils.maskId(gstin) + "?entityName=" + entityName
                         + "&dueInDays=" + dueInDays + "&limit=10000&offset=0&dueLater=" + dueLater,
                 response.asString(), "data", "details");
-        log.info("OMS due payments for " + gstin + ": totalAmount=" + DUE_PAYMENTS.get().get("data.totalAmount")
+        log.info("OMS due payments for " + ApiUtils.maskId(gstin) + ": totalAmount=" + DUE_PAYMENTS.get().get("data.totalAmount")
                 + ", entries=" + response.jsonPath().getList("data.details").size());
     }
 
@@ -178,13 +187,13 @@ public class LedgerSteps extends AbstractWebPage {
         Response response = ApiUtils.fetchLedgerTransactions(gstin, appName);
         if (response.getStatusCode() != 200) {
             throw new IllegalStateException("Ledger service fetch-ledger-transaction returned HTTP "
-                    + response.getStatusCode() + " for GSTIN " + gstin + ": " + response.asString());
+                    + response.getStatusCode() + " for GSTIN " + ApiUtils.maskId(gstin) + ": " + ApiUtils.maskIdsInJson(response.asString()));
         }
         LEDGER_TRANSACTIONS.set(exactJson(response));
         assertNoDuplicateRecords("GET " + ConfigUtil.resolveOrThrow("omsBaseUrl")
-                        + "ledger-service/api/internal/v1/fetch-ledger-transaction?gstin=" + gstin + "&appName=" + appName,
+                        + "ledger-service/api/internal/v1/fetch-ledger-transaction?gstin=" + ApiUtils.maskId(gstin) + "&appName=" + appName,
                 response.asString(), "data", "transactionData");
-        log.info("Ledger transactions for " + gstin + ": balanceAmount=" + LEDGER_TRANSACTIONS.get().get("data.balanceAmount")
+        log.info("Ledger transactions for " + ApiUtils.maskId(gstin) + ": balanceAmount=" + LEDGER_TRANSACTIONS.get().get("data.balanceAmount")
                 + ", totalCount=" + response.jsonPath().get("data.totalCount"));
     }
 
@@ -198,11 +207,13 @@ public class LedgerSteps extends AbstractWebPage {
     }
 
     /**
-     * Payments due now / Due later against OMS, for every transacting entity the ledger offers.
-     * Nothing is fetched until the ledger page is open: the entities to check depend on it.
+     * Payments due now / Due later against OMS, for every transacting entity the ledger offers,
+     * for the logged-in customer's GSTIN. Nothing is fetched until the ledger page is open: the
+     * entities to check depend on it.
      */
-    @Then("verify {string} entries from API are displayed on ledger page for each transacting entity with GSTIN {string}, dueInDays {string} and dueLater {string}")
-    public void verifyDueEntriesForEachTransactingEntity(String section, String gstin, String dueInDays, String dueLater) {
+    @Then("verify {string} entries from API are displayed on ledger page for each transacting entity with dueInDays {string} and dueLater {string}")
+    public void verifyDueEntriesForEachTransactingEntity(String section, String dueInDays, String dueLater) {
+        String gstin = loggedInGstin();
         for (String entity : transactingEntitiesOnPage()) {
             CURRENT_ENTITY.set(entity);
             try {
@@ -217,9 +228,13 @@ public class LedgerSteps extends AbstractWebPage {
         }
     }
 
-    /** Usable ledger balance and the latest transactions, for every transacting entity the ledger offers. */
-    @Then("verify usable ledger balance and latest {string} ledger transactions from API are displayed on ledger page for each transacting entity with GSTIN {string}")
-    public void verifyUsableLedgerBalanceForEachTransactingEntity(String count, String gstin) {
+    /**
+     * Usable ledger balance and the latest transactions, for every transacting entity the ledger
+     * offers, for the logged-in customer's GSTIN.
+     */
+    @Then("verify usable ledger balance and latest {string} ledger transactions from API are displayed on ledger page for each transacting entity")
+    public void verifyUsableLedgerBalanceForEachTransactingEntity(String count) {
+        String gstin = loggedInGstin();
         for (String entity : transactingEntitiesOnPage()) {
             CURRENT_ENTITY.set(entity);
             try {
@@ -593,6 +608,7 @@ public class LedgerSteps extends AbstractWebPage {
         // The page reloads its figures for the new entity; wait for that before reading them.
         try {
             new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
+                    .ignoring(org.openqa.selenium.StaleElementReferenceException.class)
                     .until(driver -> tableTextLength() != textBefore);
         } catch (TimeoutException e) {
             log.info("Ledger page text did not change within 10s after selecting " + label + ".");
@@ -603,9 +619,16 @@ public class LedgerSteps extends AbstractWebPage {
         softAssert.assertEquals(selected, label, "[" + entity + "] Transacting entity was not selected on the ledger page.");
     }
 
+    /** Credit info for the logged-in customer, by the GSTIN on their own customer record. */
+    @When("user fetches credit info from OMS for the logged in customer")
+    public void userFetchesCreditInfoFromOmsForTheLoggedInCustomer() throws java.io.IOException {
+        userFetchesCreditInfoFromOmsForGstin(loggedInGstin());
+    }
+
     /**
-     * Credit info for the logged-in customer. The PAN is characters 3-12 of the GSTIN; the call
-     * authenticates with the OMS token (see {@link ApiUtils#fetchCreditInfoByPan}).
+     * Credit info for a GSTIN, which must be the logged-in customer's. The PAN is characters
+     * 3-12 of the GSTIN; the call authenticates with the OMS token (see
+     * {@link ApiUtils#fetchCreditInfoByPan}).
      */
     @When("user fetches credit info from OMS for GSTIN {string}")
     public void userFetchesCreditInfoFromOmsForGstin(String gstin) throws java.io.IOException {
@@ -614,17 +637,17 @@ public class LedgerSteps extends AbstractWebPage {
         Response response = ApiUtils.fetchCreditInfoByPan(pan, gstin);
         if (response.getStatusCode() != 200) {
             throw new IllegalStateException("OMS getCreditInfoByPan returned HTTP " + response.getStatusCode()
-                    + " for PAN " + pan + " / GSTIN " + gstin + ". A 401 means the OMS token has expired:"
-                    + " refresh omsAuthToken (OMS_TOKEN) or configure the OMS login. Body: " + response.asString());
+                    + " for PAN " + ApiUtils.maskId(pan) + " / GSTIN " + ApiUtils.maskId(gstin) + ". A 401 means the OMS token has expired:"
+                    + " refresh omsAuthToken (OMS_TOKEN) or configure the OMS login. Body: " + ApiUtils.maskIdsInJson(response.asString()));
         }
         // BigDecimal so a crore-sized limit keeps its paise (see exactJson).
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper()
                 .enable(com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         CREDIT_INFO.set(mapper.readTree(response.asString()));
         assertNoDuplicateRecords("GET " + ConfigUtil.resolveOrThrow("omsBaseUrl")
-                        + "joms/api/external/v2/getCreditInfoByPan?pan=" + pan + "&gstin=" + gstin,
+                        + "joms/api/external/v2/getCreditInfoByPan?pan=" + ApiUtils.maskId(pan) + "&gstin=" + ApiUtils.maskId(gstin),
                 response.asString(), "customerCreditInfoSROS");
-        log.info("OMS credit info for " + gstin + ": " + response.asString());
+        log.info("OMS credit info for " + ApiUtils.maskId(gstin) + ": " + ApiUtils.maskIdsInJson(response.asString()));
     }
 
     /**
@@ -643,11 +666,11 @@ public class LedgerSteps extends AbstractWebPage {
         double limit = usable.doubleValue();
         log.info("Usable credit limit from API = " + usable.toPlainString() + " from " + counted);
 
-        if (!waitForElementPresent(USABLE_CREDIT_LIMIT_LABEL, 15)) {
+        if (!isAnyVisible(By.xpath(USABLE_CREDIT_LIMIT_LABEL))) {
             softAssert.fail("Usable credit limit " + USABLE_CREDIT_LIMIT_LABEL + " is not displayed on the ledger page.");
             return;
         }
-        WebElement label = Grid.driver().findElement(By.xpath(USABLE_CREDIT_LIMIT_LABEL));
+        WebElement label = firstVisible(By.xpath(USABLE_CREDIT_LIMIT_LABEL));
         scrollIntoView(label);
         String shown = amountNear(label);
         String entity = selectedTransactingEntity();
@@ -663,7 +686,7 @@ public class LedgerSteps extends AbstractWebPage {
      */
     @Then("verify customer visible credit lines from API are displayed on ledger page")
     public void verifyCustomerVisibleCreditLinesFromApiAreDisplayedOnLedgerPage() {
-        Grid.driver().findElement(By.xpath(USABLE_CREDIT_LIMIT_LABEL)).click();
+        clickFirstVisible(By.xpath(USABLE_CREDIT_LIMIT_LABEL));
         com.fasterxml.jackson.databind.JsonNode creditInfo = CREDIT_INFO.get();
         if (creditInfo == null) {
             throw new IllegalStateException("No OMS credit info response for this scenario. Add the"
@@ -685,15 +708,22 @@ public class LedgerSteps extends AbstractWebPage {
             creditTypes.add(line.path("creditType").asText());
         }
         if (!waitForElementPresent(creditTypeXpath(creditTypes.get(0)), 10)) {
-            List<WebElement> label = Grid.driver().findElements(By.xpath(USABLE_CREDIT_LIMIT_LABEL));
+            List<WebElement> label = Grid.driver().findElements(By.xpath(USABLE_CREDIT_LIMIT_LABEL)).stream()
+                    .filter(LedgerSteps::isOnScreen).collect(java.util.stream.Collectors.toList());
             if (!label.isEmpty()) {
                 scrollIntoView(label.get(0));
                 try {
                     clickButton(label.get(0));
-                } catch (Exception e) {
+                    log.info("Credit lines not shown; clicked Usable credit limit to open the breakdown.");
+                } catch (org.openqa.selenium.ElementClickInterceptedException e) {
+                    log.info("Usable credit limit click intercepted, using a JS click: " + firstLine(e.getMessage()));
                     jsClick(label.get(0));
+                } catch (TimeoutException | org.openqa.selenium.ElementNotInteractableException e) {
+                    // A speculative click to open a breakdown: not clickable means there is none to open.
+                    // Not clicked through - if the lines are really missing, the checks below say so.
+                    log.info("Usable credit limit is not clickable, so no breakdown was opened: "
+                            + firstLine(e.getMessage()));
                 }
-                log.info("Credit lines not shown; clicked Usable credit limit to open the breakdown.");
                 waitForElementPresent(creditTypeXpath(creditTypes.get(0)), 10);
             }
         }
@@ -984,8 +1014,7 @@ public class LedgerSteps extends AbstractWebPage {
     @And("user opens Usable ledger balance section on ledger page")
     public void userOpensUsableLedgerBalanceSectionOnLedgerPage() {
         log.info("Opening Usable ledger balance section on ledger page.");
-        waits(By.xpath(USABLE_LEDGER_BALANCE));
-        clickButton(By.xpath(USABLE_LEDGER_BALANCE));
+        clickFirstVisible(By.xpath(USABLE_LEDGER_BALANCE));
     }
 
     @Then("verify usable ledger balance from API is displayed on ledger page")
@@ -995,7 +1024,7 @@ public class LedgerSteps extends AbstractWebPage {
             softAssert.fail(entityTag() + "Closing balance " + CLOSING_BALANCE + " is not displayed on the ledger page.");
             return;
         }
-        WebElement closingBalance = Grid.driver().findElement(By.xpath(CLOSING_BALANCE));
+        WebElement closingBalance = firstVisible(By.xpath(CLOSING_BALANCE));
         scrollIntoView(closingBalance);
         softAssert.assertTrue(isDisplayed(closingBalance), entityTag() + "Closing balance is not displayed on the ledger page.");
 
@@ -1064,7 +1093,8 @@ public class LedgerSteps extends AbstractWebPage {
 
         List<WebElement> matches = Grid.driver().findElements(By.xpath(documentXpath(documentId)));
         if (matches.isEmpty()) {
-            softAssert.fail(entityTag() + "Ledger transaction " + documentId + " from API is not displayed on the ledger page.");
+            softAssert.fail(entityTag() + "Ledger transaction " + documentId + " from API is not displayed on the ledger page."
+                    + loadMoreTimeoutHint());
             return;
         }
         scrollToOrderButton(orderNumber);
@@ -1112,14 +1142,29 @@ public class LedgerSteps extends AbstractWebPage {
     }
 
     /**
+     * The logged-in customer's GSTIN, from their own customer record. The API scenarios query by
+     * it rather than a GSTIN in the feature: it is then always the account the page shows, on
+     * every environment, with nothing to keep in step when the ledger account changes.
+     */
+    private static String loggedInGstin() {
+        String gstin = new SessionSteps().getCustomerDetail().getGstIn();
+        if (gstin == null || gstin.isBlank()) {
+            throw new IllegalStateException("The logged-in customer " + SessionSteps.userEmail()
+                    + " has no GSTIN on their customer record, so the ledger APIs cannot be queried for them.");
+        }
+        log.info("Querying the ledger APIs for the logged-in customer's GSTIN " + ApiUtils.maskId(gstin) + ".");
+        return gstin;
+    }
+
+    /**
      * The APIs are queried by GSTIN but the UI shows the logged-in customer; if the two differ
      * the comparison is meaningless and every row check fails for the wrong reason.
      */
     private static void requireLoggedInGstin(String gstin) {
         String loggedInGstin = new SessionSteps().getCustomerDetail().getGstIn();
         if (!gstin.equalsIgnoreCase(loggedInGstin)) {
-            throw new IllegalStateException("GSTIN " + gstin + " in the feature does not belong to the"
-                    + " logged-in user " + SessionSteps.userEmail() + " (GSTIN " + loggedInGstin + ")."
+            throw new IllegalStateException("GSTIN " + ApiUtils.maskId(gstin) + " in the feature does not belong to the"
+                    + " logged-in user " + SessionSteps.userEmail() + " (GSTIN " + ApiUtils.maskId(loggedInGstin) + ")."
                     + " Use that user's GSTIN in the Examples table, or change ledger.user.email.");
         }
     }
@@ -1127,15 +1172,13 @@ public class LedgerSteps extends AbstractWebPage {
     @And("user opens Due later section on ledger page")
     public void userOpensDueLaterSectionOnLedgerPage() {
         log.info("Opening Due later section on ledger page.");
-        waits(By.xpath(DUE_LATER));
-        clickButton(By.xpath(DUE_LATER));
+        clickFirstVisible(By.xpath(DUE_LATER));
     }
 
     @And("user opens Payments due now section on ledger page")
     public void userOpensPaymentsDueNowSectionOnLedgerPage() {
         log.info("Opening Payments due now section on ledger page.");
-        waits(By.xpath(PAYMENT_DUE));
-        clickButton(By.xpath(PAYMENT_DUE));
+        clickFirstVisible(By.xpath(PAYMENT_DUE));
     }
 
     /** {@code section} only labels the failure messages, e.g. "Due later" or "Payments due now". */
@@ -1185,7 +1228,8 @@ public class LedgerSteps extends AbstractWebPage {
         double amount = toAmount(entry.get("amount"));
         List<WebElement> matches = Grid.driver().findElements(By.xpath(documentXpath(documentNumber)));
         if (matches.isEmpty()) {
-            softAssert.fail(section + " document " + documentNumber + " from API is not displayed on the ledger page.");
+            softAssert.fail(section + " document " + documentNumber + " from API is not displayed on the ledger page."
+                    + loadMoreTimeoutHint());
             return;
         }
 
@@ -1276,6 +1320,7 @@ public class LedgerSteps extends AbstractWebPage {
     private void loadAllLedgerRows(List<String> orderNumbers, UiRowTracker uiRows) {
         By loadMore = By.xpath(LOAD_MORE_BUTTON);
         int scrolledTo = 0;
+        LOAD_MORE_TIMEOUTS.get().clear();
         uiRows.snapshot();
         for (int click = 1; click <= MAX_LOAD_MORE_CLICKS; click++) {
             while (scrolledTo < orderNumbers.size() && scrollToOrderButton(orderNumbers.get(scrolledTo))) {
@@ -1293,15 +1338,18 @@ public class LedgerSteps extends AbstractWebPage {
             int rowsBefore = tableTextLength();
             try {
                 clickButton(button);
-            } catch (Exception e) {
+            } catch (org.openqa.selenium.ElementClickInterceptedException e) {
+                // Only an overlay (sticky header, toast) covering the button is clicked through. A
+                // disabled or hidden button throws something else and fails the scenario as it should.
+                log.info("Load more click intercepted, using a JS click: " + firstLine(e.getMessage()));
                 jsClick(button);
             }
             log.info("Clicked Load more (" + click + ") after scrolling to " + scrolledTo + " order(s).");
-            waitForMoreRows(loadMore, rowsBefore);
+            waitForMoreRows(loadMore, rowsBefore, click);
             uiRows.snapshotAfterLoadMore();
         }
-        softAssert.fail("Load more button was still present after " + MAX_LOAD_MORE_CLICKS
-                + " clicks; the ledger table may not be loading further rows.");
+        softAssert.fail(entityTag() + "Load more button was still present after " + MAX_LOAD_MORE_CLICKS
+                + " clicks; the ledger table may not be loading further rows." + loadMoreTimeoutHint());
     }
 
     private static WebElement visibleLoadMoreButton(By loadMore) {
@@ -1344,22 +1392,90 @@ public class LedgerSteps extends AbstractWebPage {
         }
     }
 
-    /** Waits for the click to take effect: the table grows, or the button goes away. */
-    private static void waitForMoreRows(By loadMore, int textLengthBefore) {
+    /**
+     * Waits for the click to take effect: the table grows, or the button goes away.
+     *
+     * <p>A timeout does not stop the loop - it clicks again, bounded by MAX_LOAD_MORE_CLICKS - but
+     * it is recorded, logged and attached with a screenshot, and named in any "not displayed"
+     * failure that follows, so a table that loaded late is reported as that rather than as rows
+     * missing for no stated reason.
+     */
+    private static void waitForMoreRows(By loadMore, int textLengthBefore, int click) {
         try {
+            // A page still re-rendering keeps the wait polling; a dead session fails it at once.
             new WebDriverWait(Grid.driver(), Duration.ofSeconds(15))
+                    .ignoring(org.openqa.selenium.StaleElementReferenceException.class)
                     .until(driver -> tableTextLength() > textLengthBefore || visibleLoadMoreButton(loadMore) == null);
         } catch (TimeoutException e) {
-            // The loop checks the button again; the cap stops it if nothing ever loads.
+            String note = "Load more click " + click + ": the table did not grow within 15s (page text length "
+                    + textLengthBefore + " before, " + tableTextLength() + " now; Load more button "
+                    + (visibleLoadMoreButton(loadMore) == null ? "gone" : "still visible") + ").";
+            LOAD_MORE_TIMEOUTS.get().add(note);
+            log.info(entityTag() + note);
+            io.qameta.allure.Allure.addAttachment(entityTag() + "Load more timed out (click " + click + ")",
+                    "text/plain", note, ".txt");
+            attachScreenshot(entityTag() + "Ledger table when Load more click " + click + " timed out");
         }
     }
 
-    private static int tableTextLength() {
+    /**
+     * " Load more timed out N time(s) ... " for a failure message when the current table's load
+     * had timeouts, so a missing row points at the late load; "" otherwise.
+     */
+    private static String loadMoreTimeoutHint() {
+        List<String> timeouts = LOAD_MORE_TIMEOUTS.get();
+        return timeouts.isEmpty() ? "" : " Load more timed out " + timeouts.size() + " time(s) while loading this"
+                + " table, so the row may simply not have loaded: " + String.join(" ", timeouts);
+    }
+
+    /** Screenshot into the report; a screenshot that cannot be taken never fails the step. */
+    private static void attachScreenshot(String name) {
         try {
-            return Grid.driver().findElement(By.tagName("body")).getText().length();
-        } catch (Exception e) {
-            return 0;
+            byte[] png = ((org.openqa.selenium.TakesScreenshot) Grid.driver())
+                    .getScreenshotAs(org.openqa.selenium.OutputType.BYTES);
+            io.qameta.allure.Allure.addAttachment(name, "image/png", new java.io.ByteArrayInputStream(png), ".png");
+        } catch (org.openqa.selenium.WebDriverException e) {
+            log.info("Could not attach a screenshot (" + name + "): " + firstLine(e.getMessage()));
         }
+    }
+
+    /** Displayed with a real size - not one of the hidden 0x0 duplicates the page renders. */
+    private static boolean isOnScreen(WebElement element) {
+        try {
+            return element.isDisplayed() && element.getSize().getWidth() > 0 && element.getSize().getHeight() > 0;
+        } catch (org.openqa.selenium.StaleElementReferenceException e) {
+            return false;
+        }
+    }
+
+    /** First line of a Selenium message - the rest is build and capability noise. */
+    private static String firstLine(String message) {
+        if (message == null) {
+            return "";
+        }
+        int end = message.indexOf('\n');
+        return (end < 0 ? message : message.substring(0, end)).trim();
+    }
+
+    /**
+     * Length of the page's visible text - a cheap "did the table change" probe.
+     *
+     * <p>Only a stale {@code <body>} is retried: the page re-rendered between finding it and
+     * reading it, so look again. Anything else - a dead session, an unreachable browser - is
+     * thrown rather than reported as 0, which made a broken driver look like "no change" and
+     * waited out the full timeout before failing somewhere unrelated.
+     */
+    private static int tableTextLength() {
+        org.openqa.selenium.StaleElementReferenceException lastStale = null;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            try {
+                return Grid.driver().findElement(By.tagName("body")).getText().length();
+            } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                lastStale = e;
+                pauseMillis(200);
+            }
+        }
+        throw lastStale;
     }
 
     /**

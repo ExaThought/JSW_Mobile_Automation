@@ -389,16 +389,49 @@ public class ApiUtils extends BaseApiImpl
         return baseUrl + CUSTOMER_PROFILE_PATH;
     }
 
+    /** Headers carrying service credentials; masked in anything RestAssured logs. */
+    private static final String[] CREDENTIAL_HEADERS = {"x-api-key", "Authorization", "client_id"};
+
     /**
-     * GET {middlewareUrl}xp-mi/public/v3/customer-profile using the token minted by
-     * {@link Token#getCCPToken()} (test-group user from the properties file).
-     *
-     * Mirrors the browser request exactly:
-     *   -H 'accept: application/json, text/plain, *&#47;*'
-     *   -H 'access_token: &lt;jwt&gt;'
-     *
-     * @return the raw RestAssured response, so callers can assert on status code as well as body.
+     * The current RestAssured config with the credential headers blacklisted, so a request or
+     * response that gets logged - {@code log().ifError()} today, {@code log().all()} if someone
+     * widens it - prints them as "[ BLACKLISTED ]". Built from the current global config so any
+     * other setting on it is kept.
      */
+    private static io.restassured.config.RestAssuredConfig redactedLogging() {
+        io.restassured.config.RestAssuredConfig current = RestAssured.config();
+        return current.logConfig(current.getLogConfig().blacklistHeader(CREDENTIAL_HEADERS[0],
+                java.util.Arrays.copyOfRange(CREDENTIAL_HEADERS, 1, CREDENTIAL_HEADERS.length)));
+    }
+
+    /**
+     * A PAN or GSTIN with all but its first and last two characters masked, for logs and
+     * failure messages: 27AADCL2102L1ZQ -> 27***********ZQ. A GSTIN carries the PAN in
+     * characters 3-12, so it is masked as well; the state code survives to show which
+     * customer's data a log line is about.
+     */
+    public static String maskId(String id) {
+        if (id == null || id.length() <= 4) {
+            return "****";
+        }
+        return id.substring(0, 2) + "*".repeat(id.length() - 4) + id.substring(id.length() - 2);
+    }
+
+    /** {@code body} with every "pan" / "gstin" / "gstIn" string value masked (see {@link #maskId}). */
+    public static String maskIdsInJson(String body) {
+        if (body == null) {
+            return null;
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(\"(?:pan|gstin|gstIn|sellerPan)\"\\s*:\\s*\")([^\"]*)(\")").matcher(body);
+        StringBuilder out = new StringBuilder();
+        while (m.find()) {
+            m.appendReplacement(out, java.util.regex.Matcher.quoteReplacement(m.group(1) + maskId(m.group(2)) + m.group(3)));
+        }
+        m.appendTail(out);
+        return out.toString();
+    }
+
     /**
      * OMS due payments for a customer - with {@code dueLater=true}, the data behind the ledger's
      * "Due later" tab. Authenticates with the service {@code omsInternalApiKey}, not a user token.
@@ -408,6 +441,7 @@ public class ApiUtils extends BaseApiImpl
                 + "joms/api/internal/v1/customer-due-payments-list/" + gstin;
         Response response = RestAssured.given()
                 .baseUri(endpoint)
+                .config(redactedLogging())
                 .header("x-api-key", ConfigUtil.resolveOrThrow("omsInternalApiKey"))
                 .queryParam("entityName", entityName)
                 .queryParam("dueInDays", dueInDays)
@@ -419,8 +453,8 @@ public class ApiUtils extends BaseApiImpl
                 .then().log().ifError()
                 .extract().response();
 
-        logger.info("GET " + endpoint + " entityName=" + entityName + " dueInDays=" + dueInDays + " dueLater=" + dueLater
-                + " -> HTTP " + response.getStatusCode());
+        logger.info("GET " + endpoint.replace(gstin, maskId(gstin)) + " entityName=" + entityName
+                + " dueInDays=" + dueInDays + " dueLater=" + dueLater + " -> HTTP " + response.getStatusCode());
         return response;
     }
 
@@ -433,6 +467,7 @@ public class ApiUtils extends BaseApiImpl
                 + "ledger-service/api/internal/v1/fetch-ledger-transaction";
         Response response = RestAssured.given()
                 .baseUri(endpoint)
+                .config(redactedLogging())
                 .header("client_id", ConfigUtil.resolveOrThrow("ledgerServiceClientId"))
                 .header("Authorization", ConfigUtil.resolveOrThrow("ledgerServiceAuthorization"))
                 .queryParam("gstin", gstin)
@@ -442,7 +477,7 @@ public class ApiUtils extends BaseApiImpl
                 .then().log().ifError()
                 .extract().response();
 
-        logger.info("GET " + endpoint + " gstin=" + gstin + " appName=" + appName
+        logger.info("GET " + endpoint + " gstin=" + maskId(gstin) + " appName=" + appName
                 + " -> HTTP " + response.getStatusCode());
         return response;
     }
@@ -456,6 +491,7 @@ public class ApiUtils extends BaseApiImpl
         String endpoint = ConfigUtil.resolveOrThrow("omsBaseUrl") + "joms/api/external/v2/getCreditInfoByPan";
         Response response = RestAssured.given()
                 .baseUri(endpoint)
+                .config(redactedLogging())
                 .header("accept", "application/json, text/plain, */*")
                 .header("authorization", Token.getOmsAuthorizationHeader())
                 .queryParam("pan", pan)
@@ -465,10 +501,21 @@ public class ApiUtils extends BaseApiImpl
                 .then().log().ifError()
                 .extract().response();
 
-        logger.info("GET " + endpoint + " pan=" + pan + " gstin=" + gstin + " -> HTTP " + response.getStatusCode());
+        logger.info("GET " + endpoint + " pan=" + maskId(pan) + " gstin=" + maskId(gstin)
+                + " -> HTTP " + response.getStatusCode());
         return response;
     }
 
+    /**
+     * GET {middlewareUrl}xp-mi/public/v3/customer-profile using the token minted by
+     * {@link Token#getCCPToken()} (test-group user from the properties file).
+     *
+     * Mirrors the browser request exactly:
+     *   -H 'accept: application/json, text/plain, *&#47;*'
+     *   -H 'access_token: &lt;jwt&gt;'
+     *
+     * @return the raw RestAssured response, so callers can assert on status code as well as body.
+     */
     public static Response fetchCustomerProfile() {
         return fetchCustomerProfile(Token.getCCPToken());
     }

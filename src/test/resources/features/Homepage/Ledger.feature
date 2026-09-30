@@ -44,43 +44,39 @@ Feature: Validate ledger details
     And user clicks on Account Drop Down
     Then User select Ledger tab under My Account
     Then verify ledger page title
-    Then verify "Payments due now" entries from API are displayed on ledger page for each transacting entity with GSTIN "<gstin>", dueInDays "<dueInDays>" and dueLater "<dueLater>"
+    Then verify "Payments due now" entries from API are displayed on ledger page for each transacting entity with dueInDays "<dueInDays>" and dueLater "<dueLater>"
 
     Examples:
-      | gstin           | dueInDays | dueLater |
-      | 27AADCL2102L1ZQ | 0         | false    |
+      | dueInDays | dueLater |
+      | 0         | false    |
 
 
   Scenario Outline: Validate Due later entries on ledger page match the OMS due payments API
     And user clicks on Account Drop Down
     Then User select Ledger tab under My Account
     Then verify ledger page title
-    Then verify "Due later" entries from API are displayed on ledger page for each transacting entity with GSTIN "<gstin>", dueInDays "<dueInDays>" and dueLater "<dueLater>"
+    Then verify "Due later" entries from API are displayed on ledger page for each transacting entity with dueInDays "<dueInDays>" and dueLater "<dueLater>"
 
     Examples:
-      | gstin           | dueInDays | dueLater |
-      | 27AADCL2102L1ZQ | 3         | true     |
+      | dueInDays | dueLater |
+      | 3         | true     |
 
 
   Scenario Outline: Validate Usable ledger balance and transactions on ledger page match the ledger service API
     And user clicks on Account Drop Down
     Then User select Ledger tab under My Account
     Then verify ledger page title
-    Then verify usable ledger balance and latest "<transactionCount>" ledger transactions from API are displayed on ledger page for each transacting entity with GSTIN "<gstin>"
+    Then verify usable ledger balance and latest "<transactionCount>" ledger transactions from API are displayed on ledger page for each transacting entity
 
     Examples:
-      | gstin           | transactionCount |
-      | 27AADCL2102L1ZQ | 20               |
+      | transactionCount |
+      | 20               |
 
 
-  Scenario Outline: Validate Usable credit limit on ledger page matches the OMS credit info API
-    When user fetches credit info from OMS for GSTIN "<gstin>"
+  Scenario: Validate Usable credit limit on ledger page matches the OMS credit info API
+    When user fetches credit info from OMS for the logged in customer
     And user clicks on Account Drop Down
     Then User select Ledger tab under My Account
     Then verify ledger page title
     Then verify usable credit limit from API is displayed on ledger page
     Then verify customer visible credit lines from API are displayed on ledger page
-
-    Examples:
-      | gstin           |
-      | 27AADCL2102L1ZQ |

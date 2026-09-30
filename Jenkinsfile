@@ -430,9 +430,16 @@ YAML
                                 sh mvnCmd
                             }
                         } else if (params.USE_JENKINS_CREDENTIALS) {
+                            // The ledger API ids have no committed fallback: without them the
+                            // @ledger API scenarios fail naming the missing variable. qa and preprod
+                            // currently share these values, so the ids carry no -<env> suffix; add
+                            // "-${params.ENV}" to an id if its owners issue separate values.
                             withCredentials([
                                 string(credentialsId: "msme-oms-db-password-${params.ENV}", variable: 'OMS_DB_PASSWORD'),
-                                string(credentialsId: "msme-xapikey-${params.ENV}",         variable: 'X_API_KEY')
+                                string(credentialsId: "msme-xapikey-${params.ENV}",         variable: 'X_API_KEY'),
+                                string(credentialsId: 'msme-oms-internal-api-key',          variable: 'OMS_INTERNAL_API_KEY'),
+                                string(credentialsId: 'msme-ledger-service-client-id',      variable: 'LEDGER_SERVICE_CLIENT_ID'),
+                                string(credentialsId: 'msme-ledger-service-authorization',  variable: 'LEDGER_SERVICE_AUTHORIZATION')
                             ]) {
                                 sh mvnCmd
                             }
