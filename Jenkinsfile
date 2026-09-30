@@ -11,6 +11,110 @@
  * Requires plugins: Allure, Email Extension, HTML Publisher.
  */
 
+/*
+ * Helpers for the ledger credential check in the Test stage. Deliberately plain: only String
+ * methods, split(), for loops and lists - no regex matchers, closures or @NonCPS - so the
+ * pipeline sandbox cannot reject them and stop every qa/preprod build over a ledger concern.
+ */
+
+/** Every @tag token in text - a tag expression, feature tag lines or suite filter values. */
+List<String> tagsIn(String text) {
+    List<String> tags = []
+    // '-' last in the class needs no escape - and a Groovy '...' string rejects an unknown "\-".
+    for (String token : (text ?: '').split('[^A-Za-z0-9_@-]+')) {
+        if (token.startsWith('@') && token.length() > 1 && !tags.contains(token)) {
+            tags.add(token)
+        }
+    }
+    return tags
+}
+
+/**
+ * The lower-cased words of a tag expression, split like tagsIn - so "not" is found however it is
+ * punctuated: "not @x", "(not @x)", "not(@x)".
+ */
+List<String> wordsIn(String text) {
+    List<String> words = []
+    for (String token : (text ?: '').split('[^A-Za-z0-9_@-]+')) {
+        if (!token.isEmpty()) {
+            words.add(token.toLowerCase())
+        }
+    }
+    return words
+}
+
+/** True when ch - a one-character string - is XML whitespace. */
+boolean isXmlSpace(String ch) {
+    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
+}
+
+/**
+ * Every "<name ...>" element in text, from its '<' to its closing '>'. The name must be followed
+ * by whitespace, '/' or '>', so "test" does not also match "tests". Attributes may span lines.
+ */
+List<String> elementsOf(String text, String name) {
+    List<String> elements = []
+    String source = text ?: ''
+    String open = '<' + name
+    int from = 0
+    while (true) {
+        int at = source.indexOf(open, from)
+        if (at < 0) {
+            break
+        }
+        int after = at + open.length()
+        int end = source.indexOf('>', after)
+        if (end < 0) {
+            break
+        }
+        String next = source.substring(after, after + 1)
+        if (isXmlSpace(next) || next == '/' || next == '>') {
+            elements.add(source.substring(at, end + 1))
+        }
+        from = after
+    }
+    return elements
+}
+
+/**
+ * The value of attribute attr in element, or null. Allows whitespace (newlines included) around
+ * '=' and either quote character, and matches attr only as a whole attribute name.
+ */
+String attributeOf(String element, String attr) {
+    String source = element ?: ''
+    int from = 0
+    while (true) {
+        int at = source.indexOf(attr, from)
+        if (at < 0) {
+            return null
+        }
+        from = at + attr.length()
+        if (at == 0 || !isXmlSpace(source.substring(at - 1, at))) {
+            continue                                   // part of a longer name, e.g. "xname"
+        }
+        int i = at + attr.length()
+        while (i < source.length() && isXmlSpace(source.substring(i, i + 1))) {
+            i++
+        }
+        if (i >= source.length() || source.substring(i, i + 1) != '=') {
+            continue
+        }
+        i++
+        while (i < source.length() && isXmlSpace(source.substring(i, i + 1))) {
+            i++
+        }
+        if (i >= source.length()) {
+            return null
+        }
+        String quote = source.substring(i, i + 1)
+        if (quote != '"' && quote != "'") {
+            continue
+        }
+        int close = source.indexOf(quote, i + 1)
+        return close < 0 ? null : source.substring(i + 1, close)
+    }
+}
+
 pipeline {
     agent any
 
@@ -87,15 +191,6 @@ pipeline {
             name: 'RECIPIENTS',
             defaultValue: 'ritika.jaggi@jsw.in,v_akash.garg@jsw.in, piyush.dwivedi@jsw.in',
             description: 'Comma-separated Outlook recipients for the summary email.'
-        )
-        booleanParam(
-            name: 'USE_JENKINS_CREDENTIALS',
-            defaultValue: false,
-            description: 'Bind per-environment Jenkins credentials over the committed ' +
-                         'global_&lt;env&gt;.properties defaults. Leave OFF until every id listed in ' +
-                         'the Test stage exists for BOTH environments - withCredentials aborts ' +
-                         'the stage when an id is missing, which produces an UNSTABLE build with ' +
-                         'zero tests executed and looks exactly like a test failure.'
         )
     }
 
@@ -429,17 +524,140 @@ YAML
                             ]) {
                                 sh mvnCmd
                             }
-                        } else if (params.USE_JENKINS_CREDENTIALS) {
-                            withCredentials([
-                                string(credentialsId: "msme-oms-db-password-${params.ENV}", variable: 'OMS_DB_PASSWORD'),
-                                string(credentialsId: "msme-xapikey-${params.ENV}",         variable: 'X_API_KEY')
-                            ]) {
+                        } else {
+                            // qa / preprod. The ledger API secrets have no committed fallback;
+                            // everything else, X_API_KEY included, comes from the committed
+                            // global_<env>.properties defaults (OMS_DB_PASSWORD is read by nothing).
+                            //
+                            // A missing credential id aborts this stage with zero tests run, so the
+                            // three are bound only when the run can reach Ledger.feature: its own
+                            // tags - read from the file, not hardcoded, since it is also @regression -
+                            // are compared with TAGS, or with the suite's cucumber.filter.tags values
+                            // (following <suite-file> includes to any depth) when TAGS is blank.
+                            // It errs towards binding: any "not" expression, a <test> block with no
+                            // filter, or a commented-out suite block binds credentials that may not be
+                            // needed. Every way a run can select Ledger's scenarios - one of its tags,
+                            // a negation, no filter - binds. Were it ever to miss, the scenario fails
+                            // fast in ConfigUtil with "No value for 'omsInternalApiKey'", naming the
+                            // variable, before any request is sent.
+                            // qa and preprod share the values, so the ids carry no -<env> suffix;
+                            // add "-${params.ENV}" to an id if its owners issue separate values.
+                            // The Jenkinsfile can come from a different branch than BRANCH_NAME (the
+                            // job loads it from develop), so a checkout without Ledger.feature is
+                            // "no ledger tags", not a readFile failure.
+                            def ledgerFeature = 'src/test/resources/features/Homepage/Ledger.feature'
+                            def bindLedger = false
+                            try {
+                                // Ledger.feature's own tag lines.
+                                String ledgerTagLines = ''
+                                if (fileExists(ledgerFeature)) {
+                                    for (String line : readFile(ledgerFeature).split('\n')) {
+                                        if (line.trim().startsWith('@')) {
+                                            ledgerTagLines += ' ' + line.trim()
+                                        }
+                                    }
+                                }
+                                List<String> ledgerTags = tagsIn(ledgerTagLines)
+
+                                // This run's tags: TAGS, else the filters of the suite and of every
+                                // suite it includes, to any depth. Each <suite-file path> resolves
+                                // against the directory of the file that includes it, as TestNG does;
+                                // visited stops include loops and the cap bounds the walk. The root
+                                // suite is read unguarded, so a missing SUITE falls to the catch below.
+                                String tagSource = params.TAGS?.trim()
+                                boolean unfilteredBlock = false
+                                if (!tagSource) {
+                                    String rootSuite = 'src/test/resources/' + params.SUITE
+                                    List<String> pending = [rootSuite]
+                                    List<String> visited = []
+                                    String suiteText = ''
+                                    while (!pending.isEmpty() && visited.size() < 50) {
+                                        String suitePath = pending.remove(0)
+                                        if (visited.contains(suitePath)) {
+                                            continue
+                                        }
+                                        if (suitePath != rootSuite && !fileExists(suitePath)) {
+                                            continue      // TestNG itself reports a missing include
+                                        }
+                                        visited.add(suitePath)
+                                        String text = readFile(suitePath)
+                                        suiteText += '\n' + text
+                                        String dir = suitePath.contains('/')
+                                                ? suitePath.substring(0, suitePath.lastIndexOf('/') + 1) : ''
+                                        for (String element : elementsOf(text, 'suite-file')) {
+                                            String include = attributeOf(element, 'path')
+                                            if (include) {
+                                                String relative = include.startsWith('./') ? include.substring(2) : include
+                                                pending.add(dir + relative)
+                                            }
+                                        }
+                                    }
+                                    // Parsed as <parameter> elements, not by exact attribute text:
+                                    // testng_serial.xml breaks its Cart filter across two lines, and
+                                    // name/value may use either quote and either order.
+                                    List<String> filters = []
+                                    int filterCount = 0
+                                    for (String element : elementsOf(suiteText, 'parameter')) {
+                                        if (attributeOf(element, 'name') == 'cucumber.filter.tags') {
+                                            filterCount++
+                                            String value = attributeOf(element, 'value')
+                                            if (value != null) {
+                                                filters.add(value)
+                                            }
+                                        }
+                                    }
+                                    tagSource = filters.join(' ')
+                                    // A <test> block without a tag filter runs every feature, Ledger included.
+                                    // Counted with the same parser as the filters, so the two cannot disagree.
+                                    unfilteredBlock = elementsOf(suiteText, 'test').size() > filterCount
+                                }
+                                List<String> runTags = tagsIn(tagSource)
+
+                                List<String> shared = []
+                                for (String tag : ledgerTags) {
+                                    if (runTags.contains(tag)) {
+                                        shared.add(tag)
+                                    }
+                                }
+                                // A "not ..." expression can select Ledger's scenarios without naming
+                                // any of its tags ("not @wip" selects everything), so it binds too.
+                                // A word, not a substring: "(not @wip)" and "not(@x)" count as well.
+                                boolean negated = wordsIn(tagSource).contains('not')
+                                boolean hasLedger = !ledgerTags.isEmpty()
+                                bindLedger = !shared.isEmpty() || (hasLedger && (negated || unfilteredBlock))
+                                String reason = !shared.isEmpty() ? "this run selects ${shared}"
+                                        : (hasLedger && negated) ? 'the tag expression has a "not", which can select Ledger'
+                                        : (hasLedger && unfilteredBlock) ? 'a suite <test> block has no tag filter'
+                                        : "none of Ledger.feature's tags ${ledgerTags} are in this run's tags ${runTags}"
+                                echo((bindLedger ? 'Binding' : 'Not binding') + " the ledger API credentials: ${reason}.")
+                            } catch (Exception e) {
+                                // The check must never be what fails a build. Fall back to binding
+                                // whenever the checkout has ledger scenarios at all.
+                                //
+                                // Trade-off: on such a branch the run now needs the three ledger
+                                // credential ids. If one is missing, withCredentials aborts the stage
+                                // with zero tests run - even for a run that never reaches Ledger (the
+                                // check broke, e.g. on a wrong SUITE path, so it cannot tell). The
+                                // WARNING below names the original failure so that case is diagnosable.
+                                bindLedger = fileExists(ledgerFeature)
+                                // e.toString(), not e.class...: the sandbox may reject property access
+                                // on class, and this fallback must not throw.
+                                echo "WARNING: ledger credential check failed (${e.toString()}); " +
+                                     (bindLedger ? 'binding the ledger credentials because Ledger.feature exists.'
+                                                 : 'not binding - this checkout has no Ledger.feature.')
+                            }
+
+                            if (bindLedger) {
+                                withCredentials([
+                                    string(credentialsId: 'msme-oms-internal-api-key',         variable: 'OMS_INTERNAL_API_KEY'),
+                                    string(credentialsId: 'msme-ledger-service-client-id',     variable: 'LEDGER_SERVICE_CLIENT_ID'),
+                                    string(credentialsId: 'msme-ledger-service-authorization', variable: 'LEDGER_SERVICE_AUTHORIZATION')
+                                ]) {
+                                    sh mvnCmd
+                                }
+                            } else {
                                 sh mvnCmd
                             }
-                        } else {
-                            // Defaults come from global_<env>.properties, which are already
-                            // correct per environment.
-                            sh mvnCmd
                         }
                     }
                 }
