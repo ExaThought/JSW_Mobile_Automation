@@ -29,41 +29,90 @@ List<String> tagsIn(String text) {
     return tags
 }
 
-/** How many times needle occurs in text. */
-int countOf(String text, String needle) {
-    int count = 0
-    int from = 0
+/**
+ * The lower-cased words of a tag expression, split like tagsIn - so "not" is found however it is
+ * punctuated: "not @x", "(not @x)", "not(@x)".
+ */
+List<String> wordsIn(String text) {
+    List<String> words = []
+    for (String token : (text ?: '').split('[^A-Za-z0-9_@-]+')) {
+        if (!token.isEmpty()) {
+            words.add(token.toLowerCase())
+        }
+    }
+    return words
+}
+
+/** True when ch - a one-character string - is XML whitespace. */
+boolean isXmlSpace(String ch) {
+    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
+}
+
+/**
+ * Every "<name ...>" element in text, from its '<' to its closing '>'. The name must be followed
+ * by whitespace, '/' or '>', so "test" does not also match "tests". Attributes may span lines.
+ */
+List<String> elementsOf(String text, String name) {
+    List<String> elements = []
     String source = text ?: ''
+    String open = '<' + name
+    int from = 0
     while (true) {
-        int at = source.indexOf(needle, from)
+        int at = source.indexOf(open, from)
         if (at < 0) {
             break
         }
-        count++
-        from = at + needle.length()
-    }
-    return count
-}
-
-/** The text between every occurrence of prefix and the next double quote. */
-List<String> quotedValuesAfter(String text, String prefix) {
-    List<String> values = []
-    String source = text ?: ''
-    int from = 0
-    while (true) {
-        int start = source.indexOf(prefix, from)
-        if (start < 0) {
-            break
-        }
-        start += prefix.length()
-        int end = source.indexOf('"', start)
+        int after = at + open.length()
+        int end = source.indexOf('>', after)
         if (end < 0) {
             break
         }
-        values.add(source.substring(start, end))
-        from = end + 1
+        String next = source.substring(after, after + 1)
+        if (isXmlSpace(next) || next == '/' || next == '>') {
+            elements.add(source.substring(at, end + 1))
+        }
+        from = after
     }
-    return values
+    return elements
+}
+
+/**
+ * The value of attribute attr in element, or null. Allows whitespace (newlines included) around
+ * '=' and either quote character, and matches attr only as a whole attribute name.
+ */
+String attributeOf(String element, String attr) {
+    String source = element ?: ''
+    int from = 0
+    while (true) {
+        int at = source.indexOf(attr, from)
+        if (at < 0) {
+            return null
+        }
+        from = at + attr.length()
+        if (at == 0 || !isXmlSpace(source.substring(at - 1, at))) {
+            continue                                   // part of a longer name, e.g. "xname"
+        }
+        int i = at + attr.length()
+        while (i < source.length() && isXmlSpace(source.substring(i, i + 1))) {
+            i++
+        }
+        if (i >= source.length() || source.substring(i, i + 1) != '=') {
+            continue
+        }
+        i++
+        while (i < source.length() && isXmlSpace(source.substring(i, i + 1))) {
+            i++
+        }
+        if (i >= source.length()) {
+            return null
+        }
+        String quote = source.substring(i, i + 1)
+        if (quote != '"' && quote != "'") {
+            continue
+        }
+        int close = source.indexOf(quote, i + 1)
+        return close < 0 ? null : source.substring(i + 1, close)
+    }
 }
 
 pipeline {
@@ -499,9 +548,7 @@ YAML
                             def ledgerFeature = 'src/test/resources/features/Homepage/Ledger.feature'
                             def bindLedger = false
                             try {
-                                // Ledger.feature's own tag lines. The Jenkinsfile can come from a
-                                // different branch than BRANCH_NAME (the job loads it from develop),
-                                // so a checkout without the file simply has no ledger tags.
+                                // Ledger.feature's own tag lines.
                                 String ledgerTagLines = ''
                                 if (fileExists(ledgerFeature)) {
                                     for (String line : readFile(ledgerFeature).split('\n')) {
@@ -537,14 +584,32 @@ YAML
                                         suiteText += '\n' + text
                                         String dir = suitePath.contains('/')
                                                 ? suitePath.substring(0, suitePath.lastIndexOf('/') + 1) : ''
-                                        for (String include : quotedValuesAfter(text, '<suite-file path="')) {
-                                            String relative = include.startsWith('./') ? include.substring(2) : include
-                                            pending.add(dir + relative)
+                                        for (String element : elementsOf(text, 'suite-file')) {
+                                            String include = attributeOf(element, 'path')
+                                            if (include) {
+                                                String relative = include.startsWith('./') ? include.substring(2) : include
+                                                pending.add(dir + relative)
+                                            }
                                         }
                                     }
-                                    tagSource = quotedValuesAfter(suiteText, 'name="cucumber.filter.tags" value="').join(' ')
+                                    // Parsed as <parameter> elements, not by exact attribute text:
+                                    // testng_serial.xml breaks its Cart filter across two lines, and
+                                    // name/value may use either quote and either order.
+                                    List<String> filters = []
+                                    int filterCount = 0
+                                    for (String element : elementsOf(suiteText, 'parameter')) {
+                                        if (attributeOf(element, 'name') == 'cucumber.filter.tags') {
+                                            filterCount++
+                                            String value = attributeOf(element, 'value')
+                                            if (value != null) {
+                                                filters.add(value)
+                                            }
+                                        }
+                                    }
+                                    tagSource = filters.join(' ')
                                     // A <test> block without a tag filter runs every feature, Ledger included.
-                                    unfilteredBlock = countOf(suiteText, '<test ') > countOf(suiteText, 'name="cucumber.filter.tags"')
+                                    // Counted with the same parser as the filters, so the two cannot disagree.
+                                    unfilteredBlock = elementsOf(suiteText, 'test').size() > filterCount
                                 }
                                 List<String> runTags = tagsIn(tagSource)
 
@@ -556,7 +621,8 @@ YAML
                                 }
                                 // A "not ..." expression can select Ledger's scenarios without naming
                                 // any of its tags ("not @wip" selects everything), so it binds too.
-                                boolean negated = countOf(' ' + tagSource + ' ', ' not ') > 0
+                                // A word, not a substring: "(not @wip)" and "not(@x)" count as well.
+                                boolean negated = wordsIn(tagSource).contains('not')
                                 boolean hasLedger = !ledgerTags.isEmpty()
                                 bindLedger = !shared.isEmpty() || (hasLedger && (negated || unfilteredBlock))
                                 String reason = !shared.isEmpty() ? "this run selects ${shared}"
@@ -567,6 +633,12 @@ YAML
                             } catch (Exception e) {
                                 // The check must never be what fails a build. Fall back to binding
                                 // whenever the checkout has ledger scenarios at all.
+                                //
+                                // Trade-off: on such a branch the run now needs the three ledger
+                                // credential ids. If one is missing, withCredentials aborts the stage
+                                // with zero tests run - even for a run that never reaches Ledger (the
+                                // check broke, e.g. on a wrong SUITE path, so it cannot tell). The
+                                // WARNING below names the original failure so that case is diagnosable.
                                 bindLedger = fileExists(ledgerFeature)
                                 // e.toString(), not e.class...: the sandbox may reject property access
                                 // on class, and this fallback must not throw.
