@@ -57,13 +57,14 @@ public class BuyAgainSteps extends AbstractWebPage {
     public static final String CREDIT = "//span[text()='Credit']";
     public static final String DUE_STATUS = "//span[text()='Due status']";
     public static final String FINANCIAL_DOC_BTN = "//button[contains(text(), 'Financial documents')]";
-    public static final String FINANCIAL_TITLE = "//div[text()='Financial documents']";
-    public static final String PAYMENT_INST = "//button[contains(text(),' Payment instructions')]";
-    public static final String PAYMENT_DUE = "//div[contains(text(),' Payments due now')]";
-    public static final String DUE_LATER = "//div[contains(text(),' Due later')]";
-    public static final String USABLE_LEDGER_BALANCE = "//div[contains(text(),' Usable ledger balance')]";
+    public static final String FINANCIAL_TITLE =
+            "//h2[normalize-space()='Financial documents'] | //div[normalize-space()='Financial documents']";
+    public static final String PAYMENT_INST = "//button[contains(text(),'Payment instructions')]";
+    public static final String PAYMENT_DUE = "//span[contains(text(),'Payments due now')]";
+    public static final String DUE_LATER = "//span[contains(text(),'Due later')]";
+    public static final String USABLE_LEDGER_BALANCE = "//span[normalize-space()='Usable ledger balance']";
     public static final String PAYMENT_INST_POPUP = "//*[contains(text(),'Payment instructions')]";
-    public static final String FINANCIAL_DOC = "//a[@href=\"/financial-documents\"]";
+    public static final String FINANCIAL_DOC = "//a[@href='/financial-documents']";
     public static final String ALL_DOCUMENT  = "//span[contains(text(),'All Documents')]";
     public static final String CURRENT_MONTH = "//span[contains(text(),'Current month')]";
     public static final String FROM_DATE = "//input[@id=\"from-date\"]";
@@ -408,6 +409,7 @@ public class BuyAgainSteps extends AbstractWebPage {
     public void verifyTheFinancialDocumentTitle() {
         try {
             log.info("Verifying the Financial Document title is displayed.");
+            waitForElementPresent(FINANCIAL_TITLE, 10);
 
             softAssert.assertTrue(
                     isDisplayed(By.xpath(FINANCIAL_TITLE)),

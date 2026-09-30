@@ -21,7 +21,7 @@ public class UserConfig {
      */
     private static final Set<String> VALID_GROUPS =
             Set.of("login", "homepage", "pdpplp", "cart", "profile", "orders", "msite", "Guest",
-                    "tokencheck", "multiuser");
+                    "tokencheck", "multiuser", "ledger");
 
     public static String getEmail() {
         return requireGroupValue(emailKey());
@@ -136,6 +136,15 @@ public class UserConfig {
             );
         }
         return group;
+    }
+
+    /** True when the current test.group is {@code group}; false if it is unset or different. */
+    public static boolean isGroup(String group) {
+        try {
+            return group.equals(getGroup());
+        } catch (IllegalStateException e) {
+            return false;
+        }
     }
 
     private static String emailKey() {

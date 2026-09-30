@@ -399,6 +399,76 @@ public class ApiUtils extends BaseApiImpl
      *
      * @return the raw RestAssured response, so callers can assert on status code as well as body.
      */
+    /**
+     * OMS due payments for a customer - with {@code dueLater=true}, the data behind the ledger's
+     * "Due later" tab. Authenticates with the service {@code omsInternalApiKey}, not a user token.
+     */
+    public static Response fetchDuePayments(String gstin, String entityName, int dueInDays, boolean dueLater) {
+        String endpoint = ConfigUtil.resolveOrThrow("omsBaseUrl")
+                + "joms/api/internal/v1/customer-due-payments-list/" + gstin;
+        Response response = RestAssured.given()
+                .baseUri(endpoint)
+                .header("x-api-key", ConfigUtil.resolveOrThrow("omsInternalApiKey"))
+                .queryParam("entityName", entityName)
+                .queryParam("dueInDays", dueInDays)
+                .queryParam("limit", 10000)
+                .queryParam("offset", 0)
+                .queryParam("dueLater", dueLater)
+                .when()
+                .get()
+                .then().log().ifError()
+                .extract().response();
+
+        logger.info("GET " + endpoint + " entityName=" + entityName + " dueInDays=" + dueInDays + " dueLater=" + dueLater
+                + " -> HTTP " + response.getStatusCode());
+        return response;
+    }
+
+    /**
+     * Ledger service transactions and balance for a customer - the data behind the ledger's
+     * "Usable ledger balance" tab. Authenticates with the ledger service client id and key.
+     */
+    public static Response fetchLedgerTransactions(String gstin, String appName) {
+        String endpoint = ConfigUtil.resolveOrThrow("omsBaseUrl")
+                + "ledger-service/api/internal/v1/fetch-ledger-transaction";
+        Response response = RestAssured.given()
+                .baseUri(endpoint)
+                .header("client_id", ConfigUtil.resolveOrThrow("ledgerServiceClientId"))
+                .header("Authorization", ConfigUtil.resolveOrThrow("ledgerServiceAuthorization"))
+                .queryParam("gstin", gstin)
+                .queryParam("appName", appName)
+                .when()
+                .get()
+                .then().log().ifError()
+                .extract().response();
+
+        logger.info("GET " + endpoint + " gstin=" + gstin + " appName=" + appName
+                + " -> HTTP " + response.getStatusCode());
+        return response;
+    }
+
+    /**
+     * OMS credit info for a customer - the data behind the ledger's "Usable credit limit".
+     * Authenticates with the OMS token ({@link Token#getOmsAuthorizationHeader()}): an OMS
+     * service login when one is configured, else the environment's {@code omsAuthToken}.
+     */
+    public static Response fetchCreditInfoByPan(String pan, String gstin) {
+        String endpoint = ConfigUtil.resolveOrThrow("omsBaseUrl") + "joms/api/external/v2/getCreditInfoByPan";
+        Response response = RestAssured.given()
+                .baseUri(endpoint)
+                .header("accept", "application/json, text/plain, */*")
+                .header("authorization", Token.getOmsAuthorizationHeader())
+                .queryParam("pan", pan)
+                .queryParam("gstin", gstin)
+                .when()
+                .get()
+                .then().log().ifError()
+                .extract().response();
+
+        logger.info("GET " + endpoint + " pan=" + pan + " gstin=" + gstin + " -> HTTP " + response.getStatusCode());
+        return response;
+    }
+
     public static Response fetchCustomerProfile() {
         return fetchCustomerProfile(Token.getCCPToken());
     }

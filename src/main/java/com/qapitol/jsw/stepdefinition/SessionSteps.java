@@ -59,6 +59,9 @@ public  class SessionSteps extends AbstractWebPage {
     public static final String CONTINUE_WITH_EMAIL_CTA = "continueWithEmailCta";
     public static final String CONTINUE_CTA = "continueCTA";
     public static final String ACCOUNT_LABEL = "accountLabel";
+    private static final String BUSINESS_AT_A_GLANCE_POPUP = "//span[text()='Your business at a glance']";
+    private static final String BUSINESS_AT_A_GLANCE_CLOSE =
+            BUSINESS_AT_A_GLANCE_POPUP + "/following-sibling::button[@aria-label='Close']";
 
     private static final ThreadLocal<String> USER_EMAIL = new ThreadLocal<>();
     private static final ThreadLocal<String> USER_PASSWORD = new ThreadLocal<>();
@@ -99,8 +102,24 @@ public  class SessionSteps extends AbstractWebPage {
     @And("ccp login with configured user")
     public void ccpLoginWithConfiguredUser() throws IOException {
         ccpLogin(UserConfig.getEmail(), UserConfig.getPassword());
+        if (UserConfig.isGroup("ledger")) {
+            closeBusinessAtAGlancePopupIfPresent();
+        }
         deleteAllCartItems();
         confirmBusinessDetailsDialogWithin(10);
+    }
+
+    /** The ledger account lands on a "Your business at a glance" popup after login; close it. */
+    private void closeBusinessAtAGlancePopupIfPresent() {
+        try {
+            new org.openqa.selenium.support.ui.WebDriverWait(Grid.driver(), Duration.ofSeconds(5))
+                    .until(org.openqa.selenium.support.ui.ExpectedConditions
+                            .visibilityOfElementLocated(By.xpath(BUSINESS_AT_A_GLANCE_POPUP)));
+            clickButton(By.xpath(BUSINESS_AT_A_GLANCE_CLOSE));
+            log.info("Closed 'Your business at a glance' popup");
+        } catch (TimeoutException e) {
+            log.info("'Your business at a glance' popup not shown within 5 seconds");
+        }
     }
 
     @And("ccp login with {string} and {string}")
