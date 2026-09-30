@@ -1,4 +1,7 @@
-@ledger @regression @prodSafe
+# Deliberately NOT @prodSafe: the API-comparison scenarios call OMS and the ledger service with
+# credentials global_prod.properties does not have, and ProdSafetyHooks refuses (fails) every
+# untagged scenario on -Denv=prod. Add @prodSafe only together with prod API settings.
+@ledger @regression
 Feature: Validate ledger details
 
   Background:

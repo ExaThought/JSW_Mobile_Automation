@@ -127,7 +127,7 @@
         </classes>
     </test>
 
-   <!-- ================================ LEDGER ================================ -->
+    <!-- ================================ LEDGER ================================ -->
 
     <test name="Ledger">
         <parameter name="test.group" value="ledger"/>
@@ -137,7 +137,7 @@
         <classes>
             <class name="com.qapitol.sauron.cucumber.SauronCucumberTest"/>
         </classes>
-    </test> 
+    </test>
 
     <!-- =============================== TOKEN CHECK =============================== -->
 

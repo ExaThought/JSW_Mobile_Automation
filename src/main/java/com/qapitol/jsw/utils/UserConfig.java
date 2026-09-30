@@ -3,8 +3,6 @@ package com.qapitol.jsw.utils;
 import com.qapitol.jsw.config.EnvConfig;
 import com.qapitol.jsw.config.TestGroupContext;
 import com.qapitol.sauron.common.configuration.Config;
-import org.testng.ITestResult;
-import org.testng.Reporter;
 
 import java.util.Set;
 
@@ -118,10 +116,8 @@ public class UserConfig {
     }
 
     private static String getGroup() {
-        String group = TestGroupContext.get();
-        if (group == null || group.isBlank()) {
-            group = readGroupFromCurrentTest();
-        }
+        // The running test's own group first - see TestGroupContext.resolve for why a stored one can be stale.
+        String group = TestGroupContext.resolve();
         if (group == null || group.isBlank()) {
             group = Config.getConfigProperty("test.group");
         }
@@ -153,22 +149,5 @@ public class UserConfig {
 
     private static String passwordKey() {
         return getGroup() + ".user.password";
-    }
-
-    private static String readGroupFromCurrentTest() {
-        try {
-            ITestResult result = Reporter.getCurrentTestResult();
-            if (result != null && result.getTestContext() != null
-                    && result.getTestContext().getCurrentXmlTest() != null) {
-                String group = result.getTestContext().getCurrentXmlTest().getParameter("test.group");
-                if (group != null && !group.isBlank()) {
-                    TestGroupContext.set(group);
-                    return group;
-                }
-            }
-        } catch (Throwable ignore) {
-            // Reporter may not be available outside an active test method
-        }
-        return null;
     }
 }
