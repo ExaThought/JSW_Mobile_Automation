@@ -29,6 +29,22 @@ List<String> tagsIn(String text) {
     return tags
 }
 
+/** How many times needle occurs in text. */
+int countOf(String text, String needle) {
+    int count = 0
+    int from = 0
+    String source = text ?: ''
+    while (true) {
+        int at = source.indexOf(needle, from)
+        if (at < 0) {
+            break
+        }
+        count++
+        from = at + needle.length()
+    }
+    return count
+}
+
 /** The text between every occurrence of prefix and the next double quote. */
 List<String> quotedValuesAfter(String text, String prefix) {
     List<String> values = []
@@ -468,9 +484,13 @@ YAML
                             // three are bound only when the run can reach Ledger.feature: its own
                             // tags - read from the file, not hardcoded, since it is also @regression -
                             // are compared with TAGS, or with the suite's cucumber.filter.tags values
-                            // (following <suite-file> includes) when TAGS is blank. Over-matching
-                            // (a "not @ledger" expression, a commented-out suite block) only binds
-                            // credentials that are not needed; it never skips ones that are.
+                            // (following <suite-file> includes to any depth) when TAGS is blank.
+                            // It errs towards binding: any "not" expression, a <test> block with no
+                            // filter, or a commented-out suite block binds credentials that may not be
+                            // needed. Every way a run can select Ledger's scenarios - one of its tags,
+                            // a negation, no filter - binds. Were it ever to miss, the scenario fails
+                            // fast in ConfigUtil with "No value for 'omsInternalApiKey'", naming the
+                            // variable, before any request is sent.
                             // qa and preprod share the values, so the ids carry no -<env> suffix;
                             // add "-${params.ENV}" to an id if its owners issue separate values.
                             // The Jenkinsfile can come from a different branch than BRANCH_NAME (the
@@ -492,18 +512,39 @@ YAML
                                 }
                                 List<String> ledgerTags = tagsIn(ledgerTagLines)
 
-                                // This run's tags: TAGS, else the suite's filters (+ <suite-file> includes).
+                                // This run's tags: TAGS, else the filters of the suite and of every
+                                // suite it includes, to any depth. Each <suite-file path> resolves
+                                // against the directory of the file that includes it, as TestNG does;
+                                // visited stops include loops and the cap bounds the walk. The root
+                                // suite is read unguarded, so a missing SUITE falls to the catch below.
                                 String tagSource = params.TAGS?.trim()
+                                boolean unfilteredBlock = false
                                 if (!tagSource) {
-                                    String suiteText = readFile("src/test/resources/${params.SUITE}")
-                                    for (String include : quotedValuesAfter(suiteText, '<suite-file path="')) {
-                                        String relative = include.startsWith('./') ? include.substring(2) : include
-                                        String includePath = "src/test/resources/${relative}"
-                                        if (fileExists(includePath)) {
-                                            suiteText += '\n' + readFile(includePath)
+                                    String rootSuite = 'src/test/resources/' + params.SUITE
+                                    List<String> pending = [rootSuite]
+                                    List<String> visited = []
+                                    String suiteText = ''
+                                    while (!pending.isEmpty() && visited.size() < 50) {
+                                        String suitePath = pending.remove(0)
+                                        if (visited.contains(suitePath)) {
+                                            continue
+                                        }
+                                        if (suitePath != rootSuite && !fileExists(suitePath)) {
+                                            continue      // TestNG itself reports a missing include
+                                        }
+                                        visited.add(suitePath)
+                                        String text = readFile(suitePath)
+                                        suiteText += '\n' + text
+                                        String dir = suitePath.contains('/')
+                                                ? suitePath.substring(0, suitePath.lastIndexOf('/') + 1) : ''
+                                        for (String include : quotedValuesAfter(text, '<suite-file path="')) {
+                                            String relative = include.startsWith('./') ? include.substring(2) : include
+                                            pending.add(dir + relative)
                                         }
                                     }
                                     tagSource = quotedValuesAfter(suiteText, 'name="cucumber.filter.tags" value="').join(' ')
+                                    // A <test> block without a tag filter runs every feature, Ledger included.
+                                    unfilteredBlock = countOf(suiteText, '<test ') > countOf(suiteText, 'name="cucumber.filter.tags"')
                                 }
                                 List<String> runTags = tagsIn(tagSource)
 
@@ -513,15 +554,23 @@ YAML
                                         shared.add(tag)
                                     }
                                 }
-                                bindLedger = !shared.isEmpty()
-                                echo(bindLedger
-                                        ? "Binding the ledger API credentials: this run selects ${shared} (Ledger.feature is ${ledgerTags})."
-                                        : "Not binding the ledger API credentials: none of Ledger.feature's tags ${ledgerTags} are in this run's tags ${runTags}.")
+                                // A "not ..." expression can select Ledger's scenarios without naming
+                                // any of its tags ("not @wip" selects everything), so it binds too.
+                                boolean negated = countOf(' ' + tagSource + ' ', ' not ') > 0
+                                boolean hasLedger = !ledgerTags.isEmpty()
+                                bindLedger = !shared.isEmpty() || (hasLedger && (negated || unfilteredBlock))
+                                String reason = !shared.isEmpty() ? "this run selects ${shared}"
+                                        : (hasLedger && negated) ? 'the tag expression has a "not", which can select Ledger'
+                                        : (hasLedger && unfilteredBlock) ? 'a suite <test> block has no tag filter'
+                                        : "none of Ledger.feature's tags ${ledgerTags} are in this run's tags ${runTags}"
+                                echo((bindLedger ? 'Binding' : 'Not binding') + " the ledger API credentials: ${reason}.")
                             } catch (Exception e) {
                                 // The check must never be what fails a build. Fall back to binding
                                 // whenever the checkout has ledger scenarios at all.
                                 bindLedger = fileExists(ledgerFeature)
-                                echo "WARNING: ledger credential check failed (${e.class.simpleName}: ${e.message}); " +
+                                // e.toString(), not e.class...: the sandbox may reject property access
+                                // on class, and this fallback must not throw.
+                                echo "WARNING: ledger credential check failed (${e.toString()}); " +
                                      (bindLedger ? 'binding the ledger credentials because Ledger.feature exists.'
                                                  : 'not binding - this checkout has no Ledger.feature.')
                             }
