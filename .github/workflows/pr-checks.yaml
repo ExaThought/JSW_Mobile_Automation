@@ -88,6 +88,26 @@ jobs:
             "-Dnexus-password=$NEXUS_PASSWORD" \
             clean compile
 
+      # Plain TestNG unit tests (src/test/resources/testng_unit.xml). Surefire runs only the suite
+      # named by -DsuiteXmlFile, so these never run inside a Jenkins regression run - and should
+      # not: Sauron's Allure listener would count them as scenarios in the run summary. Here they
+      # gate the PR instead. Same Nexus requirement, and the same warn-and-pass, as Compile.
+      - name: Unit tests
+        id: unit
+        if: always()
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          if [ -z "$NEXUS_USERNAME" ] || [ -z "$NEXUS_PASSWORD" ]; then
+            echo "::warning title=Unit tests skipped::NEXUS_USERNAME/NEXUS_PASSWORD are not configured, so the Sauron snapshots cannot be resolved. Add them as repository secrets to enable the unit-test gate."
+            exit 0
+          fi
+          mvn -B -ntp -s settings.xml \
+            "-Dnexus-username=$NEXUS_USERNAME" \
+            "-Dnexus-password=$NEXUS_PASSWORD" \
+            test -DsuiteXmlFile=testng_unit.xml
+
       - name: Locator keys resolve
         id: locators
         if: always()
@@ -137,6 +157,7 @@ jobs:
             echo "| Check | Result |"
             echo "|---|---|"
             echo "| Compile | ${{ steps.compile.outcome }} |"
+            echo "| Unit tests | ${{ steps.unit.outcome }} |"
             echo "| Locator keys resolve | ${{ steps.locators.outcome }} |"
             echo "| Payload keys resolve | ${{ steps.payloads.outcome }} |"
             echo "| YAML valid | ${{ steps.yaml.outcome }} |"

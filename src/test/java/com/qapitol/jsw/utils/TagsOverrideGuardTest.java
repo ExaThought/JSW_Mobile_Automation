@@ -14,6 +14,7 @@ import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.expectThrows;
@@ -107,9 +108,9 @@ public class TagsOverrideGuardTest {
 
         assertEquals(TagsOverrideGuard.ownerOf(suite.getTests(), tags("@ledger", "@regression"), ledgerFile), ledger);
         assertEquals(TagsOverrideGuard.ownerOf(suite.getTests(), tags("@footer", "@regression"), ledgerFile), homepage);
+        assertEquals(TagsOverrideGuard.ownerOf(suite.getTests(), tags("@login"), ledgerFile), login);
         assertNull(TagsOverrideGuard.ownerOf(suite.getTests(), tags("@tokenCheckLogin"), ledgerFile),
                 "a tag only a commented-out block selects has no owner");
-        assertTrue(login.getName().equals("Login"));
     }
 
     @Test
@@ -118,9 +119,11 @@ public class TagsOverrideGuardTest {
         XmlTest cart = block(suite, "Cart", "@regression", "src/test/resources/features/cart");
         XmlTest ledger = block(suite, "Ledger", "@regression", "src/test/resources/features/Homepage");
         URI ledgerFile = URI.create("file:///ws/src/test/resources/features/Homepage/Ledger.feature");
-        assertEquals(TagsOverrideGuard.ownerOf(suite.getTests(), tags("@regression"), ledgerFile), ledger,
-                "the Cart block's path does not contain Ledger.feature, so it must not claim it");
-        assertTrue(cart.getName().equals("Cart"));
+        XmlTest owner = TagsOverrideGuard.ownerOf(suite.getTests(), tags("@regression"), ledgerFile);
+        assertNotEquals(owner, cart, "Cart comes first and its filter matches, but its path does not contain Ledger.feature");
+        assertEquals(owner, ledger);
+        URI cartFile = URI.create("file:///ws/src/test/resources/features/cart/AddToCart.feature");
+        assertEquals(TagsOverrideGuard.ownerOf(suite.getTests(), tags("@regression"), cartFile), cart);
     }
 
     @Test

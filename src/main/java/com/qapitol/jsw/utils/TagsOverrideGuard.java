@@ -213,12 +213,14 @@ public final class TagsOverrideGuard {
     /**
      * Sends a message to its sink, falling back to the console if the logger cannot be used. This
      * runs inside TestNG's data-provider interceptor, where a thrown exception is reported as a
-     * failed test - reporting must never be what fails a run.
+     * failed test - reporting must never be what fails a run. LinkageError covers a missing or
+     * broken Sauron class (NoClassDefFoundError, ExceptionInInitializerError); other Errors such as
+     * OutOfMemoryError are not swallowed.
      */
     private static void emit(Consumer<String> sink, String level, String message) {
         try {
             sink.accept(message);
-        } catch (Throwable unavailable) {
+        } catch (Exception | LinkageError unavailable) {
             System.out.println(level + ": " + message);
         }
     }

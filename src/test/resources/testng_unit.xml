@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<!--
+  Plain TestNG unit tests - no Cucumber, no browser, no environment.
+
+  Surefire runs only the suite named by -DsuiteXmlFile, so a unit test executes only when a suite
+  lists it. This one does; the Jenkinsfile runs it before the selected suite, so a regression in,
+  say, the TAGS ownership rules fails the build instead of quietly running a scenario under the
+  wrong account.
+
+  Run with:
+    mvn -o test "-DsuiteXmlFile=testng_unit.xml"
+-->
+<suite verbose="1" name="Jsw unit tests" parallel="false" thread-count="1" annotations="JDK">
+
+    <!-- Required: Sauron's auto-registered listeners NPE in OSSConfigInitializer without a
+         sessions file. Headless and never opened - no test here asks for a session. -->
+    <parameter name="sessions" value="sessions_headless.yaml"/>
+
+    <test name="TagsOverrideGuard">
+        <classes>
+            <class name="com.qapitol.jsw.utils.TagsOverrideGuardTest"/>
+        </classes>
+    </test>
+
+</suite>
