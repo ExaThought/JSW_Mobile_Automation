@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import java.util.function.Consumer;
+
 /**
  * Keeps a Jenkins TAGS run from executing a scenario under the wrong account.
  *
@@ -42,8 +44,20 @@ public final class TagsOverrideGuard {
     private static final String FILTER = "cucumber.filter.tags";
     private static final String FEATURES = "cucumber.features";
 
-    /** Scenarios already warned about, so the warning prints once rather than once per block. */
+    /**
+     * Scenarios and blocks already reported, so each message prints once rather than once per
+     * block. Static, so it also spans suites in one JVM - harmless: it only silences repeats of a
+     * message, never changes which block runs what.
+     */
     private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
+
+    /**
+     * Where messages go: Sauron's logger (console and run log files). Looked up only when a message
+     * is logged, so the ownership logic is unit-testable without the Sauron runtime, whose
+     * auto-registered TestNG listeners stop a bare unit-test run from executing anything.
+     */
+    static volatile Consumer<String> INFO = message -> com.qapitol.sauron.web.WebActionListener.log.info(message);
+    static volatile Consumer<String> WARN = message -> com.qapitol.sauron.web.WebActionListener.log.warning(message);
 
     private TagsOverrideGuard() {
     }
@@ -88,64 +102,129 @@ public final class TagsOverrideGuard {
     static XmlTest ownerOf(List<XmlTest> blocks, Collection<String> scenarioTags, URI scenarioUri) {
         for (XmlTest block : blocks) {
             if (contains(block, scenarioUri) && ownFilterMatches(block, scenarioTags)) {
+                noteCatchAll(block);
                 return block;
             }
         }
         return null;
     }
 
+    /**
+     * Logged once per block: one with no cucumber.features owns every feature file, and with no
+     * filter as well it owns every scenario - so if it comes first, later blocks run nothing.
+     * Consistent with the rules, but worth a line when diagnosing an empty block.
+     */
+    private static void noteCatchAll(XmlTest block) {
+        if (isBlank(block.getParameter(FEATURES)) && WARNED.add("catch-all:" + block.getSuite().getName() + "/" + block.getName())) {
+            emit(INFO, "INFO", "TAGS override: <test> '" + block.getName() + "' has no cucumber.features, so it owns every"
+                    + " feature file" + (isBlank(block.getParameter(FILTER)) ? " and, with no tag filter, every scenario" : "")
+                    + "; blocks after it get only what it does not claim.");
+        }
+    }
+
     private static void warnUnowned(String override, Pickle pickle, XmlSuite suite) {
-        String file = pickle.getUri() == null ? "?" : pickle.getUri().getPath();
+        String file = pickle.getUri() == null ? "?" : String.valueOf(pickle.getUri().getPath() != null
+                ? pickle.getUri().getPath() : pickle.getUri());
         String key = file + ":" + pickle.getLine();
         if (!WARNED.add(key)) {
             return;
         }
         String shortFile = file.contains("/features/") ? file.substring(file.indexOf("/features/") + 1) : file;
-        System.out.println("WARNING: TAGS '" + override + "' selects \"" + pickle.getName() + "\" (" + shortFile
+        // Logger, not System.out, so it reaches the run's log files as well as the console. An Allure
+        // step is not possible here: the data provider runs before any test exists.
+        emit(WARN, "WARNING", "TAGS '" + override + "' selects \"" + pickle.getName() + "\" (" + shortFile
                 + ":" + pickle.getLine() + ", " + pickle.getTags() + "), but no enabled <test> block in "
                 + new java.io.File(String.valueOf(rootOf(suite).getFileName())).getName()
                 + " runs it - its block is commented out or missing."
                 + " Enable the block first; it was not run.");
     }
 
-    private static boolean ownFilterMatches(XmlTest block, Collection<String> scenarioTags) {
+    /**
+     * Whether the block's own tag filter selects the scenario; no filter selects everything. A
+     * malformed filter fails naming the block and its text - otherwise TestNG reports only a
+     * data-provider failure.
+     */
+    static boolean ownFilterMatches(XmlTest block, Collection<String> scenarioTags) {
         String filter = block.getParameter(FILTER);
-        if (filter == null || filter.isBlank()) {
-            return true;                                  // an unfiltered block runs every scenario
-        }
-        return TagExpressionParser.parse(filter).evaluate(new ArrayList<>(scenarioTags));
-    }
-
-    /** Whether the block's cucumber.features (comma-separated paths) includes the feature file. */
-    private static boolean contains(XmlTest block, URI scenarioUri) {
-        String features = block.getParameter(FEATURES);
-        if (features == null || features.isBlank() || scenarioUri == null) {
+        if (isBlank(filter)) {
             return true;
         }
-        String scenarioPath = normalise(scenarioUri.getPath() != null ? scenarioUri.getPath() : scenarioUri.toString());
-        for (String raw : features.split(",")) {
-            String path = raw.trim();
-            int line = path.lastIndexOf(':');             // "file.feature:12" selects one scenario's file
-            if (line > 1 && path.substring(line + 1).matches("\\d+")) {
-                path = path.substring(0, line);
-            }
-            path = normalise(path);
-            if (path.startsWith("classpath:")) {
-                path = path.substring("classpath:".length());
-            }
-            if (!path.isEmpty() && scenarioPath.contains(path)) {
+        try {
+            return TagExpressionParser.parse(filter).evaluate(new ArrayList<>(scenarioTags));
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("<test> '" + block.getName() + "' in " + block.getSuite().getName()
+                    + " has an invalid cucumber.filter.tags \"" + filter + "\": " + e.getMessage(), e);
+        }
+    }
+
+    /** Whether any entry of the block's cucumber.features (comma-separated) covers the feature file. */
+    static boolean contains(XmlTest block, URI scenarioUri) {
+        String features = block.getParameter(FEATURES);
+        if (isBlank(features) || scenarioUri == null) {
+            return true;
+        }
+        String scenarioPath = scenarioUri.getPath() != null ? scenarioUri.getPath() : scenarioUri.toString();
+        for (String entry : features.split(",")) {
+            if (pathCovers(entry, scenarioPath)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static String normalise(String path) {
-        String p = path.replace('\\', '/');
-        while (p.startsWith("./")) {
-            p = p.substring(2);
+    /**
+     * Whether one cucumber.features entry covers the scenario's feature file, on PATH BOUNDARIES:
+     * a file entry must be the file itself or a trailing path of it ("Login.feature" does not claim
+     * "SocialLogin.feature"), and a directory entry must be a whole directory of the path
+     * ("features/Homepage" does not claim "features/HomepageExtra/..."). Handles "./", "\",
+     * "classpath:", absolute and relative paths, and a "file.feature:12" line selector.
+     */
+    static boolean pathCovers(String entry, String scenarioPath) {
+        String path = clean(entry);
+        int colon = path.lastIndexOf(':');                // "file.feature:12" selects one scenario's file
+        if (colon > 1 && path.substring(colon + 1).matches("\\d+")) {
+            path = path.substring(0, colon);
         }
-        return p.endsWith("/") ? p.substring(0, p.length() - 1) : p;
+        if (path.isEmpty()) {
+            return false;
+        }
+        String scenario = "/" + clean(scenarioPath);
+        if (path.endsWith(".feature")) {
+            return scenario.endsWith("/" + path);
+        }
+        return scenario.contains("/" + path + "/");
+    }
+
+    /** Forward slashes, no "classpath:" / "./" / leading or trailing "/". */
+    private static String clean(String path) {
+        String p = path == null ? "" : path.trim().replace('\\', '/');
+        if (p.startsWith("classpath:")) {
+            p = p.substring("classpath:".length());
+        }
+        while (p.startsWith("./") || p.startsWith("/")) {
+            p = p.substring(p.startsWith("./") ? 2 : 1);
+        }
+        while (p.endsWith("/")) {
+            p = p.substring(0, p.length() - 1);
+        }
+        return p;
+    }
+
+    /**
+     * Sends a message to its sink, falling back to the console if the logger cannot be used. This
+     * runs inside TestNG's data-provider interceptor, where a thrown exception is reported as a
+     * failed test - reporting must never be what fails a run.
+     */
+    private static void emit(Consumer<String> sink, String level, String message) {
+        try {
+            sink.accept(message);
+        } catch (Throwable unavailable) {
+            System.out.println(level + ": " + message);
+        }
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private static boolean sameBlock(XmlTest a, XmlTest b) {
