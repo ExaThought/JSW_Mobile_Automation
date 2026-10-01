@@ -51,7 +51,7 @@ Feature: Check SLC Flow
     And Create an order and verify the order summery page
     And open the ERP and verify all the SFSlc order data
 
-  @testCaseId=id-004 @dataFile="sfslcslo.yaml"
+  @testCaseId=id-003 @dataFile="sfslcslo.yaml"
   Scenario: Check Plant Supply (Direct) Credit order
     When Request and create a Credit direct cart
     Given Go to session "ccp"

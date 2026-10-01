@@ -27,6 +27,8 @@ public class TestGroupListener implements ITestListener, ISuiteListener {
         // Also here for the same reason: every block's filter must be rewritten before the first
         // block reads it.
         RunTagsFilter.apply(suite);
+        // After RunTagsFilter, which can replace a block's filter outright.
+        EnvTagsFilter.apply(suite);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.qapitol.jsw.apitest.apis.impl.CtSlcSlocreationImpl;
 import com.qapitol.jsw.apitest.pojos.order.ctSlcSloResponse.CtSlcSloRes;
 import com.qapitol.jsw.utils.AllureCustomLogReporter;
 import com.qapitol.jsw.utils.ConfigUtil;
+import com.qapitol.jsw.utils.CustomUtil;
 import com.qapitol.jsw.utils.Token;
 import com.qapitol.jsw.utils.UserConfig;
 import com.qapitol.sauron.core.Grid;
@@ -21,6 +22,7 @@ import java.time.Duration;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -147,12 +149,32 @@ public class SfSlcSloSteps extends AbstractWebPage {
         storeOrderNumber(response);
     }
 
+    /**
+     * Clicks the header Cart link, closing "Personalize your procurement" first.
+     *
+     * <p>Pre-prod opens that dialog over the home page after the order is placed, and its overlay
+     * intercepted this click ("Check Plant Supply (Direct) Credit order", 1 Oct 2026). It can open
+     * after the check too, so a click it blocks closes it and is retried once.
+     */
+    private void openCartPastBusinessDetailsDialog() {
+        CustomUtil.confirmBusinessDetailsDialogWithin(CustomUtil.BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        try {
+            waitAndClickOn(CART_PAGE);
+        } catch (WebDriverException e) {
+            if (!CustomUtil.confirmBusinessDetailsDialogWithin(CustomUtil.BUSINESS_DETAILS_QUICK_WAIT_SECONDS)) {
+                throw e;
+            }
+            log.info("Cart click was blocked by the business details dialog - closed it, retrying once");
+            waitAndClickOn(CART_PAGE);
+        }
+    }
+
     @And("Open the cart and verify the cart details")
     public void open_the_cart_and_verify_the_cart_details() throws InterruptedException {
 
         waitAndCheckIsElementPresent(CART_PAGE);
         waitAndCheckIsElementVisible(CART_PAGE);
-        waitAndClickOn(CART_PAGE);//Open Cart Page
+        openCartPastBusinessDetailsDialog();
 
         // Confirm the cart rendered before asserting on line-item detail.
         //
