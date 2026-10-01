@@ -114,6 +114,8 @@ public class LedgerSteps extends AbstractWebPage {
         try {
             button = firstVisible(helpAndSupport);
         } catch (TimeoutException e) {
+            attachTimeoutEvidence("Help & Support not displayed",
+                    "No visible Help & Support button within 15s at " + Grid.driver().getCurrentUrl() + ".");
             softAssert.fail("Help & Support button is not displayed.");
             return;
         }
@@ -123,6 +125,9 @@ public class LedgerSteps extends AbstractWebPage {
             new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
                     .until(ExpectedConditions.elementToBeClickable(button));
         } catch (TimeoutException e) {
+            attachTimeoutEvidence("Help & Support not clickable",
+                    "Help & Support is visible but did not become clickable within 10s (enabled="
+                            + enabledState(button) + ") at " + Grid.driver().getCurrentUrl() + ".");
             softAssert.fail("Help & Support button is not clickable within 10 seconds.");
         }
     }
@@ -611,7 +616,11 @@ public class LedgerSteps extends AbstractWebPage {
                     .ignoring(org.openqa.selenium.StaleElementReferenceException.class)
                     .until(driver -> tableTextLength() != textBefore);
         } catch (TimeoutException e) {
-            log.info("Ledger page text did not change within 10s after selecting " + label + ".");
+            // Not a failure on its own, but the checks that follow may then read the previous
+            // entity's figures - so a mismatch there is really this. Capture the page now.
+            attachTimeoutEvidence("Ledger did not reload after selecting " + label,
+                    "Ledger page text did not change within 10s after selecting " + label
+                            + "; later checks may be reading the previously selected entity.");
         }
         pauseMillis(1000);
 
@@ -1429,6 +1438,26 @@ public class LedgerSteps extends AbstractWebPage {
     }
 
     /** Screenshot into the report; a screenshot that cannot be taken never fails the step. */
+    /**
+     * Evidence for a wait that timed out, captured when it happens: a log line, a text note and a
+     * screenshot in the Allure report. The failure screenshot Hooks takes comes at the END of the
+     * scenario, by when the page has usually moved on from what timed out.
+     */
+    /** isEnabled() for a note; a stale element must not turn a soft failure into an error. */
+    private static String enabledState(WebElement element) {
+        try {
+            return String.valueOf(element.isEnabled());
+        } catch (org.openqa.selenium.StaleElementReferenceException e) {
+            return "unknown (element re-rendered)";
+        }
+    }
+
+    private static void attachTimeoutEvidence(String title, String note) {
+        log.info(entityTag() + note);
+        io.qameta.allure.Allure.addAttachment(entityTag() + title, "text/plain", note, ".txt");
+        attachScreenshot(entityTag() + title);
+    }
+
     private static void attachScreenshot(String name) {
         try {
             byte[] png = ((org.openqa.selenium.TakesScreenshot) Grid.driver())
@@ -1643,7 +1672,10 @@ public class LedgerSteps extends AbstractWebPage {
             new WebDriverWait(Grid.driver(), Duration.ofSeconds(10))
                     .until(driver -> isOnPath(path));
         } catch (TimeoutException e) {
-            log.info("Path did not become " + path + " within 10s; current: " + currentPath());
+            // "user navigates back to ledger page" asserts nothing itself, so without this a failed
+            // back-navigation would only show up as unrelated failures further on.
+            attachTimeoutEvidence("Page did not reach " + path,
+                    "Path did not become " + path + " within 10s; current: " + currentPath() + ".");
         }
     }
 }
