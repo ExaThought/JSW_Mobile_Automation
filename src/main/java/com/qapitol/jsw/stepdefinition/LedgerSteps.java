@@ -38,7 +38,6 @@ public class LedgerSteps extends AbstractWebPage {
     private static final String HELP_AND_SUPPORT_BTN = "//button[normalize-space()='Help & Support']";
     private static final String LEDGER_PATH = "/ledger";
     private static final String FINANCIAL_DOCUMENTS_PATH = "/financial-documents";
-    /** Order ID column header of the due payments table; scrolled to so the rows are in view. */
     /** A row's Order ID button, filled with that row's orderNumber from the API response. */
     private static final String ORDER_ID_BUTTON = "//button[normalize-space()=%s]";
     private static final String LOAD_MORE_BUTTON = "//button[@data-test-id='ledger-table-load-more-button']";
@@ -1437,12 +1436,6 @@ public class LedgerSteps extends AbstractWebPage {
                 + " table, so the row may simply not have loaded: " + String.join(" ", timeouts);
     }
 
-    /** Screenshot into the report; a screenshot that cannot be taken never fails the step. */
-    /**
-     * Evidence for a wait that timed out, captured when it happens: a log line, a text note and a
-     * screenshot in the Allure report. The failure screenshot Hooks takes comes at the END of the
-     * scenario, by when the page has usually moved on from what timed out.
-     */
     /** isEnabled() for a note; a stale element must not turn a soft failure into an error. */
     private static String enabledState(WebElement element) {
         try {
@@ -1452,12 +1445,22 @@ public class LedgerSteps extends AbstractWebPage {
         }
     }
 
+    /**
+     * Evidence for a wait that timed out, captured when it happens: a log line, a text note and a
+     * screenshot in the Allure report. The failure screenshot Hooks takes comes at the END of the
+     * scenario, by when the page has usually moved on from what timed out.
+     *
+     * <p>Not every caller is a failure: after an entity switch the ledger can legitimately render
+     * identical text, so a passing scenario may carry this note too - which is why that note says
+     * later checks "may be" reading the previous entity, not that they are.
+     */
     private static void attachTimeoutEvidence(String title, String note) {
         log.info(entityTag() + note);
         io.qameta.allure.Allure.addAttachment(entityTag() + title, "text/plain", note, ".txt");
         attachScreenshot(entityTag() + title);
     }
 
+    /** Screenshot into the report; a screenshot that cannot be taken never fails the step. */
     private static void attachScreenshot(String name) {
         try {
             byte[] png = ((org.openqa.selenium.TakesScreenshot) Grid.driver())
