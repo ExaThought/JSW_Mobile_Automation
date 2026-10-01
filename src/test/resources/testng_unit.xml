@@ -4,9 +4,12 @@
   Plain TestNG unit tests - no Cucumber, no browser, no environment.
 
   Surefire runs only the suite named by -DsuiteXmlFile, so a unit test executes only when a suite
-  lists it. This one does; the Jenkinsfile runs it before the selected suite, so a regression in,
-  say, the TAGS ownership rules fails the build instead of quietly running a scenario under the
-  wrong account.
+  lists it. This one does, and the "Unit tests" step of .github/workflows/pr-checks.yaml runs it
+  on every PR, so a regression in, say, the TAGS ownership rules fails the PR instead of quietly
+  running a scenario under the wrong account.
+
+  Jenkins does NOT run it: the Jenkinsfile runs only the selected SUITE. That is deliberate -
+  inside a regression run, Sauron's Allure listener would count these tests as scenarios.
 
   Run with:
     mvn -o test "-DsuiteXmlFile=testng_unit.xml"

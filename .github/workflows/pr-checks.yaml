@@ -81,6 +81,9 @@ jobs:
         run: |
           if [ -z "$NEXUS_USERNAME" ] || [ -z "$NEXUS_PASSWORD" ]; then
             echo "::warning title=Compile skipped::NEXUS_USERNAME/NEXUS_PASSWORD are not configured, so the Sauron snapshots cannot be resolved. Add them as repository secrets to enable the compile gate."
+            # Exits 0 so the PR is not blocked on infrastructure, but the Summary must not show
+            # that as a pass: record it, since the step's outcome alone reads "success".
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           mvn -B -ntp -s settings.xml \
@@ -92,15 +95,19 @@ jobs:
       # named by -DsuiteXmlFile, so these never run inside a Jenkins regression run - and should
       # not: Sauron's Allure listener would count them as scenarios in the run summary. Here they
       # gate the PR instead. Same Nexus requirement, and the same warn-and-pass, as Compile.
+      #
+      # Runs unless Compile FAILED - a compile error would only fail here a second time. Still
+      # runs when Compile was skipped for missing secrets, and then skips itself the same way.
       - name: Unit tests
         id: unit
-        if: always()
+        if: always() && steps.compile.outcome != 'failure'
         env:
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         run: |
           if [ -z "$NEXUS_USERNAME" ] || [ -z "$NEXUS_PASSWORD" ]; then
             echo "::warning title=Unit tests skipped::NEXUS_USERNAME/NEXUS_PASSWORD are not configured, so the Sauron snapshots cannot be resolved. Add them as repository secrets to enable the unit-test gate."
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           mvn -B -ntp -s settings.xml \
@@ -156,8 +163,9 @@ jobs:
           {
             echo "| Check | Result |"
             echo "|---|---|"
-            echo "| Compile | ${{ steps.compile.outcome }} |"
-            echo "| Unit tests | ${{ steps.unit.outcome }} |"
+            # A Nexus-gated step that exited early reads "success"; its skipped output tells them apart.
+            echo "| Compile | ${{ steps.compile.outputs.skipped == 'true' && 'skipped (no Nexus secrets)' || steps.compile.outcome }} |"
+            echo "| Unit tests | ${{ steps.unit.outputs.skipped == 'true' && 'skipped (no Nexus secrets)' || (steps.unit.outcome == 'skipped' && 'skipped (Compile failed)' || steps.unit.outcome) }} |"
             echo "| Locator keys resolve | ${{ steps.locators.outcome }} |"
             echo "| Payload keys resolve | ${{ steps.payloads.outcome }} |"
             echo "| YAML valid | ${{ steps.yaml.outcome }} |"
