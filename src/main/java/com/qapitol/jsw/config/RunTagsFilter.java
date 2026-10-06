@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -102,8 +103,9 @@ final class RunTagsFilter {
                        : "  (selects nothing in the feature files that could be read)"));
         }
 
-        if (tests.isEmpty() || !fallbackNeeded(suite.getXmlSuite(), runTags, extra, tagsByFeatures, unreadable)
-                || !claimFallback()) {
+        RunDecision decision = decisionFor(suite.getXmlSuite());
+        if (tests.isEmpty() || !decision.fallbackNeeded(suite.getXmlSuite(), runTags, extra, tagsByFeatures, unreadable)
+                || !decision.claim()) {
             return;
         }
         XmlTest first = tests.get(0);
@@ -135,17 +137,54 @@ final class RunTagsFilter {
      * and a child fell back even when a sibling's block selected the scenarios properly.
      *
      * So the first call looks at every <test> block of every suite in the run, decides once, and
-     * caches the answer; and only the first suite to start with blocks may take the fallback.
+     * the answer is kept on a RunDecision; only the first suite to claim it takes the fallback.
+     *
+     * The decision is keyed by the run's top-level XmlSuite (by identity - XmlSuite overrides
+     * equals), not held in static fields. Two suite trees in one JVM - a second TestNG run, or a
+     * test harness - each get their own decision instead of inheriting the first one's, and suites
+     * of one tree running in parallel (suite-thread-pool-size) share one synchronized decision.
      */
-    private static Boolean runFallbackNeeded;
-    private static boolean fallbackClaimed;
+    private static final Map<XmlSuite, RunDecision> DECISIONS = new IdentityHashMap<>();
 
-    private static synchronized boolean fallbackNeeded(XmlSuite current, String runTags, Expression extra,
-                                                       Map<String, List<List<String>>> cache,
-                                                       Set<String> unreadable) {
-        if (runFallbackNeeded != null) {
-            return runFallbackNeeded;
+    private static RunDecision decisionFor(XmlSuite suite) {
+        synchronized (DECISIONS) {
+            return DECISIONS.computeIfAbsent(rootOf(suite), root -> new RunDecision());
         }
+    }
+
+    private static XmlSuite rootOf(XmlSuite suite) {
+        XmlSuite root = suite;
+        while (root.getParentSuite() != null) {
+            root = root.getParentSuite();
+        }
+        return root;
+    }
+
+    /** One run's fallback decision: whether it is needed, and whether a suite has taken it. */
+    private static final class RunDecision {
+        private Boolean needed;
+        private boolean claimed;
+
+        synchronized boolean fallbackNeeded(XmlSuite current, String runTags, Expression extra,
+                                            Map<String, List<List<String>>> cache, Set<String> unreadable) {
+            if (needed == null) {
+                needed = decide(current, runTags, extra, cache, unreadable);
+            }
+            return needed;
+        }
+
+        /** True for exactly one caller per run: the suite that runs the fallback. */
+        synchronized boolean claim() {
+            if (claimed) {
+                return false;
+            }
+            claimed = true;
+            return true;
+        }
+    }
+
+    private static boolean decide(XmlSuite current, String runTags, Expression extra,
+                                  Map<String, List<List<String>>> cache, Set<String> unreadable) {
         // A block already processed carries "(own) and (run.tags)", which selects exactly what
         // "own" did together with run.tags, so mixing processed and unprocessed blocks is safe.
         boolean anyBlockSelects = false;
@@ -153,7 +192,6 @@ final class RunTagsFilter {
             anyBlockSelects |= blockSelects(test, extra, cache, unreadable);
         }
         if (anyBlockSelects) {
-            runFallbackNeeded = false;
             return false;
         }
         boolean existsAnywhere = scenarioTags(ALL_FEATURES, cache, unreadable).stream()
@@ -167,36 +205,20 @@ final class RunTagsFilter {
                     + unreadable + ". Without their scenarios it cannot be told whether '" + runTags
                     + "' selects anything, so the single-block fallback was NOT applied and each block"
                     + " keeps its combined filter. Fix the file(s) above and re-run.");
-            runFallbackNeeded = false;
             return false;
         }
         if (!existsAnywhere) {
             System.out.println("[run.tags] '" + runTags + "' matches no scenario in " + ALL_FEATURES
                     + " - nothing will run. Check the tag spelling.");
-            runFallbackNeeded = false;
             return false;
         }
-        runFallbackNeeded = true;
-        return true;
-    }
-
-    /** True for exactly one caller per run: the suite that runs the fallback. */
-    private static synchronized boolean claimFallback() {
-        if (fallbackClaimed) {
-            return false;
-        }
-        fallbackClaimed = true;
         return true;
     }
 
     /** Every {@code <test>} block in the run: the top-level suite and all its child suites. */
     private static List<XmlTest> testsOfRun(XmlSuite suite) {
-        XmlSuite root = suite;
-        while (root.getParentSuite() != null) {
-            root = root.getParentSuite();
-        }
         List<XmlTest> all = new ArrayList<>();
-        collectTests(root, all);
+        collectTests(rootOf(suite), all);
         return all;
     }
 

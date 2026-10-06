@@ -165,7 +165,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
      * report shows what was covering the link.
      */
     private void openCartPastBusinessDetailsDialog() {
-        By cartLink = getBy(CART_PAGE);
+        By cartLink = By.xpath(getLocator(CART_PAGE));
         CustomUtil.confirmBusinessDetailsDialogWithin(CustomUtil.BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         try {
             CustomUtil.clickFirstVisible(cartLink);
@@ -203,7 +203,7 @@ public class SfSlcSloSteps extends AbstractWebPage {
 
     private String cartLinkDescription() {
         try {
-            return "(" + getBy(CART_PAGE) + ")";
+            return "(" + getLocator(CART_PAGE) + ")";
         } catch (RuntimeException e) {
             return "('" + CART_PAGE + "')";
         }
@@ -219,9 +219,9 @@ public class SfSlcSloSteps extends AbstractWebPage {
 
     @And("Open the cart and verify the cart details")
     public void open_the_cart_and_verify_the_cart_details() throws InterruptedException {
-
-        waitAndCheckIsElementPresent(CART_PAGE);
-        waitAndCheckIsElementVisible(CART_PAGE);
+        // No separate presence/visibility check on the Cart link: it is in the header, which renders
+        // twice with a 0x0 first copy, and the first-match checks that used to sit here could wait
+        // on the hidden copy. openCartPastBusinessDetailsDialog waits for the VISIBLE copy itself.
         openCartPastBusinessDetailsDialog();
 
         // Confirm the cart rendered before asserting on line-item detail.
