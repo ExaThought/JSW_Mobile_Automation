@@ -2,15 +2,34 @@ package com.qapitol.jsw.config;
 
 import com.qapitol.jsw.utils.JswSoftAssert;
 import com.qapitol.jsw.utils.SoftFailureReport;
+import com.qapitol.jsw.utils.TagsOverrideGuard;
+import org.testng.IDataProviderInterceptor;
+import org.testng.IDataProviderMethod;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
+import org.testng.ITestNGMethod;
 import org.testng.ITestResult;
 
+import java.util.Iterator;
 import java.util.List;
 
-public class TestGroupListener implements ITestListener, ISuiteListener {
+public class TestGroupListener implements ITestListener, ISuiteListener, IDataProviderInterceptor {
+
+    /**
+     * Under a Jenkins TAGS override, keeps only the scenarios this {@code <test>} block owns, so
+     * each one runs once and with its own block's account; scenarios whose block is commented out
+     * are dropped with a warning. Removed before TestNG creates invocations, so they never appear
+     * in the report or console - not even as skipped. No override, no change. See
+     * {@link TagsOverrideGuard}. Registered here because every suite that has more than one
+     * {@code <test>} block already lists this listener.
+     */
+    @Override
+    public Iterator<Object[]> intercept(Iterator<Object[]> original, IDataProviderMethod dataProviderMethod,
+                                        ITestNGMethod method, ITestContext iTestContext) {
+        return TagsOverrideGuard.filter(original, iTestContext);
+    }
 
     private static final String PROJECT_PACKAGE = "com.qapitol.jsw";
 

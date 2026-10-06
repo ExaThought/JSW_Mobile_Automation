@@ -57,13 +57,14 @@ public class BuyAgainSteps extends AbstractWebPage {
     public static final String CREDIT = "//span[text()='Credit']";
     public static final String DUE_STATUS = "//span[text()='Due status']";
     public static final String FINANCIAL_DOC_BTN = "//button[contains(text(), 'Financial documents')]";
-    public static final String FINANCIAL_TITLE = "//div[text()='Financial documents']";
-    public static final String PAYMENT_INST = "//button[contains(text(),' Payment instructions')]";
-    public static final String PAYMENT_DUE = "//div[contains(text(),' Payments due now')]";
-    public static final String DUE_LATER = "//div[contains(text(),' Due later')]";
-    public static final String USABLE_LEDGER_BALANCE = "//div[contains(text(),' Usable ledger balance')]";
+    public static final String FINANCIAL_TITLE =
+            "//h2[normalize-space()='Financial documents'] | //div[normalize-space()='Financial documents']";
+    public static final String PAYMENT_INST = "//button[contains(text(),'Payment instructions')]";
+    public static final String PAYMENT_DUE = "//span[contains(text(),'Payments due now')]";
+    public static final String DUE_LATER = "//span[contains(text(),'Due later')]";
+    public static final String USABLE_LEDGER_BALANCE = "//span[normalize-space()='Usable ledger balance']";
     public static final String PAYMENT_INST_POPUP = "//*[contains(text(),'Payment instructions')]";
-    public static final String FINANCIAL_DOC = "//a[@href=\"/financial-documents\"]";
+    public static final String FINANCIAL_DOC = "//a[@href='/financial-documents']";
     public static final String ALL_DOCUMENT  = "//span[contains(text(),'All Documents')]";
     public static final String CURRENT_MONTH = "//span[contains(text(),'Current month')]";
     public static final String FROM_DATE = "//input[@id=\"from-date\"]";
@@ -364,31 +365,32 @@ public class BuyAgainSteps extends AbstractWebPage {
     public void verifyLedgerTableIsDisplayed() {
         try {
             log.info("Verifying Financial Document and Payment Instruction section.");
-
-            waits(By.xpath(PAYMENT_INST));
+            // isAnyVisible, not isDisplayed: isDisplayed checks only the FIRST match, and the page
+            // renders hidden 0x0 copies of some elements - a hidden first copy would fail the check
+            // while a visible one is on screen. isAnyVisible also waits up to 15s for the page.
 
             log.info("Verifying 'Payment Instruction' is displayed.");
-            softAssert.assertTrue(isDisplayed(By.xpath(PAYMENT_INST)),
+            softAssert.assertTrue(isAnyVisible(By.xpath(PAYMENT_INST)),
                     "Payment Instruction is not displayed.");
             log.info("'Payment Instruction' is displayed.");
 
             log.info("Verifying 'Financial Document' button is displayed.");
-            softAssert.assertTrue(isDisplayed(By.xpath(FINANCIAL_DOC_BTN)),
+            softAssert.assertTrue(isAnyVisible(By.xpath(FINANCIAL_DOC_BTN)),
                     "Financial Document button is not displayed.");
             log.info("'Financial Document' button is displayed.");
 
             log.info("Verifying 'Payment Due' is displayed.");
-            softAssert.assertTrue(isDisplayed(By.xpath(PAYMENT_DUE)),
+            softAssert.assertTrue(isAnyVisible(By.xpath(PAYMENT_DUE)),
                     "Payment Due is not displayed.");
             log.info("'Payment Due' is displayed.");
 
             log.info("Verifying 'Due Later' is displayed.");
-            softAssert.assertTrue(isDisplayed(By.xpath(DUE_LATER)),
+            softAssert.assertTrue(isAnyVisible(By.xpath(DUE_LATER)),
                     "Due Later is not displayed.");
             log.info("'Due Later' is displayed.");
 
             log.info("Verifying 'Usable Ledger Balance' is displayed.");
-            softAssert.assertTrue(isDisplayed(By.xpath(USABLE_LEDGER_BALANCE)),
+            softAssert.assertTrue(isAnyVisible(By.xpath(USABLE_LEDGER_BALANCE)),
                     "Usable Ledger Balance is not displayed.");
             log.info("'Usable Ledger Balance' is displayed.");
 
@@ -401,7 +403,7 @@ public class BuyAgainSteps extends AbstractWebPage {
     }
     @And("user click on Financial document button")
     public void userClickOnFinancialDocumentButton() {
-        clickButton(By.xpath(FINANCIAL_DOC_BTN));
+        clickFirstVisible(By.xpath(FINANCIAL_DOC_BTN));
     }
 
     @Then("verify the Financial document title")
@@ -409,8 +411,10 @@ public class BuyAgainSteps extends AbstractWebPage {
         try {
             log.info("Verifying the Financial Document title is displayed.");
 
+            // Waits up to 15s for a VISIBLE match of either branch of the union, so a hidden 0x0
+            // copy matched first cannot fail it (waitForElementPresent checked only the first).
             softAssert.assertTrue(
-                    isDisplayed(By.xpath(FINANCIAL_TITLE)),
+                    isAnyVisible(By.xpath(FINANCIAL_TITLE)),
                     "Financial Document title is not displayed."
             );
 

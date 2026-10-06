@@ -25,7 +25,8 @@ public class JSWCapabilitiesBuilder extends DefaultCapabilitiesBuilder {
         if (getTestSession() instanceof WebTestSession) {
             boolean isHeadless = ((WebTestSession) getTestSession()).isBrowserRunHeadless();
             if (isHeadless) {
-                String testGroup = TestGroupContext.get();
+                // resolve(), not get(): a stale group would open another group's logged-in profile.
+                String testGroup = TestGroupContext.resolve();
                 if (testGroup == null || testGroup.isBlank()) {
                     testGroup = Config.getConfigProperty("test.group");
                 }
