@@ -43,14 +43,36 @@ final class EnvTagsFilter {
             test.addParameter(TAGS_PARAM, withExclusion(test.getParameter(TAGS_PARAM), exclusion));
         }
 
-        String override = System.getProperty(TAGS_PARAM);
-        if (override != null && !override.isBlank()) {
-            System.setProperty(TAGS_PARAM, withExclusion(override, exclusion));
-        }
+        excludeFromOverride(exclusion);
         System.out.println("[env.tags] env '" + env + "': every block also selects '" + exclusion + "'");
     }
 
-    /** Appends the exclusion once - a master suite (testng_all.xml) reaches here per child suite. */
+    /** -Dcucumber.filter.tags exactly as passed on the command line, before this class touched it. */
+    private static String commandLineOverride;
+    private static boolean commandLineOverrideCaptured;
+
+    /**
+     * Rewrites the JVM-wide -Dcucumber.filter.tags from the command-line value, never from its
+     * current value. A master suite (testng_all.xml) reaches here once per child suite, and suites
+     * may start on different threads; rebuilding from the snapshot means a second call cannot stack
+     * a second exclusion onto the first, whatever has been wrapped around the value in between.
+     * The env is locked for the run by {@link EnvConfig#resolve}, so every call writes the same value.
+     */
+    private static synchronized void excludeFromOverride(String exclusion) {
+        if (!commandLineOverrideCaptured) {
+            commandLineOverride = System.getProperty(TAGS_PARAM);
+            commandLineOverrideCaptured = true;
+        }
+        if (commandLineOverride != null && !commandLineOverride.isBlank()) {
+            System.setProperty(TAGS_PARAM, withExclusion(commandLineOverride, exclusion));
+        }
+    }
+
+    /**
+     * Appends the exclusion to one block's filter. Each {@code <test>} block belongs to exactly one
+     * suite and RunTagsFilter has already finished with it, so the exclusion is always the last
+     * term here and the suffix check only has to guard a repeated call on the same suite.
+     */
     private static String withExclusion(String tags, String exclusion) {
         if (tags == null || tags.isBlank()) {
             return exclusion;

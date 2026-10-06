@@ -14,6 +14,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,8 @@ import java.time.Duration;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -155,17 +158,62 @@ public class SfSlcSloSteps extends AbstractWebPage {
      * <p>Pre-prod opens that dialog over the home page after the order is placed, and its overlay
      * intercepted this click ("Check Plant Supply (Direct) Credit order", 1 Oct 2026). It can open
      * after the check too, so a click it blocks closes it and is retried once.
+     *
+     * <p>Clicked through {@link CustomUtil#clickFirstVisible}: the header is rendered twice and the
+     * first copy is 0x0, so a first-match click ({@code waitAndClickOn}) can target the hidden one.
+     * A click that still fails attaches a screenshot and a note saying which attempt failed, so the
+     * report shows what was covering the link.
      */
     private void openCartPastBusinessDetailsDialog() {
+        By cartLink = getBy(CART_PAGE);
         CustomUtil.confirmBusinessDetailsDialogWithin(CustomUtil.BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
         try {
-            waitAndClickOn(CART_PAGE);
-        } catch (WebDriverException e) {
+            CustomUtil.clickFirstVisible(cartLink);
+        } catch (WebDriverException | IllegalStateException e) {
             if (!CustomUtil.confirmBusinessDetailsDialogWithin(CustomUtil.BUSINESS_DETAILS_QUICK_WAIT_SECONDS)) {
+                reportCartClickFailure("No business details dialog was open, so it was not retried.", e);
                 throw e;
             }
             log.info("Cart click was blocked by the business details dialog - closed it, retrying once");
-            waitAndClickOn(CART_PAGE);
+            try {
+                CustomUtil.clickFirstVisible(cartLink);
+            } catch (WebDriverException | IllegalStateException retryFailure) {
+                reportCartClickFailure("The business details dialog was closed and the click retried once,"
+                        + " and the retry failed too.", retryFailure);
+                throw retryFailure;
+            }
+        }
+    }
+
+    /** Reporting only - never throws, so it cannot replace the click failure being reported. */
+    private void reportCartClickFailure(String what, RuntimeException cause) {
+        String note = "Could not click the header Cart link " + cartLinkDescription() + " on "
+                + safeCurrentUrl() + ". " + what + " Cause: " + cause.getClass().getSimpleName() + ": "
+                + cause.getMessage();
+        log.info(note);
+        try {
+            Allure.addAttachment("Cart click failed - note", "text/plain", note, ".txt");
+            byte[] png = ((TakesScreenshot) Grid.driver()).getScreenshotAs(OutputType.BYTES);
+            Allure.addAttachment("Cart click failed - page at the time", "image/png",
+                    new ByteArrayInputStream(png), ".png");
+        } catch (Throwable t) {
+            log.info("Could not attach the cart click failure to the report: " + t.getMessage());
+        }
+    }
+
+    private String cartLinkDescription() {
+        try {
+            return "(" + getBy(CART_PAGE) + ")";
+        } catch (RuntimeException e) {
+            return "('" + CART_PAGE + "')";
+        }
+    }
+
+    private static String safeCurrentUrl() {
+        try {
+            return Grid.driver().getCurrentUrl();
+        } catch (RuntimeException e) {
+            return "<unknown URL>";
         }
     }
 

@@ -45,7 +45,7 @@ public final class EnvConfig {
      * @param suite the TestNG suite, used only for the third precedence level. May be null.
      * @throws IllegalStateException if the resolved value is not a supported environment.
      */
-    public static String resolve(ISuite suite) {
+    public static synchronized String resolve(ISuite suite) {
         String env = firstNonBlank(
                 System.getProperty(SYSTEM_PROPERTY),
                 System.getenv(ENVIRONMENT_VARIABLE),
@@ -60,6 +60,18 @@ public final class EnvConfig {
                     + " parameter in the TestNG suite XML.");
         }
 
+        // Locked for the JVM after the first suite. The loaded properties, current() and the
+        // -Dcucumber.filter.tags exclusion are all JVM-wide, so child suites of a master run
+        // (testng_all.xml) resolving different envs would run one suite's scenarios against the
+        // other's URLs and accounts. Only the suite-XML 'env' parameter can differ per suite, so
+        // that is what this catches.
+        if (resolvedEnv != null && !resolvedEnv.equals(env)) {
+            throw new IllegalStateException("Suite '" + suiteName(suite) + "' resolves env '" + env
+                    + "', but this run already resolved '" + resolvedEnv + "' for an earlier suite."
+                    + " Environment config is shared by the whole run, so one run cannot mix"
+                    + " environments. Run the suites separately, or remove the conflicting 'env'"
+                    + " parameter from the suite XML.");
+        }
         resolvedEnv = env;
         return env;
     }
@@ -80,6 +92,10 @@ public final class EnvConfig {
 
     public static Set<String> supportedEnvs() {
         return SUPPORTED_ENVS;
+    }
+
+    private static String suiteName(ISuite suite) {
+        return suite == null ? "<none>" : suite.getName();
     }
 
     private static String suiteParameter(ISuite suite) {

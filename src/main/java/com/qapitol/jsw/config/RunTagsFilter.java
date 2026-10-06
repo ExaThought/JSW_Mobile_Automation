@@ -8,17 +8,23 @@ import io.cucumber.messages.types.SourceMediaType;
 import io.cucumber.tagexpressions.Expression;
 import io.cucumber.tagexpressions.TagExpressionParser;
 import org.testng.ISuite;
+import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,11 +43,17 @@ import java.util.stream.Stream;
  * feature files, which is what an ad-hoc TAGS build did before minus the repetition. It runs as that
  * block's account. Production is still guarded per scenario by {@code ProdSafetyHooks}.
  *
+ * <p>Because that account may not be the one a scenario was written for, a fallback is never
+ * silent: it prints a FALLBACK banner and adds an entry to the Allure report's Environment panel
+ * (allure-results/environment.properties) naming the block and its account. It is kept rather than
+ * failing the run because it is the only way to run TAGS for an area whose block is commented out.
+ *
  * <p>Deciding "selects nothing" needs each scenario's tags, so the block's feature files are parsed
  * once here with Cucumber's own Gherkin parser and tag-expression evaluator.
  *
- * <p>Runs once per {@code ISuite}. A master suite (testng_all.xml) applies it to each child suite on
- * its own, so a fallback there can run once per child suite.
+ * <p>Runs once per {@code ISuite}. A master suite (testng_all.xml) applies it to each child suite,
+ * but the fallback is decided once for the whole run - across every block of every child suite -
+ * and taken by at most one suite, so a TAGS build never runs the fallback once per child.
  */
 final class RunTagsFilter {
 
@@ -75,39 +87,151 @@ final class RunTagsFilter {
         Expression extra = TagExpressionParser.parse(runTags);
         List<XmlTest> tests = suite.getXmlSuite().getTests();
         Map<String, List<List<String>>> tagsByFeatures = new HashMap<>();
-        boolean anyBlockSelects = false;
+        // Files whose scenarios could not be read. Their scenarios are missing from every
+        // "selects" answer below, so with any entry here "selects nothing" may be wrong.
+        Set<String> unreadable = new LinkedHashSet<>();
 
         for (XmlTest test : tests) {
+            boolean selects = blockSelects(test, extra, tagsByFeatures, unreadable);
             String own = test.getParameter(TAGS_PARAM);
-            String features = featuresOf(test);
-            Expression ownExpr = (own == null || own.isBlank()) ? null : TagExpressionParser.parse(own);
-            boolean selects = scenarioTags(features, tagsByFeatures).stream()
-                    .anyMatch(tags -> (ownExpr == null || ownExpr.evaluate(tags)) && extra.evaluate(tags));
-            anyBlockSelects |= selects;
-
-            String combined = ownExpr == null ? runTags : "(" + own.trim() + ") and (" + runTags + ")";
+            String combined = (own == null || own.isBlank()) ? runTags : "(" + own.trim() + ") and (" + runTags + ")";
             test.addParameter(TAGS_PARAM, combined);
             System.out.println("[run.tags] " + test.getName() + ": " + combined
-                    + (selects ? "" : "  (selects nothing)"));
+                    + (selects ? "" : unreadable.isEmpty()
+                       ? "  (selects nothing)"
+                       : "  (selects nothing in the feature files that could be read)"));
         }
 
-        if (anyBlockSelects || tests.isEmpty()) {
-            return;
-        }
-
-        boolean existsAnywhere = scenarioTags(ALL_FEATURES, tagsByFeatures).stream()
-                .anyMatch(extra::evaluate);
-        if (!existsAnywhere) {
-            System.out.println("[run.tags] '" + runTags + "' matches no scenario in " + ALL_FEATURES
-                    + " - nothing will run. Check the tag spelling.");
+        if (tests.isEmpty() || !fallbackNeeded(suite.getXmlSuite(), runTags, extra, tagsByFeatures, unreadable)
+                || !claimFallback()) {
             return;
         }
         XmlTest first = tests.get(0);
         first.addParameter(TAGS_PARAM, runTags);
         first.addParameter(FEATURES_PARAM, ALL_FEATURES);
-        System.out.println("[run.tags] No block of '" + suite.getName() + "' selects '" + runTags
-                + "' - running it ONCE in '" + first.getName() + "' (test.group="
-                + first.getParameter("test.group") + ") across " + ALL_FEATURES + ".");
+        String note = "'" + runTags + "' matched no block in this run, so it ran ONCE in '" + first.getName()
+                + "' of suite '" + suite.getName() + "' as test.group=" + first.getParameter("test.group")
+                + " across " + ALL_FEATURES + ". Scenarios owned by another area ran as THIS block's account -"
+                + " a failure may be the account, not the product.";
+        System.out.println("[run.tags] ==================== FALLBACK ====================");
+        System.out.println("[run.tags] " + note);
+        System.out.println("[run.tags] ==================================================");
+        recordFallbackInAllure(note);
+    }
+
+    /** Whether any scenario under the block's features matches both its own filter and run.tags. */
+    private static boolean blockSelects(XmlTest test, Expression extra, Map<String, List<List<String>>> cache,
+                                        Set<String> unreadable) {
+        String own = test.getParameter(TAGS_PARAM);
+        Expression ownExpr = (own == null || own.isBlank()) ? null : TagExpressionParser.parse(own);
+        return scenarioTags(featuresOf(test), cache, unreadable).stream()
+                .anyMatch(tags -> (ownExpr == null || ownExpr.evaluate(tags)) && extra.evaluate(tags));
+    }
+
+    /*
+     * The fallback is decided for the WHOLE RUN, not per suite. A master suite (testng_all.xml)
+     * calls apply() once per child suite; deciding per suite let every child that selected nothing
+     * fall back on its own, running the same scenarios once per child, each as a different account -
+     * and a child fell back even when a sibling's block selected the scenarios properly.
+     *
+     * So the first call looks at every <test> block of every suite in the run, decides once, and
+     * caches the answer; and only the first suite to start with blocks may take the fallback.
+     */
+    private static Boolean runFallbackNeeded;
+    private static boolean fallbackClaimed;
+
+    private static synchronized boolean fallbackNeeded(XmlSuite current, String runTags, Expression extra,
+                                                       Map<String, List<List<String>>> cache,
+                                                       Set<String> unreadable) {
+        if (runFallbackNeeded != null) {
+            return runFallbackNeeded;
+        }
+        // A block already processed carries "(own) and (run.tags)", which selects exactly what
+        // "own" did together with run.tags, so mixing processed and unprocessed blocks is safe.
+        boolean anyBlockSelects = false;
+        for (XmlTest test : testsOfRun(current)) {
+            anyBlockSelects |= blockSelects(test, extra, cache, unreadable);
+        }
+        if (anyBlockSelects) {
+            runFallbackNeeded = false;
+            return false;
+        }
+        boolean existsAnywhere = scenarioTags(ALL_FEATURES, cache, unreadable).stream()
+                .anyMatch(extra::evaluate);
+        if (!unreadable.isEmpty()) {
+            // Neither the fallback nor "nothing will run" can be decided from a partial scan: the
+            // matching scenarios may be in the files that failed. Keep each block's combined
+            // filter, which is what the run would do with no fallback, and let Cucumber report
+            // the broken file when it parses it.
+            System.out.println("[run.tags] Could not read " + unreadable.size() + " feature file(s): "
+                    + unreadable + ". Without their scenarios it cannot be told whether '" + runTags
+                    + "' selects anything, so the single-block fallback was NOT applied and each block"
+                    + " keeps its combined filter. Fix the file(s) above and re-run.");
+            runFallbackNeeded = false;
+            return false;
+        }
+        if (!existsAnywhere) {
+            System.out.println("[run.tags] '" + runTags + "' matches no scenario in " + ALL_FEATURES
+                    + " - nothing will run. Check the tag spelling.");
+            runFallbackNeeded = false;
+            return false;
+        }
+        runFallbackNeeded = true;
+        return true;
+    }
+
+    /** True for exactly one caller per run: the suite that runs the fallback. */
+    private static synchronized boolean claimFallback() {
+        if (fallbackClaimed) {
+            return false;
+        }
+        fallbackClaimed = true;
+        return true;
+    }
+
+    /** Every {@code <test>} block in the run: the top-level suite and all its child suites. */
+    private static List<XmlTest> testsOfRun(XmlSuite suite) {
+        XmlSuite root = suite;
+        while (root.getParentSuite() != null) {
+            root = root.getParentSuite();
+        }
+        List<XmlTest> all = new ArrayList<>();
+        collectTests(root, all);
+        return all;
+    }
+
+    private static void collectTests(XmlSuite suite, List<XmlTest> out) {
+        out.addAll(suite.getTests());
+        for (XmlSuite child : suite.getChildSuites()) {
+            collectTests(child, out);
+        }
+    }
+
+    /**
+     * Puts the fallback on the Allure report's Overview (Environment panel), not only in the console
+     * log, so whoever reads the report sees that the run was widened and under which account.
+     * Merged into any existing environment.properties. Reporting only - a write failure never
+     * fails the run.
+     */
+    private static void recordFallbackInAllure(String note) {
+        Path dir = Paths.get(System.getProperty("allure.results.directory", "allure-results"));
+        Path file = dir.resolve("environment.properties");
+        Properties environment = new Properties();
+        try {
+            Files.createDirectories(dir);
+            if (Files.exists(file)) {
+                try (Reader in = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                    environment.load(in);
+                }
+            }
+            environment.setProperty("run.tags FALLBACK", note);
+            try (Writer out = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+                environment.store(out, null);
+            }
+        } catch (IOException | RuntimeException e) {
+            System.out.println("[run.tags] Could not record the fallback in " + file.toAbsolutePath()
+                    + " (" + e.getMessage() + ") - it is in the console log above only.");
+        }
     }
 
     private static String featuresOf(XmlTest test) {
@@ -115,23 +239,28 @@ final class RunTagsFilter {
         return (features == null || features.isBlank()) ? ALL_FEATURES : features;
     }
 
-    /** Each scenario's (pickle's) tags under the given comma-separated feature paths, cached. */
-    private static List<List<String>> scenarioTags(String features, Map<String, List<List<String>>> cache) {
+    /**
+     * Each scenario's (pickle's) tags under the given comma-separated feature paths, cached. Any
+     * file or directory that could not be read is added to {@code unreadable}.
+     */
+    private static List<List<String>> scenarioTags(String features, Map<String, List<List<String>>> cache,
+                                                   Set<String> unreadable) {
         return cache.computeIfAbsent(features, key -> {
             List<List<String>> result = new ArrayList<>();
             for (String part : key.split(",")) {
                 String path = part.trim().replaceFirst("^classpath:", "src/test/resources/");
                 if (!path.isEmpty()) {
-                    result.addAll(parseAll(Paths.get(path)));
+                    result.addAll(parseAll(Paths.get(path), unreadable));
                 }
             }
             return result;
         });
     }
 
-    private static List<List<String>> parseAll(Path root) {
+    private static List<List<String>> parseAll(Path root, Set<String> unreadable) {
         if (!Files.exists(root)) {
             System.out.println("[run.tags] Feature path not found: " + root.toAbsolutePath());
+            unreadable.add(root.toString());
             return List.of();
         }
         List<Path> files;
@@ -139,6 +268,7 @@ final class RunTagsFilter {
             files = walk.filter(p -> p.toString().endsWith(".feature")).collect(Collectors.toList());
         } catch (IOException e) {
             System.out.println("[run.tags] Could not list " + root + ": " + e.getMessage());
+            unreadable.add(root.toString());
             return List.of();
         }
         GherkinParser parser = GherkinParser.builder()
@@ -152,15 +282,23 @@ final class RunTagsFilter {
                 String text = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
                 Envelope source = Envelope.of(new Source(file.toString(), text,
                         SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN));
-                parser.parse(source)
-                        .map(Envelope::getPickle)
-                        .flatMap(p -> p.map(Stream::of).orElseGet(Stream::empty))
-                        .forEach(pickle -> result.add(pickle.getTags().stream()
-                                .map(PickleTag::getName)
-                                .collect(Collectors.toList())));
+                // A Gherkin syntax error does not throw: it comes back as a parse-error envelope
+                // alongside whatever pickles could still be built, so it is checked for here.
+                List<Envelope> envelopes = parser.parse(source).collect(Collectors.toList());
+                for (Envelope envelope : envelopes) {
+                    envelope.getParseError().ifPresent(error -> {
+                        System.out.println("[run.tags] Parse error in " + file + ": " + error.getMessage());
+                        unreadable.add(file.toString());
+                    });
+                    envelope.getPickle().ifPresent(pickle -> result.add(pickle.getTags().stream()
+                            .map(PickleTag::getName)
+                            .collect(Collectors.toList())));
+                }
             } catch (IOException | RuntimeException e) {
-                // A file Cucumber itself cannot parse fails the run later with a proper error.
-                System.out.println("[run.tags] Skipped unparsable " + file + ": " + e.getMessage());
+                // Recorded, not just logged: apply() must not take the fallback or report
+                // "nothing will run" from a scan that is missing this file's scenarios.
+                System.out.println("[run.tags] Could not parse " + file + ": " + e.getMessage());
+                unreadable.add(file.toString());
             }
         }
         return result;
