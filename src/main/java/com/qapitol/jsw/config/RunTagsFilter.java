@@ -14,13 +14,15 @@ import org.testng.xml.XmlTest;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -143,12 +145,61 @@ final class RunTagsFilter {
      * equals), not held in static fields. Two suite trees in one JVM - a second TestNG run, or a
      * test harness - each get their own decision instead of inheriting the first one's, and suites
      * of one tree running in parallel (suite-thread-pool-size) share one synchronized decision.
+     *
+     * The key holds the suite WEAKLY, so an entry goes away once its suite tree is garbage
+     * collected, and a long-lived JVM running many suites does not keep one entry per run forever.
+     * TestNG gives no reliable "whole tree finished" callback to remove it from instead.
+     * WeakHashMap cannot be used: it compares keys with equals/hashCode, which XmlSuite derives from
+     * its (mutable) contents, so two different runs could share an entry. SuiteKey compares by
+     * identity. RunDecision holds no reference back to the suite, so it cannot keep its key alive.
      */
-    private static final Map<XmlSuite, RunDecision> DECISIONS = new IdentityHashMap<>();
+    private static final Map<SuiteKey, RunDecision> DECISIONS = new HashMap<>();
+    private static final ReferenceQueue<XmlSuite> COLLECTED = new ReferenceQueue<>();
 
     private static RunDecision decisionFor(XmlSuite suite) {
         synchronized (DECISIONS) {
-            return DECISIONS.computeIfAbsent(rootOf(suite), root -> new RunDecision());
+            for (Reference<? extends XmlSuite> gone; (gone = COLLECTED.poll()) != null; ) {
+                DECISIONS.remove(gone);
+            }
+            return DECISIONS.computeIfAbsent(new SuiteKey(rootOf(suite), COLLECTED), key -> new RunDecision());
+        }
+    }
+
+    /** Number of live run decisions - for checking that collected runs are dropped. */
+    static int decisionCount() {
+        synchronized (DECISIONS) {
+            for (Reference<? extends XmlSuite> gone; (gone = COLLECTED.poll()) != null; ) {
+                DECISIONS.remove(gone);
+            }
+            return DECISIONS.size();
+        }
+    }
+
+    /** A weak, identity-compared reference to a run's top-level suite. */
+    private static final class SuiteKey extends WeakReference<XmlSuite> {
+        private final int hash;
+
+        SuiteKey(XmlSuite suite, ReferenceQueue<XmlSuite> queue) {
+            super(suite, queue);
+            this.hash = System.identityHashCode(suite);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        /** Same object, or both still pointing at the same suite. A cleared key equals only itself. */
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (!(other instanceof SuiteKey)) {
+                return false;
+            }
+            XmlSuite mine = get();
+            return mine != null && mine == ((SuiteKey) other).get();
         }
     }
 
