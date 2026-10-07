@@ -168,7 +168,7 @@ public class TokenSteps extends AbstractWebPage {
 
     @Then("verify the user is able to login successfully")
     public void verify_the_user_is_able_to_login_successfully() {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         WebDriverWait wait = new WebDriverWait(Grid.driver(), Duration.ofSeconds(10));
         WebElement logo = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@href='/']")));
         jsClick(logo);
@@ -207,7 +207,7 @@ public class TokenSteps extends AbstractWebPage {
     @When("user open the ledger page")
     public void user_open_the_ledger_page() {
         pageName = "Ledger Page";
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         WebElement account_label = Grid.driver().findElement(By.xpath(ACCOUNT_TAB));
         softAssert.assertTrue(account_label.isDisplayed(), "Account section is not displayed");
         jsClick(account_label);
@@ -221,7 +221,7 @@ public class TokenSteps extends AbstractWebPage {
     @When("user open the Track Material page")
     public void user_open_the_track_material_page() {
         pageName = "Track Material Page";
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         WebElement account_label = Grid.driver().findElement(By.xpath(ACCOUNT_TAB));
         softAssert.assertTrue(account_label.isDisplayed(), "Account section is not displayed");
         jsClick(account_label);
@@ -257,7 +257,7 @@ public class TokenSteps extends AbstractWebPage {
 
     @Then("verify user is able to login successfully")
     public void verifyUserIsAbleToLoginSuccessfully() {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         WebElement account_label = Grid.driver().findElement(By.xpath(ACCOUNT_TAB));
         softAssert.assertTrue(account_label.isDisplayed(), "Account section is not displayed");
         jsClick(account_label);

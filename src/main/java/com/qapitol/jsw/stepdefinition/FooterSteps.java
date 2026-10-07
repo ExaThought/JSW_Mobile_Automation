@@ -75,7 +75,7 @@ public class FooterSteps extends AbstractWebPage {
             // First step after login: pre-prod opens the business details dialog a few seconds
             // after the page loads. While it is open the page cannot scroll, so every footer link
             // below the fold reads as not visible and clicks land on the overlay.
-            confirmBusinessDetailsDialogWithin(10);
+            closeBlockingDialogsWithin(10);
 
             By footerLink = footerLinkBy(linkName);
 
@@ -174,7 +174,7 @@ public class FooterSteps extends AbstractWebPage {
             log.info("Clicking on footer link: " + linkName);
             // Again here: the dialog can open between the visibility check and the click, which
             // is how "Blogs" was clicked yet never navigated.
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             By footerLink = footerLinkBy(linkName);
             softAssert.assertTrue(
                     isAnyVisible(footerLink),
@@ -241,7 +241,7 @@ public class FooterSteps extends AbstractWebPage {
 
     @When("the user clicks on social icon {string}")
     public void click_social_icon(String iconName) {
-        confirmBusinessDetailsDialogWithin(10);
+        closeBlockingDialogsWithin(10);
 
         String key = getSocialKey(iconName);
 

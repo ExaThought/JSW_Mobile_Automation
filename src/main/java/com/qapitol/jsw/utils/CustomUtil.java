@@ -555,6 +555,7 @@ public class CustomUtil {
 
     public static void clickButton(Object target) {
         StaleElementReferenceException lastStale = null;
+        boolean retriedPastDialog = false;
 
         for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
             try {
@@ -563,6 +564,17 @@ public class CustomUtil {
                         .until(ExpectedConditions.elementToBeClickable(element));
                 element.click();
                 return;
+            } catch (ElementClickInterceptedException e) {
+                // A blocking dialog can open after every wait for it has passed - the glance
+                // spotlight took 41 clicks this way. Close it and retry once; anything else that
+                // covers the element is a real problem and fails as before.
+                if (retriedPastDialog || !closeBlockingDialogsWithin(0)) {
+                    throw e;
+                }
+                retriedPastDialog = true;
+                attempt--;
+                logger.log(Level.INFO, "Click on " + target + " was blocked by a dialog - closed it,"
+                        + " retrying once.");
             } catch (StaleElementReferenceException e) {
                 lastStale = e;
 
@@ -745,32 +757,67 @@ public class CustomUtil {
     private static final By BUSINESS_DETAILS_DIALOG = By.xpath(
             "//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]");
 
-    private static final By BUSINESS_DETAILS_DIALOG_BUTTON =
-            By.xpath("//div[@role='dialog']/div/button");
+    // Scoped to the dialog holding that heading: the glance spotlight below is also a
+    // div[@role='dialog'] with a div > button, so an unscoped path would match its X too.
+    private static final By BUSINESS_DETAILS_DIALOG_BUTTON = By.xpath(
+            "//div[@role='dialog'][h2[contains(text(), 'Personalize your procurement')]]/div/button");
+
+    /*
+     * "New - Your business at a glance": a full-page spotlight QA shows after login, pointing at the
+     * new "My Business" header link (allure run of 7 Oct 2026). Its bg-black/60 overlay takes every
+     * click - 52 ElementClickInterceptedExceptions in that run, plus footer clicks that landed on it
+     * silently and never navigated. Closed with its X; nothing else on it is clicked.
+     */
+    private static final By BUSINESS_GLANCE_SPOTLIGHT = By.xpath(
+            "//div[@role='dialog'][contains(@aria-label, 'Your business at a glance')]");
+
+    private static final By BUSINESS_GLANCE_SPOTLIGHT_CLOSE = By.xpath(
+            "//div[@role='dialog'][contains(@aria-label, 'Your business at a glance')]"
+                    + "//button[@aria-label='Close']");
 
     /**
-     * How long callers without a reason to wait longer give the dialog to appear. Short because
+     * How long callers without a reason to wait longer give a dialog to appear. Short because
      * most calls find nothing, and every call that finds nothing waits this long.
      */
-    public static final int BUSINESS_DETAILS_QUICK_WAIT_SECONDS = 2;
+    public static final int BLOCKING_DIALOG_QUICK_WAIT_SECONDS = 2;
 
     /**
-     * Waits up to {@code seconds} for the business details dialog and closes it if it opens.
-     * Returns whether it was open.
+     * Waits up to {@code seconds} for a dialog that blocks the page, and closes every one that is
+     * open: "Personalize your procurement" and the "Your business at a glance" spotlight. Returns
+     * whether it closed any.
      *
-     * <p>Pre-prod opens it after the page has loaded, again on every refresh, so an instant check
-     * misses it and it then covers whatever the next step reads or clicks.
+     * <p>Both open after the page has loaded - the first again on every pre-prod refresh - so an
+     * instant check misses them and they then cover whatever the next step reads or clicks.
      */
-    public static boolean confirmBusinessDetailsDialogWithin(int seconds) {
-        if (!pollFor(() -> isRenderedNow(BUSINESS_DETAILS_DIALOG), seconds)) {
+    public static boolean closeBlockingDialogsWithin(int seconds) {
+        if (!pollFor(CustomUtil::isBlockingDialogOpen, seconds)) {
+            return false;
+        }
+        boolean closed = false;
+        // The two can be stacked, and closing one can reveal the other.
+        for (int attempt = 0; attempt < 3 && isBlockingDialogOpen(); attempt++) {
+            closed |= closeIfOpen(BUSINESS_GLANCE_SPOTLIGHT, BUSINESS_GLANCE_SPOTLIGHT_CLOSE,
+                    "'Your business at a glance' spotlight");
+            closed |= closeIfOpen(BUSINESS_DETAILS_DIALOG, BUSINESS_DETAILS_DIALOG_BUTTON,
+                    "Business details confirmation dialog");
+        }
+        return closed;
+    }
+
+    private static boolean isBlockingDialogOpen() {
+        return isRenderedNow(BUSINESS_GLANCE_SPOTLIGHT) || isRenderedNow(BUSINESS_DETAILS_DIALOG);
+    }
+
+    private static boolean closeIfOpen(By dialog, By closeButton, String description) {
+        if (!isRenderedNow(dialog)) {
             return false;
         }
         try {
-            clickFirstVisible(BUSINESS_DETAILS_DIALOG_BUTTON);
-            logger.log(Level.INFO, "Business details confirmation dialog was present and has been closed.");
+            clickFirstVisible(closeButton);
+            logger.log(Level.INFO, description + " was present and has been closed.");
             return true;
         } catch (Exception e) {
-            logger.log(Level.INFO, "Business details dialog was showing but could not be closed: "
+            logger.log(Level.INFO, description + " was showing but could not be closed: "
                     + e.getClass().getSimpleName());
             return false;
         }

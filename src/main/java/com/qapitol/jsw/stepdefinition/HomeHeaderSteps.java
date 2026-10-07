@@ -84,6 +84,28 @@ public class HomeHeaderSteps extends AbstractWebPage {
         return By.xpath(String.format(NAV_ITEM_BY_HREF, pathFor(menuItem)));
     }
 
+    /*
+     * The server renders the category links with a bare path - /structural-steel - and the page's
+     * script rewrites them to /category/structural-steel once it finishes loading. The bare path is
+     * a 404 on qa and pre-prod (checked 7 Oct 2026), so the click must wait for the rewrite rather
+     * than accept either href. On a slow qa run the home page sat on its loading skeleton past the
+     * old 15s wait and "Structural steel" failed as if its locator were wrong (allure, 7 Oct 2026).
+     */
+    private static final int NAV_LINK_REWRITE_WAIT_SECONDS = 45;
+
+    private String navLinkMissingMessage(String menuItem) {
+        String path = pathFor(menuItem);
+        String bare = path.replaceFirst("^/category", "");
+        boolean onlyBare = !bare.equals(path)
+                && !Grid.driver().findElements(By.xpath(String.format(NAV_ITEM_BY_HREF, bare))).isEmpty();
+        return "Header navigation menu item '" + menuItem + "' never showed a visible link to " + path
+                + " within " + NAV_LINK_REWRITE_WAIT_SECONDS + "s at " + Grid.driver().getCurrentUrl()
+                + (onlyBare
+                        ? ". The header still links to the unrewritten " + bare + " (a 404), so the page"
+                          + " never finished loading - an environment slowdown, not a locator change."
+                        : ". No link to it was found at all - check whether the menu item moved.");
+    }
+
     private int countVisible(By locator) {
         int visible = 0;
         try {
@@ -161,10 +183,11 @@ public class HomeHeaderSteps extends AbstractWebPage {
     @When("user clicks on the {string} navigation menu in the header")
     public void userClicksOnTheNavigationMenuInTheHeader(String menuItem) {
         waitForPageLoad();
-        confirmBusinessDetailsDialogWithin(10);
+        closeBlockingDialogsWithin(10);
         By target = navItem(menuItem);
-        softAssert.assertTrue(isAnyVisible(target),
-                "Header navigation menu item not displayed, cannot click: " + menuItem);
+        if (!pollFor(() -> isRenderedNow(target), NAV_LINK_REWRITE_WAIT_SECONDS)) {
+            throw new IllegalStateException(navLinkMissingMessage(menuItem));
+        }
         clickFirstVisible(target);
         waitForPageLoad();
         log.info("Clicked header navigation menu '" + menuItem + "'. Current URL: "

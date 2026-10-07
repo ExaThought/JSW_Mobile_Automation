@@ -61,7 +61,7 @@
      source it is being asked about.
      =========================================================================================== -->
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
-       data-provider-thread-count="2" annotations="JDK">
+       data-provider-thread-count="3" annotations="JDK">
 
     <listeners>
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>

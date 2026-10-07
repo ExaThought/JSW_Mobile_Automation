@@ -392,10 +392,10 @@ public class CartSteps extends AbstractWebPage {
     @When("click on Cement product")
     public void clickOnCementProduct() {
         try {
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+                closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
                 hoverOverElement(ALL_CATEGORY);
             }
             waitAndClickOn(CEMENT_PLP);
@@ -503,10 +503,10 @@ public class CartSteps extends AbstractWebPage {
     @When("click on TMT product")
     public void clickOnTMTProduct() {
         try {
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+                closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
                 hoverOverElement(ALL_CATEGORY);
             }
             waitAndClickOn(TMT_PRODUCT);
@@ -907,12 +907,12 @@ public class CartSteps extends AbstractWebPage {
         log.info("Clicked on cart icon");
         // Pre-prod opens "Personalize your procurement" over the cart page after it loads, which
         // hides the empty-cart message from the next step (build of 25 Sep 2026, CR Sheet).
-        confirmBusinessDetailsDialogWithin(5);
+        closeBlockingDialogsWithin(5);
     }
 
     @Then("check the empty cart page display with message {string}")
     public void checkTheEmptyCartPageDisplayWithMessage(String expectedMessage) {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         try {
             try {
                 new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath(EMPTY_CART_MSG)));
@@ -1043,7 +1043,7 @@ public class CartSteps extends AbstractWebPage {
     public void userNavigateToHomePage() {
         // Pre-prod reshows "Personalize your procurement" on the cart page, and its overlay
         // intercepts the logo click (build of 25 Sep 2026, HR Coil scenario).
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         clickButton(By.xpath(JSW_LOGO));
     }
 
@@ -1114,15 +1114,15 @@ public class CartSteps extends AbstractWebPage {
 
     @When("move the mouse to {string} category")
     public void moveTheMouseToCategory(String category) {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         if (expectsAllCategoriesMenu()) {
             refreshAndWaitFor(ALL_CATEGORY);
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             hoverOverElement(ALL_CATEGORY);
         }
 
         if (category.equalsIgnoreCase("mild steel")) {
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             waits(MILD_STEEL_CATEGORY);
             hoverOverElement(MILD_STEEL_CATEGORY);
             log.info("cursor moved to mild steel category");
@@ -1137,7 +1137,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("click on {string} product")
     public void clickOnProduct(String product) {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         switch (product.trim().toLowerCase()) {
             case "hr sheet":
                 clickHRSheetProduct();
@@ -1277,11 +1277,11 @@ public class CartSteps extends AbstractWebPage {
                                              Runnable openFlyout) {
         // Waits rather than checks: straight after login pre-prod has not opened the dialog yet,
         // then opens it over the flyout (build of 25 Sep 2026, Coated Steel scenario).
-        confirmBusinessDetailsDialogWithin(3);
+        closeBlockingDialogsWithin(3);
         try {
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsDialogWithin(3);
+                closeBlockingDialogsWithin(3);
                 hoverOverElement(ALL_CATEGORY);
             }
             openFlyout.run();
@@ -1705,7 +1705,7 @@ public class CartSteps extends AbstractWebPage {
         quantityInput.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
         quantityInput.sendKeys(Keys.ENTER);
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         jsClick(quantityLabel);
 
         String held = settledValueOf(By.xpath(QUANTITY_TEXTBOX));
@@ -1782,7 +1782,7 @@ public class CartSteps extends AbstractWebPage {
         }
         sleep(1000);
         enterQuantityUsingText(quantity, productName);
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         jsClick(quantityLabel);
     }
 
@@ -1930,11 +1930,11 @@ public class CartSteps extends AbstractWebPage {
         // quantity is typed or while it is - and its overlay makes the box not interactable
         // (Coated Sheet and Wire, 25 Sep 2026). So close it first, and retry once if it was the
         // reason the entry failed.
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         try {
             enterQuantityOnce(quantity, productName);
         } catch (RuntimeException e) {
-            if (!confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS)) {
+            if (!closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS)) {
                 throw e;
             }
             log.info("Quantity entry for " + productName + " was blocked by the business details"

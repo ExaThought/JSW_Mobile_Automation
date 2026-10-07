@@ -106,7 +106,7 @@ public  class SessionSteps extends AbstractWebPage {
             closeBusinessAtAGlancePopupIfPresent();
         }
         deleteAllCartItems();
-        confirmBusinessDetailsDialogWithin(10);
+        closeBlockingDialogsWithin(10);
     }
 
     /** The ledger account lands on a "Your business at a glance" popup after login; close it. */
@@ -170,6 +170,9 @@ public  class SessionSteps extends AbstractWebPage {
         {
             pageRefresh();
         }
+        // QA opens the "Your business at a glance" spotlight straight after login, over the
+        // payment-due popup's close button below (10 logins in the 7 Oct 2026 allure run).
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         if (!isElementPresent(LOGIN_CTA_BUTTON)){
             log.info("CCP User is already logged in");
             if (isElementPresent(PAYMENT_DUE_POP_UP)){
@@ -178,7 +181,7 @@ public  class SessionSteps extends AbstractWebPage {
             }
         }
         refreshAndWaitForPageLoad();
-        confirmBusinessDetailsDialogWithin(10);
+        closeBlockingDialogsWithin(10);
         assertLoggedIn(emailId);
     }
 
