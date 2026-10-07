@@ -1,40 +1,101 @@
+# SLC / SLO order-creation data - one row per scenario in features/sf/SFSlc.feature (id-001..006)
+# and features/sf/SFSlo.feature (id-007..012). Every scenario has its own testCaseId so a row can be
+# changed for one scenario without silently changing another. qa and preprod use the SAME ids; only
+# the customer and address values differ between the two files.
+#
+# ONE CUSTOMER FOR EVERY ROW, deliberately. The SLC scenarios create the cart through the API for
+# CustomerId, then the browser logs in as orders.user.email (qa_orders_user@jswtest.in) and opens
+# that customer's cart. A row pointing at any other customer builds a cart the browser never sees,
+# and the scenario fails on an empty cart. See the orders.user.email note in global_preprod.properties.
+# The SLO rows keep the same customer so both flows are tested against one known account.
+#
+# Because every scenario creates a cart or an order on this one customer, these scenarios must
+# never run concurrently. They run only in the SF_SLC_SLO block of testng_serial.xml, which is
+# thread-count="1" and data-provider-thread-count="1". Do not add them to a parallel suite without
+# giving each row its own account first.
+#
+# Rows with no orderType / isDirect are distributor orders: the payload file the step picks already
+# describes a distributor order, so there is nothing to override.
+
+
+# SLC: Distributor cash and carry
 - testCaseId: "id-001"
-  CustomerId: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
-  AddressId: "dvB5WQ0T"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
 
+# SLC: Distributor cash and carry advance
 - testCaseId: "id-002"
-  CustomerId: "1834a7bb-e285-4744-911d-e15b4e2b1bc0"
-  AddressId: "dvB5WQ0T"
-  orderType: "Plant Supply"
-  isDirect: true
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
 
+# SLC: Distributor credit
 - testCaseId: "id-003"
-  CustomerId: "c8a8c2e2-bc13-4cd3-992f-5d099a328c2c"
-  AddressId: "7ZfS0rNM"
-  orderType: "Plant Supply"
-  isDirect: true
-  advancePayment: 0.0
-  advancePercentage: 0.0
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
 
+# SLC: Plant Supply (direct) cash and carry with advance
 - testCaseId: "id-004"
-  CustomerId: "c8a8c2e2-bc13-4cd3-992f-5d099a328c2c"
-  AddressId: "7ZfS0rNM"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
+  orderType: "Plant Supply"
+  isDirect: true
+
+# SLC: Plant Supply (direct) cash and carry zero advance
+- testCaseId: "id-005"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
+  orderType: "Plant Supply"
+  isDirect: true
+  advancePayment: 0.0
+  advancePercentage: 0.0
+
+# SLC: Plant Supply (direct) credit
+- testCaseId: "id-006"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
+  orderType: "Plant Supply"
+  isDirect: true
+
+# SLO: Distributor cash and carry
+- testCaseId: "id-007"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
   slo: true
 
-- testCaseId: "id-005"
-  CustomerId: "c8a8c2e2-bc13-4cd3-992f-5d099a328c2c"
-  AddressId: "7ZfS0rNM"
+# SLO: Distributor cash and carry advance
+- testCaseId: "id-008"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
+  slo: true
+
+# SLO: Distributor credit
+- testCaseId: "id-009"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
+  slo: true
+
+# SLO: Plant Supply (direct) cash and carry with advance
+- testCaseId: "id-010"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
   orderType: "Plant Supply"
   isDirect: true
   slo: true
 
-- testCaseId: "id-006"
-  CustomerId: "c8a8c2e2-bc13-4cd3-992f-5d099a328c2c"
-  AddressId: "7ZfS0rNM"
+# SLO: Plant Supply (direct) cash and carry zero advance
+- testCaseId: "id-011"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
   orderType: "Plant Supply"
   isDirect: true
   advancePayment: 0.0
   advancePercentage: 0.0
   slo: true
 
-
+# SLO: Plant Supply (direct) credit
+- testCaseId: "id-012"
+  CustomerId: "5bd5c9bc-04ad-4a2b-8dbb-2e70e70656a0"
+  AddressId: "diFNof8J"
+  orderType: "Plant Supply"
+  isDirect: true
+  slo: true

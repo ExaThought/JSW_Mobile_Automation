@@ -159,8 +159,11 @@ pipeline {
             name: 'TAGS',
             defaultValue: '',
             description: 'Optional Cucumber tag filter, e.g. "@footer or @regression". ' +
-                         'Leave blank to use whatever testng_bdd.xml already defines. ' +
-                         'See the note in the Test stage before relying on this.'
+                         'Leave blank to use whatever the suite already defines. It NARROWS the ' +
+                         'suite: each block runs (its own tags) and (TAGS), so a scenario runs ' +
+                         'once, as the account of the block that owns it. If no block selects ' +
+                         'anything, TAGS runs once in the suite\'s first block across all ' +
+                         'features. See RunTagsFilter.java.'
         )
         choice(
             name: 'SUITE',
@@ -506,7 +509,10 @@ YAML
                 }
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
-                        def tagArg = params.TAGS?.trim() ? "-Dcucumber.filter.tags=\"${params.TAGS.trim()}\"" : ''
+                        // -Drun.tags, NOT -Dcucumber.filter.tags: the latter replaces every
+                        // block's filter, so each active block ran the same scenarios again as
+                        // its own account. RunTagsFilter ANDs this into each block instead.
+                        def tagArg = params.TAGS?.trim() ? "-Drun.tags=\"${params.TAGS.trim()}\"" : ''
 
                         def mvnCmd = """
                             mvn -B -ntp clean test \
