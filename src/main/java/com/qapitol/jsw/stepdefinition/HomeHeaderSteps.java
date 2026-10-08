@@ -99,7 +99,8 @@ public class HomeHeaderSteps extends AbstractWebPage {
         boolean onlyBare = !bare.equals(path)
                 && !Grid.driver().findElements(By.xpath(String.format(NAV_ITEM_BY_HREF, bare))).isEmpty();
         return "Header navigation menu item '" + menuItem + "' never showed a visible link to " + path
-                + " within " + NAV_LINK_REWRITE_WAIT_SECONDS + "s at " + Grid.driver().getCurrentUrl()
+                + " within " + NAV_LINK_REWRITE_WAIT_SECONDS + "s, before or after a reload, at "
+                + Grid.driver().getCurrentUrl()
                 + (onlyBare
                         ? ". The header still links to the unrewritten " + bare + " (a 404), so the page"
                           + " never finished loading - an environment slowdown, not a locator change."
@@ -186,7 +187,16 @@ public class HomeHeaderSteps extends AbstractWebPage {
         closeBlockingDialogsWithin(10);
         By target = navItem(menuItem);
         if (!pollFor(() -> isRenderedNow(target), NAV_LINK_REWRITE_WAIT_SECONDS)) {
-            throw new IllegalStateException(navLinkMissingMessage(menuItem));
+            // A stuck load does not recover by waiting longer: build 280 still showed the home
+            // page's loading skeleton after 45s. A reload re-runs it.
+            log.info("Header link '" + menuItem + "' not rewritten after " + NAV_LINK_REWRITE_WAIT_SECONDS
+                    + "s - reloading the page once.");
+            Grid.driver().navigate().refresh();
+            waitForPageLoad();
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
+            if (!pollFor(() -> isRenderedNow(target), NAV_LINK_REWRITE_WAIT_SECONDS)) {
+                throw new IllegalStateException(navLinkMissingMessage(menuItem));
+            }
         }
         clickFirstVisible(target);
         waitForPageLoad();

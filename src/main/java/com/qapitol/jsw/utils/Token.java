@@ -82,6 +82,17 @@ public class Token extends BaseApiImpl {
         return token;
     }
 
+    /**
+     * Drops the configured user's cached CCP token so the next call logs in again.
+     *
+     * <p>The cache trusts the token's exp claim, but the server can revoke a token long before
+     * that - every cart API call in build 280 came back 401 with an unexpired cached token while
+     * the UI login for the same account worked. Callers that get a 401 drop it and retry once.
+     */
+    public static void invalidateCCPToken() {
+        CCP_TOKEN_CACHE.remove(UserConfig.getEmail());
+    }
+
     /** Performs the actual login call, bypassing the cache. */
     private static String requestCCPToken(String email, String password){
         baseURI=ConfigUtil.getSecretValue("ccpPortalUrl");
@@ -364,7 +375,7 @@ public class Token extends BaseApiImpl {
      * Reads the {@code exp} claim so the cache knows when to refresh. Returns 0 when the claim
      * cannot be read, which makes the next call log in again rather than reuse a stale token.
      */
-    static long readExpiry(String jwt) {
+    public static long readExpiry(String jwt) {
         JSONObject claims = readClaims(jwt);
         try {
             return claims.has("exp") ? claims.getLong("exp") : 0;
@@ -469,7 +480,7 @@ public class Token extends BaseApiImpl {
     }
 
     /** Short, non-reversible identifier so two runs' tokens can be compared without logging either. */
-    static String fingerprintOf(String token) {
+    public static String fingerprintOf(String token) {
         if (token == null || token.isBlank()) {
             return "<empty>";
         }

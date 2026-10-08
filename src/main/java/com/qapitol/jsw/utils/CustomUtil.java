@@ -566,9 +566,10 @@ public class CustomUtil {
                 return;
             } catch (ElementClickInterceptedException e) {
                 // A blocking dialog can open after every wait for it has passed - the glance
-                // spotlight took 41 clicks this way. Close it and retry once; anything else that
-                // covers the element is a real problem and fails as before.
-                if (retriedPastDialog || !closeBlockingDialogsWithin(0)) {
+                // spotlight took 41 clicks this way, the payment reminder a logout after refresh.
+                // Close it and retry once; anything else that covers the element is a real
+                // problem and fails as before. Non-short-circuit | so both get their chance.
+                if (retriedPastDialog || !(closeBlockingDialogsWithin(0) | closePaymentReminderIfOpen())) {
                     throw e;
                 }
                 retriedPastDialog = true;
@@ -775,6 +776,17 @@ public class CustomUtil {
             "//div[@role='dialog'][contains(@aria-label, 'Your business at a glance')]"
                     + "//button[@aria-label='Close']");
 
+    /*
+     * "Payment reminder" for accounts with dues. Pre-prod shows it again after a page refresh, and
+     * its bg-black/40 overlay took the logout click in build 280. Closed with its X only - never
+     * "View details & pay" - and only when it blocks a click: the payment-due scenarios assert on
+     * it, so closeBlockingDialogsWithin must not close it after login.
+     */
+    private static final By PAYMENT_REMINDER = By.xpath("//h2[@id='payment-reminder']");
+
+    private static final By PAYMENT_REMINDER_CLOSE = By.xpath(
+            "//button[@data-test-id='payment-reminder-close-button']");
+
     /**
      * How long callers without a reason to wait longer give a dialog to appear. Short because
      * most calls find nothing, and every call that finds nothing waits this long.
@@ -802,6 +814,10 @@ public class CustomUtil {
                     "Business details confirmation dialog");
         }
         return closed;
+    }
+
+    private static boolean closePaymentReminderIfOpen() {
+        return closeIfOpen(PAYMENT_REMINDER, PAYMENT_REMINDER_CLOSE, "Payment reminder");
     }
 
     private static boolean isBlockingDialogOpen() {

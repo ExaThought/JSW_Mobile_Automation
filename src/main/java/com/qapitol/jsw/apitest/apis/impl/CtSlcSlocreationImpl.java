@@ -83,9 +83,9 @@ public class CtSlcSlocreationImpl extends BaseApiImpl {
             }
 
 
-            //Request API - salesOppUrl, not ccpUrl: QA serves this endpoint from its own host
-            //with an X-API-KEY. On pre-prod the property resolves back to ccpUrl.
-            RequestApi requestApi = salesOppUrl().create(RequestApi.class);
+            //Request API - salesOppApi, not ccpUrl: this endpoint authenticates with the sales-opp
+            //X-API-KEY, which salesOppApi attaches to this proxy only.
+            RequestApi requestApi = salesOppApi(RequestApi.class);
             CtSlcSloRes responseBody = requestApi.requestCtCashAndCarrySlcSlo(requestPayload);
 
             //Set the Request data to verify in the CCP portal

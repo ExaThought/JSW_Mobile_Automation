@@ -12,11 +12,18 @@ import com.qapitol.jsw.apitest.pojos.order.rcv2Response.Rcv2Response;
 import com.qapitol.jsw.apitest.pojos.order.updateLineItemRequestPayload.UpdateLineItemPayload;
 import com.qapitol.jsw.utils.ApiUtils;
 import com.qapitol.jsw.utils.Token;
+import com.qapitol.sauron.api.client.ApiClientFactory;
 import com.qapitol.sauron.data.Data;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.qameta.allure.Allure;
 
+import javax.ws.rs.NotAuthorizedException;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import static java.util.Objects.nonNull;
 
@@ -109,10 +116,72 @@ public class CartRCV2ApiImp extends BaseApiImpl {
     }
 
     public Rcv2Response getCartResponse() {
+        return withFreshTokenOn401(() -> {
+            logAsCurl("GET", "v2/cart/get", null);
+            return ccpUrl().create(RequestApi.class).rcv2GetCart();
+        });
+    }
 
-        // Call the API
-        RequestApi requestApi = ccpUrl().create(RequestApi.class);
-        return requestApi.rcv2GetCart();
+    /**
+     * Logs the cart call as a cURL command, and attaches it to the Allure step, so a 401 can be
+     * replayed by hand. Credential headers are replaced by a fingerprint plus the token's user and
+     * expiry - enough to tell whose token was sent and whether it was stale, without disclosing it.
+     */
+    private void logAsCurl(String method, String path, Object body) {
+        ApiClientFactory factory = ccpUrl();
+        String address = factory.getAddress();
+        StringBuilder curl = new StringBuilder("curl -X ").append(method).append(" '")
+                .append(address.endsWith("/") ? address : address + "/").append(path).append("'");
+        Map<String, List<String>> headers = factory.getJaxrsClientFactoryBean().getHeaders();
+        String lineBreak = " \\\n  ";
+        if (headers != null) {
+            headers.forEach((name, values) -> values.forEach(value -> curl.append(lineBreak)
+                    .append("-H '").append(name).append(": ")
+                    .append(isCredentialHeader(name) ? describeCredential(value) : value).append("'")));
+        }
+        curl.append(lineBreak).append("-H 'Accept: application/json'");
+        if (body != null) {
+            try {
+                curl.append(lineBreak).append("-H 'Content-Type: application/json'")
+                        .append(lineBreak).append("--data '")
+                        .append(new ObjectMapper().writeValueAsString(body)).append("'");
+            } catch (Exception e) {
+                curl.append(lineBreak).append("--data '<could not serialise: ")
+                        .append(e.getMessage()).append(">'");
+            }
+        }
+        log.info("Cart API request:\n" + curl);
+        Allure.addAttachment("Cart API request - " + method + " " + path, "text/plain", curl.toString());
+    }
+
+    private static boolean isCredentialHeader(String name) {
+        String lower = name.toLowerCase();
+        return lower.contains("token") || lower.contains("key") || lower.contains("authorization");
+    }
+
+    private static String describeCredential(String value) {
+        StringBuilder described = new StringBuilder("<redacted ").append(Token.fingerprintOf(value));
+        try {
+            described.append(", customerId=").append(ApiUtils.getUserId(value));
+            long exp = Token.readExpiry(value);
+            described.append(", exp=").append(exp == 0 ? "unreadable" : Instant.ofEpochSecond(exp));
+        } catch (Exception e) {
+            described.append(", not a readable JWT");
+        }
+        return described.append(">").toString();
+    }
+
+    /**
+     * Runs a user-token cart call, and on a 401 drops the cached CCP token and retries once with
+     * a fresh login. A second 401 is real and propagates.
+     */
+    private static <T> T withFreshTokenOn401(Supplier<T> call) {
+        try {
+            return call.get();
+        } catch (NotAuthorizedException e) {
+            Token.invalidateCCPToken();
+            return call.get();
+        }
     }
 
     public void getCartSize() {
@@ -149,7 +218,10 @@ public class CartRCV2ApiImp extends BaseApiImpl {
         requestBody.setCartIdentifier(cartIdentifier);
         requestBody.setLineItemIdList(lineItemIds);
 
-        ccpUrl().create(RequestApi.class).rcv2DeleteLineItem(requestBody);
+        withFreshTokenOn401(() -> {
+            logAsCurl("POST", "v2/cart/delete-items", requestBody);
+            return ccpUrl().create(RequestApi.class).rcv2DeleteLineItem(requestBody);
+        });
         log.info("Requested deletion of " + lineItemIds.size() + " cart line item(s): " + lineItemIds);
         return lineItemIds.size();
     }

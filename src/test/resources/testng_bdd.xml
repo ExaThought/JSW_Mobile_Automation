@@ -61,7 +61,7 @@
      source it is being asked about.
      =========================================================================================== -->
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
-       data-provider-thread-count="3" annotations="JDK">
+       data-provider-thread-count="4" annotations="JDK">
 
     <listeners>
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
@@ -170,12 +170,12 @@
          Reference: areas NOT included above, with their verified tags. Uncomment the block you
          need, or add the tag to an existing block that already uses the right test.group.
 
-           homepage : @paymentDue  @ledger  @bankDetails  @myAccount  @buym
+           homepage : @paymentDue  @bankDetails  @myAccount  @buym
            cart     : @CartVerification  @shipment  @EditAndDeleteCart  @ccpActiveOrder  @creditOrder
            profile  : @address
            orders   : @ccpErpSyncRegression
            Guest    : @SEOCheck
-           api      : @customerProfileApi  @rcv2Api  @centralCart
+           api      : @rcv2Api  @centralCart
                       (point cucumber.features at src/test/resources/features/api for these)
          =========================================================================================== -->
 

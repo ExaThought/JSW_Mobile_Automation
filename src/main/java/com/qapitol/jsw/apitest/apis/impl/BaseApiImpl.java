@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qapitol.jsw.utils.ConfigUtil;
 import com.qapitol.sauron.api.client.ApiClientFactory;
+import com.qapitol.sauron.api.providers.LoginService;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.data.ContextData;
 import com.qapitol.sauron.logging.SauronLogger;
@@ -14,7 +15,10 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.ServiceLoader;
 
 public abstract class BaseApiImpl {
 
@@ -22,7 +26,25 @@ public abstract class BaseApiImpl {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     protected ApiClientFactory ccpUrl() {
-        return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("ccpUrl"));
+        return withCurrentHeaders(ApiClientFactory.getInstance(ConfigUtil.getSecretValue("ccpUrl")));
+    }
+
+    /**
+     * Recomputes the factory's auth headers from the LoginService providers.
+     *
+     * <p>Sauron computes them only when it first builds the factory for an address, and caches the
+     * factory per thread, so every later call on that thread sent the first access_token it ever
+     * got - build 280 sent one token for three hours and every cart call came back 401. Token
+     * caches the token itself, so recomputing per call costs no extra login.
+     */
+    private static ApiClientFactory withCurrentHeaders(ApiClientFactory factory) {
+        Map<String, String> headers = new HashMap<>();
+        for (LoginService loginService : ServiceLoader.load(LoginService.class)) {
+            headers.putAll(loginService.login());
+            headers.putAll(loginService.login(factory));
+        }
+        factory.getJaxrsClientFactoryBean().setHeaders(headers);
+        return factory;
     }
     protected ApiClientFactory appUrl(){
         return ApiClientFactory.getInstance(ConfigUtil.getSecretValue("appBaseUrl"));
@@ -39,14 +61,29 @@ public abstract class BaseApiImpl {
     }
 
     /**
-     * Base URL for the Salesforce -> CT sales-opp sync (data-sync/import/sales-opp).
+     * Client for the Salesforce -> CT sales-opp sync (data-sync/import/sales-opp), the ONLY
+     * client that carries salesOppApiKey.
      *
-     * Kept separate from {@link #ccpUrl()} because on QA the endpoint lives on its own host
-     * and authenticates with a service X-API-KEY rather than a user access_token. On pre-prod
-     * the property resolves to the same address as ccpUrl, so behaviour there is unchanged.
+     * <p>Returns a proxy rather than the factory on purpose. Sauron shares one factory per address
+     * and per thread, and on pre-prod salesOppUrl is the same address as ccpUrl - so the key is
+     * set on the factory only long enough to build this one proxy, and the factory's normal
+     * headers are restored before returning. Every other client built from it, now or later,
+     * never sees the key. The proxy keeps its own copy of the headers it was built with.
+     *
+     * <p>No key configured: the proxy uses the address's normal headers, as before.
      */
-    protected ApiClientFactory salesOppUrl() {
-        return ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("salesOppUrl"));
+    protected <T> T salesOppApi(Class<T> api) {
+        ApiClientFactory factory = ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("salesOppUrl"));
+        String salesOppApiKey = ConfigUtil.getSecretValue("salesOppApiKey");
+        if (salesOppApiKey == null || salesOppApiKey.trim().isEmpty()) {
+            return withCurrentHeaders(factory).create(api);
+        }
+        factory.getJaxrsClientFactoryBean().setHeaders(Map.of("X-API-KEY", salesOppApiKey));
+        try {
+            return factory.create(api);
+        } finally {
+            withCurrentHeaders(factory);
+        }
     }
 
     /**
