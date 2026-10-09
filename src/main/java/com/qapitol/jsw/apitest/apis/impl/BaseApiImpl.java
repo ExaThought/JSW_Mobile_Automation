@@ -71,6 +71,11 @@ public abstract class BaseApiImpl {
      * never sees the key. The proxy keeps its own copy of the headers it was built with.
      *
      * <p>No key configured: the proxy uses the address's normal headers, as before.
+     *
+     * <p>Thread safety: the set-create-restore below is safe ONLY because Sauron keeps factories in
+     * a ThreadLocal, so no other thread can build a client from this factory between the set and
+     * the restore. If factories are ever shared across threads, this must move to a client of its
+     * own (e.g. a separate JAXRSClientFactoryBean) or the key could leak into a concurrent call.
      */
     protected <T> T salesOppApi(Class<T> api) {
         ApiClientFactory factory = ApiClientFactory.getInstance(ConfigUtil.resolveOrThrow("salesOppUrl"));

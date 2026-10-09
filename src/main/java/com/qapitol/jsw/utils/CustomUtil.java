@@ -3,12 +3,15 @@ package com.qapitol.jsw.utils;
 import com.qapitol.jsw.config.SessionBuilder;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
+import io.qameta.allure.Allure;
+import io.qameta.allure.model.Status;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -554,8 +557,54 @@ public class CustomUtil {
     }
 
     public static void clickButton(Object target) {
+        try {
+            clickRetryingStale(target);
+        } catch (ElementClickInterceptedException e) {
+            // A blocking dialog can open after every wait for it has passed - the glance spotlight
+            // took 41 clicks this way, the payment reminder a logout after refresh. Close it and
+            // retry exactly once; anything else that covers the element is a real problem and
+            // fails as before.
+            if (!closeDialogOver(target)) {
+                throw e;
+            }
+            logger.log(Level.INFO, "Click on " + target + " was blocked by a dialog - closed it,"
+                    + " retrying once.");
+            clickRetryingStale(target);
+        }
+    }
+
+    /**
+     * Closes whatever dialog is blocking a click on {@code target}, and returns whether it closed one.
+     *
+     * <p>The payment reminder is closed only when it is what sits over the click point. The
+     * payment-due scenarios assert on that popup, so dismissing it on a click that something else
+     * blocked could hide a missing-popup check.
+     */
+    private static boolean closeDialogOver(Object target) {
+        boolean closed = closeBlockingDialogsWithin(0);
+        if (isPaymentReminderOver(target)) {
+            closed |= closePaymentReminderIfOpen();
+        }
+        return closed;
+    }
+
+    private static boolean isPaymentReminderOver(Object target) {
+        try {
+            Object over = ((JavascriptExecutor) Grid.driver()).executeScript(
+                    "const r = arguments[0].getBoundingClientRect();"
+                            + "const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);"
+                            + "const heading = document.getElementById('payment-reminder');"
+                            + "const overlay = heading && heading.closest('.fixed');"
+                            + "return !!(overlay && top && overlay.contains(top));",
+                    resolveElement(target));
+            return Boolean.TRUE.equals(over);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static void clickRetryingStale(Object target) {
         StaleElementReferenceException lastStale = null;
-        boolean retriedPastDialog = false;
 
         for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
             try {
@@ -564,18 +613,6 @@ public class CustomUtil {
                         .until(ExpectedConditions.elementToBeClickable(element));
                 element.click();
                 return;
-            } catch (ElementClickInterceptedException e) {
-                // A blocking dialog can open after every wait for it has passed - the glance
-                // spotlight took 41 clicks this way, the payment reminder a logout after refresh.
-                // Close it and retry once; anything else that covers the element is a real
-                // problem and fails as before. Non-short-circuit | so both get their chance.
-                if (retriedPastDialog || !(closeBlockingDialogsWithin(0) | closePaymentReminderIfOpen())) {
-                    throw e;
-                }
-                retriedPastDialog = true;
-                attempt--;
-                logger.log(Level.INFO, "Click on " + target + " was blocked by a dialog - closed it,"
-                        + " retrying once.");
             } catch (StaleElementReferenceException e) {
                 lastStale = e;
 
@@ -833,9 +870,34 @@ public class CustomUtil {
             logger.log(Level.INFO, description + " was present and has been closed.");
             return true;
         } catch (Exception e) {
-            logger.log(Level.INFO, description + " was showing but could not be closed: "
-                    + e.getClass().getSimpleName());
+            // Not thrown: the caller's next click fails on its own if the dialog is still there.
+            // But that failure names an intercepted click, not this - so record the cause here,
+            // with what the page looked like, where the report reader will find it.
+            String reason = description + " was showing but could not be closed ("
+                    + e.getClass().getSimpleName() + ": " + firstLine(e.getMessage()) + ")."
+                    + " The next click on this page will likely be intercepted by it.";
+            logger.log(Level.WARNING, reason);
+            Allure.step(reason, Status.BROKEN);
+            attachScreenshot("Could not close " + description);
             return false;
+        }
+    }
+
+    private static String firstLine(String message) {
+        if (message == null) {
+            return "no message";
+        }
+        int newline = message.indexOf('\n');
+        return newline < 0 ? message : message.substring(0, newline);
+    }
+
+    private static void attachScreenshot(String name) {
+        try {
+            byte[] png = ((TakesScreenshot) Grid.driver()).getScreenshotAs(OutputType.BYTES);
+            Allure.addAttachment(name, "image/png", new ByteArrayInputStream(png), ".png");
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Could not capture a screenshot for '" + name + "': "
+                    + e.getClass().getSimpleName());
         }
     }
 
