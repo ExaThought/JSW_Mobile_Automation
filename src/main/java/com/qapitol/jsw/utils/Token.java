@@ -374,6 +374,9 @@ public class Token extends BaseApiImpl {
     /**
      * Reads the {@code exp} claim so the cache knows when to refresh. Returns 0 when the claim
      * cannot be read, which makes the next call log in again rather than reuse a stale token.
+     *
+     * <p>Public only so CartRCV2ApiImp can show a token's expiry in its redacted request log.
+     * It decodes without verifying the signature - never use it to decide whether to trust a token.
      */
     public static long readExpiry(String jwt) {
         JSONObject claims = readClaims(jwt);
@@ -479,7 +482,10 @@ public class Token extends BaseApiImpl {
                 + " (" + varName + " is not set)";
     }
 
-    /** Short, non-reversible identifier so two runs' tokens can be compared without logging either. */
+    /**
+     * Short, non-reversible identifier so two runs' tokens can be compared without logging either.
+     * Public only so CartRCV2ApiImp can name a credential in its redacted request log.
+     */
     public static String fingerprintOf(String token) {
         if (token == null || token.isBlank()) {
             return "<empty>";
