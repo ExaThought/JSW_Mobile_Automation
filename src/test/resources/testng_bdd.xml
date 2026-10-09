@@ -177,6 +177,9 @@
            Guest    : @SEOCheck
            api      : @rcv2Api  @centralCart
                       (point cucumber.features at src/test/resources/features/api for these)
+
+         No longer listed because they run elsewhere: @ledger has its own <test name="Ledger"> block
+         above, and @customerProfileApi runs from testng_api.xml.
          =========================================================================================== -->
 
 </suite>
