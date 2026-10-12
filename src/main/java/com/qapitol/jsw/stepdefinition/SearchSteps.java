@@ -110,7 +110,7 @@ public class SearchSteps extends AbstractWebPage {
 
     @When("user enters {string} in search bar for web")
     public void enter_search_keyword_for_web(String keyword) {
-        confirmBusinessDetailsDialogWithin(10);
+        closeBlockingDialogsWithin(10);
         log.info("Entering search keyword: " + keyword);
         clickButton(by(SEARCH_TRIGGER));
         By modalInput = by(SEARCH_MODAL_INPUT);

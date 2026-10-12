@@ -166,11 +166,11 @@ public class SfSlcSloSteps extends AbstractWebPage {
      */
     private void openCartPastBusinessDetailsDialog() {
         By cartLink = By.xpath(getLocator(CART_PAGE));
-        CustomUtil.confirmBusinessDetailsDialogWithin(CustomUtil.BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        CustomUtil.closeBlockingDialogsWithin(CustomUtil.BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         try {
             CustomUtil.clickFirstVisible(cartLink);
         } catch (WebDriverException | IllegalStateException e) {
-            if (!CustomUtil.confirmBusinessDetailsDialogWithin(CustomUtil.BUSINESS_DETAILS_QUICK_WAIT_SECONDS)) {
+            if (!CustomUtil.closeBlockingDialogsWithin(CustomUtil.BLOCKING_DIALOG_QUICK_WAIT_SECONDS)) {
                 reportCartClickFailure("No business details dialog was open, so it was not retried.", e);
                 throw e;
             }

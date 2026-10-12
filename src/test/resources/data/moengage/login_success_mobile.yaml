@@ -1,0 +1,25 @@
+# Expected values for the MoEngage "login_success" event when the user logs in by mobile number + OTP.
+# Same as login_success.yaml except `type`, which is "Mobile" for this login (QA, 12 Oct 2026).
+# Read by MoEngageEventCapture.validateEventFromYaml("login_success", "login_success_mobile", ...) from data/moengage/<event>.yaml.
+event: login_success
+
+# Attributes that must equal exactly this value (compared as text).
+expected:
+  URL: "${page.currentUrl}"                            # the browser's current URL
+  user_role: "${customerProfile.userRole}"           # roles in the customer-profile API response
+  user_contact_id: "${customerProfile.userContactId}" # sfAccountId in the customer-profile API response
+  user_type: "${customerProfile.userType}"           # contactType in the customer-profile API response, lower case
+  type: "Mobile"
+  source: "Login Button"
+  "Device type": "Desktop"
+  "UI-version": "Navigation_login_registration_revamp_nov_2025"
+
+# Attributes that must be present. Their values depend on the user or the environment
+# so only their presence is checked.
+required:
+  - moe_first_visit
+  - moe_logged_in_status
+
+# Attributes the app is known to send blank. Every other attribute must hold a value.
+emptyAllowed:
+  - time_taken

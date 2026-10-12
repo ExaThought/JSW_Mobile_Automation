@@ -34,6 +34,11 @@ public class Hooks {
         System.out.println();
         System.out.println(scenario == null ? "Scenario: (unnamed)" : "Scenario: " + scenario.getName());
         System.out.println("=== SCENARIO STARTED ===");
+        // Mask access tokens before anything this scenario does can log one (Sauron's API client
+        // logs every request header, access_token included - see LogRedaction).
+        LogRedaction.install();
+        // A cart cleanup from the previous scenario on this thread must not be reused.
+        com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp.resetScenarioCleanup();
         // Start this thread's own collection of failures for the scenario about to run. The
         // failures are reported with the file and line of each assertion (see JswSoftAssert).
         ThreadLocalSoftAssert.startScenario();

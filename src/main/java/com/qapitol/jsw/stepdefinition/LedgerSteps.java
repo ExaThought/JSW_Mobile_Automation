@@ -158,6 +158,9 @@ public class LedgerSteps extends AbstractWebPage {
         log.info("Opening ledger page directly: " + ledgerUrl);
         Grid.driver().get(ledgerUrl);
         isAnyVisible(By.xpath(PAYMENT_INST));
+        // A guest is bounced from the ledger to the home page ("/?forbidden=1" on QA); log where
+        // the browser actually landed so the report shows it.
+        log.info("After opening the ledger url the browser is on " + Grid.driver().getCurrentUrl());
     }
 
     @And("user refreshes the ledger page")

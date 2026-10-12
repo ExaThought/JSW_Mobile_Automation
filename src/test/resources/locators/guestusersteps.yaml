@@ -63,3 +63,24 @@ elements:
   blogsPageArticleLinks:
     en_US:
       web: xpath=//a[contains(@href,'/blogs/')]
+  # --- Delivery location modal, opened from "Select location" next to the search bar ---
+  selectLocationButton:
+    en_US:
+      web: xpath=//button[contains(normalize-space(),'Select location')]
+  deliveryLocationModal:
+    en_US:
+      web: xpath=//*[@data-test-id='delivery-location-modal']
+  deliveryLocationPincodeInput:
+    en_US:
+      web: xpath=//input[@data-test-id='delivery-location-pincode-input']
+  deliveryLocationCloseButton:
+    en_US:
+      web: xpath=//button[@data-test-id='delivery-location-modal-close-button']
+  deliveryLocationCheckButton:
+    en_US:
+      web: xpath=//button[@data-test-id='delivery-location-check-button']
+  # %s = the location label, e.g. "Mumbai cit.. 400051" (the app truncates the city itself, so the
+  # dots are part of the text). Rendered twice, the first copy aria-hidden: use isAnyVisible.
+  headerLocationLabel:
+    en_US:
+      web: xpath=//header//span[normalize-space()='%s']

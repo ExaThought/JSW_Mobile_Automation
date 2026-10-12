@@ -88,6 +88,18 @@ public class CartSteps extends AbstractWebPage {
     private static final String DELETE_ITEMS = "(//div[@id='line-item-section']//*[text()='Delete' and not(ancestor::*[@data-index='-1'])])[1]";
     private static final String DELETE_BTN = "//button[@id='remove-btn']";
     private static final String EMPTY_CART_MSG = "//h2[text()='Your cart is empty']";
+    /** The cart illustration: the nearest image (img or svg) before the empty-cart message. */
+    private static final String EMPTY_CART_ILLUSTRATION =
+            "(" + EMPTY_CART_MSG + "/preceding::*[self::img or local-name()='svg'])[last()]";
+    private static final String EXPLORE_PRODUCTS_HEADING = "//*[normalize-space(text())='Explore products']";
+    /** %s = the category name shown under the tile, e.g. "MS Hot rolled". Only after the heading. */
+    private static final String EXPLORE_PRODUCTS_TILE_LABEL =
+            EXPLORE_PRODUCTS_HEADING + "/following::*[normalize-space(text())='%s']";
+    /** The tile's image sits above its name, so it is the nearest image before the label. */
+    private static final String EXPLORE_PRODUCTS_TILE_IMAGE =
+            "(" + EXPLORE_PRODUCTS_TILE_LABEL + "/preceding::img)[last()]";
+    private static final String EXPLORE_PRODUCTS_VIEW_ALL =
+            "(" + EXPLORE_PRODUCTS_HEADING + "/following::*[self::a or self::button][normalize-space()='View all'])[1]";
     private static final String CUSTOM_LENGTH_MSG = "//label[text()=\"Custom length (mm):\"]/../following-sibling::div/span";
     private static final String CUSTOM_LENGTH_TEXTBOX = "//label[text()=\"Custom length (mm):\"]/following-sibling::input";
     private static final String QUANTITY_TEXTBOX = "//input[@id='quantity-input']";
@@ -257,26 +269,37 @@ public class CartSteps extends AbstractWebPage {
         Assert.assertTrue(waitAndCheckIsElementPresent(SUBMIT_REQUIREMENT), "Did not open the cart page after clicking on view cart");
     }
 
+    /**
+     * Starts the scenario from an empty cart, with one cart/get call per scenario.
+     *
+     * <p>"ccp login with configured user" already empties the cart, and every feature calls this
+     * step straight after that login, before anything is added. So when the login did the
+     * cleanup, its result is reused rather than fetching the cart again; otherwise (a scenario
+     * that logged in another way) the cleanup runs here.
+     */
     @Given("empty the cart via API")
     public void emptyTheCartViaApi() {
-        CartRCV2ApiImp cartApi = new CartRCV2ApiImp();
-        int deleted;
-        try {
-            deleted = cartApi.emptyCartForLoggedInUser();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to empty the cart through the cart API before the"
-                    + " scenario - the cart count assertions cannot be trusted", e);
+        CartRCV2ApiImp.CartCleanup cleanup = CartRCV2ApiImp.scenarioCleanup();
+        if (cleanup != null) {
+            log.info("Cart was already emptied by the login step in this scenario - reusing that"
+                    + " result instead of calling cart/get again");
+        } else {
+            try {
+                cleanup = new CartRCV2ApiImp().emptyCartOnce();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to empty the cart through the cart API before the"
+                        + " scenario - the cart count assertions cannot be trusted", e);
+            }
         }
 
-        int remaining = cartApi.getCartLineItemCount();
-        String summary = "Line items deleted: " + deleted + ", remaining: " + remaining;
-        log.info(deleted == 0
+        String summary = "Line items deleted: " + cleanup.deleted + ", remaining: " + cleanup.remaining;
+        log.info(cleanup.deleted == 0
                 ? "Cart was already empty before the scenario"
                 : "Emptied the cart via API - " + summary);
         Allure.addAttachment("Cart cleanup before scenario", summary);
 
-        Assert.assertEquals(remaining, 0,
-                "Cart still holds " + remaining + " line item(s) after the API cleanup, so this"
+        Assert.assertEquals(cleanup.remaining, 0,
+                "Cart still holds " + cleanup.remaining + " line item(s) after the API cleanup, so this"
                         + " scenario would start with a dirty cart");
     }
 
@@ -392,10 +415,10 @@ public class CartSteps extends AbstractWebPage {
     @When("click on Cement product")
     public void clickOnCementProduct() {
         try {
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+                closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
                 hoverOverElement(ALL_CATEGORY);
             }
             waitAndClickOn(CEMENT_PLP);
@@ -503,10 +526,10 @@ public class CartSteps extends AbstractWebPage {
     @When("click on TMT product")
     public void clickOnTMTProduct() {
         try {
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+                closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
                 hoverOverElement(ALL_CATEGORY);
             }
             waitAndClickOn(TMT_PRODUCT);
@@ -907,12 +930,12 @@ public class CartSteps extends AbstractWebPage {
         log.info("Clicked on cart icon");
         // Pre-prod opens "Personalize your procurement" over the cart page after it loads, which
         // hides the empty-cart message from the next step (build of 25 Sep 2026, CR Sheet).
-        confirmBusinessDetailsDialogWithin(5);
+        closeBlockingDialogsWithin(5);
     }
 
     @Then("check the empty cart page display with message {string}")
     public void checkTheEmptyCartPageDisplayWithMessage(String expectedMessage) {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         try {
             try {
                 new WebDriverWait(Grid.driver(), Duration.ofMillis(1000)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath(EMPTY_CART_MSG)));
@@ -950,6 +973,64 @@ public class CartSteps extends AbstractWebPage {
         } catch (Exception e) {
             log.info("Failed to verify empty cart message" + e.getMessage());
             throw new RuntimeException("Failed to verify empty cart message", e);
+        }
+    }
+
+    // ------------------- Empty cart page contents -------------------
+
+    @And("the empty cart illustration should be displayed")
+    public void theEmptyCartIllustrationShouldBeDisplayed() {
+        boolean shown = isAnyVisible(By.xpath(EMPTY_CART_ILLUSTRATION));
+        log.info("Empty cart illustration above the message is " + (shown ? "displayed" : "NOT displayed"));
+        softAssert.assertTrue(shown, "The empty cart illustration is not displayed above 'Your cart is empty'");
+    }
+
+    /**
+     * Each category under "Explore products" must show its name and an image that actually loaded
+     * (an img with no pixels, i.e. a broken link, looks present to a visibility check).
+     */
+    @And("the Explore products section should show these categories with images:")
+    public void theExploreProductsSectionShouldShowTheseCategoriesWithImages(List<String> categories) {
+        boolean heading = isAnyVisible(By.xpath(EXPLORE_PRODUCTS_HEADING));
+        log.info("'Explore products' heading is " + (heading ? "displayed" : "NOT displayed"));
+        softAssert.assertTrue(heading, "'Explore products' heading is not displayed on the empty cart page");
+
+        for (String category : categories) {
+            By label = By.xpath(String.format(EXPLORE_PRODUCTS_TILE_LABEL, category));
+            boolean labelShown = isAnyVisible(label);
+            boolean imageLoaded = labelShown && isImageLoaded(
+                    By.xpath(String.format(EXPLORE_PRODUCTS_TILE_IMAGE, category)));
+            log.info("Explore products tile '" + category + "': name " + (labelShown ? "shown" : "NOT shown")
+                    + ", image " + (imageLoaded ? "loaded" : "NOT loaded"));
+            softAssert.assertTrue(labelShown, "Explore products tile '" + category + "' is not displayed");
+            if (labelShown) {
+                softAssert.assertTrue(imageLoaded,
+                        "The image of the Explore products tile '" + category + "' is missing or did not load");
+            }
+        }
+    }
+
+    @And("the View all button should be displayed under Explore products")
+    public void theViewAllButtonShouldBeDisplayedUnderExploreProducts() {
+        By viewAll = By.xpath(EXPLORE_PRODUCTS_VIEW_ALL);
+        boolean shown = isAnyVisible(viewAll);
+        boolean enabled = shown && Grid.driver().findElement(viewAll).isEnabled();
+        log.info("'View all' under Explore products is " + (shown ? "displayed" : "NOT displayed")
+                + (shown ? (enabled ? " and enabled" : " but DISABLED") : ""));
+        softAssert.assertTrue(shown, "'View all' is not displayed under Explore products");
+        if (shown) {
+            softAssert.assertTrue(enabled, "'View all' under Explore products is disabled");
+        }
+    }
+
+    private boolean isImageLoaded(By image) {
+        try {
+            WebElement img = Grid.driver().findElement(image);
+            Object loaded = ((org.openqa.selenium.JavascriptExecutor) Grid.driver()).executeScript(
+                    "return arguments[0].complete && arguments[0].naturalWidth > 0;", img);
+            return img.isDisplayed() && Boolean.TRUE.equals(loaded);
+        } catch (WebDriverException e) {
+            return false;
         }
     }
 
@@ -1043,7 +1124,7 @@ public class CartSteps extends AbstractWebPage {
     public void userNavigateToHomePage() {
         // Pre-prod reshows "Personalize your procurement" on the cart page, and its overlay
         // intercepts the logo click (build of 25 Sep 2026, HR Coil scenario).
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         clickButton(By.xpath(JSW_LOGO));
     }
 
@@ -1114,15 +1195,15 @@ public class CartSteps extends AbstractWebPage {
 
     @When("move the mouse to {string} category")
     public void moveTheMouseToCategory(String category) {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         if (expectsAllCategoriesMenu()) {
             refreshAndWaitFor(ALL_CATEGORY);
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             hoverOverElement(ALL_CATEGORY);
         }
 
         if (category.equalsIgnoreCase("mild steel")) {
-            confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+            closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
             waits(MILD_STEEL_CATEGORY);
             hoverOverElement(MILD_STEEL_CATEGORY);
             log.info("cursor moved to mild steel category");
@@ -1137,7 +1218,7 @@ public class CartSteps extends AbstractWebPage {
 
     @And("click on {string} product")
     public void clickOnProduct(String product) {
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         switch (product.trim().toLowerCase()) {
             case "hr sheet":
                 clickHRSheetProduct();
@@ -1277,11 +1358,11 @@ public class CartSteps extends AbstractWebPage {
                                              Runnable openFlyout) {
         // Waits rather than checks: straight after login pre-prod has not opened the dialog yet,
         // then opens it over the flyout (build of 25 Sep 2026, Coated Steel scenario).
-        confirmBusinessDetailsDialogWithin(3);
+        closeBlockingDialogsWithin(3);
         try {
             if (expectsAllCategoriesMenu()) {
                 refreshAndWaitFor(ALL_CATEGORY);
-                confirmBusinessDetailsDialogWithin(3);
+                closeBlockingDialogsWithin(3);
                 hoverOverElement(ALL_CATEGORY);
             }
             openFlyout.run();
@@ -1705,7 +1786,7 @@ public class CartSteps extends AbstractWebPage {
         quantityInput.sendKeys(Keys.chord(Keys.CONTROL, "a"));
         enterText(By.xpath(QUANTITY_TEXTBOX), quantity);
         quantityInput.sendKeys(Keys.ENTER);
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         jsClick(quantityLabel);
 
         String held = settledValueOf(By.xpath(QUANTITY_TEXTBOX));
@@ -1782,7 +1863,7 @@ public class CartSteps extends AbstractWebPage {
         }
         sleep(1000);
         enterQuantityUsingText(quantity, productName);
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         jsClick(quantityLabel);
     }
 
@@ -1930,11 +2011,11 @@ public class CartSteps extends AbstractWebPage {
         // quantity is typed or while it is - and its overlay makes the box not interactable
         // (Coated Sheet and Wire, 25 Sep 2026). So close it first, and retry once if it was the
         // reason the entry failed.
-        confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS);
+        closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS);
         try {
             enterQuantityOnce(quantity, productName);
         } catch (RuntimeException e) {
-            if (!confirmBusinessDetailsDialogWithin(BUSINESS_DETAILS_QUICK_WAIT_SECONDS)) {
+            if (!closeBlockingDialogsWithin(BLOCKING_DIALOG_QUICK_WAIT_SECONDS)) {
                 throw e;
             }
             log.info("Quantity entry for " + productName + " was blocked by the business details"

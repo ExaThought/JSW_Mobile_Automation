@@ -1,5 +1,7 @@
 package com.qapitol.jsw.utils;
 
+import com.qapitol.jsw.apitest.apis.impl.CartRCV2ApiImp;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qapitol.jsw.apitest.apis.RequestApi;
 import com.qapitol.jsw.apitest.apis.impl.BaseApiImpl;
@@ -81,68 +83,27 @@ public class ApiUtils extends BaseApiImpl
         }
     }
 
+    /**
+     * Empties the logged-in user's cart after login.
+     *
+     * <p>Goes through {@link CartRCV2ApiImp#emptyCartOnce()}: one cart/get and one bulk delete,
+     * instead of a cart/get here and another one in "empty the cart via API" afterwards. Failures
+     * are logged, not thrown - as before, a cleanup problem must not fail the login itself; the
+     * cart steps that need an empty cart assert it.
+     */
     public static void deleteAllCartItems() {
         try {
             baseURI = ConfigUtil.getSecretValue("ccpPortalUrl");
+            // Other helpers here read jwtToken and relied on this method having set it.
             jwtToken = Token.getCCPToken();
-            //getCustomerDetails("v_nirmal.kumar@jsw.in","Welcome@1234#");
-            String userId = getUserId(jwtToken);
-            Response response = given()
-                    .header("access_token", jwtToken)
-                    .contentType(ContentType.JSON)
-                    .get("v2/cart/get");
-
-            //System.out.println(response.asString());
-
-            Object data = response.jsonPath().get("data");
-            if (data == null) {
-                System.out.println("No data found, skipping delete");
-                return;
-            } else {
-
-                String[] lineItemIds = response.jsonPath()
-                        .getList("data.lineItemList.lineItemIdentifier.ctLineItemId")
-                        .toArray(new String[0]);
-
-
-                //  System.out.println("ctLineItemIds: " + lineItemIds);
-                if (lineItemIds == null) {
-                    System.out.println("Cart is empty");
-                    return;
-                } else {
-                    System.out.println("cart was not empty");
-                }
-
-                // Delete one by one
-                if (lineItemIds.length != 0) {
-                    for (String lineItemId : lineItemIds) {
-
-                        System.out.println("Deleting ctLineItemId: " + lineItemId);
-
-                        Response res = given()
-                                .header("access_token", jwtToken)
-                                .contentType(ContentType.JSON)
-                                .body(Map.of(
-                                        "customerDetails", Map.of(
-
-                                                "customerId", userId
-                                        ),
-                                        "cartIdentifier", Map.of(
-                                                "cartType", "enquiry_v2",
-                                                "cartJourneyType", "REQUIREMENTS_CART_V2"
-                                        ),
-                                        "lineItemIdList", Collections.singletonList(lineItemId)
-                                ))
-                                .post("v2/cart/delete-items")
-                                .then()
-                                .log().ifValidationFails().extract().response();
-                    }
-                } else {
-                    logger.info("cart is empty");
-                }
-            }
+            CartRCV2ApiImp.CartCleanup cleanup = new CartRCV2ApiImp().emptyCartOnce();
+            logger.info(cleanup.deleted == 0
+                    ? "Cart was empty after login"
+                    : "Emptied the cart after login - deleted " + cleanup.deleted
+                            + " line item(s), " + cleanup.remaining + " remaining");
         } catch (Exception e) {
-
+            logger.info("Could not empty the cart after login: " + e.getClass().getSimpleName()
+                    + ": " + e.getMessage());
         }
     }
 

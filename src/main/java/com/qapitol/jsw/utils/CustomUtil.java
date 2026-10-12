@@ -3,12 +3,15 @@ package com.qapitol.jsw.utils;
 import com.qapitol.jsw.config.SessionBuilder;
 import com.qapitol.sauron.common.configuration.Config;
 import com.qapitol.sauron.core.Grid;
+import io.qameta.allure.Allure;
+import io.qameta.allure.model.Status;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -554,6 +557,53 @@ public class CustomUtil {
     }
 
     public static void clickButton(Object target) {
+        try {
+            clickRetryingStale(target);
+        } catch (ElementClickInterceptedException e) {
+            // A blocking dialog can open after every wait for it has passed - the glance spotlight
+            // took 41 clicks this way, the payment reminder a logout after refresh. Close it and
+            // retry exactly once; anything else that covers the element is a real problem and
+            // fails as before.
+            if (!closeDialogOver(target)) {
+                throw e;
+            }
+            logger.log(Level.INFO, "Click on " + target + " was blocked by a dialog - closed it,"
+                    + " retrying once.");
+            clickRetryingStale(target);
+        }
+    }
+
+    /**
+     * Closes whatever dialog is blocking a click on {@code target}, and returns whether it closed one.
+     *
+     * <p>The payment reminder is closed only when it is what sits over the click point. The
+     * payment-due scenarios assert on that popup, so dismissing it on a click that something else
+     * blocked could hide a missing-popup check.
+     */
+    private static boolean closeDialogOver(Object target) {
+        boolean closed = closeBlockingDialogsWithin(0);
+        if (isPaymentReminderOver(target)) {
+            closed |= closePaymentReminderIfOpen();
+        }
+        return closed;
+    }
+
+    private static boolean isPaymentReminderOver(Object target) {
+        try {
+            Object over = ((JavascriptExecutor) Grid.driver()).executeScript(
+                    "const r = arguments[0].getBoundingClientRect();"
+                            + "const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);"
+                            + "const heading = document.getElementById('payment-reminder');"
+                            + "const overlay = heading && heading.closest('.fixed');"
+                            + "return !!(overlay && top && overlay.contains(top));",
+                    resolveElement(target));
+            return Boolean.TRUE.equals(over);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static void clickRetryingStale(Object target) {
         StaleElementReferenceException lastStale = null;
 
         for (int attempt = 1; attempt <= STALE_RETRY_ATTEMPTS; attempt++) {
@@ -745,34 +795,109 @@ public class CustomUtil {
     private static final By BUSINESS_DETAILS_DIALOG = By.xpath(
             "//div[@role='dialog']/h2[contains(text(), 'Personalize your procurement')]");
 
-    private static final By BUSINESS_DETAILS_DIALOG_BUTTON =
-            By.xpath("//div[@role='dialog']/div/button");
+    // Scoped to the dialog holding that heading: the glance spotlight below is also a
+    // div[@role='dialog'] with a div > button, so an unscoped path would match its X too.
+    private static final By BUSINESS_DETAILS_DIALOG_BUTTON = By.xpath(
+            "//div[@role='dialog'][h2[contains(text(), 'Personalize your procurement')]]/div/button");
+
+    /*
+     * "New - Your business at a glance": a full-page spotlight QA shows after login, pointing at the
+     * new "My Business" header link (allure run of 7 Oct 2026). Its bg-black/60 overlay takes every
+     * click - 52 ElementClickInterceptedExceptions in that run, plus footer clicks that landed on it
+     * silently and never navigated. Closed with its X; nothing else on it is clicked.
+     */
+    private static final By BUSINESS_GLANCE_SPOTLIGHT = By.xpath(
+            "//div[@role='dialog'][contains(@aria-label, 'Your business at a glance')]");
+
+    private static final By BUSINESS_GLANCE_SPOTLIGHT_CLOSE = By.xpath(
+            "//div[@role='dialog'][contains(@aria-label, 'Your business at a glance')]"
+                    + "//button[@aria-label='Close']");
+
+    /*
+     * "Payment reminder" for accounts with dues. Pre-prod shows it again after a page refresh, and
+     * its bg-black/40 overlay took the logout click in build 280. Closed with its X only - never
+     * "View details & pay" - and only when it blocks a click: the payment-due scenarios assert on
+     * it, so closeBlockingDialogsWithin must not close it after login.
+     */
+    private static final By PAYMENT_REMINDER = By.xpath("//h2[@id='payment-reminder']");
+
+    private static final By PAYMENT_REMINDER_CLOSE = By.xpath(
+            "//button[@data-test-id='payment-reminder-close-button']");
 
     /**
-     * How long callers without a reason to wait longer give the dialog to appear. Short because
+     * How long callers without a reason to wait longer give a dialog to appear. Short because
      * most calls find nothing, and every call that finds nothing waits this long.
      */
-    public static final int BUSINESS_DETAILS_QUICK_WAIT_SECONDS = 2;
+    public static final int BLOCKING_DIALOG_QUICK_WAIT_SECONDS = 2;
 
     /**
-     * Waits up to {@code seconds} for the business details dialog and closes it if it opens.
-     * Returns whether it was open.
+     * Waits up to {@code seconds} for a dialog that blocks the page, and closes every one that is
+     * open: "Personalize your procurement" and the "Your business at a glance" spotlight. Returns
+     * whether it closed any.
      *
-     * <p>Pre-prod opens it after the page has loaded, again on every refresh, so an instant check
-     * misses it and it then covers whatever the next step reads or clicks.
+     * <p>Both open after the page has loaded - the first again on every pre-prod refresh - so an
+     * instant check misses them and they then cover whatever the next step reads or clicks.
      */
-    public static boolean confirmBusinessDetailsDialogWithin(int seconds) {
-        if (!pollFor(() -> isRenderedNow(BUSINESS_DETAILS_DIALOG), seconds)) {
+    public static boolean closeBlockingDialogsWithin(int seconds) {
+        if (!pollFor(CustomUtil::isBlockingDialogOpen, seconds)) {
+            return false;
+        }
+        boolean closed = false;
+        // The two can be stacked, and closing one can reveal the other.
+        for (int attempt = 0; attempt < 3 && isBlockingDialogOpen(); attempt++) {
+            closed |= closeIfOpen(BUSINESS_GLANCE_SPOTLIGHT, BUSINESS_GLANCE_SPOTLIGHT_CLOSE,
+                    "'Your business at a glance' spotlight");
+            closed |= closeIfOpen(BUSINESS_DETAILS_DIALOG, BUSINESS_DETAILS_DIALOG_BUTTON,
+                    "Business details confirmation dialog");
+        }
+        return closed;
+    }
+
+    private static boolean closePaymentReminderIfOpen() {
+        return closeIfOpen(PAYMENT_REMINDER, PAYMENT_REMINDER_CLOSE, "Payment reminder");
+    }
+
+    private static boolean isBlockingDialogOpen() {
+        return isRenderedNow(BUSINESS_GLANCE_SPOTLIGHT) || isRenderedNow(BUSINESS_DETAILS_DIALOG);
+    }
+
+    private static boolean closeIfOpen(By dialog, By closeButton, String description) {
+        if (!isRenderedNow(dialog)) {
             return false;
         }
         try {
-            clickFirstVisible(BUSINESS_DETAILS_DIALOG_BUTTON);
-            logger.log(Level.INFO, "Business details confirmation dialog was present and has been closed.");
+            clickFirstVisible(closeButton);
+            logger.log(Level.INFO, description + " was present and has been closed.");
             return true;
         } catch (Exception e) {
-            logger.log(Level.INFO, "Business details dialog was showing but could not be closed: "
-                    + e.getClass().getSimpleName());
+            // Not thrown: the caller's next click fails on its own if the dialog is still there.
+            // But that failure names an intercepted click, not this - so record the cause here,
+            // with what the page looked like, where the report reader will find it.
+            String reason = description + " was showing but could not be closed ("
+                    + e.getClass().getSimpleName() + ": " + firstLine(e.getMessage()) + ")."
+                    + " The next click on this page will likely be intercepted by it.";
+            logger.log(Level.WARNING, reason);
+            Allure.step(reason, Status.BROKEN);
+            attachScreenshot("Could not close " + description);
             return false;
+        }
+    }
+
+    private static String firstLine(String message) {
+        if (message == null) {
+            return "no message";
+        }
+        int newline = message.indexOf('\n');
+        return newline < 0 ? message : message.substring(0, newline);
+    }
+
+    private static void attachScreenshot(String name) {
+        try {
+            byte[] png = ((TakesScreenshot) Grid.driver()).getScreenshotAs(OutputType.BYTES);
+            Allure.addAttachment(name, "image/png", new ByteArrayInputStream(png), ".png");
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Could not capture a screenshot for '" + name + "': "
+                    + e.getClass().getSimpleName());
         }
     }
 

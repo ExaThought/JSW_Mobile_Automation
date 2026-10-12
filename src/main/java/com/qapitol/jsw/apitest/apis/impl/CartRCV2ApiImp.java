@@ -131,27 +131,68 @@ public class CartRCV2ApiImp extends BaseApiImpl {
         return cart;
     }
 
-    public int emptyCartForLoggedInUser() {
-        List<String> lineItemIds = collectLineItemIds(getCartResponse());
-        if (lineItemIds.isEmpty()) {
-            return 0;
+    /** What one cart cleanup did: line items deleted, and how many the delete response says are left. */
+    public static final class CartCleanup {
+        public final int deleted;
+        public final int remaining;
+
+        CartCleanup(int deleted, int remaining) {
+            this.deleted = deleted;
+            this.remaining = remaining;
         }
+    }
 
-        CustomerDetails customerDetails = new CustomerDetails();
-        customerDetails.setCustomerId(ApiUtils.getUserId(Token.getCCPToken()));
+    /**
+     * The cleanup already done in this scenario, if any. Lets "empty the cart via API" reuse the
+     * cleanup the login step just did instead of calling cart/get a second time.
+     */
+    private static final ThreadLocal<CartCleanup> SCENARIO_CLEANUP = new ThreadLocal<>();
 
-        CartIdentifier cartIdentifier = new CartIdentifier();
-        cartIdentifier.setCartType(REQUIREMENTS_CART_TYPE);
-        cartIdentifier.setCartJourneyType(REQUIREMENTS_CART_JOURNEY_TYPE);
+    public static CartCleanup scenarioCleanup() {
+        return SCENARIO_CLEANUP.get();
+    }
 
-        DeleteLineItemRequest requestBody = new DeleteLineItemRequest();
-        requestBody.setCustomerDetails(customerDetails);
-        requestBody.setCartIdentifier(cartIdentifier);
-        requestBody.setLineItemIdList(lineItemIds);
+    /** Called at the start of every scenario, so a cleanup is never reused across scenarios. */
+    public static void resetScenarioCleanup() {
+        SCENARIO_CLEANUP.remove();
+    }
 
-        ccpUrl().create(RequestApi.class).rcv2DeleteLineItem(requestBody);
-        log.info("Requested deletion of " + lineItemIds.size() + " cart line item(s): " + lineItemIds);
-        return lineItemIds.size();
+    /**
+     * Empties the logged-in user's cart with exactly one cart/get call.
+     *
+     * <p>The line items come from that one cart/get. They are deleted in a single delete-items
+     * call, and what is left is read from the delete response, which carries the cart after the
+     * deletion (CartApiSteps reads it the same way) - so no second cart/get is needed to confirm
+     * the cart is empty.
+     */
+    public CartCleanup emptyCartOnce() {
+        List<String> lineItemIds = collectLineItemIds(getCartResponse());
+        CartCleanup cleanup;
+        if (lineItemIds.isEmpty()) {
+            cleanup = new CartCleanup(0, 0);
+        } else {
+            CustomerDetails customerDetails = new CustomerDetails();
+            customerDetails.setCustomerId(ApiUtils.getUserId(Token.getCCPToken()));
+
+            CartIdentifier cartIdentifier = new CartIdentifier();
+            cartIdentifier.setCartType(REQUIREMENTS_CART_TYPE);
+            cartIdentifier.setCartJourneyType(REQUIREMENTS_CART_JOURNEY_TYPE);
+
+            DeleteLineItemRequest requestBody = new DeleteLineItemRequest();
+            requestBody.setCustomerDetails(customerDetails);
+            requestBody.setCartIdentifier(cartIdentifier);
+            requestBody.setLineItemIdList(lineItemIds);
+
+            Rcv2Response afterDelete = ccpUrl().create(RequestApi.class).rcv2DeleteLineItem(requestBody);
+            cleanup = new CartCleanup(lineItemIds.size(), collectLineItemIds(afterDelete).size());
+            log.info("Requested deletion of " + lineItemIds.size() + " cart line item(s): " + lineItemIds);
+        }
+        SCENARIO_CLEANUP.set(cleanup);
+        return cleanup;
+    }
+
+    public int emptyCartForLoggedInUser() {
+        return emptyCartOnce().deleted;
     }
 
     public int getCartLineItemCount() {
