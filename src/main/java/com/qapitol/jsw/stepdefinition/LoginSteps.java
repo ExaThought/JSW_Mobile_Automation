@@ -56,8 +56,13 @@ public class LoginSteps extends AbstractWebPage {
     @And("enter valid email {string}")
     public void enter_valid_email(String username){
         sleep(1000);
+        // Registered BEFORE the refresh, so the MoEngage capture is in place when the page starts
+        // and sees login_success after the password is submitted (see armMoEngageCapture).
+        MoEngageEventCapture.install();
         pageRefresh();
         sleep(2000);
+        MoEngageEventCapture.install();
+        MoEngageEventCapture.clear();
         waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
         waitAndClickOn(LOGIN_CTA_BUTTON); // click on login CTA button
         waitAndCheckIsElementVisible(LOGIN_VIA_OTP);
@@ -79,6 +84,7 @@ public class LoginSteps extends AbstractWebPage {
         log.info("User clicks on login CTA");
         waitAndCheckIsElementVisible(CCP_LOGIN_CTA);
         waitAndClickOn(CCP_LOGIN_CTA);
+        validateLoginSuccessEvent(LOGIN_SUCCESS_EMAIL_SPEC, "email");
         // Clicking is not the assertion. Previously this step ended here, so a login that failed
         // - wrong password, server error, modal never closing - still reported as passed.
         verifyLoggedIn();
@@ -254,6 +260,10 @@ public class LoginSteps extends AbstractWebPage {
     private static final String REGISTER_ACCOUNT_SUBTITLE = "registerAccountSubtitle";
     private static final int REGISTRATION_WAIT_SECONDS = 15;
     private static final int LOGIN_SUCCESS_EVENT_WAIT_SECONDS = 45;
+    /** login_success spec for an email + password login: type "Email". */
+    private static final String LOGIN_SUCCESS_EMAIL_SPEC = "login_success";
+    /** login_success spec for a mobile number + OTP login: type "Mobile". */
+    private static final String LOGIN_SUCCESS_MOBILE_SPEC = "login_success_mobile";
     private static final String GET_OTP_BUTTON = "getOtpButton";
     private static final String INCORRECT_OTP_MESSAGE = "Incorrect OTP. Please enter correct OTP";
 
@@ -272,6 +282,7 @@ public class LoginSteps extends AbstractWebPage {
         if (isAnyVisible(getBy(LOGIN_PHONE_INPUT))) {
             log.info("Login dialog is already open - not clicking the header Login button");
         } else {
+            armMoEngageCapture();
             waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
             waitAndClickOn(LOGIN_CTA_BUTTON);
             log.info("Opened the login dialog from the header Login button");
@@ -426,9 +437,7 @@ public class LoginSteps extends AbstractWebPage {
     @And("user clicks continue to verify the OTP")
     public void user_clicks_continue_to_verify_the_otp() {
         user_clicks_continue_on_the_otp_screen();
-        awaitLoginSuccessEvent();
-        MoEngageEventCapture.validateEventFromYaml("login_success", "login_success_mobile",
-                java.util.Collections.emptyMap());
+        validateLoginSuccessEvent(LOGIN_SUCCESS_MOBILE_SPEC, "mobile");
         verifyLoggedIn();
     }
 
@@ -439,6 +448,34 @@ public class LoginSteps extends AbstractWebPage {
      * keeps MoEngageEventCapture identical to PR-3039. A timeout is not reported here: the
      * validation that follows reports it, with the events that were seen.
      */
+    /**
+     * login_success must say how the user logged in: {@code type} is "Email" for an email + password
+     * login and "Mobile" for a mobile number + OTP login. Each login type has its own spec file -
+     * data/moengage/login_success.yaml (type Email, PR-3039's file) and login_success_mobile.yaml
+     * (type Mobile) - and the spec is chosen by the step that did the login, so an event with the
+     * wrong type fails the scenario.
+     */
+    private void validateLoginSuccessEvent(String spec, String loginType) {
+        awaitLoginSuccessEvent();
+        log.info("Validating login_success for a " + loginType + " login against data/moengage/"
+                + spec + ".yaml");
+        MoEngageEventCapture.validateEventFromYaml("login_success", spec, java.util.Collections.emptyMap());
+    }
+
+    /**
+     * Puts the MoEngage capture in place before the SDK starts: install() registers it for every
+     * new page, then one reload runs it at page start. Installed on an already-loaded page it
+     * captures nothing (12 Oct 2026, login_abandoned run).
+     */
+    private void armMoEngageCapture() {
+        MoEngageEventCapture.install();
+        Grid.driver().navigate().refresh();
+        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
+        MoEngageEventCapture.install();
+        MoEngageEventCapture.clear();
+        log.info("Reloaded the page so MoEngage capture is in place before the SDK starts");
+    }
+
     private void awaitLoginSuccessEvent() {
         long start = System.currentTimeMillis();
         try {
@@ -622,12 +659,7 @@ public class LoginSteps extends AbstractWebPage {
      */
     @When("the guest user clicks the header Login button")
     public void the_guest_user_clicks_the_header_login_button() {
-        MoEngageEventCapture.install();
-        Grid.driver().navigate().refresh();
-        waitAndCheckIsElementVisible(LOGIN_CTA_BUTTON);
-        MoEngageEventCapture.install();
-        log.info("Reloaded the page so MoEngage capture is in place before the SDK starts");
-        MoEngageEventCapture.clear();
+        armMoEngageCapture();
         waitAndClickOn(LOGIN_CTA_BUTTON);
         boolean open = waitForVisible(LOGIN_MAIN_HEADING);
         log.info("Clicked the header Login button - the 'Login or Register' dialog is "

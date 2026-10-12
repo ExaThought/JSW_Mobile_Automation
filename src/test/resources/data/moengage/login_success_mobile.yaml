@@ -1,5 +1,6 @@
 # Expected values for the MoEngage "login_success" event when the user logs in by mobile number + OTP.
-# Same as login_success.yaml except `type`, which is "Mobile" for this login (QA, 12 Oct 2026).
+# Same as login_success.yaml except `type`: "Mobile" here, "Email" there (QA, 12 Oct 2026). The login
+# step picks the file by how it logged in, so an event with the wrong type fails.
 # Read by MoEngageEventCapture.validateEventFromYaml("login_success", "login_success_mobile", ...) from data/moengage/<event>.yaml.
 event: login_success
 
