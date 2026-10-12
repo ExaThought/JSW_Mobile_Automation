@@ -22,8 +22,6 @@ import static com.qapitol.jsw.utils.Hooks.softAssert;
 public class pdpPlpSteps extends AbstractWebPage {
 
     private final String RESET_BUTTON = "resetSelectionButton";
-    // Same xpath as resetSelectionButton in pdpplpsteps.yaml, for the CustomUtil helpers that take a By.
-    private static final By RESET_BUTTON_LOCATOR = By.xpath("//button[text()='Reset selection']");
     private final String THICKNESS = "(//span[text()='Thickness (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
     private final String WIDTH = "(//span[text()='Width (mm)']/../following-sibling::div/button[not(@disabled)])[1]";
     private final String LENGTH = "(//span[text()=\"Length (mm)\"]/../following-sibling::div/button[not(@disabled)])[1]";
@@ -52,10 +50,9 @@ public class pdpPlpSteps extends AbstractWebPage {
     public void clickOnResetButtonInPdpPage() {
         waitAndCheckIsElementVisible(RESET_BUTTON);
         waitAndCheckIsElementClickable(RESET_BUTTON);
-        // After the quantity is typed the page sits scrolled so that "Reset selection" is under
-        // the sticky header, which then takes the click (build 280). Centre it first.
-        scrollToCenter(RESET_BUTTON_LOCATOR);
-        clickButton(RESET_BUTTON_LOCATOR);
+        By resetButton = xpathOf(getLocator(RESET_BUTTON));
+        scrollToCenter(resetButton);
+        clickButton(resetButton);
         log.info("Clicked on reset button in PDP page");
     }
 
