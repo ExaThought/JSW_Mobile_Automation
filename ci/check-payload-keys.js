@@ -60,11 +60,17 @@ function listFiles(dir, ext, out = []) {
  */
 const PARITY_EXEMPT = new Set(['prod']);
 
-/** Environments are whatever directories exist under data/ - no hardcoded list to drift. */
+/**
+ * Environments are the directories under data/ that hold a default-data.yaml - no hardcoded list
+ * to drift. The file is the test, not the directory: data/ also holds fixture folders that are
+ * not environments (data/moengage/ keeps expected MoEngage event payloads), and counting those
+ * reported every referenced key as "missing in: moengage" - 17 false findings.
+ */
 function environments() {
   if (!fs.existsSync(DATA_DIR)) return [];
   return fs.readdirSync(DATA_DIR, { withFileTypes: true })
     .filter(e => e.isDirectory())
+    .filter(e => fs.existsSync(path.join(DATA_DIR, e.name, 'default-data.yaml')))
     .map(e => e.name)
     .sort();
 }
