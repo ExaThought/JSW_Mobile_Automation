@@ -38,6 +38,13 @@ public class GuestUserSteps extends AbstractWebPage {
     private static final String BLOGS_PAGE_HEADING = "blogsPageVerification";
     private static final String BLOGS_PAGE_ARTICLE_LINKS = "blogsPageArticleLinks";
 
+    private static final String SELECT_LOCATION_BUTTON = "selectLocationButton";
+    private static final String DELIVERY_LOCATION_MODAL = "deliveryLocationModal";
+    private static final String DELIVERY_PINCODE_INPUT = "deliveryLocationPincodeInput";
+    private static final String DELIVERY_LOCATION_CLOSE_BUTTON = "deliveryLocationCloseButton";
+    private static final String DELIVERY_LOCATION_CHECK_BUTTON = "deliveryLocationCheckButton";
+    private static final String HEADER_LOCATION_LABEL = "headerLocationLabel";
+    private static final int LOCATION_MODAL_WAIT_SECONDS = 10;
     String pageName;
 
     /* No shared `wait` field. It called Grid.driver() at construction time, which binds the wait to
@@ -65,8 +72,11 @@ public class GuestUserSteps extends AbstractWebPage {
 
     @Given("user open the CCP portal as guest user")
     public void userOpenTheCCPPortalAsGuestUser() {
-        Grid.driver().get(ConfigUtil.getSecretValue("ccpUrl"));
+        String url = ConfigUtil.getSecretValue("ccpUrl");
+        log.info("Opening the portal as a guest: " + url);
+        Grid.driver().get(url);
         Grid.driver().manage().window().maximize();
+        log.info("Portal opened as a guest, current URL: " + Grid.driver().getCurrentUrl());
     }
 
     @When("User clicks on Login button")
@@ -175,5 +185,103 @@ public class GuestUserSteps extends AbstractWebPage {
         softAssert.assertTrue(blogs.size() > 1,
                 "Blogs page should list more than one blog but found " + blogs.size()
                         + " matching " + articleLinks);
+    }
+
+    // ------------------- Delivery location dialog -------------------
+
+    /**
+     * Clicks "Select location" by the search bar. A guest gets the "Enter delivery PIN Code"
+     * dialog (QA, 12 Oct 2026) - Chrome's own location alert never appears, because
+     * JSWCapabilitiesBuilder starts every Chrome with geolocation blocked.
+     */
+    @When("the guest user clicks on Select location near the search bar")
+    public void the_guest_user_clicks_on_select_location_near_the_search_bar() {
+        clickFirstVisible(xpathOf(getLocator(SELECT_LOCATION_BUTTON)));
+        log.info("Clicked 'Select location' in the header");
+    }
+
+    @Then("the delivery PIN code dialog should be displayed")
+    public void the_delivery_pin_code_dialog_should_be_displayed() {
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(LOCATION_MODAL_WAIT_SECONDS))
+                .withMessage("The delivery PIN code dialog did not open after clicking Select location")
+                .until(ExpectedConditions.visibilityOfElementLocated(xpathOf(getLocator(DELIVERY_LOCATION_MODAL))));
+        log.info("The delivery PIN code dialog is open (no Chrome location alert - geolocation is blocked)");
+        boolean pinInput = isAnyVisible(xpathOf(getLocator(DELIVERY_PINCODE_INPUT)));
+        log.info("PIN code input in the dialog is " + (pinInput ? "visible" : "NOT visible"));
+        softAssert.assertTrue(pinInput, "The PIN code input is not shown in the delivery PIN code dialog");
+    }
+
+    @When("the guest user closes the delivery PIN code dialog")
+    public void the_guest_user_closes_the_delivery_pin_code_dialog() {
+        clickFirstVisible(xpathOf(getLocator(DELIVERY_LOCATION_CLOSE_BUTTON)));
+        log.info("Clicked the close (X) button of the delivery PIN code dialog");
+    }
+
+    /** Closing without choosing anything must change nothing: the dialog is gone, no location is set. */
+    @Then("the delivery PIN code dialog should be closed and Select location should still be shown")
+    public void the_delivery_pin_code_dialog_should_be_closed_and_select_location_still_shown() {
+        boolean closed = false;
+        try {
+            closed = new WebDriverWait(Grid.driver(), Duration.ofSeconds(LOCATION_MODAL_WAIT_SECONDS))
+                    .until(ExpectedConditions.invisibilityOfElementLocated(
+                            xpathOf(getLocator(DELIVERY_LOCATION_MODAL))));
+        } catch (TimeoutException ignored) {
+        }
+        log.info("Delivery PIN code dialog is " + (closed ? "closed" : "STILL OPEN") + " after clicking X");
+        softAssert.assertTrue(closed, "The delivery PIN code dialog is still open after clicking its close button");
+        boolean stillSelectLocation = isAnyVisible(xpathOf(getLocator(SELECT_LOCATION_BUTTON)));
+        log.info("Header " + (stillSelectLocation ? "still shows 'Select location' - no location was set"
+                : "no longer shows 'Select location' - the location changed"));
+        softAssert.assertTrue(stillSelectLocation,
+                "'Select location' is no longer shown in the header, so closing the dialog changed the location");
+    }
+
+    @When("the guest user enters {string} in the PIN code field and clicks Check")
+    public void the_guest_user_enters_pin_code_and_clicks_check(String pinCode) {
+        WebElement input = Grid.driver().findElement(xpathOf(getLocator(DELIVERY_PINCODE_INPUT)));
+        input.clear();
+        input.sendKeys(pinCode);
+        log.info("Entered PIN code " + pinCode + " in the delivery PIN code dialog");
+        // Check is disabled until a full PIN code is typed; wait for it to enable rather than
+        // clicking a disabled button, which fails as an intercepted click.
+        new WebDriverWait(Grid.driver(), Duration.ofSeconds(LOCATION_MODAL_WAIT_SECONDS))
+                .withMessage("The Check button did not enable after entering PIN code " + pinCode)
+                .until(ExpectedConditions.elementToBeClickable(xpathOf(getLocator(DELIVERY_LOCATION_CHECK_BUTTON))));
+        clickFirstVisible(xpathOf(getLocator(DELIVERY_LOCATION_CHECK_BUTTON)));
+        log.info("Clicked Check in the delivery PIN code dialog");
+    }
+
+    /**
+     * After Check the dialog closes and the header shows the location in place of "Select
+     * location". Matched on the exact label the app renders, e.g. "Mumbai cit.. 400051".
+     */
+    @Then("the delivery PIN code dialog should be closed and the header should show {string}")
+    public void the_dialog_should_be_closed_and_the_header_should_show(String label) {
+        boolean closed = false;
+        try {
+            closed = new WebDriverWait(Grid.driver(), Duration.ofSeconds(LOCATION_MODAL_WAIT_SECONDS))
+                    .until(ExpectedConditions.invisibilityOfElementLocated(
+                            xpathOf(getLocator(DELIVERY_LOCATION_MODAL))));
+        } catch (TimeoutException ignored) {
+        }
+        log.info("Delivery PIN code dialog is " + (closed ? "closed" : "STILL OPEN") + " after clicking Check");
+        softAssert.assertTrue(closed, "The delivery PIN code dialog is still open after clicking Check");
+
+        By labelLocator = xpathOf(String.format(getLocator(HEADER_LOCATION_LABEL), label));
+        boolean shown = false;
+        long deadline = System.currentTimeMillis() + LOCATION_MODAL_WAIT_SECONDS * 1000L;
+        while (!shown && System.currentTimeMillis() < deadline) {
+            shown = isAnyVisible(labelLocator);
+            if (!shown) {
+                sleep(500);
+            }
+        }
+        log.info("Header " + (shown ? "shows '" + label + "'" : "does NOT show '" + label + "'"));
+        softAssert.assertTrue(shown, "The header does not show '" + label + "' after setting the PIN code");
+
+        boolean selectLocationGone = !isAnyVisible(xpathOf(getLocator(SELECT_LOCATION_BUTTON)));
+        log.info("'Select location' is " + (selectLocationGone ? "no longer shown" : "STILL shown") + " in the header");
+        softAssert.assertTrue(selectLocationGone,
+                "'Select location' is still shown in the header after setting the PIN code");
     }
 }

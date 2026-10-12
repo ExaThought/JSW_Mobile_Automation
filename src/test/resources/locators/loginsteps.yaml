@@ -22,6 +22,83 @@ elements:
       web: //p[contains(text(),'You have entered a wrong email address')]
 
 
+  # --- Phone + OTP login ---
+  # id='mobile' exactly: the Add user dialog's field is id='add-user-mobile'.
+  loginPhoneInput:
+    en_US:
+      web: //input[@id='mobile']
+  # The button that sends the code is labelled Get OTP in the login modal; Continue is accepted too
+  # so a relabel does not break the step.
+  mobileContinueCta:
+    en_US:
+      web: //button[normalize-space()='Get OTP' or (@type='submit' and normalize-space()='Continue')]
+  loginOtpInput:
+    en_US:
+      web: //input[@data-input-otp="true"]
+  otpContinueCta:
+    en_US:
+      web: //button[normalize-space()='Verify' or (@type='submit' and normalize-space()='Continue')]
+
+  otpErrorMessage:
+    en_US:
+      web: //p[contains(text(),'Incorrect OTP')]
+
+  mobileErrorMessage:
+    en_US:
+      web: //p[@data-test-id='login-mobile-input-error']
+  getOtpButton:
+    en_US:
+      web: //button[@data-test-id='login-get-otp-button']
+
+  registerNowHeading:
+    en_US:
+      web: //h2[@id='register-now']
+  registerAccountSubtitle:
+    en_US:
+      web: //p[text()='Create your JSW One MSME account']
+
+  # --- Profile details page (same locators MultiUserSteps uses) ---
+  accountProfileDetailsLink:
+    en_US:
+      web: //a[@href='/my-profile']
+  personalDetailsSection:
+    en_US:
+      web: //h2[text()='Personal details']
+  profileNameValue:
+    en_US:
+      web: //h2[text()='Personal details']/following-sibling::div//p[text()='Name']/following-sibling::p
+  profilePhoneValue:
+    en_US:
+      web: //h2[text()='Personal details']/following-sibling::div//p[text()='Phone number']/following-sibling::p
+  profileEmailValue:
+    en_US:
+      web: //h2[text()='Personal details']/following-sibling::div//p[text()='Email address']/following-sibling::p
+
+  # --- "Login or Register" dialog (QA, 12 Oct 2026) ---
+  authModalCloseButton:
+    en_US:
+      web: //button[@data-test-id='auth-modal-close-button']
+  loginMainHeading:
+    en_US:
+      web: //h2[@data-test-id='login-main-heading']
+  loginTagline:
+    en_US:
+      web: //h2[normalize-space()='Your one-stop digital marketplace for all your industrial needs']
+  loginMobileLabel:
+    en_US:
+      web: //label[@data-test-id='login-mobile-input-label']
+  loginOrSeparator:
+    en_US:
+      web: //div[@role='dialog']//span[normalize-space()='or']
+  loginContinueWithEmailButton:
+    en_US:
+      web: //button[@data-test-id='login-continue-email-button']
+  # The <svg> holding a <title>JSW Logo</title>, not the <title> itself: a <title> has no box
+  # (0x0), so it is never reported visible even while the logo is on screen.
+  loginDialogLogo:
+    en_US:
+      web: //div[@role='dialog']//*[local-name()='svg'][*[local-name()='title' and normalize-space()='JSW Logo']]
+
   accountMenu:
     en_US:
       web: //header//span[normalize-space()='Account']

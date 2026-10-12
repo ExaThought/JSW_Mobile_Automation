@@ -1,0 +1,24 @@
+# Expected values for the MoEngage "login_abandoned" event: a guest opens the login dialog from the
+# header Login button and closes it. Read by MoEngageEventCapture.validateEventFromYaml("login_abandoned").
+#
+# The event carries NO abandonment-stage attribute (QA, 12 Oct 2026: closing at the mobile screen and
+# at the email screen send identical attributes). The step logs that rather than asserting on a stage.
+event: login_abandoned
+
+# Attributes that must equal exactly this value (compared as text).
+expected:
+  URL: "${page.currentUrl}"   # the page the dialog was closed on
+  source: "Login Button"      # where the abandoned login was started from
+  user_role: "guest"
+  "Device type": "Desktop"
+  "UI-version": "Navigation_login_registration_revamp_nov_2025"
+
+# Attributes that must be present; their values depend on the browser session.
+required:
+  - moe_first_visit
+  - moe_logged_in_status
+
+# A guest has no contact id or user type, so the app sends them blank.
+emptyAllowed:
+  - user_contact_id
+  - user_type
