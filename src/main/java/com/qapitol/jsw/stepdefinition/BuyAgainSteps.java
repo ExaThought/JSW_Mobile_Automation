@@ -62,6 +62,28 @@ public class BuyAgainSteps extends AbstractWebPage {
     public static final String PAYMENT_INST = "//button[contains(text(),'Payment instructions')]";
     public static final String PAYMENT_DUE = "//span[contains(text(),'Payments due now')]";
     public static final String DUE_LATER = "//span[contains(text(),'Due later')]";
+    // QA's ledger shows "Due in next 3 days" where pre-prod shows "Due later" (allure, 7 Oct 2026).
+    public static final String DUE_IN_NEXT_DAYS = "//span[contains(text(),'Due in next')]";
+    private static final int UPCOMING_DUE_SECTION_WAIT_SECONDS = 15;
+
+    /**
+     * The upcoming-dues section the ledger shows: "Due later" when it is there - "Due in next"
+     * is then not looked at - otherwise "Due in next 3 days". Null when the page has neither.
+     * One wait covers both, so a page without "Due later" does not spend a full wait on it first.
+     */
+    public static String upcomingDueSectionXpath() {
+        By dueLater = By.xpath(DUE_LATER);
+        By dueInNextDays = By.xpath(DUE_IN_NEXT_DAYS);
+        if (!pollFor(() -> isRenderedNow(dueLater) || isRenderedNow(dueInNextDays),
+                UPCOMING_DUE_SECTION_WAIT_SECONDS)) {
+            return null;
+        }
+        return isRenderedNow(dueLater) ? DUE_LATER : DUE_IN_NEXT_DAYS;
+    }
+
+    public static String upcomingDueSectionName(String xpath) {
+        return DUE_LATER.equals(xpath) ? "Due later" : "Due in next 3 days";
+    }
     public static final String USABLE_LEDGER_BALANCE = "//span[normalize-space()='Usable ledger balance']";
     public static final String PAYMENT_INST_POPUP = "//*[contains(text(),'Payment instructions')]";
     public static final String FINANCIAL_DOC = "//a[@href='/financial-documents']";
@@ -384,10 +406,13 @@ public class BuyAgainSteps extends AbstractWebPage {
                     "Payment Due is not displayed.");
             log.info("'Payment Due' is displayed.");
 
-            log.info("Verifying 'Due Later' is displayed.");
-            softAssert.assertTrue(isAnyVisible(By.xpath(DUE_LATER)),
-                    "Due Later is not displayed.");
-            log.info("'Due Later' is displayed.");
+            log.info("Verifying 'Due later' or 'Due in next 3 days' is displayed.");
+            String upcomingDue = upcomingDueSectionXpath();
+            softAssert.assertNotNull(upcomingDue,
+                    "Neither 'Due later' nor 'Due in next 3 days' is displayed on the ledger page.");
+            if (upcomingDue != null) {
+                log.info("'" + upcomingDueSectionName(upcomingDue) + "' is displayed.");
+            }
 
             log.info("Verifying 'Usable Ledger Balance' is displayed.");
             softAssert.assertTrue(isAnyVisible(By.xpath(USABLE_LEDGER_BALANCE)),

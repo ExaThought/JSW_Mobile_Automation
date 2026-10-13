@@ -50,8 +50,9 @@ public class pdpPlpSteps extends AbstractWebPage {
     public void clickOnResetButtonInPdpPage() {
         waitAndCheckIsElementVisible(RESET_BUTTON);
         waitAndCheckIsElementClickable(RESET_BUTTON);
-        moveToElement(RESET_BUTTON);
-        waitAndClickOn(RESET_BUTTON);
+        By resetButton = xpathOf(getLocator(RESET_BUTTON));
+        scrollToCenter(resetButton);
+        clickButton(resetButton);
         log.info("Clicked on reset button in PDP page");
     }
 

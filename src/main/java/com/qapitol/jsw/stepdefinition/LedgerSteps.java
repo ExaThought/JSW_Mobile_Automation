@@ -1180,10 +1180,16 @@ public class LedgerSteps extends AbstractWebPage {
         }
     }
 
+    /** Opens "Due later", or "Due in next 3 days" on a ledger that shows that instead. */
     @And("user opens Due later section on ledger page")
     public void userOpensDueLaterSectionOnLedgerPage() {
-        log.info("Opening Due later section on ledger page.");
-        clickFirstVisible(By.xpath(DUE_LATER));
+        String section = upcomingDueSectionXpath();
+        if (section == null) {
+            throw new IllegalStateException("Neither 'Due later' nor 'Due in next 3 days' is on the ledger"
+                    + " page at " + Grid.driver().getCurrentUrl() + ", so there is no upcoming-dues section to open.");
+        }
+        log.info("Opening " + upcomingDueSectionName(section) + " section on ledger page.");
+        clickFirstVisible(By.xpath(section));
     }
 
     @And("user opens Payments due now section on ledger page")

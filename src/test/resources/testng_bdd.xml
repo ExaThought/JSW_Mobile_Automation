@@ -6,12 +6,26 @@
      thread-count (how many <test> BLOCKS run at once) x data-provider-thread-count (how many
      SCENARIOS run at once INSIDE one block). Read both before changing either.
 
-     data-provider-thread-count IS 2, ON ONE ACCOUNT PER GROUP, AND THAT IS DELIBERATE.
+     data-provider-thread-count IS 4, ON ONE ACCOUNT PER GROUP, AND THAT IS DELIBERATE.
 
-     Two, not four, so the 2-CPU Jenkins agent runs the authored value instead of being capped: at
-     4 the clamp reduced every CI build to 1x2 anyway, so CI never saw 4. Two is what both a CI
-     build and a developer machine actually execute. See the core-budget note at the bottom before
-     reading "2 sessions on 2 cores" as free.
+     What 4 actually changes: developer machines and any agent with 4+ CPUs run four scenarios at
+     once per block. The 2-CPU Jenkins agent does NOT run 4 - ci/cap-parallelism.js sees 1 block x 4
+     = 4 sessions for 2 CPUs and rewrites this to 2 before the build, so CI behaves as it did at 2.
+     See the core-budget note at the bottom before reading "2 sessions on 2 cores" as free.
+
+     WHY 4 IS SAFE HERE - checked 9 Oct 2026, re-check before adding a block or a tag to this file:
+       - Nothing in the blocks below writes to its shared account. Login runs only negative
+         registration cases (no account is ever created) and one forget-password request that is
+         never followed; Homepage, PDP_PLP, GuestHomePage, Ledger and Profile only read. The
+         scenarios that DO change account state - the cart emptying (@CartVerification,
+         @AddToCartAndCreateOpportunity) and the multi-user invites (@multiUser) - are not in this
+         file; they run from testng_serial.xml at data-provider-thread-count=1.
+       - The static state they share is thread-safe: Token's CCP cache is a ConcurrentHashMap and
+         its OMS token is volatile behind a double-checked lock (at worst two threads both log in
+         once - harmless, see the concurrent-session measurement below), and Hooks.softAssert is a
+         ThreadLocalSoftAssert, so one scenario's soft failures never land in another's.
+       - Do NOT move a state-changing tag into this file without dropping this value back to 1 for
+         that block, or giving the block an account of its own.
 
      The hazard it used to carry: every scenario inside a block resolves the SAME credential -
      UserConfig.getEmail() maps the group to a single <group>.user.email with no per-thread or
@@ -61,7 +75,7 @@
      source it is being asked about.
      =========================================================================================== -->
 <suite verbose="1" name="Jsw automation" parallel="tests" thread-count="1"
-       data-provider-thread-count="2" annotations="JDK">
+       data-provider-thread-count="4" annotations="JDK">
 
     <listeners>
         <listener class-name="com.qapitol.jsw.config.TestGroupListener"/>
@@ -170,13 +184,16 @@
          Reference: areas NOT included above, with their verified tags. Uncomment the block you
          need, or add the tag to an existing block that already uses the right test.group.
 
-           homepage : @paymentDue  @ledger  @bankDetails  @myAccount  @buym
+           homepage : @paymentDue  @bankDetails  @myAccount  @buym
            cart     : @CartVerification  @shipment  @EditAndDeleteCart  @ccpActiveOrder  @creditOrder
            profile  : @address
            orders   : @ccpErpSyncRegression
            Guest    : @SEOCheck
-           api      : @customerProfileApi  @rcv2Api  @centralCart
+           api      : @rcv2Api  @centralCart
                       (point cucumber.features at src/test/resources/features/api for these)
+
+         No longer listed because they run elsewhere: @ledger has its own <test name="Ledger"> block
+         above, and @customerProfileApi runs from testng_api.xml.
          =========================================================================================== -->
 
 </suite>

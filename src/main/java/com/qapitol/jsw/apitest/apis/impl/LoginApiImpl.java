@@ -22,19 +22,10 @@ public class LoginApiImpl implements LoginService {
         String omsUrl = Objects.requireNonNull(ConfigUtil.getSecretValue("omsUrl"));
         String centralCartCcpUrl = ConfigUtil.getSecretValue("centralCartCcpUrl");
 
-        // Salesforce -> CT sales-opp sync. Authenticated with a service key, not a user token,
-        // so it is matched BEFORE the ccpUrl branch below - on environments where salesOppUrl
-        // and ccpUrl are the same address, only the presence of a key separates the two.
-        // No key configured => fall through and keep the historical access_token behaviour.
-        String salesOppUrl = ConfigUtil.getSecretValue("salesOppUrl");
-        String salesOppApiKey = ConfigUtil.getSecretValue("salesOppApiKey");
-        if (salesOppUrl != null
-                && salesOppUrl.equalsIgnoreCase(apiClientFactory.getAddress())
-                && salesOppApiKey != null
-                && !salesOppApiKey.trim().isEmpty()) {
-            String X_API_KEY = "X-API-KEY";
-            return Map.of(X_API_KEY, salesOppApiKey);
-        }
+        // No sales-opp branch here, deliberately. These headers go on every client for an
+        // address, and on pre-prod salesOppUrl IS ccpUrl - matching it here sent the sales-opp
+        // X-API-KEY instead of access_token on every CCP call (build 280: 19 cart 401s). The key
+        // is attached only by BaseApiImpl.salesOppApi(), to the sales-opp proxy alone.
 
         if (ccpUrl.equalsIgnoreCase(apiClientFactory.getAddress())) {
             String ACCESS_TOKEN = "access_token";
